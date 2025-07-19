@@ -1,0 +1,143 @@
+# JavaScript Development Rules for Cursor
+
+## Project Context
+You are working on the frontend JavaScript/TypeScript components for a Laravel 11+ application called "ReisenciaChingo" - a government/business registration system.
+
+## Core Principles
+- Write clean, maintainable JavaScript/TypeScript code
+- Follow modern ES6+ standards and best practices
+- Use functional programming concepts when appropriate
+- Prefer composition over inheritance
+- Write self-documenting code with clear variable and function names
+- Implement proper error handling and validation
+- Use async/await over callbacks and promises when possible
+- Follow the DRY (Don't Repeat Yourself) principle
+
+## JavaScript/TypeScript Standards
+- Use ES6+ features (arrow functions, destructuring, template literals)
+- Prefer `const` and `let` over `var`
+- Use TypeScript when possible for better type safety
+- Implement proper error handling with try-catch blocks
+- Use meaningful variable and function names
+- Follow camelCase naming convention for variables and functions
+- Use PascalCase for classes and components
+- Implement proper JSDoc comments for complex functions
+- Use strict mode: `'use strict';`
+
+## Frontend Framework Guidelines
+- Use modern JavaScript frameworks (React, Vue, Alpine.js) as appropriate
+- Implement component-based architecture
+- Use state management patterns (Redux, Vuex, Pinia) when needed
+- Follow framework-specific conventions and best practices
+- Implement proper component lifecycle management
+- Use hooks and composables for reusable logic
+
+## API Integration
+- Use Fetch API or Axios for HTTP requests
+- Implement proper error handling for API calls
+- Use async/await for asynchronous operations
+- Implement request/response interceptors when needed
+- Handle loading states and error states properly
+- Use proper HTTP status code handling
+- Implement retry logic for failed requests when appropriate
+
+## Form Handling
+- Implement proper form validation (client-side and server-side)
+- Use form libraries (Formik, React Hook Form, VeeValidate) when appropriate
+- Handle form submission states (loading, success, error)
+- Implement proper input sanitization
+- Use controlled components for form inputs
+- Implement proper accessibility features (ARIA labels, keyboard navigation)
+
+## UI/UX Best Practices
+- Implement responsive design principles
+- Use CSS-in-JS or CSS modules for component styling
+- Follow accessibility guidelines (WCAG 2.1)
+- Implement proper loading states and skeleton screens
+- Use proper color contrast ratios
+- Implement keyboard navigation support
+- Use semantic HTML elements
+- Implement proper focus management
+
+## Performance Optimization
+- Implement code splitting and lazy loading
+- Use proper caching strategies
+- Optimize bundle size and loading times
+- Implement proper memory management
+- Use debouncing and throttling for frequent events
+- Implement proper image optimization
+- Use service workers for offline functionality when needed
+
+## Testing
+- Write unit tests for utility functions
+- Implement component testing
+- Use testing libraries (Jest, Vitest, Testing Library)
+- Write integration tests for user flows
+- Implement proper mocking strategies
+- Use proper test naming conventions
+- Maintain good test coverage
+
+## Code Organization
+- Use modular architecture
+- Implement proper file and folder structure
+- Use barrel exports for clean imports
+- Separate concerns (business logic, UI, utilities)
+- Use proper import/export statements
+- Implement proper dependency management
+
+## Security Best Practices
+- Implement proper input validation
+- Use Content Security Policy (CSP)
+- Sanitize user inputs
+- Implement proper authentication handling
+- Use HTTPS for all API calls
+- Implement proper session management
+- Avoid XSS vulnerabilities
+- Use proper CORS configuration
+
+## Laravel Integration Specifics
+- Use Laravel's CSRF token for form submissions
+- Implement proper authentication headers
+- Use Laravel's validation error responses
+- Handle Laravel's API resource transformations
+- Implement proper file upload handling
+- Use Laravel's pagination responses
+- Handle Laravel's notification system
+
+## Development Tools
+- Use ESLint for code linting
+- Implement Prettier for code formatting
+- Use TypeScript for type safety
+- Implement proper debugging tools
+- Use browser developer tools effectively
+- Implement proper logging and monitoring
+- Use proper source maps for debugging
+
+## Code Quality
+- Write readable and maintainable code
+- Use proper indentation and formatting
+- Implement proper error boundaries
+- Use proper logging and debugging
+- Follow consistent coding style
+- Implement proper documentation
+- Use proper version control practices
+
+## Project-Specific Guidelines
+- Integrate with Laravel's geographic data (paises, estados, municipios, asentamientos)
+- Handle business procedures (tramites) forms and workflows
+- Implement file upload and management interfaces
+- Create appointment scheduling (citas) interfaces
+- Handle provider management (proveedores) forms
+- Implement activity and sector catalog selectors
+- Create responsive data tables and forms
+- Implement proper search and filtering functionality
+
+## Code Generation Rules
+- Always use modern JavaScript/TypeScript syntax
+- Include proper error handling and validation
+- Implement responsive design principles
+- Use semantic HTML and proper accessibility
+- Follow the existing project structure and patterns
+- Implement proper loading and error states
+- Use Laravel's conventions for API integration
+- Include proper TypeScript types when applicable 

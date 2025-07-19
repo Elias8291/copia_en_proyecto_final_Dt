@@ -1,0 +1,604 @@
+// =====================================================
+// SISTEMA DE GESTIÓN DE PROVEEDORES - DIAGRAMA DE BD
+// =====================================================
+// Generado automáticamente desde migraciones Laravel
+// Fecha: 2025-01-17
+
+Project SistemaProveedores {
+  database_type: 'MySQL'
+  Note: '''
+  Sistema integral de gestión de proveedores con:
+  - Registro y validación de proveedores
+  - Gestión de trámites (Inscripción, Renovación, Actualización)
+  - Catálogo de actividades económicas SCIAN
+  - Sistema de archivos y documentos
+  - Geolocalización y direcciones
+  - Citas y notificaciones
+  - Control de permisos y roles
+  '''
+}
+
+// =====================================================
+// 👥 MÓDULO DE USUARIOS Y AUTENTICACIÓN
+// =====================================================
+
+TableGroup usuarios_auth {
+  users
+  password_reset_tokens
+  sessions
+}
+
+Table users {
+  id bigint [pk, increment, note: 'ID único del usuario']
+  nombre varchar(255) [not null, note: 'Nombre completo del usuario']
+  correo varchar(255) [unique, not null, note: 'Email único para login']
+  fecha_verificacion_correo timestamp [null, note: 'Fecha de verificación del email']
+  password varchar(255) [null, note: 'Hash de la contraseña']
+  remember_token varchar(100) [null, note: 'Token para recordar sesión']
+  rfc varchar(255) [not null, note: 'RFC del usuario']
+  ultimo_acceso timestamp [null, note: 'Último acceso al sistema']
+  estado enum('pendiente','activo','inactivo','suspendido') [default: 'pendiente', note: 'Estado actual del usuario']
+  verification_token varchar(255) [null, note: 'Token de verificación de email']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  deleted_at timestamp [null, note: 'Soft delete timestamp']
+  
+  Note: '''
+  Tabla principal de usuarios del sistema.
+  Maneja tanto proveedores como administradores.
+  Incluye soft deletes y verificación de email.
+  '''
+}
+
+Table password_reset_tokens {
+  email varchar(255) [pk, note: 'Email del usuario']
+  token varchar(255) [not null, note: 'Token de reseteo']
+  created_at timestamp [null, note: 'Fecha de creación del token']
+  
+  Note: 'Tokens para reseteo de contraseñas'
+}
+
+Table sessions {
+  id varchar(255) [pk, note: 'ID único de la sesión']
+  user_id bigint [null, ref: > users.id, note: 'Usuario propietario de la sesión']
+  ip_address varchar(45) [null, note: 'Dirección IP del cliente']
+  user_agent text [null, note: 'User agent del navegador']
+  payload text [not null, note: 'Datos serializados de la sesión']
+  last_activity int [not null, note: 'Timestamp de última actividad']
+  
+  Note: 'Sesiones activas de usuarios'
+}
+
+// =====================================================
+// 🏢 MÓDULO DE PROVEEDORES
+// =====================================================
+
+TableGroup proveedores_core {
+  proveedores
+  tramites
+  tramite_datos_generales
+  tramite_datos_constitutivos
+  tramite_contactos
+}
+
+Table proveedores {
+  id bigint [pk, increment, note: 'ID único del proveedor']
+  user_id bigint [unique, ref: - users.id, note: 'Relación 1:1 con usuario']
+  rfc varchar(13) [unique, not null, note: 'RFC único del proveedor']
+  curp varchar(18) [null, note: 'CURP para personas físicas']
+  tipo_persona enum('Física','Moral') [not null, note: 'Tipo de persona jurídica']
+  razon_social varchar(255) [null, note: 'Razón social o nombre completo']
+  pv_numero varchar(20) [unique, null, note: 'Número de padrón de proveedores']
+  estado_padron enum('Activo','Inactivo','Vencido','Pendiente') [default: 'Pendiente', note: 'Estado en el padrón']
+  fecha_alta_padron date [null, note: 'Fecha de alta en el padrón']
+  fecha_vencimiento_padron date [null, note: 'Fecha de vencimiento del registro']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: '''
+  Información principal de proveedores registrados.
+  Diferencia entre personas físicas y morales.
+  Controla el estado en el padrón oficial.
+  '''
+}
+
+Table tramites {
+  id bigint [pk, increment, note: 'ID único del trámite']
+  proveedor_id bigint [ref: > proveedores.id, note: 'Proveedor que realiza el trámite']
+  direccion_id bigint [null, ref: > direcciones.id, note: 'Dirección asociada al trámite']
+  tipo enum('Inscripción','Renovación','Actualización') [not null, note: 'Tipo de trámite']
+  estado enum('Borrador','En Revisión','Requiere Correcciones','En Cotejo','Aprobado','Rechazado') [default: 'Borrador', note: 'Estado actual del trámite']
+  fecha_solicitud timestamp [null, note: 'Fecha de envío de la solicitud']
+  fecha_aprobacion_rechazo timestamp [null, note: 'Fecha de resolución final']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: '''
+  Trámites realizados por proveedores.
+  Flujo: Borrador → En Revisión → Cotejo → Aprobado/Rechazado
+  '''
+}
+
+Table tramite_datos_generales {
+  id bigint [pk, increment]
+  tramite_id bigint [unique, ref: - tramites.id, note: 'Relación 1:1 con trámite']
+  giro text [not null, note: 'Descripción del giro comercial']
+  pagina_web varchar(255) [null, note: 'Sitio web del proveedor']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Datos generales específicos del trámite'
+}
+
+Table tramite_datos_constitutivos {
+  id bigint [pk, increment]
+  tramite_id bigint [unique, ref: - tramites.id, note: 'Relación 1:1 con trámite']
+  numero_instrumento_notarial varchar(100) [null, note: 'Número del instrumento notarial']
+  fecha_instrumento_notarial date [null, note: 'Fecha del instrumento']
+  nombre_notario_publico varchar(255) [null, note: 'Nombre del notario']
+  numero_notaria varchar(50) [null, note: 'Número de la notaría']
+  entidad_federativa_notaria varchar(100) [null, note: 'Estado de la notaría']
+  folio_mercantil varchar(50) [null, note: 'Folio del registro mercantil']
+  fecha_constitucion date [null, note: 'Fecha de constitución de la empresa']
+  capital_social decimal(15,2) [null, note: 'Capital social declarado']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Datos constitutivos para personas morales'
+}
+
+Table tramite_contactos {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id, note: 'Trámite al que pertenece']
+  nombre_completo varchar(255) [not null, note: 'Nombre del contacto']
+  puesto varchar(100) [null, note: 'Cargo o puesto']
+  telefono varchar(50) [null, note: 'Teléfono de contacto']
+  email varchar(255) [null, note: 'Email de contacto']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Contactos asociados a cada trámite'
+}
+
+// =====================================================
+// 🌍 MÓDULO DE GEOGRAFÍA Y DIRECCIONES
+// =====================================================
+
+TableGroup geografia {
+  paises
+  estados
+  municipios
+  localidades
+  asentamientos
+  direcciones
+  direcciones_no_catalogadas
+  geolocalizaciones
+}
+
+Table paises {
+  id bigint [pk, increment]
+  nombre varchar(370) [unique, not null, note: 'Nombre del país']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Catálogo de países'
+}
+
+Table estados {
+  id bigint [pk, increment]
+  pais_id bigint [ref: > paises.id, note: 'País al que pertenece']
+  nombre varchar(370) [not null, note: 'Nombre del estado']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Estados o provincias por país'
+}
+
+Table municipios {
+  id bigint [pk, increment]
+  estado_id bigint [ref: > estados.id, note: 'Estado al que pertenece']
+  nombre varchar(370) [not null, note: 'Nombre del municipio']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Municipios por estado'
+}
+
+Table localidades {
+  id bigint [pk, increment]
+  municipio_id bigint [ref: > municipios.id, note: 'Municipio al que pertenece']
+  nombre varchar(370) [not null, note: 'Nombre de la localidad']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Localidades por municipio'
+}
+
+Table asentamientos {
+  id bigint [pk, increment]
+  municipio_id bigint [ref: > municipios.id, note: 'Municipio al que pertenece']
+  nombre varchar(255) [not null, note: 'Nombre del asentamiento']
+  codigo_postal varchar(10) [not null, note: 'Código postal']
+  tipo_asentamiento varchar(100) [null, note: 'Tipo (Colonia, Fraccionamiento, etc.)']
+  
+  Note: 'Asentamientos humanos con código postal'
+}
+
+Table geolocalizaciones {
+  id bigint [pk, increment]
+  latitud decimal(10,8) [null, note: 'Coordenada de latitud']
+  longitud decimal(11,8) [null, note: 'Coordenada de longitud']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Coordenadas geográficas precisas'
+}
+
+Table direcciones {
+  id bigint [pk, increment]
+  calle varchar(255) [not null, note: 'Nombre de la calle']
+  numero_exterior varchar(50) [null, note: 'Número exterior']
+  numero_interior varchar(50) [null, note: 'Número interior o departamento']
+  codigo_postal varchar(10) [not null, note: 'Código postal']
+  referencias text [null, note: 'Referencias adicionales']
+  asentamiento_id bigint [null, ref: > asentamientos.id, note: 'Asentamiento catalogado']
+  geolocalizacion_id bigint [null, ref: > geolocalizaciones.id, note: 'Coordenadas exactas']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Direcciones usando catálogos oficiales'
+}
+
+Table direcciones_no_catalogadas {
+  id bigint [pk, increment]
+  direccion_id bigint [unique, ref: - direcciones.id, note: 'Dirección base']
+  colonia_texto varchar(255) [not null, note: 'Colonia en texto libre']
+  municipio_texto varchar(255) [not null, note: 'Municipio en texto libre']
+  estado_texto varchar(255) [not null, note: 'Estado en texto libre']
+  pais_texto varchar(255) [not null, note: 'País en texto libre']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Direcciones fuera de catálogos oficiales'
+}
+
+// =====================================================
+// 📋 MÓDULO DE ACTIVIDADES ECONÓMICAS
+// =====================================================
+
+TableGroup actividades_economicas {
+  catalogo_sectores
+  catalogo_actividades
+  tramite_actividades
+}
+
+Table catalogo_sectores {
+  id bigint [pk, increment]
+  nombre varchar(255) [not null, note: 'Nombre del sector económico']
+  
+  Note: 'Sectores económicos principales (SCIAN)'
+}
+
+Table catalogo_actividades {
+  id bigint [pk, increment]
+  sector_id bigint [ref: > catalogo_sectores.id, note: 'Sector al que pertenece']
+  codigo_scian varchar(20) [null, note: 'Código SCIAN oficial']
+  nombre varchar(500) [not null, note: 'Descripción de la actividad']
+  estado enum('Aprobada','Pendiente de Revisión') [default: 'Aprobada', note: 'Estado de la actividad']
+  creada_por_usuario_id bigint [null, ref: > users.id, note: 'Usuario que creó la actividad']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: '''
+  Catálogo de actividades económicas basado en SCIAN.
+  Permite actividades personalizadas pendientes de revisión.
+  '''
+}
+
+Table tramite_actividades {
+  tramite_id bigint [ref: > tramites.id, note: 'Trámite asociado']
+  actividad_id bigint [ref: > catalogo_actividades.id, note: 'Actividad económica']
+  es_principal boolean [default: false, note: 'Indica si es la actividad principal']
+  
+  indexes {
+    (tramite_id, actividad_id) [pk, name: 'pk_tramite_actividades']
+  }
+  
+  Note: '''
+  Tabla pivot: Actividades económicas por trámite.
+  Un trámite puede tener múltiples actividades.
+  Una debe marcarse como principal.
+  '''
+}
+
+// =====================================================
+// 📄 MÓDULO DE DOCUMENTOS Y ARCHIVOS
+// =====================================================
+
+TableGroup documentos {
+  catalogo_archivos
+  tramite_archivos
+}
+
+Table catalogo_archivos {
+  id bigint [pk, increment]
+  nombre_documento varchar(255) [not null, note: 'Nombre del tipo de documento']
+  descripcion text [null, note: 'Descripción del documento requerido']
+  aplica_a enum('Física','Moral','Ambas') [default: 'Ambas', note: 'A qué tipo de persona aplica']
+  
+  Note: '''
+  Catálogo de documentos requeridos.
+  Define qué documentos necesita cada tipo de persona.
+  '''
+}
+
+Table tramite_archivos {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id, note: 'Trámite al que pertenece']
+  catalogo_archivo_id bigint [ref: > catalogo_archivos.id, note: 'Tipo de documento']
+  nombre_original_archivo varchar(255) [not null, note: 'Nombre original del archivo']
+  path_almacenamiento varchar(500) [not null, note: 'Ruta de almacenamiento']
+  hash_archivo varchar(64) [null, note: 'Hash para verificar integridad']
+  estado_revision enum('Pendiente','Aprobado','Rechazado con Comentarios') [default: 'Pendiente', note: 'Estado de revisión']
+  comentarios_revision text [null, note: 'Comentarios del revisor']
+  revisor_id bigint [null, ref: > users.id, note: 'Usuario que revisó']
+  fecha_revision timestamp [null, note: 'Fecha de revisión']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: '''
+  Archivos subidos por trámite.
+  Incluye control de revisión y comentarios.
+  '''
+}
+
+// =====================================================
+// 📅 MÓDULO DE CITAS Y REVISIONES
+// =====================================================
+
+TableGroup citas_revisiones {
+  citas
+  catalogo_secciones
+  tramite_secciones_revision
+}
+
+Table citas {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id, note: 'Trámite asociado']
+  fecha_hora_cita datetime [not null, note: 'Fecha y hora de la cita']
+  tipo enum('Cotejo de Documentos','Aclaraciones') [not null, note: 'Tipo de cita']
+  estado enum('Programada','Completada','Cancelada','No Asistió') [default: 'Programada', note: 'Estado de la cita']
+  revisor_asignado_id bigint [null, ref: > users.id, note: 'Revisor asignado']
+  notas text [null, note: 'Notas adicionales']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: '''
+  Citas programadas para revisión de trámites.
+  Incluye cotejo de documentos y aclaraciones.
+  '''
+}
+
+Table catalogo_secciones {
+  id bigint [pk, increment]
+  nombre_seccion varchar(255) [not null, note: 'Nombre de la sección']
+  orden int [default: 0, note: 'Orden de presentación']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: 'Secciones del formulario de trámite'
+}
+
+Table tramite_secciones_revision {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id, note: 'Trámite en revisión']
+  seccion_id bigint [ref: > catalogo_secciones.id, note: 'Sección revisada']
+  estado_revision enum('Pendiente','Aprobado','Rechazado') [default: 'Pendiente', note: 'Estado de la sección']
+  comentarios_revision text [null, note: 'Comentarios específicos']
+  revisor_id bigint [null, ref: > users.id, note: 'Revisor asignado']
+  fecha_revision timestamp [null, note: 'Fecha de revisión']
+  contenido_id bigint [not null, note: 'ID del contenido polimórfico']
+  contenido_type varchar(255) [not null, note: 'Tipo del contenido polimórfico']
+  
+  indexes {
+    (tramite_id, seccion_id) [unique, name: 'unique_tramite_seccion']
+    (contenido_id, contenido_type) [name: 'idx_contenido_polimorfico']
+  }
+  
+  Note: '''
+  Revisión por secciones de cada trámite.
+  Relación polimórfica para diferentes tipos de contenido.
+  '''
+}
+
+// =====================================================
+// 🔔 MÓDULO DE NOTIFICACIONES
+// =====================================================
+
+TableGroup notificaciones {
+  notificaciones
+}
+
+Table notificaciones {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id, note: 'Usuario destinatario']
+  mensaje varchar(500) [not null, note: 'Mensaje de la notificación']
+  leida boolean [default: false, note: 'Indica si fue leída']
+  url_destino varchar(255) [null, note: 'URL de destino al hacer clic']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: '''
+  Sistema de notificaciones para usuarios.
+  Incluye estado de lectura y enlaces directos.
+  '''
+}
+
+// =====================================================
+// 🔐 MÓDULO DE PERMISOS Y ROLES
+// =====================================================
+
+TableGroup permisos_roles {
+  permissions
+  roles
+  model_has_permissions
+  model_has_roles
+  role_has_permissions
+}
+
+Table permissions {
+  id bigint [pk, increment]
+  name varchar(255) [not null, note: 'Nombre del permiso']
+  guard_name varchar(255) [not null, note: 'Guard de autenticación']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  indexes {
+    (name, guard_name) [unique, name: 'permissions_name_guard_name_unique']
+  }
+  
+  Note: 'Permisos específicos del sistema (Spatie)'
+}
+
+Table roles {
+  id bigint [pk, increment]
+  name varchar(255) [not null, note: 'Nombre del rol']
+  guard_name varchar(255) [not null, note: 'Guard de autenticación']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  indexes {
+    (name, guard_name) [unique, name: 'roles_name_guard_name_unique']
+  }
+  
+  Note: 'Roles del sistema (Admin, Proveedor, etc.)'
+}
+
+Table model_has_permissions {
+  permission_id bigint [ref: > permissions.id, note: 'Permiso asignado']
+  model_type varchar(255) [not null, note: 'Tipo de modelo (User, etc.)']
+  model_id bigint [not null, note: 'ID del modelo']
+  
+  indexes {
+    (permission_id, model_id, model_type) [pk, name: 'model_has_permissions_permission_model_type_primary']
+    (model_id, model_type) [name: 'model_has_permissions_model_id_model_type_index']
+  }
+  
+  Note: 'Permisos directos a modelos (polimórfico)'
+}
+
+Table model_has_roles {
+  role_id bigint [ref: > roles.id, note: 'Rol asignado']
+  model_type varchar(255) [not null, note: 'Tipo de modelo']
+  model_id bigint [not null, note: 'ID del modelo']
+  
+  indexes {
+    (role_id, model_id, model_type) [pk, name: 'model_has_roles_role_model_type_primary']
+    (model_id, model_type) [name: 'model_has_roles_model_id_model_type_index']
+  }
+  
+  Note: 'Roles asignados a modelos (polimórfico)'
+}
+
+Table role_has_permissions {
+  permission_id bigint [ref: > permissions.id, note: 'Permiso incluido']
+  role_id bigint [ref: > roles.id, note: 'Rol que incluye el permiso']
+  
+  indexes {
+    (permission_id, role_id) [pk, name: 'role_has_permissions_permission_id_role_id_primary']
+  }
+  
+  Note: 'Permisos incluidos en cada rol'
+}
+
+// =====================================================
+// ⚙️ MÓDULO DE SISTEMA Y LOGS
+// =====================================================
+
+TableGroup sistema {
+  logs
+  cache
+  cache_locks
+  jobs
+  job_batches
+  failed_jobs
+}
+
+Table logs {
+  id bigint [pk, increment]
+  level varchar(20) [not null, note: 'Nivel del log (info, error, etc.)']
+  message varchar(1000) [not null, note: 'Mensaje del log']
+  channel varchar(100) [null, note: 'Canal del log']
+  context text [null, note: 'Contexto adicional (JSON)']
+  user_id bigint [null, ref: > users.id, note: 'Usuario asociado']
+  ip_address varchar(45) [null, note: 'Dirección IP']
+  user_agent varchar(500) [null, note: 'User agent']
+  url varchar(1000) [null, note: 'URL de la petición']
+  method varchar(10) [null, note: 'Método HTTP']
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  
+  Note: '''
+  Logs detallados del sistema.
+  Incluye contexto de usuario y petición HTTP.
+  '''
+}
+
+Table cache {
+  key varchar(255) [pk, note: 'Clave del cache']
+  value mediumtext [not null, note: 'Valor almacenado']
+  expiration int [not null, note: 'Timestamp de expiración']
+  
+  Note: 'Cache del sistema Laravel'
+}
+
+Table cache_locks {
+  key varchar(255) [pk, note: 'Clave del lock']
+  owner varchar(255) [not null, note: 'Propietario del lock']
+  expiration int [not null, note: 'Timestamp de expiración']
+  
+  Note: 'Locks para operaciones atómicas'
+}
+
+Table jobs {
+  id bigint [pk, increment]
+  queue varchar(255) [not null, note: 'Nombre de la cola']
+  payload longtext [not null, note: 'Datos del job serializado']
+  attempts tinyint [not null, note: 'Número de intentos']
+  reserved_at int [null, note: 'Timestamp de reserva']
+  available_at int [not null, note: 'Timestamp de disponibilidad']
+  created_at int [not null, note: 'Timestamp de creación']
+  
+  indexes {
+    queue [name: 'jobs_queue_index']
+  }
+  
+  Note: 'Cola de trabajos en segundo plano'
+}
+
+Table job_batches {
+  id varchar(255) [pk, note: 'ID del lote']
+  name varchar(255) [not null, note: 'Nombre del lote']
+  total_jobs int [not null, note: 'Total de trabajos']
+  pending_jobs int [not null, note: 'Trabajos pendientes']
+  failed_jobs int [not null, note: 'Trabajos fallidos']
+  failed_job_ids longtext [not null, note: 'IDs de trabajos fallidos']
+  options mediumtext [null, note: 'Opciones del lote']
+  cancelled_at int [null, note: 'Timestamp de cancelación']
+  created_at int [not null]
+  finished_at int [null, note: 'Timestamp de finalización']
+  
+  Note: 'Lotes de trabajos agrupados'
+}
+
+Table failed_jobs {
+  id bigint [pk, increment]
+  uuid varchar(255) [unique, not null, note: 'UUID único del trabajo']
+  connection text [not null, note: 'Conexión utilizada']
+  queue text [not null, note: 'Cola donde falló']
+  payload longtext [not null, note: 'Datos del trabajo']
+  exception longtext [not null, note: 'Excepción ocurrida']
+  failed_at timestamp [default: `CURRENT_TIMESTAMP`, note: 'Timestamp del fallo']
+  
+  Note: 'Trabajos que fallaron en su ejecución'
+}

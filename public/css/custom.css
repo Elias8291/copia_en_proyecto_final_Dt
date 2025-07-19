@@ -1,0 +1,342 @@
+[x-cloak] { display: none !important; }
+.main-wrapper {
+    transition: padding-left 300ms ease-in-out;
+    min-height: calc(100vh - 4rem);
+}
+.bg-logo-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+    pointer-events: none;
+    z-index: 0;
+}
+.bg-logo-pattern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/images/logoNegro.png');
+    background-repeat: repeat;
+    background-size: 180px auto;
+    opacity: 0.04;
+    z-index: 1;
+    animation: logoFloat 30s ease-in-out infinite;
+}
+@keyframes logoFloat {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+} 
+
+/* Formulario de Inscripción - Estilos Gubernamentales */
+
+/* Animaciones suaves para transiciones */
+.section-transition {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover effects para radio buttons de tipo proveedor */
+.tipo-proveedor-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.tipo-proveedor-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para campos con foco */
+.form-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #3B82F6;
+    outline: none;
+}
+
+/* Gradient borders para secciones */
+.section-card {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.section-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Stepper personalizado */
+.stepper-line {
+    background: linear-gradient(90deg, #e5e7eb 0%, #d1d5db 50%, #e5e7eb 100%);
+    height: 2px;
+    transition: all 0.5s ease;
+}
+
+.stepper-line.active {
+    background: linear-gradient(90deg, #3B82F6 0%, #1D4ED8 50%, #3B82F6 100%);
+}
+
+.stepper-circle {
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stepper-circle.active {
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    transform: scale(1.05);
+}
+
+/* Botones gubernamentales */
+.btn-gobierno {
+    background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+    border: none;
+    box-shadow: 0 4px 14px rgba(30, 64, 175, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-gobierno:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+    box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-gobierno:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.3);
+}
+
+/* Headers de sección con gradientes específicos */
+.header-datos-generales {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.header-domicilio {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.header-constitucion {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.header-accionistas {
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+}
+
+.header-apoderado {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+}
+
+.header-documentos {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+/* Efectos hover para inputs */
+.form-field {
+    transition: all 0.2s ease;
+}
+
+.form-field:hover {
+    border-color: #94a3b8;
+}
+
+.form-field:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Accionistas dinámicos */
+.accionista-card {
+    background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.accionista-card:hover {
+    border-color: #f97316;
+    box-shadow: 0 8px 25px rgba(249, 115, 22, 0.1);
+}
+
+/* Validación visual */
+.field-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Indicadores de progreso */
+.progress-indicator {
+    background: linear-gradient(90deg, #e5e7eb 0%, #3b82f6 var(--progress, 0%), #e5e7eb var(--progress, 0%));
+    height: 4px;
+    border-radius: 2px;
+    transition: all 0.5s ease;
+}
+
+/* Tooltips informativos */
+.tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}
+
+/* Efectos para documentos placeholder */
+.documents-placeholder {
+    background: linear-gradient(145deg, #f9fafb 0%, #f3f4f6 100%);
+    border: 2px dashed #d1d5db;
+    transition: all 0.3s ease;
+}
+
+.documents-placeholder:hover {
+    border-color: #9ca3af;
+    background: linear-gradient(145deg, #f3f4f6 0%, #e5e7eb 100%);
+}
+
+/* Responsive mejoras */
+@media (max-width: 768px) {
+    .stepper-responsive {
+        flex-direction: column;
+        space-y: 2rem;
+    }
+    
+    .section-card {
+        margin: 0 -1rem;
+        border-radius: 0;
+    }
+    
+    .form-grid-mobile {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Dark mode support (opcional) */
+@media (prefers-color-scheme: dark) {
+    .section-card {
+        background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+        border-color: #374151;
+    }
+    
+    .form-field {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #f9fafb;
+    }
+    
+    .form-field:focus {
+        border-color: #3b82f6;
+        background-color: #1f2937;
+    }
+}
+
+/* Animaciones de entrada por sección */
+.seccion-1 { animation-delay: 0.1s; }
+.seccion-2 { animation-delay: 0.2s; }
+.seccion-3 { animation-delay: 0.3s; }
+.seccion-4 { animation-delay: 0.4s; }
+.seccion-5 { animation-delay: 0.5s; }
+.seccion-6 { animation-delay: 0.6s; }
+
+/* Efecto loading para botones */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Mejoras de accesibilidad */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus visible para navegación por teclado */
+.focus-visible:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Estilos para impresión */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .section-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .form-field {
+        border: 1px solid #000;
+        background: white;
+    }
+} 
