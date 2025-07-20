@@ -45,7 +45,7 @@ class FormValidator {
         this.validationState.rfc.valid = isValid;
         
         // No mostramos mensaje visual para RFC por ahora, solo guardamos el estado
-        console.log(RFC ${rfc}: ${isValid ? 'válido' : 'inválido'});
+        console.log(`RFC ${rfc}: ${isValid ? 'válido' : 'inválido'}`);
     }
 
     /** Validar coincidencia de contraseñas */
@@ -98,14 +98,14 @@ class FormValidator {
     showValidationMessage(field, message, isValid) {
         if (field !== 'email') return;
         
-        const validationDiv = document.getElementById(${field}Validation);
-        const iconDiv = document.getElementById(${field}ValidationIcon);
+        const validationDiv = document.getElementById(`${field}Validation`);
+        const iconDiv = document.getElementById(`${field}ValidationIcon`);
         const inputField = document.getElementById(field);
         
         if (!validationDiv) return;
 
         validationDiv.innerHTML = 
-            <div class="flex items-center space-x-1 text-xs">
+            `<div class="flex items-center space-x-1 text-xs">
                 <svg class="w-3 h-3 ${isValid ? 'text-green-500' : 'text-red-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     ${isValid 
                         ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
@@ -113,21 +113,19 @@ class FormValidator {
                     }
                 </svg>
                 <span class="${isValid ? 'text-green-600' : 'text-red-600'}">${message}</span>
-            </div>
-        ;
+            </div>`;
         
         validationDiv.style.opacity = '1';
         validationDiv.style.transform = 'translateY(0)';
 
         if (iconDiv) {
             iconDiv.innerHTML = 
-                <svg class="w-4 h-4 ${isValid ? 'text-green-500' : 'text-red-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                `<svg class="w-4 h-4 ${isValid ? 'text-green-500' : 'text-red-500'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     ${isValid 
                         ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
                         : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
                     }
-                </svg>
-            ;
+                </svg>`;
             iconDiv.classList.remove('hidden');
         }
 
@@ -141,14 +139,13 @@ class FormValidator {
     showValidationLoading(field, show) {
         if (field !== 'email') return;
         
-        const iconDiv = document.getElementById(${field}ValidationIcon);
+        const iconDiv = document.getElementById(`${field}ValidationIcon`);
         
         if (!iconDiv) return;
 
         if (show) {
             iconDiv.innerHTML = 
-                <div class="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>
-            ;
+                `<div class="w-4 h-4 border-2 border-gray-300 border-t-primary rounded-full animate-spin"></div>`;
             iconDiv.classList.remove('hidden');
         }
     }
@@ -162,8 +159,8 @@ class FormValidator {
             return;
         }
         
-        const validationDiv = document.getElementById(${field}Validation);
-        const iconDiv = document.getElementById(${field}ValidationIcon);
+        const validationDiv = document.getElementById(`${field}Validation`);
+        const iconDiv = document.getElementById(`${field}ValidationIcon`);
         const inputField = document.getElementById(field);
         
         if (validationDiv) {
@@ -197,12 +194,12 @@ class FormValidator {
         let borderColor = '';
 
         if (passwordsMatch && passwordStrength.valid) {
-            message = ✅ Las contraseñas coinciden - ${passwordStrength.message};
+            message = `✅ Las contraseñas coinciden - ${passwordStrength.message}`;
             isValid = true;
             iconColor = 'text-green-500';
             borderColor = 'border-green-300';
         } else if (passwordsMatch && !passwordStrength.valid) {
-            message = ⚠️ Las contraseñas coinciden - ${passwordStrength.message};
+            message = `⚠️ Las contraseñas coinciden - ${passwordStrength.message}`;
             isValid = false;
             iconColor = 'text-yellow-500';
             borderColor = 'border-yellow-300';
@@ -214,22 +211,20 @@ class FormValidator {
         }
 
         validationDiv.innerHTML = 
-            <div class="flex items-center space-x-1 text-xs">
+            `<div class="flex items-center space-x-1 text-xs">
                 <span class="${isValid && passwordsMatch ? 'text-green-600' : 'text-red-600'}">${message}</span>
-            </div>
-        ;
+            </div>`;
         
         validationDiv.style.opacity = '1';
         validationDiv.style.transform = 'translateY(0)';
 
         iconDiv.innerHTML = 
-            <svg class="w-4 h-4 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            `<svg class="w-4 h-4 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 ${passwordsMatch 
                     ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>'
                     : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'
                 }
-            </svg>
-        ;
+            </svg>`;
         iconDiv.classList.remove('hidden');
 
         if (passwordInput && confirmationInput) {

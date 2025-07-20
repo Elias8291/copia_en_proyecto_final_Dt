@@ -40,7 +40,7 @@ class AsentamientosSeeder extends Seeder
                     'localidad_id' => $item['localidad_id'],
                     'nombre' => $item['name'],
                     'codigo_postal' => (string) $item['zip_code'],
-                    'tipo_asentamiento' => $this->getTipoAsentamiento($item['settlement_type_id']),
+                    'tipo_asentamiento_id' => $this->getTipoAsentamientoId($item['settlement_type_id']),
                 ];
             })->filter()->toArray();
             
@@ -67,20 +67,36 @@ class AsentamientosSeeder extends Seeder
         echo "Asentamientos cargados exitosamente: $insertedCount de $totalAsentamientos\n";
     }
     
-    private function getTipoAsentamiento($settlementTypeId)
+    private function getTipoAsentamientoId($settlementTypeId)
     {
-        // Mapeo básico de tipos de asentamiento
-        $tipos = [
-            1 => 'Colonia',
-            2 => 'Fraccionamiento', 
-            3 => 'Barrio',
-            4 => 'Pueblo',
-            5 => 'Ejido',
-            6 => 'Ranchería',
-            7 => 'Zona Industrial',
-            8 => 'Centro',
+        // Mapeo de tipos de asentamiento - devuelve el ID de la tabla tipos_asentamiento
+        $tiposMap = [
+            1 => 1,  // Colonia
+            2 => 2,  // Fraccionamiento
+            3 => 3,  // Condominio
+            4 => 4,  // Unidad habitacional
+            5 => 5,  // Barrio
+            6 => 6,  // Equipamiento
+            7 => 7,  // Zona comercial
+            8 => 8,  // Rancho
+            9 => 9,  // Ranchería
+            10 => 10, // Zona industrial
+            11 => 11, // Granja
+            12 => 12, // Pueblo
+            13 => 13, // Ejido
+            14 => 14, // Aeropuerto
+            15 => 15, // Paraje
+            16 => 16, // Hacienda
+            17 => 17, // Conjunto habitacional
+            18 => 18, // Zona militar
+            19 => 19, // Puerto
+            20 => 20, // Zona federal
+            21 => 21, // Exhacienda
+            22 => 22, // Finca
+            23 => 23, // Campamento
+            24 => 24, // Zona naval
         ];
         
-        return $tipos[$settlementTypeId] ?? 'Colonia';
+        return $tiposMap[$settlementTypeId] ?? 1; // Default to Colonia (ID 1)
     }
 }

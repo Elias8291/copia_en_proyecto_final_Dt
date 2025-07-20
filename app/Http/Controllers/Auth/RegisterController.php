@@ -99,10 +99,9 @@ class RegisterController extends Controller
     protected function findUnverifiedUser(string $email): ?User
     {
         return User::where('correo', $email)
-                   ->where('estado', 'pendiente')
+        ->where('estado', 'Por_Iniciar')
                    ->first();
     }
-
     /** Redirigir con mensaje de éxito */
     protected function redirectWithSuccess(bool $isResend, User $user)
     {

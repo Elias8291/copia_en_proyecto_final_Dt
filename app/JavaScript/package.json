@@ -1,0 +1,20 @@
+{
+  "name": "qr-extractor",
+  "version": "1.0.0",
+  "description": "Extractor de códigos QR desde archivos PDF",
+  "main": "qr_extractor.js",
+  "scripts": {
+    "install-deps": "npm install",
+    "test": "node qr_extractor.js"
+  },
+  "dependencies": {
+    "pdf-poppler": "^0.2.1",
+    "jimp": "^0.22.10",
+    "qrcode-reader": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "Sistema de Trámites",
+  "license": "MIT"
+}

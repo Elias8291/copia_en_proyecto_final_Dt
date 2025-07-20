@@ -6,23 +6,16 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\RolesController;
+use App\Http\Controllers\FormularioController;
+
+use App\Http\Controllers\TramiteController;
 
 // Página principal para usuarios no autenticados
 Route::middleware(['web', 'guest'])->group(function () {
     Route::get('/', function () {
         return view('welcome');
     })->name('welcome');
-});
-
-// Rutas públicas para API (sin autenticación)
-Route::prefix('api')->group(function () {
-    // Búsqueda por código postal (pública)
-    Route::get('/codigo-postal/buscar', [App\Http\Controllers\Api\CodigoPostalController::class, 'buscarPorCodigoPostal'])
-        ->name('api.codigo-postal.buscar.public');
-    
-    // Búsqueda de actividades económicas (pública)
-    Route::get('/actividades/buscar', [App\Http\Controllers\Api\ActividadController::class, 'buscar'])
-        ->name('api.actividades.buscar.public');
 });
 
 
@@ -84,30 +77,43 @@ Route::middleware(['auth'])->group(function () {
 
 // Roles (solo autenticados)
 Route::middleware(['auth'])->group(function () {
-    Route::get('/roles', [App\Http\Controllers\RolesController::class, 'index'])->name('roles.index');
+    Route::get('/roles', [RolesController::class, 'index'])->name('roles.index');
 });
 
-// Tramites (solo autenticados)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/tramites', [App\Http\Controllers\TramiteController::class, 'index'])->name('tramites.index');
-    Route::get('/tramites/inscripcion', [App\Http\Controllers\TramiteController::class, 'inscripcion'])->name('tramites.inscripcion');
-    Route::get('/tramites/renovacion', [App\Http\Controllers\TramiteController::class, 'renovacion'])->name('tramites.renovacion');
-    Route::get('/tramites/actualizacion', [App\Http\Controllers\TramiteController::class, 'actualizacion'])->name('tramites.actualizacion');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//ruta de index tramite
+Route::middleware(['auth'])->prefix('tramites')->name('tramites.')->group(function () {
+    Route::get('/', [TramiteController::class, 'index'])->name('index');
 });
 
-// API Routes (solo autenticados)
-Route::middleware(['auth'])->prefix('api')->group(function () {
-    // Rutas para código postal
-    Route::get('/codigo-postal/{codigo}', [App\Http\Controllers\Api\CodigoPostalController::class, 'buscar'])
-        ->name('api.codigo-postal.buscar');
-    Route::get('/codigo-postal/municipios', [App\Http\Controllers\Api\CodigoPostalController::class, 'buscarMunicipios'])
-        ->name('api.codigo-postal.municipios');
-    Route::get('/codigo-postal/asentamientos', [App\Http\Controllers\Api\CodigoPostalController::class, 'buscarAsentamientos'])
-        ->name('api.codigo-postal.asentamientos');
-    
-    // Rutas para actividades económicas
-    Route::get('/actividades/buscar', [App\Http\Controllers\Api\ActividadesController::class, 'buscar'])
-        ->name('api.actividades.buscar');
-    Route::get('/actividades/por-ids', [App\Http\Controllers\Api\ActividadesController::class, 'porIds'])
-        ->name('api.actividades.por-ids');
+// rutas de formularios
+Route::middleware(['auth'])->prefix('formularios')->name('formularios.')->group(function () {
+    Route::get('/constancia/{tipo}', [App\Http\Controllers\FormularioController::class, 'constancia'])->name('constancia');
+    Route::post('/constancia/{tipo}', [App\Http\Controllers\FormularioController::class, 'procesarConstancia'])->name('procesar-constancia');
+    Route::get('/qr-reader', function () {
+        return view('formularios.constancia');
+    })->name('qr-reader');
+    Route::get('/{tipo?}', [App\Http\Controllers\FormularioController::class, 'index'])->name('index');
+    Route::post('/{tipo}', [App\Http\Controllers\FormularioController::class, 'store'])->name('store');
 });
+
+// API Routes para QR Extractor
+Route::middleware(['web', 'auth'])->prefix('api')->group(function () {
+    Route::post('/extract-qr-url', [App\Http\Controllers\Api\QRExtractorController::class, 'extractQrFromPdf']);
+    Route::post('/scrape-sat-data', [App\Http\Controllers\Api\QRExtractorController::class, 'scrapeFromUrl']);
+});
+

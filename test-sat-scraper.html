@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token">
+    <title>Test SAT Scraper</title>
+    <script src="public/js/modules/sat-scraper.js"></script>
+</head>
+<body>
+    <h1>Test SAT Scraper</h1>
+    
+    <script>
+        // Test básico del módulo
+        console.log('Testing SATScraper module...');
+        
+        if (typeof SATScraper !== 'undefined') {
+            console.log('✅ SATScraper class loaded successfully');
+            
+            const scraper = new SATScraper();
+            
+            // Test URL validation
+            const testUrls = [
+                'https://siat.sat.gob.mx/app/qr/faces/pages/mobile/validadorqr.jsf?D1=10&D2=1&D3=18010543827_AASM840924GV4',
+                'https://google.com',
+                'invalid-url'
+            ];
+            
+            testUrls.forEach(url => {
+                const isValid = scraper.isValidSATUrl(url);
+                console.log(`URL: ${url} - Valid: ${isValid}`);
+            });
+            
+            // Test RFC extraction
+            const testUrl = 'https://siat.sat.gob.mx/app/qr/faces/pages/mobile/validadorqr.jsf?D1=10&D2=1&D3=18010543827_AASM840924GV4';
+            const rfc = scraper.extractRFCFromUrl(testUrl);
+            console.log(`Extracted RFC: ${rfc}`);
+            
+        } else {
+            console.error('❌ SATScraper class not loaded');
+        }
+    </script>
+</body>
+</html>

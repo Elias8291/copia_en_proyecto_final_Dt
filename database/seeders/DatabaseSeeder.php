@@ -21,7 +21,9 @@ class DatabaseSeeder extends Seeder
             EstadosSeeder::class,
             MunicipioSeeder::class,
             LocalidadSeeder::class,
+            TiposAsentamientoSeeder::class,
             AsentamientosSeeder::class,
+            SectoresSeeder::class,
             ActividadesSeeder::class,
         ]);
     }

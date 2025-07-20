@@ -169,7 +169,7 @@
                             <div class="relative">
                                 <span
                                     class="inline-flex items-center justify-center h-9 w-9 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-md group-hover:shadow-lg transition-all duration-200 group-hover:scale-105">
-                                    <span class="text-sm font-semibold leading-none"> {{ auth()->check() ? strtoupper(substr(auth()->user()->name, 0, 1)) : 'I' }}</span>
+                                    <span class="text-sm font-semibold leading-none"> {{ auth()->check() ? strtoupper(substr(auth()->user()->nombre, 0, 1)) : 'I' }}</span>
                                 </span>
                                 <div
                                     class="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 border-2 border-white rounded-full">
@@ -190,7 +190,7 @@
                             <div class="flex items-center space-x-3">
                                 <span class="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-md">
                                     <span class="text-lg font-semibold leading-none">
-                                        {{ auth()->check() ? strtoupper(substr(auth()->user()->name, 0, 1)) : 'I' }}
+                                        {{ auth()->check() ? strtoupper(substr(auth()->user()->nombre, 0, 1)) : 'I' }}
                                     </span>
                                 </span>
                                 <div class="flex-1 min-w-0">

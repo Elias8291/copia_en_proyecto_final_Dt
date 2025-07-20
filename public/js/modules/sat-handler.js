@@ -1,70 +1,119 @@
-import QRHandler from '../components/qr-handler.js';
-import QRReader from '../components/qr-reader.js';
-import SATValidator from '../validators/sat-validator.js';
-import SATScraper from '../scrapers/sat-scraper.js';
-
 /**
  * SATHandler - Manejo de datos del SAT
  * Versión sin console.log para mejor performance
  */
-export class SATHandler {
+class SATHandler {
     constructor(config = {}) {
         this.qrHandler = null;
         this.processingFile = false;
         this.lastScannedData = null;
         this.config = {
-            fileNameElement: 'qr-file-name',
-            previewAreaElement: 'qr-preview',
-            uploadAreaElement: 'qr-upload-area',
-            verDatosBtnElement: 'verDatosBtn',
-            ...config
+            fileNameElement: "qr-file-name",
+            previewAreaElement: "qr-preview",
+            uploadAreaElement: "qr-upload-area",
+            verDatosBtnElement: "verDatosBtn",
+            ...config,
         };
         this.init();
     }
 
     async init() {
         try {
+            // Verificar que las clases estén disponibles
+            if (
+                typeof QRHandler === "undefined" ||
+                typeof QRReader === "undefined" ||
+                typeof SATValidator === "undefined" ||
+                typeof SATScraper === "undefined"
+            ) {
+                throw new Error("Las clases necesarias no están disponibles");
+            }
+
             // Inicializar QRHandler
-            if (typeof QRHandler !== 'undefined') {
-                this.qrHandler = new QRHandler(this.config);
-                
-                // Configurar callback para datos escaneados
-                this.qrHandler.onDataScanned = (data) => {
-                    this.handleScannedData(data);
-                };
+            this.qrHandler = new QRHandler(this.config);
+
+            // Inicializar el QRHandler con todas las dependencias
+            const initialized = await this.qrHandler.initialize(
+                QRReader,
+                SATValidator,
+                SATScraper
+            );
+
+            if (!initialized) {
+                throw new Error("No se pudo inicializar el QRHandler");
+            }
+
+            // Configurar callback para datos escaneados
+            this.qrHandler.onDataScanned = (data) => {
+                this.handleScannedData(data);
+            };
+        } catch (error) {
+            console.error(
+                "Error durante la inicialización del SATHandler:",
+                error
+            );
+            this.showError("Error al inicializar el procesador de documentos");
+        }
+    }
+
+    handleScannedData(data) {
+        try {
+            this.lastScannedData = data;
+
+            // Mostrar botón para ver datos si hay datos válidos
+            if (data && data.details) {
+                const verDatosBtn = document.getElementById(
+                    this.config.verDatosBtnElement
+                );
+                if (verDatosBtn) {
+                    verDatosBtn.style.display = "block";
+                    verDatosBtn.classList.remove("hidden");
+                }
             }
         } catch (error) {
-            // Error durante la inicialización
+            console.error("Error al manejar datos escaneados:", error);
         }
     }
 
     async handleFile(file) {
         if (!file || this.processingFile) return;
 
+        // Verificar que el QRHandler esté inicializado
+        if (!this.qrHandler) {
+            this.showError("El procesador no está inicializado");
+            return;
+        }
+
         try {
             this.processingFile = true;
             this.showLoading();
 
             // Validar el tipo de archivo
-            const isPDF = file.type === 'application/pdf';
-            const isImage = file.type.startsWith('image/');
-            
+            const isPDF = file.type === "application/pdf";
+            const isImage = file.type.startsWith("image/");
+
             if (!isPDF && !isImage) {
-                throw new Error('El archivo debe ser un PDF o una imagen (JPG, PNG).');
+                throw new Error(
+                    "El archivo debe ser un PDF o una imagen (JPG, PNG)."
+                );
             }
 
             // Validar el tamaño del archivo (5MB)
             const maxSize = 5 * 1024 * 1024;
             if (file.size > maxSize) {
-                throw new Error('El archivo no debe exceder los 5MB.');
+                throw new Error("El archivo no debe exceder los 5MB.");
             }
 
-            
-            await this.qrHandler.handleFile(file);
+            const result = await this.qrHandler.handleFile(file);
 
+            if (result && result.success && result.data) {
+                this.handleScannedData(result.data);
+            } else if (result && result.error) {
+                this.showError(result.error);
+            }
         } catch (error) {
-            
-            this.showError(error.message || 'Error al procesar el documento');
+            console.error("Error al procesar archivo:", error);
+            this.showError(error.message || "Error al procesar el documento");
             this.resetUpload();
         } finally {
             this.processingFile = false;
@@ -74,52 +123,53 @@ export class SATHandler {
 
     showModal() {
         if (this.lastScannedData) {
-            const modal = document.getElementById('satDataModal');
-            const satDataContent = document.getElementById('satDataContent');
-            
+            const modal = document.getElementById("satDataModal");
+            const satDataContent = document.getElementById("satDataContent");
+
             if (modal && satDataContent) {
                 // Generar y mostrar el contenido
                 const content = this.generateSatDataHtml(this.lastScannedData);
                 satDataContent.innerHTML = content;
-                
+
                 // Mostrar el modal
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden";
             }
         }
     }
 
     closeModal() {
-        const modal = document.getElementById('satDataModal');
+        const modal = document.getElementById("satDataModal");
         if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
-            
+            modal.style.display = "none";
+            document.body.style.overflow = "";
+
             // Mostrar el botón flotante
-            const verSatModalBtn = document.getElementById('verSatModalBtn');
+            const verSatModalBtn = document.getElementById("verSatModalBtn");
             if (verSatModalBtn) {
-                verSatModalBtn.classList.remove('hidden');
+                verSatModalBtn.classList.remove("hidden");
             }
         }
     }
 
     showLoading() {
-        const loadingIndicator = document.getElementById('loading-indicator');
+        const loadingIndicator = document.getElementById("loading-indicator");
         if (loadingIndicator) {
-            loadingIndicator.style.display = 'flex';
+            loadingIndicator.style.display = "flex";
         }
     }
 
     hideLoading() {
-        const loadingIndicator = document.getElementById('loading-indicator');
+        const loadingIndicator = document.getElementById("loading-indicator");
         if (loadingIndicator) {
-            loadingIndicator.style.display = 'none';
+            loadingIndicator.style.display = "none";
         }
     }
 
     showError(message) {
-        const notification = document.createElement('div');
-        notification.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-sm';
+        const notification = document.createElement("div");
+        notification.className =
+            "fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-sm";
         notification.innerHTML = `
             <div class="bg-white rounded-xl shadow-lg border-l-4 border-red-500 p-4">
                 <div class="flex items-center gap-3">
@@ -135,14 +185,14 @@ export class SATHandler {
     }
 
     resetUpload() {
-        const fileInput = document.getElementById('documentInput');
+        const fileInput = document.getElementById("documentInput");
         if (fileInput) {
-            fileInput.value = '';
+            fileInput.value = "";
         }
     }
 
     generateSatDataHtml(data) {
-        if (!data || !data.details) return '<p>No hay datos disponibles</p>';
+        if (!data || !data.details) return "<p>No hay datos disponibles</p>";
 
         const details = data.details;
         return `
@@ -159,21 +209,31 @@ export class SATHandler {
                         </div>
                         <div class="flex-1">
                             <h3 class="text-xl font-bold text-gray-900 mb-2">
-                                ${details.tipoPersona === 'Moral' ? 
-                                    (details.razonSocial || 'Razón Social No Disponible') : 
-                                    (details.nombreCompleto || 'Nombre No Disponible')}
+                                ${
+                                    details.tipoPersona === "Moral"
+                                        ? details.razonSocial ||
+                                          "Razón Social No Disponible"
+                                        : details.nombreCompleto ||
+                                          "Nombre No Disponible"
+                                }
                             </h3>
                             <div class="flex flex-wrap gap-2">
                                 <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#B4325E]/10 text-[#B4325E]">
-                                    RFC: ${details.rfc || 'No disponible'}
+                                    RFC: ${details.rfc || "No disponible"}
                                 </span>
-                                ${details.curp ? `
+                                ${
+                                    details.curp
+                                        ? `
                                     <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#B4325E]/10 text-[#B4325E]">
                                         CURP: ${details.curp}
                                     </span>
-                                ` : ''}
+                                `
+                                        : ""
+                                }
                                 <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#B4325E]/10 text-[#B4325E]">
-                                    Persona ${details.tipoPersona || 'No especificada'}
+                                    Persona ${
+                                        details.tipoPersona || "No especificada"
+                                    }
                                 </span>
                             </div>
                         </div>
@@ -181,7 +241,9 @@ export class SATHandler {
                 </div>
 
                 <!-- Información de dirección -->
-                ${details.nombreVialidad || details.colonia || details.cp ? `
+                ${
+                    details.nombreVialidad || details.colonia || details.cp
+                        ? `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100">
                             <h4 class="text-lg font-semibold text-gray-800">
@@ -190,45 +252,88 @@ export class SATHandler {
                         </div>
                         <div class="p-6">
                             <div class="space-y-2">
-                                ${details.nombreVialidad ? `
+                                ${
+                                    details.nombreVialidad
+                                        ? `
                                     <p class="text-sm text-gray-900">
                                         ${details.nombreVialidad}
-                                        ${details.numeroExterior ? ` #${details.numeroExterior}` : ''}
-                                        ${details.numeroInterior ? ` Int. ${details.numeroInterior}` : ''}
+                                        ${
+                                            details.numeroExterior
+                                                ? ` #${details.numeroExterior}`
+                                                : ""
+                                        }
+                                        ${
+                                            details.numeroInterior
+                                                ? ` Int. ${details.numeroInterior}`
+                                                : ""
+                                        }
                                     </p>
-                                ` : ''}
-                                ${details.colonia ? `<p class="text-sm text-gray-600">Col. ${details.colonia}</p>` : ''}
-                                ${details.cp ? `<p class="text-sm text-gray-600">CP ${details.cp}</p>` : ''}
+                                `
+                                        : ""
+                                }
+                                ${
+                                    details.colonia
+                                        ? `<p class="text-sm text-gray-600">Col. ${details.colonia}</p>`
+                                        : ""
+                                }
+                                ${
+                                    details.cp
+                                        ? `<p class="text-sm text-gray-600">CP ${details.cp}</p>`
+                                        : ""
+                                }
                             </div>
                         </div>
                     </div>
-                ` : ''}
+                `
+                        : ""
+                }
 
                 <!-- Secciones adicionales -->
-                ${data.sections && data.sections.length > 0 ? data.sections.map(section => `
+                ${
+                    data.sections && data.sections.length > 0
+                        ? data.sections
+                              .map(
+                                  (section) => `
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-100">
                             <h4 class="text-lg font-semibold text-gray-800">
-                                ${section.title || 'Información Adicional'}
+                                ${section.title || "Información Adicional"}
                             </h4>
                         </div>
                         <div class="divide-y divide-gray-100">
-                            ${section.fields.map(field => `
+                            ${section.fields
+                                .map(
+                                    (field) => `
                                 <div class="px-6 py-4">
                                     <div class="flex flex-col sm:flex-row sm:items-center">
                                         <div class="sm:w-1/3">
-                                            <span class="text-sm font-medium text-gray-500">${field.label || ''}</span>
+                                            <span class="text-sm font-medium text-gray-500">${
+                                                field.label || ""
+                                            }</span>
                                         </div>
                                         <div class="sm:w-2/3 mt-1 sm:mt-0">
-                                            <span class="text-sm text-gray-900">${field.value || ''}</span>
+                                            <span class="text-sm text-gray-900">${
+                                                field.value || ""
+                                            }</span>
                                         </div>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `
+                                )
+                                .join("")}
                         </div>
                     </div>
-                `).join('') : ''}
+                `
+                              )
+                              .join("")
+                        : ""
+                }
             </div>
         `;
     }
-} 
+}
+
+// Hacer la clase disponible globalmente para navegadores legacy
+if (typeof window !== "undefined") {
+    window.SATHandler = SATHandler;
+}

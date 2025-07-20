@@ -16,28 +16,22 @@ class ProveedorService
     public function getProveedorByUser()
     {
         $user = Auth::user();
-        
+
         if ($user instanceof User) {
             $user->load('proveedor');
             return $user->proveedor;
         }
-        
+
         return null;
     }
 
-    /**
-     * Determina los trámites disponibles para un proveedor
-     *
-     * @param \App\Models\Proveedor|null $proveedor
-     * @return array
-     */
     public function determinarTramitesDisponibles($proveedor): array
     {
         $defaults = [
             'inscripcion' => false,
             'renovacion' => false,
             'actualizacion' => false,
-            'is_administrative' => false, 
+            'is_administrative' => false,
             'message' => '',
             'estado_vigencia' => null
         ];
@@ -48,7 +42,7 @@ class ProveedorService
             return $defaults;
         }
 
-        $defaults['estado_vigencia'] = $proveedor->getEstadoVigencia();
+        $defaults['estado_vigencia'] = $this->getEstadoVigencia($proveedor);
         $estado = ucfirst(strtolower($proveedor->estado_padron ?? ''));
 
         switch ($estado) {
@@ -58,9 +52,9 @@ class ProveedorService
                 $defaults['inscripcion'] = true;
                 $defaults['message'] = 'Su registro está ' . strtolower($estado) . '. Debe realizar el proceso de inscripción.';
                 break;
-            
+
             case 'Activo':
-                if ($proveedor->estaEnPeriodoRenovacion()) {
+                if ($this->estaEnPeriodoRenovacion($proveedor)) {
                     $defaults['renovacion'] = true;
                     $defaults['message'] = 'Su registro está próximo a vencer. Por favor, realice la renovación.';
                 } else {
@@ -76,5 +70,56 @@ class ProveedorService
         }
 
         return $defaults;
+    }
+
+    /**
+     * Verifica si el usuario autenticado tiene un proveedor asociado en estado Activo
+     *
+     * @return bool
+     */
+    public function hasActiveProveedor(): bool
+    {
+        $proveedor = $this->getProveedorByUser();
+        
+        return $proveedor && $proveedor->estado_padron === 'Activo';
+    }
+
+    /**
+     * Obtiene el estado de vigencia del proveedor
+     */
+    private function getEstadoVigencia($proveedor): ?string
+    {
+        if (!$proveedor || !$proveedor->fecha_vencimiento_padron) {
+            return null;
+        }
+
+        $hoy = now()->toDateString();
+        $vencimiento = $proveedor->fecha_vencimiento_padron->toDateString();
+        
+        if ($vencimiento < $hoy) {
+            return 'vencido';
+        }
+        
+        $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
+        
+        if ($diasParaVencer <= 30) {
+            return 'por_vencer';
+        }
+        
+        return 'vigente';
+    }
+
+    /**
+     * Verifica si el proveedor está en período de renovación (30 días antes del vencimiento)
+     */
+    private function estaEnPeriodoRenovacion($proveedor): bool
+    {
+        if (!$proveedor || !$proveedor->fecha_vencimiento_padron || $proveedor->estado_padron !== 'Activo') {
+            return false;
+        }
+
+        $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
+        
+        return $diasParaVencer <= 30 && $diasParaVencer >= 0;
     }
 }

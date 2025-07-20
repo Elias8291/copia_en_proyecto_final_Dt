@@ -1,9 +1,9 @@
 // Inicializa todos los módulos del formulario de inscripción
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar módulos específicos
-    if (typeof initCodigoPostal === 'function') {
-    initCodigoPostal();
+    // Inicializar domicilio flexible (reemplaza el código postal anterior)
+    if (typeof initDomicilioFlexible === 'function') {
+        initDomicilioFlexible();
     }
     
     // Inicializar módulo de actividades

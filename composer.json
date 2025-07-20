@@ -12,6 +12,7 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "*",
         "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-permission": "^6.19"
     },
     "require-dev": {

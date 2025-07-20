@@ -88,18 +88,11 @@ class VerificationController extends Controller
     /** Eliminar datos del usuario en cascada */
     private function deleteUserData($user)
     {
-        if ($user->solicitantes) {
-            foreach ($user->solicitantes as $solicitante) {
-                if ($solicitante->tramites) {
-                    foreach ($solicitante->tramites as $tramite) {
-                        $tramite->documentosSolicitante()->delete();
-                        $tramite->detalleTramite()->delete();
-                        $tramite->delete();
-                    }
-                }
-                $solicitante->delete();
-            }
+        // Eliminar proveedor asociado si existe
+        if ($user->proveedor) {
+            $user->proveedor->delete();
         }
+        
         $user->delete();
     }
 } 

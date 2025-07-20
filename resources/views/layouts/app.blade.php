@@ -9,7 +9,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
-
+    @stack('scripts')
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,10 +26,6 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
-    <script src="/js/scrapers/sat-scraper.js"></script>
-    <script src="/js/validators/sat-validator.js"></script>
-    <script src="/js/components/qr-reader.js"></script>
-    <script src="/js/components/qr-handler.js"></script>
 
 
     @livewireStyles

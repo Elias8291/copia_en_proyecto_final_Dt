@@ -2,39 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tramite;
+use App\Models\Proveedor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Services\ProveedorService;
 
 class TramiteController extends Controller
 {
-    /**
-     * El ProveedorService ya no es necesario aquí, 
-     * ya que la lógica se centraliza en AppServiceProvider.
-     */
-
-    public function index(Request $request)
+    protected $proveedorService;
+        public function index()
     {
-        // La variable $availableProcedures se inyecta globalmente
-        // a todas las vistas desde AppServiceProvider.
-        // No se necesita lógica adicional aquí.
+        // Los datos del proveedor y trámites están disponibles globalmente
+        // a través del AppServiceProvider como $globalProveedor y $globalTramites
         return view('tramites.index');
     }
-
-    public function inscripcion(Request $request)
+        public function create()
     {
-        // La decisión de si un usuario puede o no acceder a esta ruta
-        // se maneja en la lógica de negocio del AppServiceProvider
-        // que habilita o deshabilita los enlaces/botones en la vista.
-        // Un usuario no debería poder llegar aquí si no tiene permiso.
-        return view('tramites.inscripcion');
+       
     }
 
-    public function renovacion()
-    {
-        return view('tramites.renovacion');
-    }
-
-    public function actualizacion()
-    {
-        return view('tramites.actualizacion');
-    }
-} 
+    
+}

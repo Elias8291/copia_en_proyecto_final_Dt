@@ -1,0 +1,6 @@
+# Dependencias de Python para el extractor de QR desde PDF
+PyMuPDF
+pyzbar
+Pillow
+opencv-python
+numpy

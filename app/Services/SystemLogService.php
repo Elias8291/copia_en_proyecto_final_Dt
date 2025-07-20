@@ -148,7 +148,9 @@ class SystemLogService
 
     /**
      * Logs de trámites
+     * TODO: Reimplementar cuando se reactive el sistema de trámites
      */
+    /*
     public static function tramiteCreated(int $tramiteId, string $tipo, string $solicitante)
     {
         self::info("Trámite creado: {$tipo} para {$solicitante}", 'tramites', [
@@ -157,7 +159,9 @@ class SystemLogService
             'solicitante' => $solicitante
         ]);
     }
+    */
 
+    /*
     public static function tramiteUpdated(int $tramiteId, string $tipo, string $solicitante)
     {
         self::info("Trámite actualizado: {$tipo} para {$solicitante}", 'tramites', [
@@ -194,10 +198,13 @@ class SystemLogService
             'reason' => $reason
         ]);
     }
+    */
 
     /**
      * Logs de documentos
+     * TODO: Actualizar cuando se reactive el sistema de trámites
      */
+    /*
     public static function documentUploaded(string $fileName, int $tramiteId, string $solicitante)
     {
         self::info("Documento subido: {$fileName} para trámite {$tramiteId}", 'documentos', [
@@ -215,6 +222,7 @@ class SystemLogService
             'solicitante' => $solicitante
         ]);
     }
+    */
 
     /**
      * Logs de proveedores
@@ -290,7 +298,7 @@ class SystemLogService
             'descripcion' => $descripcion,
             'registro_id' => $registro_id,
             'tabla' => $tabla,
-            'usuario_id' => auth()->id(),
+            'usuario_id' => Auth::check() ? Auth::id() : null,
             'ip' => request()->ip()
         ]);
     }

@@ -425,7 +425,6 @@
 <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
 <script src="/js/scrapers/sat-scraper.js"></script>
 <script src="/js/validators/sat-validator.js"></script>
-<script src="/js/components/qr-reader.js"></script>
 <script src="/js/components/qr-handler.js"></script>
 
 <script>
