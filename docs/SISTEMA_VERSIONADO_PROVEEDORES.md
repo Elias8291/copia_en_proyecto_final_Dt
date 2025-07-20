@@ -287,4 +287,4 @@ Este sistema con **Activity Log** es la solución más robusta para tu caso de u
 4. **Escalable**: Funciona bien con miles de registros
 5. **Flexible**: Permite consultas y reportes complejos
 
-Es mucho mejor que soft deletes o sistemas manuales de versionado para tu caso específico de gestión de trámites y proveedores. 
+Es mucho mejor que soft deletes o sistemas manuales de versionado para tu caso específico de gestión de trámites y proveedores.
