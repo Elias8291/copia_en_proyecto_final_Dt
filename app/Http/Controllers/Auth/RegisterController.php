@@ -12,6 +12,7 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class RegisterController extends Controller
@@ -34,6 +35,9 @@ class RegisterController extends Controller
     /** Procesar registro de usuario */
     public function register(Request $request)
     {
+        // Validar datos del SAT primero
+        $this->validateSATData($request);
+
         DB::beginTransaction();
 
         try {
@@ -59,10 +63,21 @@ class RegisterController extends Controller
 
             DB::commit();
 
+            Log::info('Usuario registrado exitosamente:', [
+                'user_id' => $user->id,
+                'email' => $user->correo,
+                'rfc' => $satData['rfc'] ?? 'No disponible',
+                'proveedor_id' => $proveedor->id ?? 'No creado'
+            ]);
+
             return $this->redirectWithSuccess($isResend, $user);
 
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Error en registro de usuario:', [
+                'error' => $e->getMessage(),
+                'request_data' => $request->only(['email', 'sat_rfc', 'sat_nombre'])
+            ]);
             throw $e;
         }
     }
@@ -70,19 +85,31 @@ class RegisterController extends Controller
     /** Preparar datos de registro */
     protected function prepareRegistrationData(Request $request): array
     {
-        return [
+        $data = [
             'email' => $request->email,
             'password' => $request->password,
             'password_confirmation' => $request->password_confirmation,
             'sat_rfc' => $request->sat_rfc,
             'sat_nombre' => $request->sat_nombre,
         ];
+
+        // Log para debug de datos del SAT recibidos
+        if ($request->sat_rfc || $request->sat_nombre) {
+            Log::info('Datos del SAT recibidos en registro:', [
+                'rfc' => $request->sat_rfc,
+                'nombre' => $request->sat_nombre,
+                'tipo_persona' => $request->sat_tipo_persona,
+                'curp' => $request->sat_curp
+            ]);
+        }
+
+        return $data;
     }
 
     /** Preparar datos del SAT para el proveedor */
     protected function prepareSatData(Request $request): array
     {
-        return [
+        $satData = [
             'rfc' => $request->sat_rfc ?? '',
             'razon_social' => $request->sat_nombre ?? '',
             'tipo_persona' => $request->sat_tipo_persona ?? '',
@@ -92,7 +119,21 @@ class RegisterController extends Controller
             'nombre_vialidad' => $request->sat_nombre_vialidad ?? '',
             'numero_exterior' => $request->sat_numero_exterior ?? '',
             'numero_interior' => $request->sat_numero_interior ?? '',
+            'regimen_fiscal' => $request->sat_regimen_fiscal ?? '',
+            'situacion_contribuyente' => $request->sat_estatus ?? '',
+            'entidad_federativa' => $request->sat_entidad_federativa ?? '',
+            'municipio' => $request->sat_municipio ?? '',
+            'email_fiscal' => $request->sat_email ?? '',
         ];
+
+        // Filtrar campos vacíos
+        $satData = array_filter($satData, function($value) {
+            return !empty($value);
+        });
+
+        Log::info('Datos del SAT preparados para proveedor:', $satData);
+
+        return $satData;
     }
 
     /** Buscar usuario no verificado */
@@ -101,6 +142,45 @@ class RegisterController extends Controller
         return User::where('correo', $email)
         ->where('estado', 'Por_Iniciar')
                    ->first();
+    }
+
+    /** Validar datos del SAT */
+    protected function validateSATData(Request $request): void
+    {
+        $request->validate([
+            'email' => 'required|email|max:255',
+            'password' => 'required|string|min:8|confirmed',
+            'sat_rfc' => 'required|string|min:12|max:13|regex:/^[A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3}$/',
+            'sat_nombre' => 'required|string|max:255',
+        ], [
+            'sat_rfc.required' => 'Es necesario cargar una constancia de situación fiscal válida.',
+            'sat_rfc.regex' => 'El RFC extraído de la constancia no tiene un formato válido.',
+            'sat_nombre.required' => 'No se pudo extraer la razón social de la constancia.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'El formato del correo electrónico no es válido.',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'La confirmación de contraseña no coincide.',
+        ]);
+
+        // Validaciones adicionales del SAT
+        if (empty($request->sat_rfc) || empty($request->sat_nombre)) {
+            throw new \Exception('Los datos fiscales son incompletos. Por favor, suba una constancia de situación fiscal válida del SAT.');
+        }
+
+        // Verificar que el RFC no esté ya registrado
+        $existingUser = User::where('rfc', $request->sat_rfc)
+            ->where('fecha_verificacion_correo', '!=', null)
+            ->first();
+
+        if ($existingUser) {
+            throw new \Exception('El RFC ' . $request->sat_rfc . ' ya está registrado en el sistema con el email ' . $existingUser->correo . '. Si es su RFC, por favor use la opción de recuperación de contraseña.');
+        }
+
+        Log::info('Validación de datos SAT completada exitosamente:', [
+            'rfc' => $request->sat_rfc,
+            'email' => $request->email
+        ]);
     }
     /** Redirigir con mensaje de éxito */
     protected function redirectWithSuccess(bool $isResend, User $user)

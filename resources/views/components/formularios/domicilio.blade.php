@@ -13,7 +13,7 @@
 
     <!-- Código Postal -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div>
+        <div class="relative">
             <label for="codigo_postal" class="block text-sm font-medium text-gray-700 mb-2">Código Postal <span class="text-red-500">*</span></label>
             <input type="text" id="codigo_postal" name="codigo_postal" 
                    value="{{ old('codigo_postal') }}" 
@@ -22,49 +22,23 @@
                    pattern="[0-9]{5}"
                    maxlength="5"
                    required>
-            <p class="text-xs text-gray-500 mt-1">5 dígitos</p>
+            <p class="text-xs text-gray-500 mt-1">5 dígitos - Se cargarán los datos automáticamente</p>
         </div>
+
+        <!-- País (oculto, siempre México) -->
+        <input type="hidden" id="pais" name="pais" value="MÉXICO">
+        <input type="hidden" id="pais_id" name="pais_id" value="1">
 
         <!-- Estado -->
         <div>
             <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">Estado <span class="text-red-500">*</span></label>
-            <select id="estado" name="estado" 
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent" 
-                    required>
-                <option value="">Seleccione un estado</option>
-                <option value="AGUASCALIENTES">Aguascalientes</option>
-                <option value="BAJA CALIFORNIA">Baja California</option>
-                <option value="BAJA CALIFORNIA SUR">Baja California Sur</option>
-                <option value="CAMPECHE">Campeche</option>
-                <option value="CHIAPAS">Chiapas</option>
-                <option value="CHIHUAHUA">Chihuahua</option>
-                <option value="CIUDAD DE MEXICO">Ciudad de México</option>
-                <option value="COAHUILA">Coahuila</option>
-                <option value="COLIMA">Colima</option>
-                <option value="DURANGO">Durango</option>
-                <option value="GUANAJUATO">Guanajuato</option>
-                <option value="GUERRERO">Guerrero</option>
-                <option value="HIDALGO">Hidalgo</option>
-                <option value="JALISCO">Jalisco</option>
-                <option value="MEXICO">México</option>
-                <option value="MICHOACAN">Michoacán</option>
-                <option value="MORELOS">Morelos</option>
-                <option value="NAYARIT">Nayarit</option>
-                <option value="NUEVO LEON">Nuevo León</option>
-                <option value="OAXACA">Oaxaca</option>
-                <option value="PUEBLA">Puebla</option>
-                <option value="QUERETARO">Querétaro</option>
-                <option value="QUINTANA ROO">Quintana Roo</option>
-                <option value="SAN LUIS POTOSI">San Luis Potosí</option>
-                <option value="SINALOA">Sinaloa</option>
-                <option value="SONORA">Sonora</option>
-                <option value="TABASCO">Tabasco</option>
-                <option value="TAMAULIPAS">Tamaulipas</option>
-                <option value="TLAXCALA">Tlaxcala</option>
-                <option value="VERACRUZ">Veracruz</option>
-                <option value="YUCATAN">Yucatán</option>
-                <option value="ZACATECAS">Zacatecas</option>
-            </select>
+            <input type="text" id="estado" name="estado" 
+                   value="{{ old('estado') }}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent bg-gray-50"
+                   placeholder="Se cargará automáticamente"
+                   readonly
+                   required>
+            <input type="hidden" id="estado_id" name="estado_id">
         </div>
 
         <!-- Municipio -->
@@ -72,29 +46,44 @@
             <label for="municipio" class="block text-sm font-medium text-gray-700 mb-2">Municipio/Delegación <span class="text-red-500">*</span></label>
             <input type="text" id="municipio" name="municipio" 
                    value="{{ old('municipio') }}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent"
-                   placeholder="Ingrese el municipio"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent bg-gray-50"
+                   placeholder="Se cargará automáticamente"
+                   readonly
                    required>
+            <input type="hidden" id="municipio_id" name="municipio_id">
         </div>
     </div>
 
-    <!-- Colonia y Localidad -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-            <label for="colonia" class="block text-sm font-medium text-gray-700 mb-2">Colonia <span class="text-red-500">*</span></label>
-            <input type="text" id="colonia" name="colonia" 
-                   value="{{ old('colonia') }}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent"
-                   placeholder="Ingrese la colonia"
-                   required>
-        </div>
-
+    <!-- Localidad y Asentamiento -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
             <label for="localidad" class="block text-sm font-medium text-gray-700 mb-2">Localidad</label>
             <input type="text" id="localidad" name="localidad" 
                    value="{{ old('localidad') }}" 
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent"
-                   placeholder="Ingrese la localidad">
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent bg-gray-50"
+                   placeholder="Se cargará automáticamente"
+                   readonly>
+            <input type="hidden" id="localidad_id" name="localidad_id">
+        </div>
+
+        <div>
+            <label for="asentamiento" class="block text-sm font-medium text-gray-700 mb-2">Asentamiento/Colonia <span class="text-red-500">*</span></label>
+            <input type="text" id="asentamiento" name="asentamiento" 
+                   value="{{ old('asentamiento') }}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent bg-gray-50"
+                   placeholder="Se cargará automáticamente"
+                   readonly
+                   required>
+            <input type="hidden" id="asentamiento_id" name="asentamiento_id">
+        </div>
+
+        <div>
+            <label for="tipo_asentamiento" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Asentamiento</label>
+            <input type="text" id="tipo_asentamiento" name="tipo_asentamiento" 
+                   value="{{ old('tipo_asentamiento') }}" 
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9d2449] focus:border-transparent bg-gray-50"
+                   placeholder="Se cargará automáticamente"
+                   readonly>
         </div>
     </div>
 

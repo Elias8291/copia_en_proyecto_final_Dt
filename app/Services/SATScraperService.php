@@ -66,14 +66,11 @@ class SATScraperService
 
             $xpath = new \DOMXPath($dom);
 
-            // Extraer RFC del título
-            $rfcElements = $xpath->query("//li[contains(@class, 'ui-li-static')]/text()[contains(., 'RFC:')]");
-            if ($rfcElements->length > 0) {
-                $rfcText = $rfcElements->item(0)->textContent;
-                if (preg_match('/RFC:\s*([A-Z0-9]+)/', $rfcText, $matches)) {
-                    $data['rfc'] = $matches[1];
-                }
-            }
+            // Extraer RFC - Múltiples métodos de búsqueda
+            $data['rfc'] = $this->extractRFC($xpath);
+            
+            // Log para debug
+            Log::info('RFC extraído: ' . ($data['rfc'] ?: 'No encontrado'));
 
             // Buscar todas las tablas de datos
             $dataTables = $xpath->query("//tbody[@class='ui-datatable-data ui-widget-content']");
@@ -107,6 +104,9 @@ class SATScraperService
             // Determinar tipo de persona
             $data['tipo_persona'] = $this->determinePersonType($data);
 
+            // Extraer CURP con validación mejorada
+            $data['curp_validado'] = $this->extractCURP($data);
+
             // Normalizar datos para el formulario
             $data['form_data'] = $this->normalizeForForm($data);
 
@@ -119,6 +119,90 @@ class SATScraperService
                 'error' => 'Error procesando datos del SAT: ' . $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Extrae el RFC usando múltiples estrategias
+     */
+    private function extractRFC($xpath)
+    {
+        $rfc = null;
+
+        // Estrategia 1: Buscar en elementos li con clase ui-li-static
+        $rfcElements = $xpath->query("//li[contains(@class, 'ui-li-static')]");
+        foreach ($rfcElements as $element) {
+            $text = $element->textContent;
+            // Buscar patrón: "El RFC: XXXXX, tiene asociada..."
+            if (preg_match('/El RFC:\s*([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3}),?\s*tiene\s*asociada/i', $text, $matches)) {
+                $rfc = $matches[1];
+                Log::info('RFC encontrado (método 1): ' . $rfc);
+                break;
+            }
+            // Patrón alternativo: "RFC: XXXXX"
+            if (preg_match('/RFC:\s*([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})/i', $text, $matches)) {
+                $rfc = $matches[1];
+                Log::info('RFC encontrado (método 1b): ' . $rfc);
+                break;
+            }
+        }
+
+        // Estrategia 2: Buscar en cualquier texto que contenga RFC
+        if (!$rfc) {
+            $allTextElements = $xpath->query("//text()[contains(., 'RFC')]");
+            foreach ($allTextElements as $textNode) {
+                $text = $textNode->textContent;
+                if (preg_match('/RFC:\s*([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})/i', $text, $matches)) {
+                    $rfc = $matches[1];
+                    Log::info('RFC encontrado (método 2): ' . $rfc);
+                    break;
+                }
+            }
+        }
+
+        // Estrategia 3: Buscar en tablas de datos específicamente
+        if (!$rfc) {
+            $rfcCells = $xpath->query("//td[contains(text(), 'RFC')]/../td[2]");
+            foreach ($rfcCells as $cell) {
+                $text = trim($cell->textContent);
+                if (preg_match('/^([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})$/', $text, $matches)) {
+                    $rfc = $matches[1];
+                    Log::info('RFC encontrado (método 3): ' . $rfc);
+                    break;
+                }
+            }
+        }
+
+        // Estrategia 4: Buscar en cualquier parte del documento con patrón RFC válido
+        if (!$rfc) {
+            $bodyText = $xpath->query("//body")->item(0)->textContent ?? '';
+            if (preg_match_all('/\b([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})\b/', $bodyText, $matches)) {
+                // Tomar el primer RFC válido encontrado
+                $rfc = $matches[1][0];
+                Log::info('RFC encontrado (método 4): ' . $rfc);
+            }
+        }
+
+        return $rfc;
+    }
+
+    /**
+     * Extrae el CURP con mejor precisión
+     */
+    private function extractCURP($data)
+    {
+        $curp = null;
+
+        // Buscar CURP en los datos de identificación
+        if (isset($data['identificacion']['curp'])) {
+            $curp = $data['identificacion']['curp'];
+        }
+
+        // Validar formato CURP (18 caracteres)
+        if ($curp && preg_match('/^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$/', $curp)) {
+            return $curp;
+        }
+
+        return null;
     }
 
     /**
@@ -208,7 +292,7 @@ class SATScraperService
             'estatus' => $data['caracteristicas_fiscales']['situacion_del_contribuyente'] ?? '',
             'fecha_actualizacion' => $data['caracteristicas_fiscales']['fecha_del_ultimo_cambio_de_situacion'] ?? '',
             'tipo_persona' => $data['tipo_persona'],
-            'curp' => $data['identificacion']['curp'] ?? '',
+            'curp' => $data['curp_validado'] ?? $data['identificacion']['curp'] ?? '',
             'email' => $data['ubicacion']['correo_electronico'] ?? '',
             'codigo_postal' => $data['ubicacion']['cp'] ?? '',
             'entidad_federativa' => $data['ubicacion']['entidad_federativa'] ?? '',
@@ -218,6 +302,13 @@ class SATScraperService
             'numero_exterior' => $data['ubicacion']['numero_exterior'] ?? '',
             'numero_interior' => $data['ubicacion']['numero_interior'] ?? ''
         ];
+
+        // Log para debug
+        Log::info('Datos normalizados para formulario:', [
+            'rfc' => $formData['rfc'],
+            'curp' => $formData['curp'],
+            'tipo_persona' => $formData['tipo_persona']
+        ]);
 
         // Determinar razón social según tipo de persona
         if ($data['tipo_persona'] === 'moral') {

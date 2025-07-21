@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Pais extends Model
+class TipoAsentamiento extends Model
 {
     use HasFactory;
 
-    protected $table = 'paises';
+    protected $table = 'tipos_asentamiento';
 
     protected $fillable = [
         'nombre',
     ];
 
-    public function estados()
+    public function asentamientos()
     {
-        return $this->hasMany(Estado::class);
+        return $this->hasMany(Asentamiento::class);
     }
 }

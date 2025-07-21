@@ -42,7 +42,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     public function proveedor()
-{
-    return $this->hasOne(Proveedor::class, 'usuario_id');
-}
+    {
+        return $this->hasOne(Proveedor::class, 'usuario_id');
+    }
 }

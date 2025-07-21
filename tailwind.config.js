@@ -7,7 +7,9 @@ export default {
   ],
   theme: {
     extend: {
-      // Breakpoints personalizados para móvil
+      maxWidth: {
+        '8xl': '88rem', // Adjust this value to your desired "un poquito más grande"
+      },
       screens: {
         'xs': '475px',
         // Los breakpoints por defecto se mantienen: sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px

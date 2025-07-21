@@ -7,10 +7,10 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\RolesController;
-
-
+use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\TramiteController;
-
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActividadesController;
 // Página principal para usuarios no autenticados
 Route::middleware(['web', 'guest'])->group(function () {
     Route::get('/', function () {
@@ -50,6 +50,11 @@ Route::get('/verificar-email/{id}/{token}', [VerificationController::class, 'ver
 Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
     ->name('verification.resend');
 
+// RUTA ESPECIAL PARA QR EXTRACTOR SIN CSRF (ALTERNATIVA)
+Route::post('/extract-qr-url-web', [QRExtractorController::class, 'extractQrFromPdf'])
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+    ->name('extract.qr.web');
+
 // DASHBOARD (solo autenticados)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
@@ -63,9 +68,11 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // USERS (solo autenticados)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('users.index');
-});
+Route::get('/users', [UserController::class, 'index'])->name('users.index');
+Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
 // Notificaciones (solo autenticados, solo vista)
 Route::middleware(['auth'])->get('/notificaciones', [App\Http\Controllers\NotificacionController::class, 'index'])->name('notificaciones.index');
@@ -81,21 +88,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// TRÁMITES - Flujo completo: selección → constancia → formulario → envío
+//ruta de index tramite
 Route::middleware(['auth'])->prefix('tramites')->name('tramites.')->group(function () {
     // Página principal de selección de trámites
     Route::get('/', [TramiteController::class, 'index'])->name('index');
@@ -109,9 +102,14 @@ Route::middleware(['auth'])->prefix('tramites')->name('tramites.')->group(functi
     Route::post('/formulario/{tipo}', [TramiteController::class, 'store'])->name('store');
 });
 
-// API Routes para QR Extractor (públicas para uso en welcome y otros)
+// Actividades económicas (solo autenticados)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/actividades/buscar', [ActividadesController::class, 'buscador'])->name('actividades.buscar');
+});
+
+// API Routes para QR Extractor
 Route::middleware(['web'])->prefix('api')->group(function () {
-    Route::post('/extract-qr-url', [App\Http\Controllers\Api\QRExtractorController::class, 'extractQrFromPdf']);
-    Route::post('/scrape-sat-data', [App\Http\Controllers\Api\QRExtractorController::class, 'scrapeFromUrl']);
+    Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
+    Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
 });
 

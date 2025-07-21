@@ -11,7 +11,6 @@ return new class extends Migration
         Schema::create('datos_proveedores', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tramite_id')->nullable()->constrained('tramites');
-            $table->string('pv', 10)->nullable();
             $table->string('rfc', 13)->nullable();
             $table->string('curp', 18)->nullable();
             $table->string('razon_social')->nullable();

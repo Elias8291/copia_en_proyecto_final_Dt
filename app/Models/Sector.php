@@ -1,33 +1,18 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sector extends Model
 {
-    use HasFactory;
-
+    // Nombre de la tabla
     protected $table = 'sectores';
 
+    // Campos que se pueden asignar masivamente
     protected $fillable = [
         'nombre',
         'codigo',
         'descripcion',
     ];
-
-    /**
-     * Relación: Actividades económicas del sector
-     */
-    public function actividades(): HasMany
-    {
-        return $this->hasMany(Actividad::class, 'sector_id');
-    }
-
- 
-   
 }

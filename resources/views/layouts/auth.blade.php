@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Padrón de Proveedores de Oaxaca')</title>
     
     <!-- Favicon -->
@@ -681,5 +682,8 @@
     
     <!-- Script del componente de loading global -->
     <script src="{{ asset('js/components/global-loading.js') }}"></script>
+    
+    <!-- Scripts adicionales de las páginas -->
+    @stack('scripts')
 </body>
 </html> 

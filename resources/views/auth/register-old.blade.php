@@ -15,134 +15,139 @@
     </style>
 @endpush
 
-<!-- Componentes Reutilizables -->
-<script src="{{ asset('js/constancia-extractor.js') }}"></script>
-<script src="{{ asset('js/sat-modal.js') }}"></script>
 <script>
-    // Variables globales
-    let extractor = null;
-    let satModal = null;
-    let datosSAT = null;
-
-    // Inicializar componentes
-    document.addEventListener('DOMContentLoaded', function() {
-        extractor = new ConstanciaExtractor({ debug: true });
-        
-        // Modal personalizado para registro
-        satModal = new SATModal({
-            onContinue: function() {
-                // Mostrar formulario de registro al continuar
-                const registrationForm = document.getElementById('registrationForm');
-                if (registrationForm) {
-                    registrationForm.classList.remove('hidden');
-                    console.log('📝 Formulario de registro mostrado');
-                }
-                this.hide();
-            }
-        });
-        
-        console.log('✅ Componentes reutilizables inicializados (ConstanciaExtractor + SATModal)');
-    });
-
-    // Funciones globales simplificadas
+    // Funciones para manejo de constancia fiscal
     window.uploadFile = function(input) {
         if (input.files && input.files.length > 0) {
             const file = input.files[0];
-            updateFileName(file.name);
-            processFile(file);
+            
+            // Actualizar nombre en UI
+            const fileNameEl = document.getElementById('fileName');
+            if (fileNameEl) {
+                fileNameEl.textContent = file.name;
+            }
+            
+            // Procesar archivo
+            processFileHead(file);
         }
     };
-
+    
+    window.processFileHead = async function(file) {
+        try {
+            // Mostrar indicador
+            const indicator = document.getElementById('processingStatus');
+            if (indicator) {
+                indicator.classList.remove('hidden');
+            }
+            
+            // Preparar datos
+            const formData = new FormData();
+            formData.append('pdf', file);
+            const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            // Intentar ruta API primero, luego alternativa
+            let response;
+            try {
+                response = await fetch('/api/extract-qr-url', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.status === 419) {
+                    response = await fetch('/extract-qr-url-web', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    });
+                }
+            } catch (error) {
+                throw new Error('Error de conexión: ' + error.message);
+            }
+            
+            const data = await response.json();
+            
+            // Ocultar indicador
+            if (indicator) {
+                indicator.classList.add('hidden');
+            }
+            
+            if (data.success && data.sat_data) {
+                // Llenar campos ocultos
+                fillHiddenInputs(data.sat_data);
+                
+                // Mostrar modal con datos
+                mostrarModalSAT(data.sat_data);
+                
+            } else {
+                alert('Error: No se pudieron extraer los datos fiscales de la constancia.\n\n' + 
+                      (data.error || 'Verifique que el archivo tenga un código QR válido.'));
+            }
+            
+        } catch (error) {
+            const indicator = document.getElementById('processingStatus');
+            if (indicator) {
+                indicator.classList.add('hidden');
+            }
+            alert('Error al procesar la constancia: ' + error.message);
+        }
+    };
+    
+    // Llenar campos ocultos con datos del SAT
+    function fillHiddenInputs(satData) {
+        const fields = {
+            'satRfc': satData.rfc,
+            'satNombre': satData.nombre,
+            'satCurp': satData.curp,
+            'satRegimenFiscal': satData.regimen_fiscal,
+            'satEstatus': satData.estatus,
+            'satEntidadFederativa': satData.entidad_federativa,
+            'satMunicipio': satData.municipio,
+            'satEmail': satData.email
+        };
+        
+        Object.keys(fields).forEach(fieldId => {
+            const element = document.getElementById(fieldId);
+            if (element && fields[fieldId]) {
+                element.value = fields[fieldId];
+            }
+        });
+    }
+    
     window.handleActionButton = function() {
         const input = document.getElementById('document');
-        if (input?.files?.length > 0) {
-            processFile(input.files[0]);
-        } else {
-            input?.click();
+        if (input) {
+            if (input.files && input.files.length > 0) {
+                processFileHead(input.files[0]);
+            } else {
+                input.click();
+            }
         }
     };
-
+    
+    // Función para toggle de contraseña
     window.togglePassword = function(fieldId) {
         const field = document.getElementById(fieldId);
         const icon = document.getElementById(fieldId + '-toggle-icon');
-
+        
         if (field && icon) {
-            const isPassword = field.type === 'password';
-            field.type = isPassword ? 'text' : 'password';
-            
-            icon.innerHTML = isPassword 
-                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0712 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 711.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m6.121-6.121A9.97 9.97 0 0721 12c0 .906-.117 1.785-.337 2.625m-3.846 6.321L9.878 9.878"></path>'
-                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.723 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m6.121-6.121A9.97 9.97 0 0721 12c0 .906-.117 1.785-.337 2.625m-3.846 6.321L9.878 9.878"></path>';
+            } else {
+                field.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.723 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+            }
         }
     };
-
-    // Procesar archivo usando componentes reutilizables
-    async function processFile(file) {
-        console.log('🚀 Procesando con componentes reutilizables...');
-        
-        await extractor.extractWithCallbacks(file, {
-            onStart: () => showProcessingIndicator(true),
-            onProgress: (message) => console.log('📋', message),
-            onSuccess: (satData, qrUrl) => {
-                console.log('✅ ¡Éxito!', satData);
-                datosSAT = satData;
-                fillHiddenInputs(satData);
-                
-                // Usar modal reutilizable
-                satModal.show(satData, qrUrl);
-            },
-            onError: (error) => {
-                console.error('❌ Error:', error);
-                alert('Error: ' + error);
-            },
-            onFinish: () => showProcessingIndicator(false)
-        });
-    }
-
-    function updateFileName(fileName) {
-        const el = document.getElementById('fileName');
-        if (el) el.textContent = fileName;
-    }
-
-    function showProcessingIndicator(show) {
-        const indicator = document.getElementById('processingStatus');
-        if (indicator) {
-            indicator.classList.toggle('hidden', !show);
-        }
-    }
-
-    function fillHiddenInputs(satData) {
-        const fields = {
-            'satRfc': 'rfc',
-            'satNombre': 'nombre', 
-            'satCurp': 'curp',
-            'satRegimenFiscal': 'regimen_fiscal',
-            'satEstatus': 'estatus',
-            'satEntidadFederativa': 'entidad_federativa',
-            'satMunicipio': 'municipio',
-            'satEmail': 'email',
-            'satTipoPersona': 'tipo_persona',
-            'satCp': 'cp',
-            'satColonia': 'colonia',
-            'satNombreVialidad': 'nombre_vialidad',
-            'satNumeroExterior': 'numero_exterior',
-            'satNumeroInterior': 'numero_interior'
-        };
-
-        Object.entries(fields).forEach(([fieldId, dataKey]) => {
-            const element = document.getElementById(fieldId);
-            if (element && satData[dataKey]) {
-                element.value = satData[dataKey];
-            }
-        });
-
-        console.log('📋 Campos llenados con datos SAT');
-    }
 </script>
 
 @section('content')
     <!-- Modal para mostrar datos del SAT -->
-    <!-- El modal SAT se crea dinámicamente por SATModal -->
+    @include('components.modal-sat-datos')
 
     <!-- Modal de Éxito Reutilizable -->
     @include('components.modal-success')
@@ -197,7 +202,8 @@
                     <input type="file" id="document" name="document" accept=".pdf,.png,.jpg,.jpeg" required
                         class="hidden" onchange="uploadFile(this)">
                     <label for="document"
-                        class="group flex flex-col items-center justify-center w-full h-16 border-2 border-dashed border-primary/20 hover:border-primary rounded-lg transition-all duration-300 cursor-pointer bg-primary-50/30 hover:bg-primary-50">
+                        class="group flex flex-col items-center justify-center w-full h-16 border-2 border-dashed border-primary/20 hover:border-primary rounded-lg transition-all duration-300 cursor-pointer bg-primary-50/30 hover:bg-primary-50"
+                        onclick="console.log('🔘 LABEL: Click en label'); document.getElementById('document').click();">
                         <div class="flex flex-col md:flex-row items-center space-y-0.5 md:space-y-0 md:space-x-2 px-3">
                             <div class="transform group-hover:scale-110 transition-transform duration-300">
                                 <svg class="w-4 h-4 text-primary/70 group-hover:text-primary" fill="none"
@@ -258,6 +264,17 @@
             <input type="hidden" id="satMunicipio" name="sat_municipio">
             <input type="hidden" id="satEmail" name="sat_email">
 
+            <button type="button" id="verDatosBtn" onclick="showSatModal()"
+                class="hidden inline-flex items-center text-xs bg-white hover:bg-primary-50 text-primary font-medium py-1 px-2 rounded-lg transition-all duration-300 shadow-sm hover:shadow border border-primary/20 hover:border-primary/40">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Ver Datos del SAT
+            </button>
+
             <div>
                 <label for="email" class="block text-xs font-medium text-gray-700 mb-0.5">Correo Electrónico</label>
                 <div class="relative">
@@ -286,7 +303,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 id="password-toggle-icon">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 616 0z" />
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
@@ -309,7 +326,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 id="password_confirmation-toggle-icon">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 616 0z" />
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
@@ -328,7 +345,7 @@
 
         <!-- Botones de acción -->
         <div class="space-y-2 pt-3">
-            <button type="button" id="actionButton" onclick="handleActionButton()"
+            <button type="button" id="actionButton" onclick="console.log('🔘 BTN: Click directo'); handleActionButton()"
                 class="group w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 relative overflow-hidden text-sm">
                 <div
                     class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -366,4 +383,6 @@
             </a>
         </div>
     </form>
-@endsection 
+
+
+@endsection

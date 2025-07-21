@@ -1,18 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\RfcSearchController;
-use App\Http\Controllers\HistorialProveedorController;
-use App\Http\Controllers\Api\SectorController;
-use App\Http\Controllers\LocationDataController;
-use App\Http\Controllers\RevisionController;
-use App\Http\Controllers\Formularios\DocumentosController;
-use App\Http\Controllers\Api\GoogleMapsProxyController;
-use App\Http\Controllers\NotificacionController;
-use App\Http\Controllers\Api\ActividadController;
-use App\Http\Controllers\Api\QrPdfController;
 use App\Http\Controllers\Api\QRExtractorController;
+use App\Http\Controllers\ActividadesController;
+use App\Http\Controllers\UbicacionController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,5 +23,18 @@ Route::controller(\App\Http\Controllers\UserController::class)->group(function (
     Route::get('/validate/rfc', 'validateRfc');
 });
 
+// Actividades Routes
+Route::controller(ActividadesController::class)->group(function () {
+    Route::get('/actividades/buscar', 'buscar');
+    Route::get('/actividades/por-ids', 'porIds');
+});
+
+// Ubicación Routes
+Route::controller(UbicacionController::class)->group(function () {
+    Route::post('/ubicacion/codigo-postal', 'buscarPorCodigoPostal');
+    Route::get('/ubicacion/estados', 'getEstados');
+    Route::post('/ubicacion/municipios', 'getMunicipiosPorEstado');
+    Route::post('/ubicacion/localidades', 'getLocalidadesPorMunicipio');
+});
 
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);

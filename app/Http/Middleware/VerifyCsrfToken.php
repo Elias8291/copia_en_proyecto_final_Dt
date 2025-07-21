@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'api/*', // Eximir todas las rutas API de verificación CSRF
+        'api/extract-qr-url', // Específicamente eximir esta ruta
     ];
 } 

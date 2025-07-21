@@ -12,7 +12,6 @@ class ProveedorController extends Controller
      */
     public function createProveedor(User $user, array $data): Proveedor
     {
-        // Verificar si ya existe un proveedor para este usuario
         $existingProveedor = Proveedor::where('usuario_id', $user->id)->first();
 
         if ($existingProveedor) {
@@ -21,7 +20,7 @@ class ProveedorController extends Controller
 
         $proveedorData = [
             'usuario_id' => $user->id,
-            'rfc' => $data['rfc'], // RFC es obligatorio
+            'rfc' => $data['rfc'], 
             'tipo_persona' => $this->determineTipoPersona($data['rfc']),
             'estado' => 'Pendiente_Revision',
         ];
@@ -34,8 +33,6 @@ class ProveedorController extends Controller
      */
     private function determineTipoPersona(string $rfc): string
     {
-        // RFC de persona física: 13 caracteres
-        // RFC de persona moral: 12 caracteres
         return strlen($rfc) === 13 ? 'Física' : 'Moral';
     }
 }
