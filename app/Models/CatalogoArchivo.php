@@ -23,44 +23,10 @@ class CatalogoArchivo extends Model
         'es_visible' => 'boolean',
     ];
 
-    // Scopes para filtrado
-    public function scopeVisible($query)
-    {
-        return $query->where('es_visible', true);
-    }
-
-    public function scopeTipoPersona($query, $tipo)
-    {
-        if ($tipo) {
-            return $query->where('tipo_persona', $tipo)
-                         ->orWhere('tipo_persona', 'Ambas');
-        }
-        return $query;
-    }
-
-    public function scopeTipoArchivo($query, $tipo)
-    {
-        if ($tipo) {
-            return $query->where('tipo_archivo', $tipo);
-        }
-        return $query;
-    }
-
-    public function scopeBuscar($query, $busqueda)
-    {
-        if ($busqueda) {
-            return $query->where(function ($q) use ($busqueda) {
-                $q->where('nombre', 'like', "%{$busqueda}%")
-                  ->orWhere('descripcion', 'like', "%{$busqueda}%");
-            });
-        }
-        return $query;
-    }
-
     // Accessors
     public function getTipoPersonaLabelAttribute()
     {
-        return match($this->tipo_persona) {
+        return match ($this->tipo_persona) {
             'Física' => 'Persona Física',
             'Moral' => 'Persona Moral',
             'Ambas' => 'Ambos tipos',
@@ -70,7 +36,7 @@ class CatalogoArchivo extends Model
 
     public function getTipoArchivoLabelAttribute()
     {
-        return match($this->tipo_archivo) {
+        return match ($this->tipo_archivo) {
             'png' => 'Imagen PNG',
             'pdf' => 'Documento PDF',
             'mp3' => 'Audio MP3',
@@ -82,4 +48,4 @@ class CatalogoArchivo extends Model
     {
         return $this->es_visible ? 'Visible' : 'Oculto';
     }
-} 
+}

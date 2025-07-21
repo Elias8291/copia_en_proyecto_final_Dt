@@ -3,170 +3,223 @@
 @section('title', 'Trámites Disponibles')
 
 @section('content')
-<div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-    <div class="w-full max-w-6xl  bg-white mx-auto">
-        
-        <!-- Header -->
-        <div class="bg-white rounded-2xl shadow-lg border border-slate-200/50 p-6 mb-8">
-            <div class="flex items-center space-x-4">
-                <div class="w-14 h-14 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-xl flex items-center justify-center flex-shrink-0">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h2M9 7h6m-6 4h6m-6 4h6M5 21v-5.172a2 2 0 01.586-1.414l2.828-2.828a2 2 0 012.828 0l2.828 2.828a2 2 0 01.586 1.414V21"></path></svg>
-                </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold text-slate-800">Padrón de Proveedores</h1>
-                    <p class="text-base text-slate-600">Seleccione el trámite que desea realizar según su estado actual.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Status Message -->
-        @if(isset($globalTramites['message']) && $globalTramites['message'])
-        <div class="mb-8">
-            <div class="bg-blue-50 border-l-4 border-blue-400 rounded-r-lg p-4">
-                <div class="flex items-start space-x-3">
-                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- Header Section -->
+        <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-xl flex items-center justify-center shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-semibold text-blue-900 mb-1">Estado de su registro</h3>
-                        <p class="text-blue-800">{{ $globalTramites['message'] }}</p>
+                        <h1 class="text-2xl font-bold text-slate-800">Trámites Disponibles</h1>
+                        <p class="text-sm text-slate-600 mt-1">Seleccione el tipo de trámite que desea realizar</p>
+                    </div>
+                </div>
+
+                @if($proveedor)
+                    <div class="bg-slate-50 rounded-lg p-3 border border-slate-200">
+                        <div class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Proveedor</div>
+                        <div class="text-sm font-medium text-slate-800 mt-1">{{ $proveedor->razon_social }}</div>
+                        <div class="flex items-center mt-1">
+                            @php
+                                $estadoColor = match($proveedor->estado_padron ?? 'Sin Estado') {
+                                    'Activo' => 'bg-emerald-100 text-emerald-800',
+                                    'Pendiente' => 'bg-yellow-100 text-yellow-800',
+                                    'Vencido', 'Inactivo' => 'bg-red-100 text-red-800',
+                                    default => 'bg-gray-100 text-gray-800'
+                                };
+                            @endphp
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $estadoColor }}">
+                                {{ $proveedor->estado_padron ?? 'Sin Estado' }}
+                            </span>
+                        </div>
+                    </div>
+                @endif
+            </div>
+
+            <!-- Mensaje informativo -->
+            @if(isset($globalTramites['message']) && $globalTramites['message'])
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-blue-800">Información importante</p>
+                            <p class="text-sm text-blue-700 mt-1">{{ $globalTramites['message'] }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        <!-- Tramites Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {{-- Inscripción --}}
+            @include('tramites.partials.tramite-card', [
+                'tipo' => 'inscripcion',
+                'titulo' => 'Inscripción al Padrón',
+                'descripcion' => 'Registro inicial para nuevos proveedores. Complete todos los requisitos para formar parte del padrón oficial.',
+                'disponible' => $globalTramites['inscripcion'] ?? false,
+                'colorFrom' => 'from-emerald-600',
+                'colorTo' => 'to-emerald-700',
+                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>'
+            ])
+
+            {{-- Renovación --}}
+            @include('tramites.partials.tramite-card', [
+                'tipo' => 'renovacion',
+                'titulo' => 'Renovación de Registro',
+                'descripcion' => 'Renueve su registro anual para mantener activo su estado en el padrón de proveedores.',
+                'disponible' => $globalTramites['renovacion'] ?? false,
+                'colorFrom' => 'from-blue-600',
+                'colorTo' => 'to-blue-700',
+                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>'
+            ])
+
+            {{-- Actualización --}}
+            @include('tramites.partials.tramite-card', [
+                'tipo' => 'actualizacion',
+                'titulo' => 'Actualización de Datos',
+                'descripcion' => 'Modifique su información registrada. Mantenga sus datos siempre actualizados.',
+                'disponible' => $globalTramites['actualizacion'] ?? false,
+                'colorFrom' => 'from-amber-600',
+                'colorTo' => 'to-amber-700',
+                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>'
+            ])
+        </div>
+
+        <!-- Información adicional -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Requisitos generales -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    Requisitos Generales
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-start space-x-3">
+                        <span class="inline-block w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></span>
+                        <p class="text-sm text-slate-700">Constancia de Situación Fiscal vigente (SAT)</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <span class="inline-block w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></span>
+                        <p class="text-sm text-slate-700">Documentación legal completa y actualizada</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <span class="inline-block w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></span>
+                        <p class="text-sm text-slate-700">Información de contacto verificable</p>
+                    </div>
+                    <div class="flex items-start space-x-3">
+                        <span class="inline-block w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></span>
+                        <p class="text-sm text-slate-700">Actividades económicas definidas</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proceso de trámite -->
+            <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+                <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center">
+                    <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    Proceso de Trámite
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-6 h-6 bg-[#9D2449] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">1</div>
+                        <p class="text-sm text-slate-700">Cargar constancia de situación fiscal</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-6 h-6 bg-[#9D2449] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</div>
+                        <p class="text-sm text-slate-700">Completar formulario con datos precargados</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-6 h-6 bg-[#9D2449] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">3</div>
+                        <p class="text-sm text-slate-700">Adjuntar documentos requeridos</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-6 h-6 bg-[#9D2449] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">4</div>
+                        <p class="text-sm text-slate-700">Revisión y aprobación administrativa</p>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Estado de vigencia (si aplica) -->
+        @if($proveedor && isset($globalTramites['estado_vigencia']))
+            @php
+                $estadoVigencia = $globalTramites['estado_vigencia'];
+            @endphp
+            
+            @if($estadoVigencia === 'por_vencer')
+                <div class="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-amber-800">Su registro está próximo a vencer</p>
+                            <p class="text-sm text-amber-700 mt-1">
+                                Realice la renovación antes de la fecha de vencimiento para mantener activo su estado en el padrón.
+                                @if($proveedor->fecha_vencimiento_padron)
+                                    Vence el {{ $proveedor->fecha_vencimiento_padron->format('d/m/Y') }}.
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @elseif($estadoVigencia === 'vencido')
+                <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-red-800">Su registro ha vencido</p>
+                            <p class="text-sm text-red-700 mt-1">
+                                Debe realizar una nueva inscripción para reactivar su estado en el padrón de proveedores.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
         @endif
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            <!-- Inscripción Card -->
-            <div class="group flex flex-col">
-                <div class="bg-white rounded-2xl shadow-lg border-2 {{ $globalTramites['inscripcion'] ? 'border-transparent hover:border-blue-500' : 'border-slate-200/80' }} overflow-hidden transition-all duration-300 h-full flex flex-col {{ $globalTramites['inscripcion'] ? 'group-hover:scale-105 group-hover:shadow-2xl' : 'opacity-80' }}">
-                    <div class="p-6 flex-grow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-14 h-14 bg-gradient-to-br {{ $globalTramites['inscripcion'] ? 'from-blue-500 to-blue-600' : 'from-slate-300 to-slate-400' }} rounded-xl flex items-center justify-center shadow-lg">
-                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $globalTramites['inscripcion'] ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600' }}">
-                                {{ $globalTramites['inscripcion'] ? 'Disponible' : 'No Disponible' }}
-                            </span>
-                        </div>
-                        <h3 class="text-lg md:text-xl font-bold text-slate-800 mb-2">Inscripción</h3>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Registro inicial en el padrón de proveedores para participar en licitaciones públicas.</p>
-                        
-                        @if(!$globalTramites['inscripcion'])
-                        <div class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
-                                </div>
-                                <p class="text-xs text-slate-600 font-medium">Ya tiene una inscripción activa o en proceso.</p>
-                            </div>
-                        </div>
-                        @endif
+        {{-- Sin proveedor asociado --}}
+        @if(!$proveedor)
+            <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
                     </div>
-                    <div class="px-6 pb-6 mt-auto">
-                        @if($globalTramites['inscripcion'])
-                            <a href="{{ route('tramites.constancia', 'inscripcion') }}" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center">
-                                <span>Iniciar</span>
-                                <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                            </a>
-                        @else
-                            <button disabled class="w-full bg-slate-200 text-slate-500 font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
-                                No Disponible
-                            </button>
-                        @endif
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-blue-800">Nuevo en el sistema</p>
+                        <p class="text-sm text-blue-700 mt-1">
+                            Complete el proceso de inscripción para registrarse como proveedor y acceder a todos los servicios del padrón.
+                        </p>
                     </div>
                 </div>
             </div>
-
-            <!-- Renovación Card -->
-            <div class="group flex flex-col">
-                <div class="bg-white rounded-2xl shadow-lg border-2 {{ $globalTramites['renovacion'] ? 'border-transparent hover:border-amber-500' : 'border-slate-200/80' }} overflow-hidden transition-all duration-300 h-full flex flex-col {{ $globalTramites['renovacion'] ? 'group-hover:scale-105 group-hover:shadow-2xl' : 'opacity-80' }}">
-                    <div class="p-6 flex-grow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-14 h-14 bg-gradient-to-br {{ $globalTramites['renovacion'] ? 'from-amber-500 to-orange-600' : 'from-slate-300 to-slate-400' }} rounded-xl flex items-center justify-center shadow-lg">
-                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $globalTramites['renovacion'] ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600' }}">
-                                {{ $globalTramites['renovacion'] ? 'Disponible' : 'No Disponible' }}
-                            </span>
-                        </div>
-                        <h3 class="text-lg md:text-xl font-bold text-slate-800 mb-2">Renovación</h3>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Renueve su registro para mantener su habilitación y continuar participando.</p>
-                        
-                        @if(!$globalTramites['renovacion'])
-                        <div class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg>
-                                </div>
-                                <p class="text-xs text-slate-600 font-medium">Disponible 7 días antes del vencimiento de su registro.</p>
-                            </div>
-                        </div>
-                        @endif
-                    </div>
-                    <div class="px-6 pb-6 mt-auto">
-                         @if($globalTramites['renovacion'])
-                             <a href="{{ route('tramites.constancia', 'renovacion') }}" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center">
-                                 <span>Renovar</span>
-                                 <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                             </a>
-                         @else
-                             <button disabled class="w-full bg-slate-200 text-slate-500 font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
-                                 No Disponible
-                             </button>
-                         @endif
-                     </div>
-                </div>
-            </div>
-
-            <!-- Actualización Card -->
-            <div class="group flex flex-col">
-                <div class="bg-white rounded-2xl shadow-lg border-2 {{ $globalTramites['actualizacion'] ? 'border-transparent hover:border-emerald-500' : 'border-slate-200/80' }} overflow-hidden transition-all duration-300 h-full flex flex-col {{ $globalTramites['actualizacion'] ? 'group-hover:scale-105 group-hover:shadow-2xl' : 'opacity-80' }}">
-                    <div class="p-6 flex-grow">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-14 h-14 bg-gradient-to-br {{ $globalTramites['actualizacion'] ? 'from-emerald-500 to-teal-600' : 'from-slate-300 to-slate-400' }} rounded-xl flex items-center justify-center shadow-lg">
-                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </div>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $globalTramites['actualizacion'] ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600' }}">
-                                {{ $globalTramites['actualizacion'] ? 'Disponible' : 'No Disponible' }}
-                            </span>
-                        </div>
-                        <h3 class="text-lg md:text-xl font-bold text-slate-800 mb-2">Actualización</h3>
-                        <p class="text-slate-600 text-sm leading-relaxed mb-4">Modifique la información de su empresa cuando sea necesario.</p>
-                        
-                        @if(!$globalTramites['actualizacion'])
-                        <div class="mt-4 bg-slate-50 border border-slate-200 rounded-lg p-3">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-6 h-6 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                                </div>
-                                <p class="text-xs text-slate-600 font-medium">Necesita un registro activo para actualizar datos.</p>
-                            </div>
-                        </div>
-                        @endif
-
-                        @if($globalTramites['actualizacion'] && isset($globalTramites['estado_vigencia']) && $globalTramites['estado_vigencia'] === 'por_vencer')
-                            <div class="mt-4 bg-amber-50 border-l-2 border-amber-400 p-2 rounded text-xs">
-                                <p class="text-amber-700 font-medium">⚠️ Considere renovar en lugar de actualizar.</p>
-                            </div>
-                        @endif
-                    </div>
-                     <div class="px-6 pb-6 mt-auto">
-                         @if($globalTramites['actualizacion'])
-                             <a href="{{ route('tramites.constancia', 'actualizacion') }}" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center">
-                                 <span>Actualizar</span>
-                                 <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                             </a>
-                         @else
-                             <button disabled class="w-full bg-slate-200 text-slate-500 font-semibold py-3 px-4 rounded-xl cursor-not-allowed">
-                                 No Disponible
-                             </button>
-                         @endif
-                     </div>
-                </div>
-            </div>
-        </div>
+        @endif
     </div>
 </div>
 @endsection
