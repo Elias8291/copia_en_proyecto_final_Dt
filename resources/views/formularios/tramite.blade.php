@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 bg-white rounded-lg shadow-lg border border-gray-200 py-6">
         
         <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 sm:p-6 mb-4 sm:mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
@@ -40,7 +40,7 @@
             </div>
         </div>
 
-        <form id="formulario-tramite" method="POST" action="{{ route('formularios.store', $tipo_tramite) }}" enctype="multipart/form-data">
+        <form id="formulario-tramite" method="POST" action="{{ route('tramites.store', $tipo_tramite) }}" enctype="multipart/form-data">
             @csrf
             
             @php

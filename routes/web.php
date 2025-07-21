@@ -7,7 +7,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\RolesController;
-use App\Http\Controllers\FormularioController;
+
 
 use App\Http\Controllers\TramiteController;
 
@@ -95,20 +95,18 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-//ruta de index tramite
+// TRÁMITES - Flujo completo: selección → constancia → formulario → envío
 Route::middleware(['auth'])->prefix('tramites')->name('tramites.')->group(function () {
+    // Página principal de selección de trámites
     Route::get('/', [TramiteController::class, 'index'])->name('index');
-});
-
-// rutas de formularios
-Route::middleware(['auth'])->prefix('formularios')->name('formularios.')->group(function () {
-    Route::get('/constancia/{tipo}', [App\Http\Controllers\FormularioController::class, 'constancia'])->name('constancia');
-    Route::post('/constancia/{tipo}', [App\Http\Controllers\FormularioController::class, 'procesarConstancia'])->name('procesar-constancia');
-    Route::get('/qr-reader', function () {
-        return view('formularios.constancia');
-    })->name('qr-reader');
-    Route::get('/{tipo?}', [App\Http\Controllers\FormularioController::class, 'index'])->name('index');
-    Route::post('/{tipo}', [App\Http\Controllers\FormularioController::class, 'store'])->name('store');
+    
+    // Primer paso: Cargar constancia del SAT
+    Route::get('/constancia/{tipo}', [TramiteController::class, 'constancia'])->name('constancia');
+    Route::post('/constancia/{tipo}', [TramiteController::class, 'procesarConstancia'])->name('procesarConstancia');
+    
+    // Segundo paso: Formulario del trámite (con datos precargados)
+    Route::get('/formulario/{tipo}', [TramiteController::class, 'formulario'])->name('formulario');
+    Route::post('/formulario/{tipo}', [TramiteController::class, 'store'])->name('store');
 });
 
 // API Routes para QR Extractor (públicas para uso en welcome y otros)
