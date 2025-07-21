@@ -53,7 +53,7 @@ class FormularioController extends Controller
             'datosSat' => $datosSat
         ];
 
-        return view('formularios.index', $data);
+        return view('formularios.tramite', $data);
     }
 
     /**

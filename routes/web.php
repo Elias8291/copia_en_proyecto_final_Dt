@@ -111,8 +111,8 @@ Route::middleware(['auth'])->prefix('formularios')->name('formularios.')->group(
     Route::post('/{tipo}', [App\Http\Controllers\FormularioController::class, 'store'])->name('store');
 });
 
-// API Routes para QR Extractor
-Route::middleware(['web', 'auth'])->prefix('api')->group(function () {
+// API Routes para QR Extractor (públicas para uso en welcome y otros)
+Route::middleware(['web'])->prefix('api')->group(function () {
     Route::post('/extract-qr-url', [App\Http\Controllers\Api\QRExtractorController::class, 'extractQrFromPdf']);
     Route::post('/scrape-sat-data', [App\Http\Controllers\Api\QRExtractorController::class, 'scrapeFromUrl']);
 });
