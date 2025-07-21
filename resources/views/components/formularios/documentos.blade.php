@@ -1,183 +1,199 @@
-@props(['tipo' => 'inscripcion', 'proveedor' => null])
+@props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true])
 
-<div class="space-y-6">
-    <!-- Información sobre documentos requeridos -->
-    <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-        <div class="flex items-start">
-            <div class="flex-shrink-0">
-                <i class="fas fa-info-circle text-blue-600 text-xl"></i>
+<div class="max-w-7xl mx-auto space-y-8" {{ $attributes }}>
+    <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+        <!-- Encabezado con icono -->
+        <div class="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-100">
+            <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <i class="fas fa-file-upload text-xl"></i>
             </div>
-            <div class="ml-3">
-                <h3 class="font-semibold text-blue-900 mb-2">Documentos Requeridos</h3>
-                <div class="text-blue-700 text-sm space-y-2">
-                    @if($tipo === 'inscripcion')
-                        <p>Para la inscripción inicial necesitará subir los siguientes documentos:</p>
-                        <ul class="list-disc list-inside mt-2 space-y-1">
-                            <li>RFC actualizado</li>
-                            <li>Acta constitutiva (personas morales)</li>
-                            <li>Identificación oficial del representante legal</li>
-                            <li>Comprobante de domicilio fiscal</li>
-                            <li>Estados financieros</li>
-                        </ul>
-                    @elseif($tipo === 'renovacion')
-                        <p>Para la renovación anual necesitará subir:</p>
-                        <ul class="list-disc list-inside mt-2 space-y-1">
-                            <li>Estados financieros actualizados</li>
-                            <li>Comprobante de domicilio fiscal vigente</li>
-                            <li>RFC vigente</li>
-                            <li>Documentos adicionales según cambios</li>
-                        </ul>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">Documentos</h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    @if ($editable)
+                        Documentos adjuntos al trámite
                     @else
-                        <p>Para la actualización de datos necesitará subir únicamente los documentos relacionados con los cambios realizados.</p>
+                        Documentos del trámite registrado
                     @endif
-    </div>
+                </p>
             </div>
         </div>
-    </div>
     
-    <!-- Lista de documentos -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        <!-- RFC -->
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-file-alt text-red-500 mr-2"></i>
-                    RFC
-                </h4>
-                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Requerido</span>
+        <!-- Lista de Documentos -->
+        <div class="space-y-6">
+            <!-- Ejemplo de documento -->
+            <div class="bg-white border-2 rounded-lg p-6 transition-all duration-300 border-gray-300">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="relative">
+                            <i class="fas fa-file-pdf text-2xl mr-3 text-[#9d2449]"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Nombre del Documento</h4>
+                            <p class="text-xs text-gray-500">Documento requerido</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <a href="#" target="_blank" class="text-green-600 hover:text-green-800 text-xs underline">
+                            <i class="fas fa-eye mr-1"></i>
+                            Ver
+                        </a>
+                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                            <i class="fas fa-clock mr-1"></i>
+                            Pendiente
+                        </span>
+                    </div>
+                </div>
+                <!-- Información adicional del archivo -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-file-pdf text-[#9d2449] mr-2"></i>
+                        <span>Documento adjunto</span>
+                        <span class="ml-auto text-xs text-gray-500">Subido: 21/07/2025 12:28</span>
+                    </div>
+                </div>
             </div>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors cursor-pointer" onclick="document.getElementById('rfc-file').click()">
-                <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                <p class="text-sm text-gray-600">Haga clic para cargar RFC</p>
-                <p class="text-xs text-gray-400 mt-1">PDF, máximo 5MB</p>
-            </div>
-            <input type="file" id="rfc-file" name="documentos[rfc]" accept=".pdf" class="hidden">
-        </div>
-
-        <!-- Acta Constitutiva (solo para personas morales) -->
-        @if($proveedor?->tipo_persona === 'Moral' || !$proveedor)
-        <div class="bg-white border border-gray-200 rounded-lg p-4" id="acta-constitutiva">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-building text-blue-500 mr-2"></i>
-                    Acta Constitutiva
-                </h4>
-                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Requerido</span>
-            </div>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors cursor-pointer" onclick="document.getElementById('acta-file').click()">
-                <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                <p class="text-sm text-gray-600">Haga clic para cargar Acta Constitutiva</p>
-                <p class="text-xs text-gray-400 mt-1">PDF, máximo 10MB</p>
-            </div>
-            <input type="file" id="acta-file" name="documentos[acta_constitutiva]" accept=".pdf" class="hidden">
-        </div>
-        @endif
-
-        <!-- Identificación Oficial -->
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-id-card text-green-500 mr-2"></i>
-                    Identificación Oficial
-                </h4>
-                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Requerido</span>
-            </div>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors cursor-pointer" onclick="document.getElementById('identificacion-file').click()">
-                <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                <p class="text-sm text-gray-600">Haga clic para cargar identificación</p>
-                <p class="text-xs text-gray-400 mt-1">PDF, JPG, PNG - máximo 5MB</p>
-            </div>
-            <input type="file" id="identificacion-file" name="documentos[identificacion]" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-        </div>
-
-        <!-- Comprobante de Domicilio -->
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-home text-purple-500 mr-2"></i>
-                    Comprobante de Domicilio
-                </h4>
-                <span class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full">Requerido</span>
-            </div>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors cursor-pointer" onclick="document.getElementById('domicilio-file').click()">
-                <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                <p class="text-sm text-gray-600">Haga clic para cargar comprobante</p>
-                <p class="text-xs text-gray-400 mt-1">PDF, JPG, PNG - máximo 5MB</p>
-            </div>
-            <input type="file" id="domicilio-file" name="documentos[comprobante_domicilio]" accept=".pdf,.jpg,.jpeg,.png" class="hidden">
-        </div>
-
-        <!-- Estados Financieros -->
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-chart-line text-orange-500 mr-2"></i>
-                    Estados Financieros
-                </h4>
-                <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">Opcional</span>
-            </div>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors cursor-pointer" onclick="document.getElementById('estados-file').click()">
-                <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                <p class="text-sm text-gray-600">Haga clic para cargar estados financieros</p>
-                <p class="text-xs text-gray-400 mt-1">PDF, Excel - máximo 10MB</p>
-            </div>
-            <input type="file" id="estados-file" name="documentos[estados_financieros]" accept=".pdf,.xlsx,.xls" class="hidden">
-        </div>
-
-        <!-- Documentos Adicionales -->
-        <div class="bg-white border border-gray-200 rounded-lg p-4">
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="font-medium text-gray-900 flex items-center">
-                    <i class="fas fa-paperclip text-gray-500 mr-2"></i>
-                    Documentos Adicionales
-                </h4>
-                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">Opcional</span>
-            </div>
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors cursor-pointer" onclick="document.getElementById('adicionales-file').click()">
-                <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
-                <p class="text-sm text-gray-600">Haga clic para cargar documentos adicionales</p>
-                <p class="text-xs text-gray-400 mt-1">Cualquier formato - máximo 10MB</p>
-            </div>
-            <input type="file" id="adicionales-file" name="documentos[adicionales][]" multiple class="hidden">
-        </div>
-
-    </div>
-
-    <!-- Términos y condiciones -->
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-        <div class="flex items-start">
-            <input type="checkbox" id="acepto-terminos" name="acepto_terminos" class="mt-1 h-4 w-4 text-[#9D2449] border-gray-300 rounded focus:ring-[#9D2449]" required>
-            <label for="acepto-terminos" class="ml-3 text-sm text-gray-700">
-                Acepto que toda la información proporcionada es veraz y me comprometo a mantenerla actualizada. Entiendo que cualquier información falsa puede resultar en la cancelación de mi registro.
-                <a href="#" class="text-[#9D2449] hover:underline">Ver términos y condiciones completos</a>
-            </label>
-        </div>
-    </div>
-</div> 
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Manejar preview de archivos
-    const fileInputs = document.querySelectorAll('input[type="file"]');
     
-    fileInputs.forEach(input => {
-        input.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            const uploadArea = e.target.parentNode.querySelector('.border-dashed');
-            
-            if (file) {
-                uploadArea.innerHTML = `
-                    <i class="fas fa-check-circle text-green-500 text-2xl mb-2"></i>
-                    <p class="text-sm text-green-600 font-medium">${file.name}</p>
-                    <p class="text-xs text-gray-400 mt-1">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                `;
-                uploadArea.classList.remove('border-gray-300');
-                uploadArea.classList.add('border-green-300', 'bg-green-50');
-            }
-        });
-    });
-});
-</script>
-@endpush 
+            <!-- Ejemplo de documento aprobado -->
+            <div class="bg-white border-2 rounded-lg p-6 transition-all duration-300 border-green-300 bg-green-50">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="relative">
+                            <i class="fas fa-file-pdf text-2xl mr-3 text-green-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Nombre del Documento Aprobado</h4>
+                            <p class="text-xs text-gray-500">Documento requerido</p>
+                            <div class="flex items-center mt-1">
+                                <i class="fas fa-check-circle text-green-500 text-xs mr-1"></i>
+                                <span class="text-xs font-medium text-green-600">Aprobado</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <a href="#" target="_blank" class="text-green-600 hover:text-green-800 text-xs underline">
+                            <i class="fas fa-eye mr-1"></i>
+                            Ver
+                        </a>
+                        <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                            <i class="fas fa-check mr-1"></i>
+                            Aprobado
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-file-pdf text-[#9d2449] mr-2"></i>
+                        <span>Documento adjunto</span>
+                        <span class="ml-auto text-xs text-gray-500">Subido: 21/07/2025 12:28</span>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Ejemplo de documento rechazado -->
+            <div class="bg-white border-2 rounded-lg p-6 transition-all duration-300 border-red-300 bg-red-50">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="relative">
+                            <i class="fas fa-file-pdf text-2xl mr-3 text-red-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Nombre del Documento Rechazado</h4>
+                            <p class="text-xs text-gray-500">Documento requerido</p>
+                            <div class="flex items-center mt-1">
+                                <i class="fas fa-times-circle text-red-500 text-xs mr-1"></i>
+                                <span class="text-xs font-medium text-red-600">Rechazado</span>
+                            </div>
+                            <div class="mt-1">
+                                <p class="text-xs text-red-600">Motivo del rechazo: Documento no legible</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <a href="#" target="_blank" class="text-green-600 hover:text-green-800 text-xs underline">
+                            <i class="fas fa-eye mr-1"></i>
+                            Ver
+                        </a>
+                        <span class="px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full">
+                            <i class="fas fa-times mr-1"></i>
+                            Rechazado
+                        </span>
+                    </div>
+                </div>
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-file-pdf text-[#9d2449] mr-2"></i>
+                        <span>Documento adjunto</span>
+                        <span class="ml-auto text-xs text-gray-500">Subido: 21/07/2025 12:28</span>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Mensaje cuando no hay documentos -->
+            <div class="text-center py-8 hidden">
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <i class="fas fa-exclamation-circle text-gray-400 text-3xl mb-3"></i>
+                    <p class="text-gray-500">No hay documentos adjuntos a este trámite.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.h-12 {
+    position: relative;
+    overflow: hidden;
+}
+.h-12::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) rotate(45deg);
+    }
+    20%, 100% {
+        transform: translateX(100%) rotate(45deg);
+    }
+}
+.form-group:hover input:not([readonly]),
+.form-group:hover select,
+.form-group:hover textarea {
+    @apply border-[#9d2449]/30;
+}
+input:focus:not([readonly]), 
+select:focus,
+textarea:focus {
+    @apply ring-2 ring-[#9d2449]/20 border-[#9d2449];
+    box-shadow: 0 0 0 1px rgba(157, 36, 73, 0.1), 
+                0 2px 4px rgba(157, 36, 73, 0.05);
+}
+input[readonly] {
+    @apply bg-gray-50;
+}
+input, select, textarea {
+    @apply transition-all duration-300 bg-white shadow-sm;
+}
+input:focus:not([readonly]), 
+select:focus, 
+textarea:focus {
+    @apply transform -translate-y-px shadow-md bg-white;
+}
+.form-group {
+    @apply relative;
+}
+</style>
+

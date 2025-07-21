@@ -7,15 +7,18 @@ use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ProveedorService;
+use App\Services\TramiteService;
 
 class TramiteController extends Controller
 {
     protected $proveedorService;
+    protected $tramiteService;
 
-    public function __construct(ProveedorService $proveedorService)
+    public function __construct(ProveedorService $proveedorService, TramiteService $tramiteService)
     {
         $this->middleware('auth');
         $this->proveedorService = $proveedorService;
+        $this->tramiteService = $tramiteService;
     }
 
     /**
@@ -24,12 +27,8 @@ class TramiteController extends Controller
     public function index()
     {
         $proveedor = $this->proveedorService->getProveedorByUser();
-        $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
-
-        return view('tramites.index', [
-            'globalTramites' => $tramitesDisponibles,
-            'proveedor' => $proveedor
-        ]);
+        
+        return view('tramites.index', $this->tramiteService->getDatosTramitesIndex($proveedor));
     }
 
     /**
@@ -37,20 +36,15 @@ class TramiteController extends Controller
      */
     public function constancia($tipo)
     {
-        // Validar que el usuario pueda acceder al trámite
         $proveedor = $this->proveedorService->getProveedorByUser();
-        $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
 
-        // Verificar si el trámite está disponible
-        if (!($tramitesDisponibles[$tipo] ?? false)) {
+        // Validar acceso al trámite
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
 
-        return view('tramites.constancia', [
-            'tipo' => $tipo,
-            'proveedor' => $proveedor
-        ]);
+        return view('tramites.constancia', $this->tramiteService->getDatosConstancia($tipo, $proveedor));
     }
 
     /**
@@ -58,27 +52,16 @@ class TramiteController extends Controller
      */
     public function procesarConstancia(Request $request, $tipo)
     {
-        // Validar nuevamente el acceso
         $proveedor = $this->proveedorService->getProveedorByUser();
-        $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
 
-        if (!($tramitesDisponibles[$tipo] ?? false)) {
+        // Validar acceso al trámite
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
 
-        // Guardar los datos del SAT en sesión
-        session([
-            'sat_rfc' => $request->sat_rfc,
-            'sat_nombre' => $request->sat_nombre,
-            'sat_tipo_persona' => $request->sat_tipo_persona,
-            'sat_curp' => $request->sat_curp,
-            'sat_cp' => $request->sat_cp,
-            'sat_colonia' => $request->sat_colonia,
-            'sat_nombre_vialidad' => $request->sat_nombre_vialidad,
-            'sat_numero_exterior' => $request->sat_numero_exterior,
-            'sat_numero_interior' => $request->sat_numero_interior,
-        ]);
+        // Procesar y guardar datos SAT en sesión
+        $this->tramiteService->procesarDatosConstancia($request);
 
         return redirect()->route('tramites.formulario', $tipo);
     }
@@ -88,39 +71,15 @@ class TramiteController extends Controller
      */
     public function formulario(Request $request, $tipo = 'inscripcion')
     {
-        // Validar que el usuario pueda acceder al trámite
         $proveedor = $this->proveedorService->getProveedorByUser();
-        $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
 
-        // Verificar si el trámite está disponible
-        if (!($tramitesDisponibles[$tipo] ?? false)) {
+        // Validar acceso al trámite
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
 
-        // Datos del SAT desde sesión para precargar
-        $datosSat = [
-            'rfc' => session('sat_rfc'),
-            'razon_social' => session('sat_nombre'),
-            'tipo_persona' => session('sat_tipo_persona'),
-            'curp' => session('sat_curp'),
-            'cp' => session('sat_cp'),
-            'colonia' => session('sat_colonia'),
-            'nombre_vialidad' => session('sat_nombre_vialidad'),
-            'numero_exterior' => session('sat_numero_exterior'),
-            'numero_interior' => session('sat_numero_interior'),
-        ];
-
-        $data = [
-            'tipo_tramite' => $tipo,
-            'proveedor' => $proveedor,
-            'tramites' => $tramitesDisponibles,
-            'titulo' => $this->getTituloTramite($tipo),
-            'descripcion' => $this->getDescripcionTramite($tipo),
-            'datosSat' => $datosSat
-        ];
-
-        return view('formularios.tramite', $data);
+        return view('tramites.formulario', $this->tramiteService->getDatosFormulario($tipo, $proveedor));
     }
 
     /**
@@ -128,46 +87,27 @@ class TramiteController extends Controller
      */
     public function store(Request $request, $tipo)
     {
-        // Validar nuevamente el acceso
         $proveedor = $this->proveedorService->getProveedorByUser();
-        $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
 
-        if (!($tramitesDisponibles[$tipo] ?? false)) {
+        // Validar acceso al trámite
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para realizar este trámite.');
         }
 
-        // TODO: Implementar lógica de guardado según el tipo de trámite
-        
-        return redirect()->route('tramites.index')
-            ->with('success', 'Trámite enviado correctamente.');
-    }
+        // Procesar el formulario usando el servicio
+        $resultado = $this->tramiteService->procesarEnvioFormulario($request, $tipo, $proveedor);
 
-    /**
-     * Obtiene el título según el tipo de trámite
-     */
-    private function getTituloTramite($tipo): string
-    {
-        $titulos = [
-            'inscripcion' => 'Inscripción al Padrón de Proveedores',
-            'renovacion' => 'Renovación de Registro',
-            'actualizacion' => 'Actualización de Datos'
-        ];
+        if ($resultado['success']) {
+            // Limpiar datos de sesión después del envío exitoso
+            $this->tramiteService->limpiarDatosSesion();
+            
+            return redirect($resultado['redirect'])
+                ->with('success', $resultado['message']);
+        }
 
-        return $titulos[$tipo] ?? 'Formulario de Trámite';
-    }
-
-    /**
-     * Obtiene la descripción según el tipo de trámite
-     */
-    private function getDescripcionTramite($tipo): string
-    {
-        $descripciones = [
-            'inscripcion' => 'Complete todos los campos requeridos para su inscripción inicial.',
-            'renovacion' => 'Actualice y confirme sus datos para la renovación anual.',
-            'actualizacion' => 'Modifique únicamente los campos que requieren actualización.'
-        ];
-
-        return $descripciones[$tipo] ?? 'Complete el formulario correspondiente.';
+        return back()
+            ->withInput()
+            ->with('error', $resultado['message'] ?? 'Error al procesar el trámite.');
     }
 }

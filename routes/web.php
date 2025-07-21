@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\TramiteController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActividadesController;
+use App\Http\Controllers\CatalogoArchivoController;
 // Página principal para usuarios no autenticados
 Route::middleware(['web', 'guest'])->group(function () {
     Route::get('/', function () {
@@ -105,6 +106,17 @@ Route::middleware(['auth'])->prefix('tramites')->name('tramites.')->group(functi
 // Actividades económicas (solo autenticados)
 Route::middleware(['auth'])->group(function () {
     Route::get('/actividades/buscar', [ActividadesController::class, 'buscador'])->name('actividades.buscar');
+});
+
+// Módulo de Catálogo de Archivos (solo autenticados)
+Route::middleware(['auth'])->prefix('archivos')->name('archivos.')->group(function () {
+    // Rutas principales CRUD
+    Route::get('/', [CatalogoArchivoController::class, 'index'])->name('index');
+    Route::get('/crear', [CatalogoArchivoController::class, 'create'])->name('create');
+    Route::post('/', [CatalogoArchivoController::class, 'store'])->name('store');
+    Route::get('/{archivo}/editar', [CatalogoArchivoController::class, 'edit'])->name('edit');
+    Route::put('/{archivo}', [CatalogoArchivoController::class, 'update'])->name('update');
+    Route::delete('/{archivo}', [CatalogoArchivoController::class, 'destroy'])->name('destroy');
 });
 
 // API Routes para QR Extractor

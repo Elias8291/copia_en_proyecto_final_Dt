@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             AsentamientosSeeder::class,
             SectoresSeeder::class,
             ActividadesSeeder::class,
+            CatalogoArchivoSeeder::class,
         ]);
     }
 }

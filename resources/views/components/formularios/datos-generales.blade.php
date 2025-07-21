@@ -1,306 +1,247 @@
-@props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => []])
+@props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => [], 'editable' => true])
 
-<div class="space-y-6">
-    <!-- Tipo de Proveedor -->
+@php
+    $tipoPersona = $proveedor->tipo_persona ?? 'Física';
+@endphp
+
+<div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
+    <!-- Encabezado con icono -->
+    <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+        <div class="flex items-center space-x-4">
+            <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                <i class="fas fa-user-tie text-xl"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
+                <p class="text-sm text-gray-500 mt-1">Información básica y de contacto de la empresa</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-8">
     <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-3">Tipo de Proveedor <span
-                class="text-red-500">*</span></label>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label class="relative cursor-pointer">
-                <input type="radio" name="tipo_proveedor" value="fisica" class="peer sr-only" required
-                    {{ $proveedor && strtolower($proveedor->tipo_persona) === 'física' ? 'checked' : '' }}
-                    {{ $proveedor ? 'disabled' : '' }}
-                    {{ !$proveedor && strtolower($datosSat['tipo_persona'] ?? '') === 'física' ? 'checked' : '' }}>
-                <div
-                    class="p-4 border-2 rounded-lg transition-all duration-200 border-gray-200 peer-checked:border-[#9d2449] peer-checked:bg-[#9d2449]/5 hover:border-[#9d2449]/50">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-[#9d2449]/10 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-user text-[#9d2449]"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">Persona Física</h3>
-                            <p class="text-sm text-gray-600">Empresario individual</p>
-                        </div>
-                    </div>
-                </div>
-            </label>
-            <label class="relative cursor-pointer">
-                <input type="radio" name="tipo_proveedor" value="moral" class="peer sr-only" required
-                    {{ $proveedor && strtolower($proveedor->tipo_persona) === 'moral' ? 'checked' : '' }}
-                    {{ $proveedor ? 'disabled' : '' }}
-                    {{ !$proveedor && strtolower($datosSat['tipo_persona'] ?? '') === 'moral' ? 'checked' : '' }}>
-                <div
-                    class="p-4 border-2 rounded-lg transition-all duration-200 border-gray-200 peer-checked:border-[#9d2449] peer-checked:bg-[#9d2449]/5 hover:border-[#9d2449]/50">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-[#9d2449]/10 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-building text-[#9d2449]"></i>
-                        </div>
-                        <div>
-                            <h3 class="font-semibold text-gray-900">Persona Moral</h3>
-                            <p class="text-sm text-gray-600">Empresa o corporación</p>
-                        </div>
-                    </div>
-                </div>
-            </label>
-        </div>
-    </div>
-
-    <!-- Información básica -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- RFC -->
-        <div>
-            <label for="rfc" class="block text-sm font-medium text-gray-700 mb-2">RFC <span
-                    class="text-red-500">*</span></label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-id-card text-gray-400"></i>
-                </div>
-                <input type="text" id="rfc" name="rfc"
-                    value="{{ $proveedor?->rfc ?? ($datosSat['rfc'] ?? old('rfc')) }}"
-                    class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200"
-                    placeholder="Ej: XAXX010101000" maxlength="13" {{ $proveedor ? 'readonly' : '' }} required>
-            </div>
-            <p class="text-xs text-gray-500 mt-1" id="rfc-help">RFC sin espacios ni guiones</p>
-        </div>
-
-        <!-- Razón Social / Nombre -->
-        <div>
-            <label for="razon_social" class="block text-sm font-medium text-gray-700 mb-2">
-                <span
-                    class="razon-social-label">{{ $proveedor?->tipo_persona === 'Física' ? 'Nombre Completo' : 'Razón Social' }}</span>
-                <span class="text-red-500">*</span>
-            </label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-building text-gray-400"></i>
-                </div>
-                <input type="text" id="razon_social" name="razon_social"
-                    value="{{ $proveedor?->razon_social ?? ($datosSat['razon_social'] ?? old('razon_social')) }}"
-                    class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200"
-                    placeholder="Ingrese la razón social o nombre completo" required>
-            </div>
-        </div>
-    </div>
-
-    <!-- Información de contacto -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Teléfono -->
-        <div>
-            <label for="telefono" class="block text-sm font-medium text-gray-700 mb-2">Teléfono <span
-                    class="text-red-500">*</span></label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-phone text-gray-400"></i>
-                </div>
-                <input type="tel" id="telefono" name="telefono" value="{{ old('telefono') }}"
-                    class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200"
-                    placeholder="Ej: 5551234567" pattern="[0-9]{10}" maxlength="10" required>
-            </div>
-            <p class="text-xs text-gray-500 mt-1">10 dígitos sin espacios</p>
-        </div>
-
-        <!-- Email -->
-        <div>
-            <label for="email_contacto" class="block text-sm font-medium text-gray-700 mb-2">Email de Contacto <span
-                    class="text-red-500">*</span></label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-envelope text-gray-400"></i>
-                </div>
-                <input type="email" id="email_contacto" name="email_contacto" value="{{ old('email_contacto') }}"
-                    class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200"
-                    placeholder="ejemplo@empresa.com" required>
-            </div>
-        </div>
-    </div>
-
-    <!-- CURP (solo para Persona Física) -->
-    <div id="curp-section"
-        class="grid grid-cols-1 md:grid-cols-2 gap-6 {{ $proveedor?->tipo_persona === 'Moral' ? 'hidden' : '' }}">
-        <div>
-            <label for="curp" class="block text-sm font-medium text-gray-700 mb-2">CURP <span
-                    class="text-red-500">*</span></label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-address-card text-gray-400"></i>
-                </div>
-                <input type="text" id="curp" name="curp" value="{{ old('curp') }}"
-                    class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200"
-                    placeholder="Ej: ABCD123456HDFGHI01" maxlength="18" pattern="[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9]{2}"
-                    required>
-            </div>
-            <p class="text-xs text-gray-500 mt-1">18 caracteres sin espacios</p>
-        </div>
-        <div></div> <!-- Espacio vacío para mantener el grid -->
-    </div>
-
-    <!-- Información específica para Persona Moral (se muestra/oculta dinámicamente) -->
-    <div id="info-moral" class="space-y-6 {{ $proveedor?->tipo_persona !== 'Moral' ? 'hidden' : '' }}">
-        <div class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Información Adicional (Persona Moral)</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Representante Legal -->
-                <div>
-                    <label for="representante_legal"
-                        class="block text-sm font-medium text-gray-700 mb-2">Representante Legal <span
-                            class="text-red-500">*</span></label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-user-tie text-gray-400"></i>
-                        </div>
-                        <input type="text" id="representante_legal" name="representante_legal"
-                            value="{{ old('representante_legal') }}"
-                            class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200"
-                            placeholder="Nombre completo del representante legal">
-                    </div>
-                </div>
-
-                <!-- Fecha de Constitución -->
-                <div>
-                    <label for="fecha_constitucion" class="block text-sm font-medium text-gray-700 mb-2">Fecha de
-                        Constitución</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-calendar-alt text-gray-400"></i>
-                        </div>
-                        <input type="date" id="fecha_constitucion" name="fecha_constitucion"
-                            value="{{ old('fecha_constitucion') }}"
-                            class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Actividades Económicas -->
-    <div class="border-t border-gray-200 pt-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividades Económicas</h3>
-        <div class="space-y-4">
-            <div>
-                <label for="actividad_principal" class="block text-sm font-medium text-gray-700 mb-2">Actividad
-                    Principal <span class="text-red-500">*</span></label>
-                <div class="relative">
+        <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
+            Información Básica</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Razón Social
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <i class="fas fa-briefcase text-gray-400"></i>
+                        <i class="fas fa-building text-gray-500"></i>
                     </div>
-                    <select id="actividad_principal" name="actividad_principal"
-                        class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200 appearance-none"
-                        required>
-                        <option value="">Seleccione una actividad</option>
-                        <option value="construccion">Construcción</option>
-                        <option value="servicios">Servicios Profesionales</option>
-                        <option value="comercio">Comercio</option>
-                        <option value="tecnologia">Tecnología</option>
-                        <option value="manufactura">Manufactura</option>
-                        <option value="otros">Otros</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400"></i>
-                    </div>
+                                        <input type="text" name="razon_social" {{ $editable ? 'required' : 'readonly' }}
+                           value="{{ old('razon_social', $datosSat['razon_social'] ?? ($proveedor->razon_social ?? '')) }}"
+                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 {{ $editable ? 'bg-white' : 'bg-gray-50' }} border border-gray-200 rounded-lg {{ $editable ? 'focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50' : 'cursor-not-allowed' }} shadow-sm"
+                           aria-label="Razón social de la empresa">
                 </div>
             </div>
 
-            <div>
-                <label for="descripcion_actividad" class="block text-sm font-medium text-gray-700 mb-2">Descripción de
-                    la Actividad</label>
-                <div class="relative">
-                    <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
-                        <i class="fas fa-align-left text-gray-400"></i>
+            <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    RFC
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-id-card text-gray-500"></i>
                     </div>
-                    <textarea id="descripcion_actividad" name="descripcion_actividad" rows="3"
-                        class="w-full pl-10 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#9d2449] focus:border-transparent focus:bg-white transition-all duration-200 resize-none"
-                        placeholder="Describa brevemente la actividad principal de su empresa">{{ old('descripcion_actividad') }}</textarea>
+                    <input type="text" name="rfc" required readonly
+                        value="{{ old('rfc', $datosSat['rfc'] ?? ($proveedor->rfc ?? '')) }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-600 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
+                        aria-label="RFC de la empresa">
+                </div>
+                <p class="mt-1 text-sm text-gray-500">El RFC no puede modificarse</p>
+            </div>
+
+            <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Tipo de Persona
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user-tag text-gray-500"></i>
+                    </div>
+                    <div class="block w-full pl-10 pr-4 py-2.5 text-gray-600 bg-gray-50 border border-gray-200 rounded-lg flex items-center shadow-sm">
+                        <span>{{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}</span>
+                        <svg class="w-4 h-4 ml-auto text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                </div>
+                <p class="mt-1 text-sm text-gray-500">Determinado automáticamente por el RFC</p>
+            </div>
+
+            @if ($tipoPersona === 'Física')
+                <div class="form-group">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">CURP</label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-address-card text-gray-500"></i>
+                        </div>
+                        <input type="text" name="curp" maxlength="18"
+                            value="{{ old('curp', $datosSat['curp'] ?? ($proveedor->curp ?? '')) }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                            placeholder="18 caracteres"
+                            aria-label="CURP de la persona física">
+                    </div>
+                </div>
+            @endif
+
+            <div class="form-group {{ $tipoPersona === 'Física' ? '' : 'md:col-span-2' }}">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Página Web</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-globe text-gray-500"></i>
+                    </div>
+                    <input type="url" name="pagina_web"
+                        value="{{ old('pagina_web', $proveedor->pagina_web ?? '') }}"
+                        placeholder="https://www.ejemplo.com"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                        aria-label="Página web de la empresa">
+                </div>
+            </div>
+
+            <!-- Actividades Económicas -->
+            <div class="form-group md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Actividades Económicas
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <div class="space-y-4">
+                    <!-- Buscador de actividades -->
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-500"></i>
+                        </div>
+                        <input type="text" id="buscador-actividad"
+                            placeholder="Buscar actividad económica..."
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                            aria-label="Buscar actividades económicas">
+
+                        <!-- Resultados de búsqueda -->
+                        <div id="resultados-actividades"
+                            class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
+                            <!-- Los resultados se cargarán aquí via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Actividades seleccionadas -->
+                    <div id="actividades-seleccionadas" class="space-y-2">
+                        <p class="text-sm text-gray-500">No se han seleccionado actividades económicas</p>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div>
+        <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
+            Información de Contacto</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-briefcase text-gray-500"></i>
+                    </div>
+                    <input type="text" name="cargo"
+                        value="{{ old('cargo', $proveedor->cargo ?? '') }}"
+                        placeholder="Ej: Director General, Representante Legal"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                        aria-label="Cargo del representante">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-envelope text-gray-500"></i>
+                    </div>
+                    <input type="email" name="email_contacto"
+                        value="{{ old('email_contacto', $proveedor->email_contacto ?? '') }}"
+                        placeholder="ejemplo@correo.com"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                        aria-label="Correo electrónico de contacto">
+                </div>
+            </div>
+
+            <div class="form-group md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-phone text-gray-500"></i>
+                    </div>
+                    <input type="tel" name="telefono"
+                        value="{{ old('telefono', $proveedor->telefono ?? '') }}"
+                        placeholder="Ej: 555-123-4567"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                        aria-label="Número de teléfono">
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 </div>
 
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const radioButtons = document.querySelectorAll('input[name="tipo_proveedor"]');
-            const infoMoral = document.getElementById('info-moral');
-            const curpSection = document.getElementById('curp-section');
-            const razonSocialLabel = document.querySelector('.razon-social-label');
-            const curpInput = document.getElementById('curp');
-
-            function updateRfcValidation(tipoPersona) {
-                const rfcInput = document.getElementById('rfc');
-                const rfcHelp = document.getElementById('rfc-help');
-
-                if (tipoPersona === 'moral') {
-                    // Persona Moral: 12 caracteres
-                    rfcInput.maxLength = 12;
-                    rfcInput.pattern = '[A-Z&Ñ]{3}[0-9]{6}[A-Z0-9]{3}';
-                    rfcInput.placeholder = 'Ej: ABC123456789';
-                    rfcHelp.textContent = 'RFC de 12 caracteres para Persona Moral';
-                } else {
-                    // Persona Física: 13 caracteres
-                    rfcInput.maxLength = 13;
-                    rfcInput.pattern = '[A-Z&Ñ]{4}[0-9]{6}[A-Z0-9]{3}';
-                    rfcInput.placeholder = 'Ej: ABCD123456789';
-                    rfcHelp.textContent = 'RFC de 13 caracteres para Persona Física';
-                }
-            }
-
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    if (this.value === 'moral') {
-                        // Mostrar sección de persona moral
-                        infoMoral.classList.remove('hidden');
-                        razonSocialLabel.textContent = 'Razón Social';
-
-                        // Ocultar CURP para persona moral
-                        curpSection.classList.add('hidden');
-                        curpInput.required = false;
-
-                        // Hacer requeridos los campos de persona moral
-                        document.getElementById('representante_legal').required = true;
-
-                        // Actualizar validación RFC para persona moral
-                        updateRfcValidation('moral');
-                    } else {
-                        // Ocultar sección de persona moral
-                        infoMoral.classList.add('hidden');
-                        razonSocialLabel.textContent = 'Nombre Completo';
-
-                        // Mostrar CURP para persona física
-                        curpSection.classList.remove('hidden');
-                        curpInput.required = true;
-
-                        // Quitar requerimiento de campos de persona moral
-                        document.getElementById('representante_legal').required = false;
-
-                        // Actualizar validación RFC para persona física
-                        updateRfcValidation('fisica');
-                    }
-                });
-            });
-
-            // Inicializar validación RFC según el tipo seleccionado
-            const tipoSeleccionado = document.querySelector('input[name="tipo_proveedor"]:checked');
-            if (tipoSeleccionado) {
-                updateRfcValidation(tipoSeleccionado.value);
-            }
-
-            // Validación de RFC
-            const rfcInput = document.getElementById('rfc');
-            rfcInput.addEventListener('input', function() {
-                this.value = this.value.toUpperCase();
-            });
-
-            // Validación de CURP
-            curpInput.addEventListener('input', function() {
-                this.value = this.value.toUpperCase();
-            });
-
-            // Validación de teléfono
-            const telefonoInput = document.getElementById('telefono');
-            telefonoInput.addEventListener('input', function() {
-                this.value = this.value.replace(/\D/g, '');
-            });
-        });
-    </script>
-@endpush
+<style>
+.h-12 {
+    position: relative;
+    overflow: hidden;
+}
+.h-12::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) rotate(45deg);
+    }
+    20%, 100% {
+        transform: translateX(100%) rotate(45deg);
+    }
+}
+.form-group:hover input:not([readonly]),
+.form-group:hover select,
+.form-group:hover textarea {
+    @apply border-[#9d2449]/30;
+}
+input:focus:not([readonly]), 
+select:focus,
+textarea:focus {
+    @apply ring-2 ring-[#9d2449]/20 border-[#9d2449];
+    box-shadow: 0 0 0 1px rgba(157, 36, 73, 0.1), 
+                0 2px 4px rgba(157, 36, 73, 0.05);
+}
+input[readonly] {
+    @apply bg-gray-50;
+}
+input, select, textarea {
+    @apply transition-all duration-300 bg-white shadow-sm;
+}
+input:focus:not([readonly]), 
+select:focus, 
+textarea:focus {
+    @apply transform -translate-y-px shadow-md bg-white;
+}
+.form-group {
+    @apply relative;
+}
+</style>

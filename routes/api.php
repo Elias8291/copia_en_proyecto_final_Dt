@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\UserController;
-
+use App\Http\Controllers\CatalogoArchivoController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -36,5 +36,12 @@ Route::controller(UbicacionController::class)->group(function () {
     Route::post('/ubicacion/municipios', 'getMunicipiosPorEstado');
     Route::post('/ubicacion/localidades', 'getLocalidadesPorMunicipio');
 });
+
+Route::middleware(['auth:sanctum'])->prefix('archivos')->name('archivos.')->group(function () {
+    Route::get('/buscar', [CatalogoArchivoController::class, 'buscar'])->name('buscar');
+    Route::get('/estadisticas', [CatalogoArchivoController::class, 'estadisticas'])->name('estadisticas');
+});
+
+
 
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
