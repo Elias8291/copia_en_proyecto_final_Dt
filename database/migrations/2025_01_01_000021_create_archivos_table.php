@@ -24,6 +24,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::table('archivos', function (Blueprint $table) {
+            $table->dropForeign(['idCatalogoArchivo']);
+            $table->dropForeign(['cotejado_por']);
+            $table->dropForeign(['tramite_id']);
+        });
         Schema::dropIfExists('archivos');
     }
 };

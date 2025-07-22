@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('datos_proveedores', function (Blueprint $table) {
+        Schema::create('datos_generales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tramite_id')->nullable()->constrained('tramites');
             $table->string('rfc', 13)->nullable();
@@ -23,6 +23,9 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('datos_proveedores');
+        Schema::table('datos_generales', function (Blueprint $table) {
+            $table->dropForeign(['tramite_id']);
+        });
+        Schema::dropIfExists('datos_generales');
     }
 };

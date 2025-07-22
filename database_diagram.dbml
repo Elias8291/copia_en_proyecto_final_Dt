@@ -1,0 +1,527 @@
+// Database Diagram for Sistema de Proveedores
+// Generated from Laravel Migrations
+
+Project sistema_proveedores {
+  database_type: 'MySQL'
+  Note: 'Sistema de Gestión de Proveedores - Base de Datos Completa'
+}
+
+// ===== TABLAS DE USUARIOS Y AUTENTICACIÓN =====
+
+Table users {
+  id bigint [pk, increment]
+  nombre varchar(255)
+  correo varchar(255) [unique]
+  password varchar(255)
+  remember_token varchar(100)
+  rfc varchar(13) [note: 'RFC de 12 o 13 caracteres']
+  ultimo_acceso timestamp
+  verification boolean [default: 0]
+  verification_token varchar(255)
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp [note: 'Soft delete']
+  
+  Note: 'Tabla principal de usuarios del sistema'
+}
+
+Table permissions {
+  id bigint [pk, increment]
+  name varchar(255)
+  guard_name varchar(255)
+  created_at timestamp
+  updated_at timestamp
+  
+  indexes {
+    (name, guard_name) [unique]
+  }
+  
+  Note: 'Permisos del sistema (Spatie Permission)'
+}
+
+Table roles {
+  id bigint [pk, increment]
+  name varchar(255)
+  guard_name varchar(255)
+  description text
+  created_at timestamp
+  updated_at timestamp
+  
+  indexes {
+    (name, guard_name) [unique]
+  }
+  
+  Note: 'Roles del sistema con descripción'
+}
+
+Table model_has_permissions {
+  permission_id bigint [ref: > permissions.id]
+  model_type varchar(255)
+  model_morph_key bigint
+  
+  indexes {
+    (permission_id, model_morph_key, model_type) [pk]
+    (model_morph_key, model_type)
+  }
+  
+  Note: 'Tabla pivot: Modelos tienen permisos'
+}
+
+Table model_has_roles {
+  role_id bigint [ref: > roles.id]
+  model_type varchar(255)
+  model_morph_key bigint
+  
+  indexes {
+    (role_id, model_morph_key, model_type) [pk]
+    (model_morph_key, model_type)
+  }
+  
+  Note: 'Tabla pivot: Modelos tienen roles'
+}
+
+Table role_has_permissions {
+  permission_id bigint [ref: > permissions.id]
+  role_id bigint [ref: > roles.id]
+  
+  indexes {
+    (permission_id, role_id) [pk]
+  }
+  
+  Note: 'Tabla pivot: Roles tienen permisos'
+}
+
+// ===== TABLAS GEOGRÁFICAS =====
+
+Table paises {
+  id bigint [pk, increment]
+  nombre varchar(255)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Catálogo de países'
+}
+
+Table estados {
+  id bigint [pk, increment]
+  pais_id bigint [ref: > paises.id]
+  nombre varchar(255)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Estados/Provincias por país'
+}
+
+Table municipios {
+  id bigint [pk, increment]
+  estado_id bigint [ref: > estados.id]
+  nombre varchar(370)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Municipios por estado'
+}
+
+Table localidades {
+  id bigint [pk, increment]
+  municipio_id bigint [ref: > municipios.id]
+  nombre varchar(255)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Localidades por municipio'
+}
+
+Table tipos_asentamiento {
+  id bigint [pk, increment]
+  nombre varchar(100)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Tipos de asentamiento (Colonia, Fraccionamiento, etc.)'
+}
+
+Table asentamientos {
+  id bigint [pk, increment]
+  nombre varchar(405)
+  codigo_postal varchar(5)
+  localidad_id bigint [ref: > localidades.id]
+  tipo_asentamiento_id bigint [ref: > tipos_asentamiento.id]
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Asentamientos con código postal'
+}
+
+Table coordenadas {
+  id bigint [pk, increment]
+  latitud decimal(10,8)
+  longitud decimal(11,8)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Coordenadas geográficas'
+}
+
+// ===== TABLAS DE ACTIVIDADES ECONÓMICAS =====
+
+Table sectores {
+  id bigint [pk, increment]
+  codigo varchar(255) [unique]
+  nombre varchar(255)
+  descripcion text
+  activo boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Sectores económicos'
+}
+
+Table actividades_economicas {
+  id bigint [pk, increment]
+  sector_id bigint [ref: > sectores.id]
+  nombre varchar(255)
+  codigo_scian varchar(10)
+  descripcion text
+  fuente varchar(50) [default: 'MANUAL']
+  estado_validacion enum('Pendiente', 'Validada', 'Rechazada') [default: 'Pendiente']
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Catálogo de actividades económicas SCIAN'
+}
+
+// ===== TABLAS DE CATÁLOGOS =====
+
+Table catalogo_archivos {
+  id bigint [pk, increment]
+  nombre varchar(100)
+  descripcion text
+  tipo_persona enum('Física', 'Moral', 'Ambas') [default: 'Ambas']
+  tipo_archivo enum('png', 'pdf', 'mp3')
+  es_visible boolean [default: true]
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Catálogo de tipos de archivos requeridos'
+}
+
+// ===== TABLAS PRINCIPALES DEL NEGOCIO =====
+
+Table proveedores {
+  id bigint [pk, increment]
+  usuario_id bigint [ref: > users.id]
+  pv_numero varchar(20) [unique]
+  rfc varchar(13)
+  tipo_persona enum('Física', 'Moral')
+  estado_padron enum('Activo', 'Inactivo', 'Vencido', 'Pendiente', 'Cancelado') [default: 'Pendiente']
+  fecha_alta_padron date
+  fecha_vencimiento_padron date
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Proveedores registrados en el sistema'
+}
+
+Table tramites {
+  id bigint [pk, increment]
+  proveedor_id bigint [ref: > proveedores.id]
+  tipo_tramite enum('Inscripcion', 'Renovacion', 'Actualizacion')
+  estado enum('Pendiente', 'En_Revision', 'Aprobado', 'Rechazado', 'Por_Cotejar', 'Para_Correccion', 'Cancelado') [default: 'Pendiente']
+  fecha_inicio timestamp
+  fecha_finalizacion timestamp
+  observaciones text
+  revisado_por bigint [ref: > users.id]
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Trámites de proveedores'
+}
+
+Table direcciones {
+  id bigint [pk, increment]
+  calle varchar(255)
+  entre_calles varchar(255)
+  numero_exterior varchar(20)
+  numero_interior varchar(20)
+  codigo_postal varchar(10)
+  colonia_asentamiento varchar(255)
+  municipio varchar(255)
+  id_estado bigint [ref: > estados.id]
+  coordenadas_id bigint [ref: > coordenadas.id]
+  id_tramite bigint [ref: > tramites.id]
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Direcciones de proveedores'
+}
+
+Table datos_proveedores {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  rfc varchar(13)
+  curp varchar(18)
+  razon_social varchar(255)
+  pagina_web varchar(255)
+  telefono varchar(50)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Datos específicos del proveedor por trámite'
+}
+
+Table accionistas {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  nombre_completo varchar(255)
+  rfc varchar(13)
+  porcentaje_participacion decimal(5,2)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Accionistas de empresas (personas morales)'
+}
+
+Table actividades {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  actividad_id bigint [ref: > actividades_economicas.id]
+  created_at timestamp
+  updated_at timestamp
+  
+  indexes {
+    (tramite_id, actividad_id) [unique]
+  }
+  
+  Note: 'Actividades económicas por trámite'
+}
+
+Table archivos {
+  id bigint [pk, increment]
+  nombre_original varchar(255)
+  ruta_archivo varchar(500)
+  idCatalogoArchivo bigint [ref: > catalogo_archivos.id]
+  observaciones text
+  fecha_cotejo timestamp
+  cotejado_por bigint [ref: > users.id]
+  aprobado boolean [default: false]
+  tramite_id bigint [ref: > tramites.id]
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Archivos subidos por los proveedores'
+}
+
+// ===== TABLAS ADICIONALES =====
+
+Table instrumentos_notariales {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  numero_instrumento varchar(255)
+  fecha_instrumento date
+  notario_nombre varchar(255)
+  notario_numero varchar(255)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Instrumentos notariales para personas morales'
+}
+
+Table datos_constitutivos {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  fecha_constitucion date
+  capital_social decimal(15,2)
+  objeto_social text
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Datos constitutivos de personas morales'
+}
+
+Table apoderado_legal {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  nombre_completo varchar(255)
+  rfc varchar(13)
+  curp varchar(18)
+  telefono varchar(50)
+  correo varchar(255)
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Apoderados legales de personas morales'
+}
+
+Table contactos {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  nombre varchar(255)
+  telefono varchar(50)
+  correo varchar(255)
+  tipo_contacto enum('Principal', 'Secundario', 'Emergencia')
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Contactos del proveedor'
+}
+
+Table citas {
+  id bigint [pk, increment]
+  tramite_id bigint [ref: > tramites.id]
+  fecha_cita datetime
+  motivo varchar(255)
+  estado enum('Programada', 'Completada', 'Cancelada') [default: 'Programada']
+  observaciones text
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Citas programadas con proveedores'
+}
+
+Table notificaciones {
+  id bigint [pk, increment]
+  usuario_id bigint [ref: > users.id]
+  titulo varchar(255)
+  mensaje text
+  tipo enum('Info', 'Warning', 'Error', 'Success')
+  leida boolean [default: false]
+  fecha_envio timestamp
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Notificaciones del sistema'
+}
+
+// ===== TABLAS DEL SISTEMA =====
+
+Table cache {
+  key varchar(255) [pk]
+  value mediumtext
+  expiration int
+  
+  Note: 'Cache del sistema'
+}
+
+Table cache_locks {
+  key varchar(255) [pk]
+  owner varchar(255)
+  expiration int
+  
+  Note: 'Locks del cache'
+}
+
+Table jobs {
+  id bigint [pk, increment]
+  queue varchar(255)
+  payload longtext
+  attempts tinyint
+  reserved_at int
+  available_at int
+  created_at int
+  
+  indexes {
+    queue
+  }
+  
+  Note: 'Cola de trabajos'
+}
+
+Table job_batches {
+  id varchar(255) [pk]
+  name varchar(255)
+  total_jobs int
+  pending_jobs int
+  failed_jobs int
+  failed_job_ids longtext
+  options mediumtext
+  cancelled_at int
+  created_at int
+  finished_at int
+  
+  Note: 'Lotes de trabajos'
+}
+
+Table failed_jobs {
+  id bigint [pk, increment]
+  uuid varchar(255) [unique]
+  connection text
+  queue text
+  payload longtext
+  exception longtext
+  failed_at timestamp [default: `CURRENT_TIMESTAMP`]
+  
+  Note: 'Trabajos fallidos'
+}
+
+Table password_reset_tokens {
+  email varchar(255) [pk]
+  token varchar(255)
+  created_at timestamp
+  
+  Note: 'Tokens para reset de contraseña'
+}
+
+Table sessions {
+  id varchar(255) [pk]
+  user_id bigint
+  ip_address varchar(45)
+  user_agent text
+  payload longtext
+  last_activity int
+  
+  indexes {
+    user_id
+    last_activity
+  }
+  
+  Note: 'Sesiones de usuarios'
+}
+
+Table logs {
+  id bigint [pk, increment]
+  level varchar(255)
+  message text
+  context json
+  created_at timestamp
+  updated_at timestamp
+  
+  Note: 'Logs del sistema'
+}
+
+// ===== RELACIONES PRINCIPALES =====
+
+// Relaciones de Usuario
+Ref: proveedores.usuario_id > users.id
+Ref: tramites.revisado_por > users.id
+Ref: archivos.cotejado_por > users.id
+Ref: notificaciones.usuario_id > users.id
+
+// Relaciones Geográficas
+Ref: estados.pais_id > paises.id
+Ref: municipios.estado_id > estados.id
+Ref: localidades.municipio_id > municipios.id
+Ref: asentamientos.localidad_id > localidades.id
+Ref: asentamientos.tipo_asentamiento_id > tipos_asentamiento.id
+Ref: direcciones.id_estado > estados.id
+Ref: direcciones.coordenadas_id > coordenadas.id
+
+// Relaciones de Actividades
+Ref: actividades_economicas.sector_id > sectores.id
+Ref: actividades.actividad_id > actividades_economicas.id
+
+// Relaciones Principales del Negocio
+Ref: tramites.proveedor_id > proveedores.id
+Ref: direcciones.id_tramite > tramites.id
+Ref: datos_proveedores.tramite_id > tramites.id
+Ref: accionistas.tramite_id > tramites.id
+Ref: actividades.tramite_id > tramites.id
+Ref: archivos.tramite_id > tramites.id
+Ref: archivos.idCatalogoArchivo > catalogo_archivos.id
+
+// Relaciones Adicionales
+Ref: instrumentos_notariales.tramite_id > tramites.id
+Ref: datos_constitutivos.tramite_id > tramites.id
+Ref: apoderado_legal.tramite_id > tramites.id
+Ref: contactos.tramite_id > tramites.id
+Ref: citas.tramite_id > tramites.id

@@ -86,8 +86,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Roles (solo autenticados)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/roles', [RolesController::class, 'index'])->name('roles.index');
+Route::middleware(['auth'])->prefix('roles')->name('roles.')->group(function () {
+    Route::get('/', [RolesController::class, 'index'])->name('index');
+    Route::get('/crear', [RolesController::class, 'create'])->name('create');
+    Route::post('/', [RolesController::class, 'store'])->name('store');
+    Route::get('/{role}/editar', [RolesController::class, 'edit'])->name('edit');
+    Route::put('/{role}', [RolesController::class, 'update'])->name('update');
+    Route::delete('/{role}', [RolesController::class, 'destroy'])->name('destroy');
 });
 
 

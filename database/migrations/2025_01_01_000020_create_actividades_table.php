@@ -12,7 +12,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tramite_id')->nullable()->constrained('tramites');
             $table->foreignId('actividad_id')->constrained('actividades_economicas');
-            $table->boolean('es_principal')->default(false);
             $table->timestamps();
 
             $table->unique(['tramite_id', 'actividad_id']);
@@ -21,6 +20,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::table('actividades', function (Blueprint $table) {
+            $table->dropForeign(['tramite_id']);
+            $table->dropForeign(['actividad_id']);
+        });
         Schema::dropIfExists('actividades');
     }
 };

@@ -26,6 +26,11 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::table('direcciones', function (Blueprint $table) {
+            $table->dropForeign(['id_estado']);
+            $table->dropForeign(['coordenadas_id']);
+            $table->dropForeign(['id_tramite']);
+        });
         Schema::dropIfExists('direcciones');
     }
 };

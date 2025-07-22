@@ -17,6 +17,8 @@ return new class extends Migration
             $table->timestamp('fecha_finalizacion')->nullable();
             $table->text('observaciones')->nullable();
             $table->foreignId('revisado_por')->nullable()->constrained('users');
+            $table->unsignedTinyInteger('paso_actual')->default(1);
+
             $table->timestamps();
         });
     }

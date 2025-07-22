@@ -9,14 +9,16 @@ class Tramite extends Model
 {
     use HasFactory;
 
+    
     protected $fillable = [
         'proveedor_id',
         'tipo_tramite',
         'estado',
         'fecha_inicio',
+        'paso_actual',
         'fecha_finalizacion',
         'observaciones',
-        'procesado_por',
+        'revisado_por',
     ];
 
     protected $casts = [
