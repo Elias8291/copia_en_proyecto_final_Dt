@@ -104,6 +104,51 @@
                 </div>
             </div>
 
+            <!-- RFC Mismatch Error - Error específico de RFC no coincidente -->
+            <div id="rfc-mismatch-error" class="hidden bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+                <div class="flex items-start">
+                    <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1 ml-4">
+                        <h3 class="text-lg font-semibold text-orange-800 mb-2">RFC no coincide</h3>
+                        <p class="text-orange-700 mb-3">
+                            El RFC de la constancia no coincide con el RFC registrado en su cuenta de usuario.
+                        </p>
+                        <div class="bg-orange-100 border border-orange-200 rounded-lg p-3 mb-4">
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-orange-800">RFC de su cuenta:</span>
+                                    <span id="user-rfc-display" class="text-orange-700 font-mono"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-orange-800">RFC de la constancia:</span>
+                                    <span id="constancia-rfc-display" class="text-orange-700 font-mono"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-orange-100 border border-orange-200 rounded-lg p-3 mb-4">
+                            <p class="text-sm text-orange-800">
+                                <strong>Importante:</strong> Debe cargar la constancia de situación fiscal que corresponda al RFC registrado en su cuenta.
+                                Si necesita cambiar el RFC de su cuenta asiste al modulo de proveedores.
+                            </p>
+                        </div>
+                        <div class="mt-4">
+                            <button id="retry-rfc-btn" type="button"
+                                class="inline-flex items-center px-4 py-2 bg-[#9D2449] text-white rounded-lg hover:bg-[#8B1E3F] transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Cargar Constancia Correcta
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Error Result - SIN botón de continuar sin datos -->
             <div id="error-result" class="hidden bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <div class="flex items-start">
@@ -223,6 +268,10 @@
                 const viewDataBtn = document.getElementById('view-data-btn');
                 const continueMainBtn = document.getElementById('continue-main-btn');
                 const retryUploadBtn = document.getElementById('retry-upload-btn');
+                const rfcMismatchError = document.getElementById('rfc-mismatch-error');
+                const retryRfcBtn = document.getElementById('retry-rfc-btn');
+                const userRfcDisplay = document.getElementById('user-rfc-display');
+                const constanciaRfcDisplay = document.getElementById('constancia-rfc-display');
 
                 // Evento para seleccionar archivo
                 if (selectFileBtn && pdfInput) {
@@ -263,6 +312,13 @@
                     });
                 }
 
+                // Evento para reintentar RFC
+                if (retryRfcBtn) {
+                    retryRfcBtn.addEventListener('click', () => {
+                        pdfInput.click();
+                    });
+                }
+
                 // Función principal de procesamiento
                 async function processFile(file) {
                     console.log('📄 Procesando archivo:', file.name);
@@ -282,6 +338,17 @@
                         },
                         onSuccess: (satData, qrUrl) => {
                             console.log('✅ Datos extraídos exitosamente:', satData);
+                            
+                            // Validar RFC del usuario vs RFC de la constancia
+                            const userRFC = '{{ Auth::user()->rfc ?? "" }}';
+                            const constanciaRFC = satData.rfc || '';
+                            
+                            if (userRFC && constanciaRFC && userRFC.toUpperCase() !== constanciaRFC.toUpperCase()) {
+                                console.error('❌ RFC no coincide - Usuario:', userRFC, 'Constancia:', constanciaRFC);
+                                showRFCMismatchError(userRFC, constanciaRFC);
+                                hideLoadingScraping();
+                                return;
+                            }
                             
                             // Guardar datos globalmente
                             window.currentSATData = satData;
@@ -337,9 +404,16 @@
                     if (errorMessage) errorMessage.textContent = message;
                 }
 
+                function showRFCMismatchError(userRFC, constanciaRFC) {
+                    if (rfcMismatchError) rfcMismatchError.classList.remove('hidden');
+                    if (userRfcDisplay) userRfcDisplay.textContent = userRFC;
+                    if (constanciaRfcDisplay) constanciaRfcDisplay.textContent = constanciaRFC;
+                }
+
                 function hideResults() {
                     if (successResult) successResult.classList.add('hidden');
                     if (errorResult) errorResult.classList.add('hidden');
+                    if (rfcMismatchError) rfcMismatchError.classList.add('hidden');
                 }
 
                 function fillFormInputs(satData) {

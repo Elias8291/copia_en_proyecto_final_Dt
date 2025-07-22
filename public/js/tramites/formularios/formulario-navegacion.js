@@ -88,6 +88,9 @@ if (typeof FormularioNavegacion === "undefined") {
                     behavior: "smooth",
                     block: "start",
                 });
+                console.log(`Mostrando sección ${this.currentStep}:`, currentSection);
+            } else {
+                console.error(`No se encontró la sección con data-step="${this.currentStep}"`);
             }
         }
 

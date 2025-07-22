@@ -2,9 +2,17 @@
 
 @php
     // Obtener documentos según el tipo de persona
-    $catalogoController = app(\App\Http\Controllers\CatalogoArchivoController::class);
-    $documentosRequeridos = $catalogoController->porTipoPersona($tipoPersona);
+    try {
+        $catalogoController = app(\App\Http\Controllers\CatalogoArchivoController::class);
+        $documentosRequeridos = $catalogoController->porTipoPersona($tipoPersona ?? 'Física');
+    } catch (\Exception $e) {
+        \Log::error('Error cargando documentos: ' . $e->getMessage());
+        $documentosRequeridos = collect(); // Colección vacía como fallback
+    }
 @endphp
+
+{{-- DEBUG: Verificar que la sección se renderiza --}}
+<script>console.log('Vista documentos renderizada para:', '{{ $tipoPersona }}');</script>
 
 <div class="max-w-7xl mx-auto space-y-8" {{ $attributes }}>
     <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">

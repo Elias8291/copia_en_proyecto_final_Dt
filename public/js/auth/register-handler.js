@@ -1,559 +1,262 @@
 /**
- * Register Handler
- * Maneja el registro de proveedores con carga automática de datos del SAT
- * @version 2.0.0
+ * Manejador de registro con extracción de datos SAT
  */
-
 class RegisterHandler {
-    constructor(options = {}) {
-        // Configuración
-        this.config = {
-            maxFileSize: 5 * 1024 * 1024, // 5MB
-            allowedTypes: ['application/pdf'],
-            requiredSATFields: ['sat_rfc', 'sat_nombre'],
-            ...options
-        };
-
-        // Estado interno
-        this.selectedFile = null;
-        this.isProcessing = false;
-        this.satHandler = null;
-        this.satData = null;
-
-        // Referencias DOM
-        this.initializeElements();
-        
-        // Inicializar SAT handler
-        this.satHandler = new SATConstanciaHandler();
-        
-        // Configurar eventos
-        this.setupEventListeners();
+    constructor() {
+        this.extractor = null;
+        this.satModal = null;
+        this.datosSAT = null;
+        this.init();
     }
 
-    /**
-     * Inicializa referencias a elementos DOM
-     */
-    initializeElements() {
-        this.elements = {
-            // Upload area
-            uploadArea: document.getElementById('uploadArea'),
-            documentInput: document.getElementById('document'),
-            fileName: document.getElementById('fileName'),
-            processingStatus: document.getElementById('processingStatus'),
-            previewArea: document.getElementById('previewArea'),
-            
-            // Form elements
-            registrationForm: document.getElementById('registrationForm'),
-            qrUrl: document.getElementById('qrUrl'),
-            
-            // SAT fields (hidden)
-            satRfc: document.getElementById('satRfc'),
-            satNombre: document.getElementById('satNombre'),
-            satTipoPersona: document.getElementById('satTipoPersona'),
-            
-            // Form fields
-            emailInput: document.getElementById('email'),
-            passwordInput: document.getElementById('password'),
-            passwordConfirmInput: document.getElementById('password_confirmation'),
-            
-            // Buttons
-            verDatosBtn: document.getElementById('verDatosBtn'),
-            actionButton: document.getElementById('actionButton'),
-            actionText: document.getElementById('actionText'),
-            actionIcon: document.getElementById('actionIcon')
-        };
+    init() {
+        document.addEventListener('DOMContentLoaded', () => {
+            this.initializeComponents();
+            this.bindEvents();
+        });
+    }
 
-        // Verificar elementos críticos
-        const requiredElements = ['uploadArea', 'documentInput', 'actionButton'];
-        for (const elementName of requiredElements) {
-            if (!this.elements[elementName]) {
-                console.error(`Elemento requerido no encontrado: ${elementName}`);
+    initializeComponents() {
+        console.log('🚀 Inicializando componentes...');
+
+        this.extractor = new ConstanciaExtractor({
+            debug: true
+        });
+
+        this.satModal = new SATModal({
+            onContinue: () => {
+                console.log('🔄 Botón continuar presionado en modal');
+                this.satModal.hide();
+                this.continueWithRegistration();
+            },
+            onClose: () => {
+                console.log('🔄 Modal cerrado');
             }
+        });
+
+        console.log('✅ Componentes inicializados');
+    }
+
+    bindEvents() {
+        // Eventos globales
+        window.uploadFile = (input) => this.uploadFile(input);
+        window.handleActionButton = () => this.handleActionButton();
+        window.togglePassword = (fieldId) => this.togglePassword(fieldId);
+        window.continueWithRegistration = () => this.continueWithRegistration();
+    }
+
+    uploadFile(input) {
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
+            this.updateFileName(file.name);
+            this.processFile(file);
         }
     }
 
-    /**
-     * Configura todos los event listeners
-     */
-    setupEventListeners() {
-        // Input de archivo
-        this.elements.documentInput?.addEventListener('change', (e) => this.handleFileInput(e));
-        
-        // Botón principal de acción
-        this.elements.actionButton?.addEventListener('click', (e) => this.handleActionButton(e));
-        
-        // Botón ver datos del SAT
-        this.elements.verDatosBtn?.addEventListener('click', () => this.showSATData());
-
-        // Validación de email en tiempo real
-        this.elements.emailInput?.addEventListener('input', () => this.validateEmail());
-        
-        // Validación de contraseñas
-        this.elements.passwordInput?.addEventListener('input', () => this.validatePasswords());
-        this.elements.passwordConfirmInput?.addEventListener('input', () => this.validatePasswords());
-
-        // Drag and drop
-        this.setupDragAndDrop();
-
-        // Función global para mostrar éxito desde el SAT handler
-        window.showSATSuccess = () => this.handleSATSuccess();
-        
-        // Override de showError del SAT handler
-        window.showSATError = (message) => this.handleSATError(message);
+    handleActionButton() {
+        const input = document.getElementById('document');
+        if (input?.files?.length > 0) {
+            this.processFile(input.files[0]);
+        } else {
+            input?.click();
+        }
     }
 
-    /**
-     * Configura drag and drop
-     */
-    setupDragAndDrop() {
-        if (!this.elements.uploadArea) return;
+    togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        const icon = document.getElementById(fieldId + '-toggle-icon');
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            this.elements.uploadArea.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            });
-        });
+        if (field && icon) {
+            const isPassword = field.type === 'password';
+            field.type = isPassword ? 'text' : 'password';
 
-        ['dragenter', 'dragover'].forEach(eventName => {
-            this.elements.uploadArea.addEventListener(eventName, () => {
-                if (!this.isProcessing) {
-                    this.elements.uploadArea.classList.add('border-blue-400', 'bg-blue-50');
-                }
-            });
-        });
+            const eyeIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+            const eyeOffIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0712 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 711.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m6.121-6.121A9.97 9.97 0 0721 12c0 .906-.117 1.785-.337 2.625m-3.846 6.321L9.878 9.878"></path>';
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            this.elements.uploadArea.addEventListener(eventName, () => {
-                this.elements.uploadArea.classList.remove('border-blue-400', 'bg-blue-50');
-            });
-        });
+            icon.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
+        }
+    }
 
-        this.elements.uploadArea.addEventListener('drop', (e) => {
-            if (!this.isProcessing) {
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    this.handleFileSelection(files[0]);
-                }
+    async processFile(file) {
+        console.log('🚀 Procesando archivo:', file.name);
+
+        await this.extractor.extractWithCallbacks(file, {
+            onStart: () => {
+                console.log('📋 Iniciando extracción...');
+                this.showProcessingIndicator(true);
+            },
+            onProgress: (message) => {
+                console.log('📋 Progreso:', message);
+            },
+            onSuccess: (satData, qrUrl) => {
+                console.log('✅ ¡Éxito! Datos extraídos:', satData);
+                this.datosSAT = satData;
+                this.fillHiddenInputs(satData);
+                this.showSuccessMessage('¡Datos extraídos exitosamente! Completando formulario...');
+                
+                setTimeout(() => {
+                    this.continueWithRegistration();
+                }, 1500);
+            },
+            onError: (error) => {
+                console.error('❌ Error:', error);
+                this.showErrorMessage(error);
+            },
+            onFinish: () => {
+                console.log('🏁 Proceso terminado');
+                this.showProcessingIndicator(false);
             }
         });
     }
 
-    /**
-     * Maneja el cambio en el input de archivo
-     */
-    handleFileInput(e) {
-        if (e.target.files.length > 0 && !this.isProcessing) {
-            this.handleFileSelection(e.target.files[0]);
+    continueWithRegistration() {
+        console.log('📝 Iniciando proceso de registro...');
+
+        const registrationForm = document.getElementById('registrationForm');
+        const uploadArea = document.getElementById('uploadArea');
+        const actionButton = document.getElementById('actionButton');
+
+        if (registrationForm && uploadArea) {
+            // Animación de transición
+            uploadArea.style.transform = 'translateY(-20px)';
+            uploadArea.style.opacity = '0.5';
+
+            setTimeout(() => {
+                registrationForm.classList.remove('hidden');
+                registrationForm.style.transform = 'translateY(20px)';
+                registrationForm.style.opacity = '0';
+
+                setTimeout(() => {
+                    registrationForm.style.transform = 'translateY(0)';
+                    registrationForm.style.opacity = '1';
+                }, 50);
+            }, 200);
+
+            // Actualizar botón
+            this.updateActionButton(actionButton);
         }
+
+        console.log('📝 Formulario de registro mostrado');
     }
 
-    /**
-     * Maneja la selección de un archivo
-     */
-    async handleFileSelection(file) {
-        if (this.isProcessing) return;
+    updateActionButton(actionButton) {
+        if (actionButton) {
+            const actionText = actionButton.querySelector('span');
+            const actionIcon = actionButton.querySelector('svg');
 
-        // Validar archivo
-        const validation = this.validateFile(file);
-        if (!validation.valid) {
-            this.showError(validation.error);
-            return;
-        }
-
-        // Actualizar UI
-        this.selectedFile = file;
-        this.updateFileName(file.name);
-        this.showProcessing();
-        
-        // Procesar automáticamente
-        await this.processFile();
-    }
-
-    /**
-     * Valida el archivo seleccionado
-     */
-    validateFile(file) {
-        if (!this.config.allowedTypes.includes(file.type)) {
-            return {
-                valid: false,
-                error: 'Por favor seleccione un archivo PDF válido.'
-            };
-        }
-
-        if (file.size > this.config.maxFileSize) {
-            return {
-                valid: false,
-                error: 'El archivo es demasiado grande. Máximo 5MB permitido.'
-            };
-        }
-
-        return { valid: true };
-    }
-
-    /**
-     * Procesa el archivo seleccionado
-     */
-    async processFile() {
-        if (!this.selectedFile || this.isProcessing) return;
-
-        this.isProcessing = true;
-
-        try {
-            // Crear FormData para envío
-            const formData = new FormData();
-            formData.append('pdf', this.selectedFile);
-
-            // Extraer QR del PDF
-            const response = await fetch('/api/extract-qr-url', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': this.getCSRFToken()
-                }
-            });
-
-            const data = await response.json();
-
-            if (data.success) {
-                // Procesar datos del SAT
-                await this.satHandler.scrapeSATData(data.url);
-            } else {
-                this.handleSATError(data.error || 'Error desconocido al procesar el PDF');
+            if (actionText) actionText.textContent = 'Registrarse';
+            if (actionIcon) {
+                actionIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>';
             }
-        } catch (error) {
-            this.handleSATError('Error de conexión. Por favor intente nuevamente.');
-            console.error('Error procesando archivo:', error);
-        } finally {
-            this.isProcessing = false;
-            this.hideProcessing();
         }
     }
 
-    /**
-     * Maneja el éxito del procesamiento del SAT
-     */
-    handleSATSuccess() {
-        // Obtener datos del SAT handler
-        this.satData = this.satHandler.getSummary();
-        
-        if (this.satData) {
-            // Llenar campos ocultos
-            this.fillSATFields();
-            
-            // Mostrar formulario de registro
-            this.showRegistrationForm();
-            
-            // Actualizar botón de acción
-            this.updateActionButton('register', 'Crear Cuenta', 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z');
-            
-            // Mostrar botón para ver datos
-            if (this.elements.verDatosBtn) {
-                this.elements.verDatosBtn.classList.remove('hidden');
-            }
+    updateFileName(fileName) {
+        const el = document.getElementById('fileName');
+        if (el) el.textContent = fileName;
+    }
 
-            // Scroll al formulario
-            this.scrollToForm();
+    showProcessingIndicator(show) {
+        const indicator = document.getElementById('processingStatus');
+        if (indicator) {
+            indicator.classList.toggle('hidden', !show);
+        } else if (show) {
+            this.createProcessingIndicator();
         }
     }
 
-    /**
-     * Maneja errores del procesamiento del SAT
-     */
-    handleSATError(message) {
-        this.showError(message);
-        this.hideProcessing();
-        
-        // Resetear archivo para permitir reintentar
-        if (this.elements.documentInput) {
-            this.elements.documentInput.value = '';
-        }
-        this.selectedFile = null;
-        this.resetFileName();
-    }
-
-    /**
-     * Llena los campos del SAT con los datos extraídos
-     */
-    fillSATFields() {
-        if (!this.satData) return;
-
-        // Campos ocultos del SAT
-        if (this.elements.satRfc) this.elements.satRfc.value = this.satData.rfc || '';
-        if (this.elements.satNombre) this.elements.satNombre.value = this.satData.razonSocial || '';
-        if (this.elements.satTipoPersona) this.elements.satTipoPersona.value = this.satData.tipoPersona || '';
-        
-        console.log('📊 Datos del SAT cargados:', {
-            rfc: this.satData.rfc,
-            nombre: this.satData.razonSocial,
-            tipo: this.satData.tipoPersona
-        });
-    }
-
-    /**
-     * Muestra el formulario de registro
-     */
-    showRegistrationForm() {
-        if (this.elements.registrationForm) {
-            this.elements.registrationForm.classList.remove('hidden');
-            this.elements.registrationForm.classList.add('animate-fade-in');
-        }
-        
-        // Hacer el área de upload más pequeña
-        if (this.elements.uploadArea) {
-            this.elements.uploadArea.classList.add('form-disabled');
-        }
-    }
-
-    /**
-     * Maneja el botón de acción principal
-     */
-    handleActionButton(e) {
-        e.preventDefault();
-        
-        const buttonState = this.elements.actionButton?.dataset.state || 'upload';
-        
-        switch (buttonState) {
-            case 'upload':
-                // Trigger file selection
-                if (this.elements.documentInput) {
-                    this.elements.documentInput.click();
-                }
-                break;
-            case 'register':
-                this.handleRegistration();
-                break;
-            default:
-                console.warn('Estado de botón desconocido:', buttonState);
-        }
-    }
-
-    /**
-     * Maneja el proceso de registro
-     */
-    handleRegistration() {
-        // Validar formulario
-        if (!this.validateForm()) {
-            return;
-        }
-
-        // Mostrar loading en botón
-        this.showButtonLoading();
-        
-        // Enviar formulario
-        const form = this.elements.registrationForm?.closest('form');
-        if (form) {
-            form.submit();
-        }
-    }
-
-    /**
-     * Valida todo el formulario
-     */
-    validateForm() {
-        let isValid = true;
-        
-        // Validar datos del SAT
-        if (!this.satData || !this.satData.rfc) {
-            this.showError('Es necesario cargar una constancia de situación fiscal válida');
-            isValid = false;
-        }
-        
-        // Validar email
-        if (!this.validateEmail()) {
-            isValid = false;
-        }
-        
-        // Validar contraseñas
-        if (!this.validatePasswords()) {
-            isValid = false;
-        }
-        
-        return isValid;
-    }
-
-    /**
-     * Muestra los datos del SAT en el modal
-     */
-    showSATData() {
-        if (this.satHandler) {
-            this.satHandler.showModal();
-        }
-    }
-
-    // Métodos de UI
-    showProcessing() {
-        if (this.elements.processingStatus) {
-            this.elements.processingStatus.classList.remove('hidden');
-        }
-    }
-
-    hideProcessing() {
-        if (this.elements.processingStatus) {
-            this.elements.processingStatus.classList.add('hidden');
-        }
-    }
-
-    updateFileName(name) {
-        if (this.elements.fileName) {
-            this.elements.fileName.textContent = name;
-        }
-    }
-
-    resetFileName() {
-        if (this.elements.fileName) {
-            this.elements.fileName.textContent = 'PDF o Imagen con QR (Máximo 5MB)';
-        }
-    }
-
-    updateActionButton(state, text, iconPath) {
-        if (this.elements.actionButton) {
-            this.elements.actionButton.dataset.state = state;
-        }
-        if (this.elements.actionText) {
-            this.elements.actionText.textContent = text;
-        }
-        if (this.elements.actionIcon && iconPath) {
-            this.elements.actionIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"></path>`;
-        }
-    }
-
-    showButtonLoading() {
-        if (this.elements.actionButton) {
-            this.elements.actionButton.innerHTML = `
-                <div class="relative flex items-center justify-center space-x-2">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>Registrando...</span>
+    createProcessingIndicator() {
+        const uploadArea = document.getElementById('uploadArea');
+        if (uploadArea) {
+            const processingDiv = document.createElement('div');
+            processingDiv.id = 'processingStatus';
+            processingDiv.className = 'mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3';
+            processingDiv.innerHTML = `
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    <span class="text-xs text-primary font-medium">Extrayendo datos fiscales automáticamente...</span>
                 </div>
             `;
-            this.elements.actionButton.disabled = true;
+            uploadArea.appendChild(processingDiv);
         }
     }
 
-    showError(message) {
-        // Crear o actualizar elemento de error
-        let errorElement = document.getElementById('register-error');
-        if (!errorElement) {
-            errorElement = document.createElement('div');
-            errorElement.id = 'register-error';
-            errorElement.className = 'bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg mb-3 text-sm';
-            this.elements.uploadArea?.parentNode?.insertBefore(errorElement, this.elements.uploadArea);
-        }
+    fillHiddenInputs(satData) {
+        const fields = {
+            'satRfc': 'rfc',
+            'satNombre': 'nombre',
+            'satCurp': 'curp',
+            'satRegimenFiscal': 'regimen_fiscal',
+            'satEstatus': 'estatus',
+            'satEntidadFederativa': 'entidad_federativa',
+            'satMunicipio': 'municipio',
+            'satEmail': 'email',
+            'satTipoPersona': 'tipo_persona',
+            'satCp': 'cp',
+            'satColonia': 'colonia',
+            'satNombreVialidad': 'nombre_vialidad',
+            'satNumeroExterior': 'numero_exterior',
+            'satNumeroInterior': 'numero_interior'
+        };
+
+        Object.entries(fields).forEach(([fieldId, dataKey]) => {
+            const element = document.getElementById(fieldId);
+            if (element && satData[dataKey]) {
+                element.value = satData[dataKey];
+            }
+        });
+
+        console.log('📋 Campos llenados con datos SAT');
+    }
+
+    showSuccessMessage(message) {
+        this.showNotification(message, 'success');
+    }
+
+    showErrorMessage(error) {
+        this.showNotification(error, 'error');
+    }
+
+    showNotification(message, type = 'success') {
+        const isSuccess = type === 'success';
+        const bgColor = isSuccess ? 'bg-emerald-500' : 'bg-red-500';
+        const icon = isSuccess 
+            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+        const title = isSuccess ? '¡Éxito!' : 'Error al procesar archivo';
+
+        const notificationDiv = document.createElement('div');
+        notificationDiv.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
         
-        errorElement.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+        notificationDiv.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${icon}
                 </svg>
-                <span>${message}</span>
+                <div>
+                    <h4 class="font-semibold">${title}</h4>
+                    <p class="text-sm">${message}</p>
+                </div>
+                ${!isSuccess ? '<button onclick="this.parentElement.parentElement.remove()" class="text-white/80 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>' : ''}
             </div>
         `;
-        errorElement.classList.remove('hidden');
-        
-        // Auto-ocultar después de 5 segundos
+
+        document.body.appendChild(notificationDiv);
+
+        // Animación de entrada
         setTimeout(() => {
-            errorElement.classList.add('hidden');
-        }, 5000);
-    }
+            notificationDiv.classList.remove('translate-x-full');
+            notificationDiv.classList.add('translate-x-0');
+        }, 10);
 
-    scrollToForm() {
-        if (this.elements.registrationForm) {
-            this.elements.registrationForm.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
-        }
-    }
-
-    // Validaciones específicas
-    validateEmail() {
-        const email = this.elements.emailInput?.value || '';
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isValid = emailRegex.test(email);
-        
-        // Actualizar UI de validación si existe
-        const validationElement = document.getElementById('emailValidation');
-        const iconElement = document.getElementById('emailValidationIcon');
-        
-        if (validationElement && iconElement) {
-            if (email.length > 0) {
-                if (isValid) {
-                    validationElement.className = 'absolute top-0 left-0 w-full opacity-100 transform translate-y-0 transition-all duration-200 text-xs text-green-600';
-                    validationElement.textContent = '✓ Email válido';
-                    iconElement.innerHTML = '<svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
-                } else {
-                    validationElement.className = 'absolute top-0 left-0 w-full opacity-100 transform translate-y-0 transition-all duration-200 text-xs text-red-600';
-                    validationElement.textContent = '✗ Email inválido';
-                    iconElement.innerHTML = '<svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
-                }
-                iconElement.classList.remove('hidden');
-            } else {
-                validationElement.className = 'absolute top-0 left-0 w-full opacity-0 transform translate-y-1 transition-all duration-200';
-                iconElement.classList.add('hidden');
-            }
-        }
-        
-        return isValid;
-    }
-
-    validatePasswords() {
-        const password = this.elements.passwordInput?.value || '';
-        const confirmPassword = this.elements.passwordConfirmInput?.value || '';
-        
-        const passwordsMatch = password === confirmPassword;
-        const passwordStrong = password.length >= 8;
-        
-        // Actualizar UI de validación
-        const validationElement = document.getElementById('passwordMatchValidation');
-        const iconElement = document.getElementById('passwordMatchIcon');
-        
-        if (validationElement && iconElement && confirmPassword.length > 0) {
-            if (passwordsMatch && passwordStrong) {
-                validationElement.className = 'absolute top-0 left-0 w-full opacity-100 transform translate-y-0 transition-all duration-200 text-xs text-green-600';
-                validationElement.textContent = '✓ Las contraseñas coinciden';
-                iconElement.innerHTML = '<svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
-                iconElement.classList.remove('hidden');
-            } else {
-                validationElement.className = 'absolute top-0 left-0 w-full opacity-100 transform translate-y-0 transition-all duration-200 text-xs text-red-600';
-                validationElement.textContent = passwordsMatch ? '✗ Contraseña muy corta (mín. 8 caracteres)' : '✗ Las contraseñas no coinciden';
-                iconElement.innerHTML = '<svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
-                iconElement.classList.remove('hidden');
-            }
-        }
-        
-        return passwordsMatch && passwordStrong;
-    }
-
-    // Utilidades
-    getCSRFToken() {
-        const tokenElement = document.querySelector('meta[name="csrf-token"]');
-        return tokenElement ? tokenElement.getAttribute('content') : '';
-    }
-
-    reset() {
-        this.selectedFile = null;
-        this.isProcessing = false;
-        this.satData = null;
-        
-        // Limpiar campos
-        if (this.elements.documentInput) {
-            this.elements.documentInput.value = '';
-        }
-        
-        // Ocultar formulario
-        if (this.elements.registrationForm) {
-            this.elements.registrationForm.classList.add('hidden');
-        }
-        
-        // Resetear botón
-        this.updateActionButton('upload', 'Siguiente', 'M9 5l7 7-7 7');
-        
-        // Resetear SAT handler
-        if (this.satHandler) {
-            this.satHandler.reset();
-        }
+        // Auto-remover
+        const timeout = isSuccess ? 3000 : 5000;
+        setTimeout(() => {
+            notificationDiv.classList.add('translate-x-full');
+            setTimeout(() => notificationDiv.remove(), 300);
+        }, timeout);
     }
 }
 
-// Hacer disponible globalmente
-window.RegisterHandler = RegisterHandler; 
+// Inicializar
+new RegisterHandler();

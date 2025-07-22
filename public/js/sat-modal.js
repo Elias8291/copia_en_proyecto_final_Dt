@@ -48,7 +48,7 @@ class SATModal {
     }
 
     /**
-     * Crea el HTML del modal dinámicamente
+     * Crea el HTML del modal dinámicamente con diseño mejorado
      */
     createModal() {
         // Remover modal existente si hay uno
@@ -58,51 +58,84 @@ class SATModal {
         }
 
         const modalHTML = `
-        <div id="${this.options.modalId}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
-            <div class="relative top-10 mx-auto p-5 border w-11/12 md:w-4/5 lg:w-3/5 xl:w-1/2 shadow-lg rounded-xl bg-white">
-                <div class="mt-3">
-                    <!-- Header del modal -->
-                    <div class="flex items-center justify-between pb-3 border-b border-gray-200">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-green-600 rounded-xl flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div id="${this.options.modalId}" class="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden transition-opacity duration-300 flex items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95">
+                <!-- Header del modal mejorado -->
+                <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-6 rounded-t-2xl">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h3 class="text-lg font-bold text-gray-900">📊 Datos Fiscales Extraídos</h3>
-                                <p class="text-sm text-gray-600">Información obtenida de su constancia del SAT</p>
+                                <h3 class="text-xl font-bold">¡Datos Extraídos Exitosamente!</h3>
+                                <p class="text-emerald-100 text-sm mt-1">Su constancia fiscal ha sido procesada correctamente</p>
                             </div>
                         </div>
-                        <button id="${this.options.modalId}-close" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <button id="${this.options.modalId}-close" class="text-white/80 hover:text-white transition-colors p-2 hover:bg-white/10 rounded-lg">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </button>
                     </div>
+                </div>
 
+                <!-- Contenido principal mejorado -->
+                <div class="p-6">
                     <!-- URL del QR (opcional) -->
-                    <div id="${this.options.modalId}-url-section" class="mt-4 mb-4 ${this.options.showUrl ? '' : 'hidden'}">
-                        <div class="bg-gray-50 rounded-lg p-3">
-                            <h4 class="text-sm font-semibold text-gray-700 mb-2">🔗 URL de Verificación SAT:</h4>
-                            <p id="${this.options.modalId}-url" class="text-xs font-mono bg-white p-2 rounded border break-all text-gray-600"></p>
+                    <div id="${this.options.modalId}-url-section" class="mb-6 ${this.options.showUrl ? '' : 'hidden'}">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+                            <h4 class="text-sm font-semibold text-blue-800 mb-2 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                                URL de Verificación SAT
+                            </h4>
+                            <p id="${this.options.modalId}-url" class="text-xs font-mono bg-white p-3 rounded-lg border break-all text-gray-700 shadow-sm"></p>
                         </div>
                     </div>
 
                     <!-- Contenido principal -->
-                    <div class="mt-4" id="${this.options.modalId}-content">
+                    <div id="${this.options.modalId}-content">
                         <!-- Se llena dinámicamente -->
                     </div>
 
-                    <!-- Footer del modal -->
-                    <div class="flex flex-col sm:flex-row justify-end pt-4 border-t border-gray-200 mt-6 space-y-2 sm:space-y-0 sm:space-x-3">
+                    <!-- Mensaje de verificación -->
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
+                        <div class="flex items-start space-x-3">
+                            <div class="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-semibold text-amber-800">Verificación de Datos</h4>
+                                <p class="text-sm text-amber-700 mt-1">
+                                    Por favor, verifique que los datos extraídos sean correctos. Al continuar, estos datos se utilizarán para completar su proceso.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer del modal mejorado -->
+                <div class="bg-gray-50 px-6 py-4 rounded-b-2xl border-t border-gray-100">
+                    <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
                         <button id="${this.options.modalId}-close-btn" 
-                                class="px-4 py-2 bg-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-400 transition-colors">
-                            Cerrar
+                                class="px-6 py-3 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"></path>
+                            </svg>
+                            <span>Revisar Archivo</span>
                         </button>
                         <button id="${this.options.modalId}-continue-btn" 
-                                class="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md">
-                            Continuar
+                                class="px-8 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span>Continuar</span>
                         </button>
                     </div>
                 </div>
@@ -143,7 +176,7 @@ class SATModal {
     }
 
     /**
-     * Muestra el modal con datos SAT
+     * Muestra el modal con datos SAT con animaciones
      * @param {Object} satData - Datos del SAT
      * @param {string} qrUrl - URL del QR (opcional)
      */
@@ -164,9 +197,23 @@ class SATModal {
             }
         }
 
-        // Mostrar modal
+        // Mostrar modal con animación
         this.modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden'; // Prevenir scroll del body
+        
+        // Animar entrada
+        const modalContent = this.modal.querySelector('.relative');
+        if (modalContent) {
+            // Iniciar con escala pequeña y opacidad 0
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+            
+            // Animar a escala normal y opacidad 1
+            setTimeout(() => {
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 10);
+        }
 
         console.log('📊 SATModal mostrado con datos:', satData);
     }

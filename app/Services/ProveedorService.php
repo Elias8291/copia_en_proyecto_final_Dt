@@ -106,7 +106,7 @@ class ProveedorService
 
         $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
 
-        if ($diasParaVencer <= 30) {
+        if ($diasParaVencer <= 7) {
             return 'por_vencer';
         }
 
@@ -124,6 +124,6 @@ class ProveedorService
 
         $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
 
-        return $diasParaVencer <= 30 && $diasParaVencer >= 0;
+        return $diasParaVencer <= 7 && $diasParaVencer >= 0;
     }
 }

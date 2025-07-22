@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('pv_numero', 20)->unique()->nullable(); 
             $table->string('rfc', 13); 
             $table->enum('tipo_persona', ['Física', 'Moral']);
-            $table->enum('estado_padron', ['Activo', 'Inactivo', 'Vencido', 'Pendiente', 'Rechazado'])->default('Pendiente');
+            $table->enum('estado_padron', ['Activo', 'Inactivo', 'Vencido', 'Pendiente', 'Cancelado'])->default('Pendiente');
             $table->boolean('es_activo')->default(true); 
             $table->date('fecha_alta_padron')->nullable();
             $table->date('fecha_vencimiento_padron')->nullable();

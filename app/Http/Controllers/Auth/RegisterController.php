@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProveedorController;
+use App\Services\ProveedorService;
 use App\Mail\VerifyEmail;
 use App\Jobs\DeleteUnverifiedUsers;
 use App\Models\User;
@@ -43,14 +44,16 @@ class RegisterController extends Controller
         try {
             $registrationData = $this->prepareRegistrationData($request);
             $existingUser = $this->findUnverifiedUser($request->email);
-            $userController = new UserController();
-            $proveedorController = new ProveedorController();
-            
+            $proveedorController = new ProveedorController(app(ProveedorService::class));
+
             if ($existingUser) {
-                $user = $userController->updateUser($existingUser, $registrationData);
+                // Actualizar usuario existente no verificado
+                $existingUser->update($registrationData);
+                $user = $existingUser;
                 $isResend = true;
             } else {
-                $user = $userController->createUser($registrationData);
+                // Crear nuevo usuario
+                $user = User::create($registrationData);
                 $isResend = false;
             }
 
@@ -58,8 +61,13 @@ class RegisterController extends Controller
             $satData = $this->prepareSatData($request);
             $proveedor = $proveedorController->createProveedor($user, $satData);
 
-            Mail::to($user->correo)->send(new VerifyEmail($user));
-            DeleteUnverifiedUsers::dispatch($user->id)->delay(now()->addHours(72));
+            // Intentar enviar email con manejo de errores
+            $emailSent = $this->sendVerificationEmail($user);
+
+            // Programar limpieza de usuarios no verificados solo si el email se envió
+            if ($emailSent) {
+                DeleteUnverifiedUsers::dispatch($user->id)->delay(now()->addHours(72));
+            }
 
             DB::commit();
 
@@ -71,14 +79,15 @@ class RegisterController extends Controller
             ]);
 
             return $this->redirectWithSuccess($isResend, $user);
-
         } catch (\Exception $e) {
             DB::rollback();
             Log::error('Error en registro de usuario:', [
                 'error' => $e->getMessage(),
                 'request_data' => $request->only(['email', 'sat_rfc', 'sat_nombre'])
             ]);
-            throw $e;
+
+            // Regresar a la vista con el error
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
 
@@ -86,11 +95,12 @@ class RegisterController extends Controller
     protected function prepareRegistrationData(Request $request): array
     {
         $data = [
-            'email' => $request->email,
-            'password' => $request->password,
-            'password_confirmation' => $request->password_confirmation,
-            'sat_rfc' => $request->sat_rfc,
-            'sat_nombre' => $request->sat_nombre,
+            'nombre' => $request->sat_nombre ?? 'Sin nombre', // Campo requerido en users table
+            'correo' => $request->email, // Campo correo en users table
+            'password' => bcrypt($request->password), // Encriptar password
+            'rfc' => $request->sat_rfc ?? '', // Campo rfc en users table
+            'estado' => 'pendiente', // Estado por defecto
+            'verification_token' => Str::random(60), // Token de verificación
         ];
 
         // Log para debug de datos del SAT recibidos
@@ -99,7 +109,8 @@ class RegisterController extends Controller
                 'rfc' => $request->sat_rfc,
                 'nombre' => $request->sat_nombre,
                 'tipo_persona' => $request->sat_tipo_persona,
-                'curp' => $request->sat_curp
+                'curp' => $request->sat_curp,
+                'correo' => $request->email
             ]);
         }
 
@@ -127,7 +138,7 @@ class RegisterController extends Controller
         ];
 
         // Filtrar campos vacíos
-        $satData = array_filter($satData, function($value) {
+        $satData = array_filter($satData, function ($value) {
             return !empty($value);
         });
 
@@ -140,8 +151,8 @@ class RegisterController extends Controller
     protected function findUnverifiedUser(string $email): ?User
     {
         return User::where('correo', $email)
-        ->where('estado', 'Por_Iniciar')
-                   ->first();
+            ->where('estado', 'Por_Iniciar')
+            ->first();
     }
 
     /** Validar datos del SAT */
@@ -168,13 +179,22 @@ class RegisterController extends Controller
             throw new \Exception('Los datos fiscales son incompletos. Por favor, suba una constancia de situación fiscal válida del SAT.');
         }
 
-        // Verificar que el RFC no esté ya registrado
-        $existingUser = User::where('rfc', $request->sat_rfc)
+        // Verificar que el email no esté ya registrado y verificado
+        $existingEmailUser = User::where('correo', $request->email)
             ->where('fecha_verificacion_correo', '!=', null)
             ->first();
 
-        if ($existingUser) {
-            throw new \Exception('El RFC ' . $request->sat_rfc . ' ya está registrado en el sistema con el email ' . $existingUser->correo . '. Si es su RFC, por favor use la opción de recuperación de contraseña.');
+        if ($existingEmailUser) {
+            throw new \Exception('El correo electrónico ' . $request->email . ' ya está registrado y verificado en el sistema. Si es su cuenta, por favor use la opción de iniciar sesión o recuperación de contraseña.');
+        }
+
+        // Verificar que el RFC no esté ya registrado y verificado
+        $existingRfcUser = User::where('rfc', $request->sat_rfc)
+            ->where('fecha_verificacion_correo', '!=', null)
+            ->first();
+
+        if ($existingRfcUser) {
+            throw new \Exception('El RFC ' . $request->sat_rfc . ' ya está registrado en el sistema con el email ' . $existingRfcUser->correo . '. Si es su RFC, por favor use la opción de recuperación de contraseña.');
         }
 
         Log::info('Validación de datos SAT completada exitosamente:', [
@@ -182,12 +202,45 @@ class RegisterController extends Controller
             'email' => $request->email
         ]);
     }
+    /** Enviar email de verificación con manejo de errores */
+    protected function sendVerificationEmail(User $user): bool
+    {
+        try {
+            Mail::to($user->correo)->send(new VerifyEmail($user));
+
+            Log::info('Email de verificación enviado exitosamente:', [
+                'user_id' => $user->id,
+                'email' => $user->correo
+            ]);
+
+            return true;
+        } catch (\Symfony\Component\Mailer\Exception\TransportException $e) {
+            Log::warning('Error de conexión al servidor de correo:', [
+                'user_id' => $user->id,
+                'email' => $user->correo,
+                'error' => $e->getMessage(),
+                'error_type' => 'TransportException'
+            ]);
+
+            return false;
+        } catch (\Exception $e) {
+            Log::error('Error general al enviar email de verificación:', [
+                'user_id' => $user->id,
+                'email' => $user->correo,
+                'error' => $e->getMessage(),
+                'error_type' => get_class($e)
+            ]);
+
+            return false;
+        }
+    }
+
     /** Redirigir con mensaje de éxito */
     protected function redirectWithSuccess(bool $isResend, User $user)
     {
         $title = $isResend ? '¡Actualización Exitosa!' : '¡Registro Exitoso!';
-            
-        $message = $isResend 
+
+        $message = $isResend
             ? 'Se ha actualizado tu información y reenviado el correo de verificación. Revisa tu bandeja de entrada.'
             : 'Se ha enviado un correo de verificación a ' . $user->correo . '. Tu cuenta de proveedor ha sido creada y está en revisión. Se te asignará un número de proveedor una vez que tu cuenta sea aprobada. Revisa tu bandeja de entrada y sigue las instrucciones para activar tu cuenta.';
 

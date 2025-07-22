@@ -56,7 +56,15 @@
                 @csrf
 
                 @php
-                    $tipoPersona = $proveedor->tipo_persona ?? 'Física';
+                    // Determinar tipo de persona basado en el RFC del usuario
+                    $rfcUsuario = Auth::user()->rfc ?? ($datosSat['rfc'] ?? '');
+                    $tipoPersona = 'Física'; // Default
+                    
+                    if ($rfcUsuario) {
+                        // RFC de persona moral tiene 12 caracteres, persona física tiene 13
+                        $tipoPersona = strlen($rfcUsuario) === 12 ? 'Moral' : 'Física';
+                    }
+                    
                     $totalSteps = $tipoPersona === 'Moral' ? 6 : 4;
 
                     $stepNames = [
@@ -165,7 +173,8 @@
                             @include('tramites.partials.documentos', [
                                 'tipo' => $tipo_tramite, 
                                 'proveedor' => $proveedor, 
-                                'editable' => true
+                                'editable' => true,
+                                'tipoPersona' => $tipoPersona
                             ])
                         </div>
                     @else
@@ -174,7 +183,8 @@
                             @include('tramites.partials.documentos', [
                                 'tipo' => $tipo_tramite, 
                                 'proveedor' => $proveedor, 
-                                'editable' => true
+                                'editable' => true,
+                                'tipoPersona' => $tipoPersona
                             ])
                         </div>
 
@@ -291,11 +301,22 @@
         <script src="{{ asset('js/tramites/formularios/actividades-buscar.js') }}"></script>
         <script src="{{ asset('js/tramites/codigo-postal-handler.js') }}"></script>
 
-        <script>
+                        <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const totalSteps = {{ $totalSteps }};
                 const stepNames = @json($stepNames);
                 const tipoPersona = '{{ $tipoPersona }}';
+                
+                console.log('Formulario cargado:', {
+                    totalSteps: totalSteps,
+                    stepNames: stepNames,
+                    tipoPersona: tipoPersona
+                });
+                
+                console.log('Secciones encontradas:', document.querySelectorAll('.step-section').length);
+                document.querySelectorAll('.step-section').forEach((section, index) => {
+                    console.log(`Sección ${index + 1}:`, section.dataset.step, section);
+                });
                 
                 // Inicializar navegación con lógica mejorada para botones
                 window.formularioNavegacion = new FormularioNavegacion(totalSteps, stepNames, tipoPersona);

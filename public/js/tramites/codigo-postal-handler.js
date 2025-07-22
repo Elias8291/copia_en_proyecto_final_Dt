@@ -3,6 +3,9 @@
  * Carga automáticamente los datos de ubicación al ingresar un código postal
  * También permite selección manual de ubicaciones
  */
+
+// Evitar redeclaración
+if (typeof CodigoPostalHandler === 'undefined') {
 class CodigoPostalHandler {
     constructor() {
         this.codigoPostalInput = null;
@@ -673,6 +676,10 @@ class CodigoPostalHandler {
     isValidCodigoPostal(codigo) {
         return /^\d{5}$/.test(codigo);
     }
+}
+
+    // Hacer disponible globalmente
+    window.CodigoPostalHandler = CodigoPostalHandler;
 }
 
 // Inicializar cuando el DOM esté listo
