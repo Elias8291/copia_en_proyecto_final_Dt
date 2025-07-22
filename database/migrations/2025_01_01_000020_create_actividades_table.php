@@ -8,19 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('actividades_proveedores', function (Blueprint $table) {
+        Schema::create('actividades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
             $table->foreignId('actividad_id')->constrained('actividades_economicas');
             $table->boolean('es_principal')->default(false);
             $table->timestamps();
             
-            $table->unique(['proveedor_id', 'actividad_id']);
+            $table->unique(['tramite_id', 'actividad_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('actividades_proveedores');
+        Schema::dropIfExists('actividades');
     }
 };

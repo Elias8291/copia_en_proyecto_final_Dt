@@ -116,38 +116,66 @@
 
                     <!-- SECCIÓN 1: DATOS GENERALES -->
                     <div class="step-section" data-step="1">
-                        <x-formularios.datos-generales :tipo="$tipo_tramite" :proveedor="$proveedor" :datosSat="$datosSat" :editable="true" />
+                        @include('tramites.partials.datos-generales', [
+                            'tipo' => $tipo_tramite, 
+                            'proveedor' => $proveedor, 
+                            'datosSat' => $datosSat, 
+                            'editable' => true
+                        ])
                     </div>
 
                     <!-- SECCIÓN 2: DOMICILIO -->
                     <div class="step-section hidden" data-step="2">
-                        <x-formularios.domicilio :tipo="$tipo_tramite" :proveedor="$proveedor" :editable="true" />
+                        @include('tramites.partials.domicilio', [
+                            'tipo' => $tipo_tramite, 
+                            'proveedor' => $proveedor, 
+                            'editable' => true
+                        ])
                     </div>
 
                     @if ($tipoPersona === 'Moral')
                         <!-- SECCIÓN 3: DATOS CONSTITUTIVOS (Solo Persona Moral) -->
                         <div class="step-section hidden" data-step="3">
-                            <x-formularios.constitucion :tipo="$tipo_tramite" :proveedor="$proveedor" :editable="true" />
+                            @include('tramites.partials.constitucion', [
+                                'tipo' => $tipo_tramite, 
+                                'proveedor' => $proveedor, 
+                                'editable' => true
+                            ])
                         </div>
 
                         <!-- SECCIÓN 4: APODERADO LEGAL (Solo Persona Moral) -->
                         <div class="step-section hidden" data-step="4">
-                            <x-formularios.apoderado :tipo="$tipo_tramite" :proveedor="$proveedor" :editable="true" />
+                            @include('tramites.partials.apoderado', [
+                                'tipo' => $tipo_tramite, 
+                                'proveedor' => $proveedor
+                            ])
                         </div>
 
                         <!-- SECCIÓN 5: ACCIONISTAS (Solo Persona Moral) -->
                         <div class="step-section hidden" data-step="5">
-                            <x-formularios.accionistas :tipo="$tipo_tramite" :proveedor="$proveedor" :editable="true" />
+                            @include('tramites.partials.accionistas', [
+                                'tipo' => $tipo_tramite, 
+                                'proveedor' => $proveedor, 
+                                'editable' => true
+                            ])
                         </div>
 
                         <!-- SECCIÓN 6: DOCUMENTOS (Solo Persona Moral) -->
                         <div class="step-section hidden" data-step="6">
-                            <x-formularios.documentos :tipo="$tipo_tramite" :proveedor="$proveedor" :editable="true" />
+                            @include('tramites.partials.documentos', [
+                                'tipo' => $tipo_tramite, 
+                                'proveedor' => $proveedor, 
+                                'editable' => true
+                            ])
                         </div>
                     @else
                         <!-- SECCIÓN 3: DOCUMENTOS (Solo Persona Física) -->
                         <div class="step-section hidden" data-step="3">
-                            <x-formularios.documentos :tipo="$tipo_tramite" :proveedor="$proveedor" :editable="true" />
+                            @include('tramites.partials.documentos', [
+                                'tipo' => $tipo_tramite, 
+                                'proveedor' => $proveedor, 
+                                'editable' => true
+                            ])
                         </div>
 
                         <!-- SECCIÓN 4: CONFIRMACIÓN (Solo Persona Física) -->

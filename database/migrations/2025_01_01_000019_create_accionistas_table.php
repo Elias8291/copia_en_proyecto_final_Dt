@@ -10,11 +10,10 @@ return new class extends Migration
     {
         Schema::create('accionistas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('proveedor_id')->constrained('proveedores');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
             $table->string('nombre_completo');
             $table->string('rfc', 13)->nullable();
             $table->decimal('porcentaje_participacion', 5, 2)->nullable();
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
             $table->timestamps();
         });
     }

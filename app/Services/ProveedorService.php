@@ -13,16 +13,20 @@ class ProveedorService
      *
      * @return Proveedor|null
      */
-    public function getProveedorByUser()
+    public function getProveedorByUser(): ?Proveedor
     {
         $user = Auth::user();
 
-        if ($user instanceof User) {
-            $user->load('proveedor');
-            return $user->proveedor;
+        if (!$user instanceof User) {
+            return null;
         }
 
-        return null;
+        try {
+            return $user->proveedor()->first();
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener proveedor: ' . $e->getMessage());
+            return null;
+        }
     }
 
     public function determinarTramitesDisponibles($proveedor): array
@@ -43,7 +47,7 @@ class ProveedorService
         }
 
         $defaults['estado_vigencia'] = $this->getEstadoVigencia($proveedor);
-        $estado = ucfirst(strtolower($proveedor->estado_padron ?? ''));
+        $estado = ucfirst(strtolower($proveedor?->estado_padron ?? ''));
 
         switch ($estado) {
             case 'Pendiente':
@@ -80,8 +84,8 @@ class ProveedorService
     public function hasActiveProveedor(): bool
     {
         $proveedor = $this->getProveedorByUser();
-        
-        return $proveedor && $proveedor->estado_padron === 'Activo';
+
+        return $proveedor?->estado_padron === 'Activo';
     }
 
     /**
@@ -95,17 +99,17 @@ class ProveedorService
 
         $hoy = now()->toDateString();
         $vencimiento = $proveedor->fecha_vencimiento_padron->toDateString();
-        
+
         if ($vencimiento < $hoy) {
             return 'vencido';
         }
-        
+
         $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
-        
+
         if ($diasParaVencer <= 30) {
             return 'por_vencer';
         }
-        
+
         return 'vigente';
     }
 
@@ -114,12 +118,12 @@ class ProveedorService
      */
     private function estaEnPeriodoRenovacion($proveedor): bool
     {
-        if (!$proveedor || !$proveedor->fecha_vencimiento_padron || $proveedor->estado_padron !== 'Activo') {
+        if (!$proveedor || !$proveedor->fecha_vencimiento_padron || $proveedor?->estado_padron !== 'Activo') {
             return false;
         }
 
         $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
-        
+
         return $diasParaVencer <= 30 && $diasParaVencer >= 0;
     }
 }

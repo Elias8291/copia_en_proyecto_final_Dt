@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\UbicacionController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\CatalogoArchivoController;
 /*
 |--------------------------------------------------------------------------
@@ -45,3 +45,12 @@ Route::middleware(['auth:sanctum'])->prefix('archivos')->name('archivos.')->grou
 
 
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
+
+// Error Testing Routes (only in development)
+if (app()->environment(['local', 'development'])) {
+    Route::get('/test-error', [ErrorController::class, 'apiTest']);
+    Route::post('/test-error', [ErrorController::class, 'apiTest']);
+}
+
+// API Error handling routes (fallback)
+Route::fallback([ErrorController::class, 'notFound']);

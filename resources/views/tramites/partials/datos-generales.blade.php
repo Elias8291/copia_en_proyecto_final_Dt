@@ -32,7 +32,7 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-building text-gray-500"></i>
                     </div>
-                                        <input type="text" name="razon_social" {{ $editable ? 'required' : 'readonly' }}
+                    <input type="text" name="razon_social" {{ $editable ? 'required' : 'readonly' }}
                            value="{{ old('razon_social', $datosSat['razon_social'] ?? ($proveedor->razon_social ?? '')) }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 {{ $editable ? 'bg-white' : 'bg-gray-50' }} border border-gray-200 rounded-lg {{ $editable ? 'focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50' : 'cursor-not-allowed' }} shadow-sm"
                            aria-label="Razón social de la empresa">
@@ -188,60 +188,3 @@
     </div>
     </div>
 </div>
-
-<style>
-.h-12 {
-    position: relative;
-    overflow: hidden;
-}
-.h-12::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    transform: rotate(45deg);
-    animation: shine 3s infinite;
-}
-@keyframes shine {
-    0% {
-        transform: translateX(-100%) rotate(45deg);
-    }
-    20%, 100% {
-        transform: translateX(100%) rotate(45deg);
-    }
-}
-.form-group:hover input:not([readonly]),
-.form-group:hover select,
-.form-group:hover textarea {
-    @apply border-[#9d2449]/30;
-}
-input:focus:not([readonly]), 
-select:focus,
-textarea:focus {
-    @apply ring-2 ring-[#9d2449]/20 border-[#9d2449];
-    box-shadow: 0 0 0 1px rgba(157, 36, 73, 0.1), 
-                0 2px 4px rgba(157, 36, 73, 0.05);
-}
-input[readonly] {
-    @apply bg-gray-50;
-}
-input, select, textarea {
-    @apply transition-all duration-300 bg-white shadow-sm;
-}
-input:focus:not([readonly]), 
-select:focus, 
-textarea:focus {
-    @apply transform -translate-y-px shadow-md bg-white;
-}
-.form-group {
-    @apply relative;
-}
-</style>

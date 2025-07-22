@@ -154,7 +154,7 @@
         }
         
         try {
-            const response = await fetch(url, defaultOptions);
+            const response = await fetch(url, options);
             
             if (!response.ok) {
                 throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);

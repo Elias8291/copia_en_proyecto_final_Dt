@@ -15,18 +15,29 @@ class AppServiceProvider extends ServiceProvider
         // Compartir datos del proveedor y trámites en todas las vistas
         View::composer('*', function ($view) {
             if (Auth::check()) {
-                $proveedorService = app(ProveedorService::class);
-                $proveedor = $proveedorService->getProveedorByUser();
-                $tramitesDisponibles = $proveedorService->determinarTramitesDisponibles($proveedor);
-                $hasActiveProveedor = $proveedorService->hasActiveProveedor();
+                try {
+                    $proveedorService = app(ProveedorService::class);
+                    $proveedor = $proveedorService->getProveedorByUser();
+                    $tramitesDisponibles = $proveedorService->determinarTramitesDisponibles($proveedor);
+                    $hasActiveProveedor = $proveedorService->hasActiveProveedor();
 
-                $view->with([
-                    'globalProveedor' => $proveedor,
-                    'globalTramites' => $tramitesDisponibles,
-                    'hasActiveProveedor' => $hasActiveProveedor,
-                    'proveedorEstado' => $proveedor ? $proveedor->estado_padron : null,
-                    'proveedorRazonSocial' => $proveedor ? $proveedor->razon_social : null
-                ]);
+                    $view->with([
+                        'globalProveedor' => $proveedor,
+                        'globalTramites' => $tramitesDisponibles,
+                        'hasActiveProveedor' => $hasActiveProveedor,
+                        'proveedorEstado' => $proveedor?->estado_padron ?? null,
+                        'proveedorRazonSocial' => $proveedor?->razon_social ?? null
+                    ]);
+                } catch (\Exception $e) {
+                    // En caso de error, proporcionar valores por defecto
+                    $view->with([
+                        'globalProveedor' => null,
+                        'globalTramites' => [],
+                        'hasActiveProveedor' => false,
+                        'proveedorEstado' => null,
+                        'proveedorRazonSocial' => null
+                    ]);
+                }
             }
         });
     }

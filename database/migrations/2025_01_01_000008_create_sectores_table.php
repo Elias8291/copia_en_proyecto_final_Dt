@@ -10,8 +10,10 @@ return new class extends Migration
     {
         Schema::create('sectores', function (Blueprint $table) {
             $table->id();
+            $table->string('codigo')->unique();
             $table->string('nombre');
             $table->text('descripcion')->nullable();
+            $table->boolean('activo')->default(true);
             $table->timestamps();
         });
     }

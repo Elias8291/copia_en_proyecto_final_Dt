@@ -226,96 +226,14 @@
             </div>
         </div>
 
-        <!-- Referencias adicionales -->
-        <div class="form-group">
-            <label for="referencias" class="block text-sm font-medium text-gray-700 mb-2">Referencias Adicionales</label>
-            <div class="relative group">
-                <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none z-10">
-                    <i class="fas fa-map-marker-alt text-gray-500"></i>
-                </div>
-                <textarea id="referencias" name="referencias" rows="3"
-                          class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 resize-none shadow-sm"
-                          placeholder="Puntos de referencia, color del edificio, etc. (opcional)"
-                          aria-label="Referencias adicionales">{{ old('referencias') }}</textarea>
-            </div>
-        </div>
+        <!-- Hidden inputs for latitude and longitude -->
+        <input type="hidden" id="latitud" name="latitud">
+        <input type="hidden" id="longitud" name="longitud">
+
     </div>
 
-    <!-- Información adicional para renovación/actualización -->
-    @if($tipo !== 'inscripcion')
-    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-6">
-        <div class="flex items-start space-x-3">
-            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 text-white shadow-sm flex-shrink-0">
-                <i class="fas fa-exclamation-triangle text-sm"></i>
-            </div>
-            <div>
-                <h4 class="text-base font-semibold text-amber-800 mb-2">Verificación de Domicilio</h4>
-                <p class="text-sm text-amber-700 leading-relaxed">
-                    @if($tipo === 'renovacion')
-                        Verifique que los datos del domicilio fiscal coincidan con su registro actual en el SAT.
-                    @else
-                        Solo modifique los campos que han cambiado desde su último registro.
-                    @endif
-                </p>
-            </div>
-        </div>
-    </div>
-    @endif
 </div>
 
-<style>
-.h-12 {
-    position: relative;
-    overflow: hidden;
-}
-.h-12::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    transform: rotate(45deg);
-    animation: shine 3s infinite;
-}
-@keyframes shine {
-    0% {
-        transform: translateX(-100%) rotate(45deg);
-    }
-    20%, 100% {
-        transform: translateX(100%) rotate(45deg);
-    }
-}
-.form-group:hover input:not([readonly]),
-.form-group:hover select,
-.form-group:hover textarea {
-    @apply border-[#9d2449]/30;
-}
-input:focus:not([readonly]), 
-select:focus,
-textarea:focus {
-    @apply ring-2 ring-[#9d2449]/20 border-[#9d2449];
-    box-shadow: 0 0 0 1px rgba(157, 36, 73, 0.1), 
-                0 2px 4px rgba(157, 36, 73, 0.05);
-}
-input[readonly] {
-    @apply bg-gray-50;
-}
-input, select, textarea {
-    @apply transition-all duration-300 bg-white shadow-sm;
-}
-input:focus:not([readonly]), 
-select:focus, 
-textarea:focus {
-    @apply transform -translate-y-px shadow-md bg-white;
-}
-.form-group {
-    @apply relative;
-}
-</style>
+@push('scripts')
+<script src="{{ asset('js/domicilio.js') }}"></script>
+@endpush

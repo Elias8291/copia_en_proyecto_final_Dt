@@ -1,0 +1,492 @@
+Project sistema_proveedores {
+  database_type: 'MySQL'
+  Note: 'Sistema de gestión de proveedores con trámites'
+}
+
+// ===== USUARIOS Y AUTENTICACIÓN =====
+Table users {
+  id bigint [pk, increment]
+  nombre varchar(255)
+  correo varchar(255) [unique]
+  fecha_verificacion_correo timestamp [null]
+  password varchar(255)
+  remember_token varchar(100) [null]
+  rfc varchar(13)
+  ultimo_acceso timestamp [null]
+  estado enum [default: 'pendiente', note: 'pendiente, activo, inactivo, suspendido']
+  verification_token varchar(255) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  deleted_at timestamp [null]
+}
+
+// ===== UBICACIÓN GEOGRÁFICA =====
+Table paises {
+  id bigint [pk, increment]
+  nombre varchar(255)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table estados {
+  id bigint [pk, increment]
+  pais_id bigint
+  nombre varchar(255)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table municipios {
+  id bigint [pk, increment]
+  estado_id bigint
+  nombre varchar(370)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table localidades {
+  id bigint [pk, increment]
+  municipio_id bigint
+  nombre varchar(255)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table tipos_asentamiento {
+  id bigint [pk, increment]
+  nombre varchar(100)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table asentamientos {
+  id bigint [pk, increment]
+  nombre varchar(405)
+  codigo_postal varchar(5)
+  localidad_id bigint
+  tipo_asentamiento_id bigint
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table coordenadas {
+  id bigint [pk, increment]
+  latitud decimal(10,8)
+  longitud decimal(11,8)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== ACTIVIDADES ECONÓMICAS =====
+Table sectores {
+  id bigint [pk, increment]
+  codigo varchar(255) [unique]
+  nombre varchar(255)
+  descripcion text [null]
+  activo boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table actividades_economicas {
+  id bigint [pk, increment]
+  sector_id bigint
+  nombre varchar(255)
+  codigo_scian varchar(10) [null]
+  descripcion text [null]
+  fuente varchar(50) [default: 'MANUAL']
+  estado_validacion enum [default: 'Pendiente', note: 'Pendiente, Validada, Rechazada']
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== CATÁLOGOS =====
+Table catalogo_archivos {
+  id bigint [pk, increment]
+  nombre varchar(100)
+  descripcion text [null]
+  tipo_persona enum [default: 'Ambas', note: 'Física, Moral, Ambas']
+  tipo_archivo enum [note: 'png, pdf, mp3']
+  es_visible boolean [default: true]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== CORE DEL NEGOCIO =====
+Table proveedores {
+  id bigint [pk, increment]
+  usuario_id bigint
+  pv_numero varchar(20) [unique, null]
+  rfc varchar(13)
+  tipo_persona enum [note: 'Física, Moral']
+  estado_padron enum [default: 'Pendiente', note: 'Activo, Inactivo, Vencido, Pendiente, Rechazado']
+  es_activo boolean [default: true]
+  fecha_alta_padron date [null]
+  fecha_vencimiento_padron date [null]
+  observaciones text [null]
+  razon_social varchar(255) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  indexes {
+    (usuario_id, es_activo)
+    estado_padron
+    fecha_vencimiento_padron
+  }
+}
+
+Table tramites {
+  id bigint [pk, increment]
+  proveedor_id bigint
+  tipo_tramite enum [note: 'Inscripcion, Renovacion, Actualizacion']
+  estado enum [default: 'Pendiente', note: 'Pendiente, En_Revision, Aprobado, Rechazado, Por_Cotejar, Para_Correccion, Cancelado']
+  fecha_inicio timestamp [null]
+  fecha_finalizacion timestamp [null]
+  observaciones text [null]
+  procesado_por bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== DATOS DEL TRÁMITE =====
+Table direcciones {
+  id bigint [pk, increment]
+  calle varchar(255)
+  entre_calles varchar(255) [null]
+  numero_exterior varchar(20) [null]
+  numero_interior varchar(20) [null]
+  codigo_postal varchar(10)
+  colonia_asentamiento varchar(255)
+  municipio varchar(255)
+  id_estado bigint
+  coordenadas_id bigint [null]
+  id_tramite bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table datos_proveedores {
+  id bigint [pk, increment]
+  tramite_id bigint [null]
+  rfc varchar(13) [null]
+  curp varchar(18) [null]
+  razon_social varchar(255) [null]
+  pagina_web varchar(255) [null]
+  telefono varchar(50) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table contactos {
+  id bigint [pk, increment]
+  nombre_contacto varchar(255)
+  cargo varchar(255)
+  correo_electronico varchar(255)
+  telefono varchar(50)
+  tramite_id bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table accionistas {
+  id bigint [pk, increment]
+  tramite_id bigint [null]
+  nombre_completo varchar(255)
+  rfc varchar(13) [null]
+  porcentaje_participacion decimal(5,2) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== ACTIVIDADES DEL TRÁMITE =====
+Table actividades {
+  id bigint [pk, increment]
+  tramite_id bigint [null]
+  actividad_id bigint
+  es_principal boolean [default: false]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  indexes {
+    (tramite_id, actividad_id) [unique]
+  }
+}
+
+// ===== INSTRUMENTOS NOTARIALES =====
+Table instrumentos_notariales {
+  id bigint [pk, increment]
+  numero_escritura varchar(255)
+  numero_escritura_constitutiva varchar(255)
+  fecha_constitucion date
+  nombre_notario varchar(255)
+  entidad_federativa varchar(255)
+  numero_notario int
+  numero_registro_publico varchar(255)
+  fecha_inscripcion date
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table datos_constitutivos {
+  id bigint [pk, increment]
+  instrumento_notarial_id bigint
+  tramite_id bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table apoderado_legal {
+  id bigint [pk, increment]
+  instrumento_notarial_id bigint
+  nombre_apoderado varchar(255)
+  rfc varchar(255)
+  tramite_id bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== ARCHIVOS Y DOCUMENTOS =====
+Table archivos {
+  id bigint [pk, increment]
+  nombre_original varchar(255)
+  ruta_archivo varchar(500)
+  idCatalogoArchivo bigint
+  observaciones text [null]
+  fecha_cotejo timestamp [null]
+  cotejado_por bigint [null]
+  aprobado boolean [default: false]
+  tramite_id bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== CITAS Y NOTIFICACIONES =====
+Table citas {
+  id bigint [pk, increment]
+  tramite_id bigint
+  proveedor_id bigint
+  fecha_cita timestamp
+  tipo_cita enum [note: 'Revision, Cotejo, Entrega']
+  estado enum [default: 'Programada', note: 'Programada, Confirmada, Cancelada, Reagendada, Completada']
+  atendido_por bigint [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+Table notificaciones {
+  id bigint [pk, increment]
+  usuario_id bigint
+  tramite_id bigint
+  tipo enum [note: 'Sistema, Tramite, Cita, Vencimiento']
+  titulo varchar(255)
+  mensaje text
+  leida boolean [default: false]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== SISTEMA Y LOGS =====
+Table logs {
+  id bigint [pk, increment]
+  level varchar(20)
+  message varchar(1000)
+  channel varchar(100) [null]
+  context text [null]
+  user_id bigint [null]
+  ip_address varchar(45) [null]
+  user_agent varchar(500) [null]
+  url varchar(1000) [null]
+  method varchar(10) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
+// ===== PERMISOS (Spatie Laravel Permission) =====
+Table permissions {
+  id bigint [pk, increment]
+  name varchar(255)
+  guard_name varchar(255)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  indexes {
+    (name, guard_name) [unique]
+  }
+}
+
+Table roles {
+  id bigint [pk, increment]
+  name varchar(255)
+  guard_name varchar(255)
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  indexes {
+    (name, guard_name) [unique]
+  }
+}
+
+Table model_has_permissions {
+  permission_id bigint
+  model_type varchar(255)
+  model_id bigint
+  
+  indexes {
+    (model_id, model_type)
+    (permission_id, model_id, model_type) [pk]
+  }
+}
+
+Table model_has_roles {
+  role_id bigint
+  model_type varchar(255)
+  model_id bigint
+  
+  indexes {
+    (model_id, model_type)
+    (role_id, model_id, model_type) [pk]
+  }
+}
+
+Table role_has_permissions {
+  permission_id bigint
+  role_id bigint
+  
+  indexes {
+    (permission_id, role_id) [pk]
+  }
+}
+
+// ===== TABLAS DE LARAVEL FRAMEWORK =====
+Table password_reset_tokens {
+  email varchar(255) [pk]
+  token varchar(255)
+  created_at timestamp [null]
+}
+
+Table sessions {
+  id varchar(255) [pk]
+  user_id bigint [null]
+  ip_address varchar(45) [null]
+  user_agent text [null]
+  payload longtext
+  last_activity int
+  
+  indexes {
+    user_id
+    last_activity
+  }
+}
+
+Table cache {
+  key varchar(255) [pk]
+  value mediumtext
+  expiration int
+}
+
+Table cache_locks {
+  key varchar(255) [pk]
+  owner varchar(255)
+  expiration int
+}
+
+Table jobs {
+  id bigint [pk, increment]
+  queue varchar(255)
+  payload longtext
+  attempts tinyint
+  reserved_at int [null]
+  available_at int
+  created_at int
+  
+  indexes {
+    queue
+  }
+}
+
+Table failed_jobs {
+  id bigint [pk, increment]
+  uuid varchar(255) [unique]
+  connection text
+  queue text
+  payload longtext
+  exception longtext
+  failed_at timestamp
+}
+
+Table activity_log {
+  id bigint [pk, increment]
+  log_name varchar(255) [null]
+  description text
+  subject_type varchar(255) [null]
+  event varchar(255) [null]
+  subject_id bigint [null]
+  causer_type varchar(255) [null]
+  causer_id bigint [null]
+  properties json [null]
+  batch_uuid char(36) [null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+  
+  indexes {
+    subject_type
+    causer_type
+    log_name
+  }
+}
+
+// ===== RELACIONES PRINCIPALES =====
+
+// Relaciones de Ubicación Geográfica
+Ref: estados.pais_id > paises.id
+Ref: municipios.estado_id > estados.id
+Ref: localidades.municipio_id > municipios.id
+Ref: asentamientos.localidad_id > localidades.id
+Ref: asentamientos.tipo_asentamiento_id > tipos_asentamiento.id
+
+// Relaciones de Actividades Económicas
+Ref: actividades_economicas.sector_id > sectores.id
+
+// Relaciones de Usuarios y Proveedores
+Ref: proveedores.usuario_id > users.id
+Ref: tramites.proveedor_id > proveedores.id
+Ref: tramites.procesado_por > users.id
+
+// Relaciones de Trámites
+Ref: direcciones.id_estado > estados.id
+Ref: direcciones.coordenadas_id > coordenadas.id
+Ref: direcciones.id_tramite > tramites.id
+Ref: datos_proveedores.tramite_id > tramites.id
+Ref: contactos.tramite_id > tramites.id
+Ref: accionistas.tramite_id > tramites.id
+
+// Relaciones de Actividades del Trámite
+Ref: actividades.tramite_id > tramites.id
+Ref: actividades.actividad_id > actividades_economicas.id
+
+// Relaciones de Instrumentos Notariales
+Ref: datos_constitutivos.instrumento_notarial_id > instrumentos_notariales.id
+Ref: datos_constitutivos.tramite_id > tramites.id
+Ref: apoderado_legal.instrumento_notarial_id > instrumentos_notariales.id
+Ref: apoderado_legal.tramite_id > tramites.id
+
+// Relaciones de Archivos
+Ref: archivos.idCatalogoArchivo > catalogo_archivos.id
+Ref: archivos.cotejado_por > users.id
+Ref: archivos.tramite_id > tramites.id
+
+// Relaciones de Citas y Notificaciones
+Ref: citas.tramite_id > tramites.id
+Ref: citas.proveedor_id > proveedores.id
+Ref: citas.atendido_por > users.id
+Ref: notificaciones.usuario_id > users.id
+Ref: notificaciones.tramite_id > tramites.id
+
+// Relaciones de Sistema
+Ref: logs.user_id > users.id
+
+// Relaciones de Permisos
+Ref: model_has_permissions.permission_id > permissions.id
+Ref: model_has_roles.role_id > roles.id
+Ref: role_has_permissions.permission_id > permissions.id
+Ref: role_has_permissions.role_id > roles.id
