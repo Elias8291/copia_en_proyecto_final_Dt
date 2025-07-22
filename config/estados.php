@@ -33,6 +33,6 @@ return [
         'Tlaxcala',
         'Veracruz',
         'Yucatán',
-        'Zacatecas'
-    ]
-]; 
+        'Zacatecas',
+    ],
+];

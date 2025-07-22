@@ -12,143 +12,60 @@
             transition: all 0.3s ease-out;
             filter: grayscale(0.3);
         }
+
+        .animate-fadeInUp {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-checkmark {
+            animation: scale-up 0.5s ease-in-out;
+        }
+
+        @keyframes scale-up {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
     </style>
 @endpush
 
 <!-- Componentes Reutilizables -->
 <script src="{{ asset('js/constancia-extractor.js') }}"></script>
-<script src="{{ asset('js/sat-modal.js') }}"></script>
-<script>
-    // Variables globales
-    let extractor = null;
-    let satModal = null;
-    let datosSAT = null;
-
-    // Inicializar componentes
-    document.addEventListener('DOMContentLoaded', function() {
-        extractor = new ConstanciaExtractor({ debug: true });
-        
-        // Modal personalizado para registro
-        satModal = new SATModal({
-            onContinue: function() {
-                // Mostrar formulario de registro al continuar
-                const registrationForm = document.getElementById('registrationForm');
-                if (registrationForm) {
-                    registrationForm.classList.remove('hidden');
-                    console.log('📝 Formulario de registro mostrado');
-                }
-                this.hide();
-            }
-        });
-        
-        console.log('✅ Componentes reutilizables inicializados (ConstanciaExtractor + SATModal)');
-    });
-
-    // Funciones globales simplificadas
-    window.uploadFile = function(input) {
-        if (input.files && input.files.length > 0) {
-            const file = input.files[0];
-            updateFileName(file.name);
-            processFile(file);
-        }
-    };
-
-    window.handleActionButton = function() {
-        const input = document.getElementById('document');
-        if (input?.files?.length > 0) {
-            processFile(input.files[0]);
-        } else {
-            input?.click();
-        }
-    };
-
-    window.togglePassword = function(fieldId) {
-        const field = document.getElementById(fieldId);
-        const icon = document.getElementById(fieldId + '-toggle-icon');
-
-        if (field && icon) {
-            const isPassword = field.type === 'password';
-            field.type = isPassword ? 'text' : 'password';
-            
-            icon.innerHTML = isPassword 
-                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0712 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 711.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m6.121-6.121A9.97 9.97 0 0721 12c0 .906-.117 1.785-.337 2.625m-3.846 6.321L9.878 9.878"></path>'
-                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.723 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
-        }
-    };
-
-    // Procesar archivo usando componentes reutilizables
-    async function processFile(file) {
-        console.log('🚀 Procesando con componentes reutilizables...');
-        
-        await extractor.extractWithCallbacks(file, {
-            onStart: () => showProcessingIndicator(true),
-            onProgress: (message) => console.log('📋', message),
-            onSuccess: (satData, qrUrl) => {
-                console.log('✅ ¡Éxito!', satData);
-                datosSAT = satData;
-                fillHiddenInputs(satData);
-                
-                // Usar modal reutilizable
-                satModal.show(satData, qrUrl);
-            },
-            onError: (error) => {
-                console.error('❌ Error:', error);
-                alert('Error: ' + error);
-            },
-            onFinish: () => showProcessingIndicator(false)
-        });
-    }
-
-    function updateFileName(fileName) {
-        const el = document.getElementById('fileName');
-        if (el) el.textContent = fileName;
-    }
-
-    function showProcessingIndicator(show) {
-        const indicator = document.getElementById('processingStatus');
-        if (indicator) {
-            indicator.classList.toggle('hidden', !show);
-        }
-    }
-
-    function fillHiddenInputs(satData) {
-        const fields = {
-            'satRfc': 'rfc',
-            'satNombre': 'nombre', 
-            'satCurp': 'curp',
-            'satRegimenFiscal': 'regimen_fiscal',
-            'satEstatus': 'estatus',
-            'satEntidadFederativa': 'entidad_federativa',
-            'satMunicipio': 'municipio',
-            'satEmail': 'email',
-            'satTipoPersona': 'tipo_persona',
-            'satCp': 'cp',
-            'satColonia': 'colonia',
-            'satNombreVialidad': 'nombre_vialidad',
-            'satNumeroExterior': 'numero_exterior',
-            'satNumeroInterior': 'numero_interior'
-        };
-
-        Object.entries(fields).forEach(([fieldId, dataKey]) => {
-            const element = document.getElementById(fieldId);
-            if (element && satData[dataKey]) {
-                element.value = satData[dataKey];
-            }
-        });
-
-        console.log('📋 Campos llenados con datos SAT');
-    }
-</script>
+<script src="{{ asset('js/auth/register-handler.js') }}"></script>
 
 @section('content')
-    <!-- Modal para mostrar datos del SAT -->
-    <!-- El modal SAT se crea dinámicamente por SATModal -->
-
-    <!-- Modal de Éxito Reutilizable -->
-    @include('components.modal-success')
 
     <!-- Modal de Loading -->
     @include('components.loading-modal')
+
+    <!-- Modal de Registro Exitoso -->
+    @include('components.modals.auth.registration-success')
+
+    @php
+        $mostrarFormulario = old('sat_rfc') || $errors->any();
+    @endphp
 
     <form method="POST" action="{{ route('register') }}" class="space-y-6" enctype="multipart/form-data">
         @csrf
@@ -175,102 +92,160 @@
             </div>
         </div>
 
-        <!-- Mensajes de error del servidor -->
-        @if ($errors->any())
-            <div class="bg-red-50 border border-red-200 text-red-700 px-2 py-1.5 rounded-lg mb-2">
-                <ul class="list-disc list-inside text-xs">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+        <!-- Mensajes de Estado -->
+        @if (session('error') || $errors->any())
+            <div class="flex justify-center mb-3">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 border border-red-200 shadow-sm animate-fadeInUp">
+                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-xs text-red-700 font-medium">
+                        @if (session('error'))
+                            {{ session('error') }}
+                        @else
+                            @if ($errors->has('document') || $errors->has('sat_file'))
+                                Problema con el archivo subido
+                            @elseif($errors->has('email'))
+                                Error en el correo electrónico
+                            @elseif($errors->has('password'))
+                                Error en la contraseña
+                            @else
+                                Por favor corrija los errores del formulario
+                            @endif
+                        @endif
+                    </span>
+                </div>
             </div>
         @endif
 
-        <!-- Área de subida de PDF -->
-        <div id="uploadArea" class="transition-all duration-300 ease-in-out min-h-[80px]">
-            <div class="mt-1">
-                <label for="document" class="block text-xs font-medium text-gray-700 mb-0.5">
-                    <span class="block md:inline">Constancia de Situación Fiscal</span>
-                    <span class="text-xs text-gray-500 block md:inline md:ml-1">(PDF o Imagen)</span>
-                </label>
-                <div class="relative">
-                    <input type="file" id="document" name="document" accept=".pdf,.png,.jpg,.jpeg" required
-                        class="hidden" onchange="uploadFile(this)">
-                    <label for="document"
-                        class="group flex flex-col items-center justify-center w-full h-16 border-2 border-dashed border-primary/20 hover:border-primary rounded-lg transition-all duration-300 cursor-pointer bg-primary-50/30 hover:bg-primary-50">
-                        <div class="flex flex-col md:flex-row items-center space-y-0.5 md:space-y-0 md:space-x-2 px-3">
-                            <div class="transform group-hover:scale-110 transition-transform duration-300">
-                                <svg class="w-4 h-4 text-primary/70 group-hover:text-primary" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                            </div>
-                            <div class="text-center md:text-left">
-                                <p class="text-primary/70 group-hover:text-primary font-medium text-xs mb-0">
-                                    Haga clic para seleccionar archivo
-                                </p>
-                                <p class="text-xs text-gray-500" id="fileName">
-                                    PDF o Imagen con QR (Máximo 5MB)
-                                </p>
-                            </div>
-                        </div>
-                    </label>
+        @if (session('success'))
+            <div class="flex justify-center mb-3">
+                <div
+                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-100 border border-green-200 shadow-sm animate-fadeInUp">
+                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-xs text-green-700 font-medium">
+                        {{ session('success') }}
+                    </span>
                 </div>
             </div>
+        @endif
 
-            <!-- Estado de procesamiento -->
-            <div id="processingStatus" class="hidden mt-3">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div class="flex items-center justify-center space-x-2">
-                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                        <span class="text-xs text-primary font-medium">Extrayendo datos fiscales automáticamente...</span>
+        @if (!$mostrarFormulario)
+            <div id="uploadArea" class="transition-all duration-300 ease-in-out min-h-[80px]">
+                <div class="mt-1">
+                    <label for="document" class="block text-xs font-medium text-gray-700 mb-0.5">
+                        <span class="block md:inline">Constancia de Situación Fiscal</span>
+                        <span class="text-xs text-gray-500 block md:inline md:ml-1">(PDF o Imagen)</span>
+                    </label>
+                    <div class="relative">
+                        <input type="file" id="document" name="document" accept=".pdf,.png,.jpg,.jpeg" required
+                            class="hidden" onchange="uploadFile(this)">
+                        <label for="document"
+                            class="group flex flex-col items-center justify-center w-full h-16 border-2 border-dashed @error('document') border-red-300 bg-red-50/30 @elseif($errors->has('sat_file')) border-red-300 bg-red-50/30 @else border-primary/20 bg-primary-50/30 @enderror hover:border-primary rounded-lg transition-all duration-300 cursor-pointer hover:bg-primary-50">
+                            <div class="flex flex-col md:flex-row items-center space-y-0.5 md:space-y-0 md:space-x-2 px-3">
+                                <div class="transform group-hover:scale-110 transition-transform duration-300">
+                                    @error('document')
+                                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    @elseif($errors->has('sat_file'))
+                                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    @else
+                                        <svg class="w-4 h-4 text-primary/70 group-hover:text-primary" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    @enderror
+                                </div>
+                                <div class="text-center md:text-left">
+                                    <p
+                                        class="@error('document') text-red-500 @elseif($errors->has('sat_file')) text-red-500 @else text-primary/70 group-hover:text-primary @enderror font-medium text-xs mb-0">
+                                        Haga clic para seleccionar archivo
+                                    </p>
+                                    <p class="text-xs @error('document') text-red-400 @elseif($errors->has('sat_file')) text-red-400 @else text-gray-500 @enderror"
+                                        id="fileName">
+                                        PDF o Imagen con QR (Máximo 5MB)
+                                    </p>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    @error('document')
+                        <div class="mt-1">
+                            <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
+                    @error('sat_file')
+                        <div class="mt-1">
+                            <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
+                </div>
+
+                <!-- Estado de procesamiento -->
+                <div id="processingStatus" class="hidden mt-3">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="flex items-center justify-center space-x-2">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                            <span class="text-xs text-primary font-medium">Extrayendo datos fiscales
+                                automáticamente...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Área de previsualización (oculta) -->
+                <div id="previewArea" class="hidden">
+                    <div class="hidden">
+                        <div id="qrResult"></div>
+                        <canvas id="pdfCanvas"></canvas>
                     </div>
                 </div>
             </div>
+        @endif
 
-            <!-- Área de previsualización (oculta) -->
-            <div id="previewArea" class="hidden">
-                <div class="hidden">
-                    <div id="qrResult"></div>
-                    <canvas id="pdfCanvas"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Formulario de registro (inicialmente oculto) -->
-        <div id="registrationForm" class="hidden space-y-2 transition-all duration-300 ease-in-out">
-            <input type="hidden" id="qrUrl" name="qr_url">
-
-            <!-- Campos ocultos para datos del SAT -->
-            <input type="hidden" id="satRfc" name="sat_rfc">
-            <input type="hidden" id="satNombre" name="sat_nombre">
-            <input type="hidden" id="satTipoPersona" name="sat_tipo_persona">
-            <input type="hidden" id="satCurp" name="sat_curp">
-            <input type="hidden" id="satCp" name="sat_cp">
-            <input type="hidden" id="satColonia" name="sat_colonia">
-            <input type="hidden" id="satNombreVialidad" name="sat_nombre_vialidad">
-            <input type="hidden" id="satNumeroExterior" name="sat_numero_exterior">
-            <input type="hidden" id="satNumeroInterior" name="sat_numero_interior">
-            <input type="hidden" id="satRegimenFiscal" name="sat_regimen_fiscal">
-            <input type="hidden" id="satEstatus" name="sat_estatus">
-            <input type="hidden" id="satEntidadFederativa" name="sat_entidad_federativa">
-            <input type="hidden" id="satMunicipio" name="sat_municipio">
-            <input type="hidden" id="satEmail" name="sat_email">
+        <!-- Formulario de registro (mostrar si hay datos del SAT o errores) -->
+        <div id="registrationForm"
+            class="space-y-2 transition-all duration-300 ease-in-out {{ $mostrarFormulario ? '' : 'hidden' }}">
+            <input type="hidden" id="qr_url" name="qr_url" value="{{ old('qr_url') }}">
+            <input type="hidden" id="sat_rfc" name="sat_rfc" value="{{ old('sat_rfc') }}">
+            <input type="hidden" id="sat_nombre" name="sat_nombre" value="{{ old('sat_nombre') }}">
+            <input type="hidden" id="sat_tipo_persona" name="sat_tipo_persona" value="{{ old('sat_tipo_persona') }}">
+            <input type="hidden" id="sat_email" name="sat_email" value="{{ old('sat_email') }}">
 
             <div>
                 <label for="email" class="block text-xs font-medium text-gray-700 mb-0.5">Correo Electrónico</label>
                 <div class="relative">
-                    <input type="email" id="email" name="email" required
-                        class="w-full px-2.5 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm"
+                    <input type="email" id="email" name="email" required value="{{ old('email') }}"
+                        class="w-full px-2.5 py-1.5 rounded-lg border @error('email') border-red-500 bg-red-50/30 @else border-gray-300 @enderror focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm"
                         placeholder="ejemplo@correo.com">
                     <div id="emailValidationIcon" class="absolute right-2 top-1/2 -translate-y-1/2 hidden"></div>
+                    @error('email')
+                        <div class="absolute right-2 top-1/2 -translate-y-1/2">
+                            <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                    @enderror
                 </div>
-                <div class="h-6 relative">
-                    <div id="emailValidation"
-                        class="absolute top-0 left-0 w-full opacity-0 transform translate-y-1 transition-all duration-200">
+
+                @error('email')
+                    <div class="mt-1">
+                        <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
                     </div>
-                </div>
+                @enderror
             </div>
 
             <!-- Contraseñas -->
@@ -279,19 +254,24 @@
                     <label for="password" class="block text-xs font-medium text-gray-700 mb-0.5">Contraseña</label>
                     <div class="relative">
                         <input type="password" id="password" name="password" required
-                            class="w-full px-2.5 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm"
+                            class="w-full px-2.5 py-1.5 rounded-lg border @error('password') border-red-500 bg-red-50/30 @else border-gray-300 @enderror focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm"
                             placeholder="••••••••">
                         <button type="button" onclick="togglePassword('password')"
                             class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 id="password-toggle-icon">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 616 0z" />
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 01 6 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                         </button>
                     </div>
+                    @error('password')
+                        <div class="mt-1">
+                            <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
 
                 <div>
@@ -299,31 +279,38 @@
                         Contraseña</label>
                     <div class="relative">
                         <input type="password" id="password_confirmation" name="password_confirmation" required
-                            class="w-full px-2.5 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm"
+                            class="w-full px-2.5 py-1.5 rounded-lg border @error('password_confirmation') border-red-500 bg-red-50/30 @else border-gray-300 @enderror focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm"
                             placeholder="••••••••">
                         <div class="absolute right-8 top-1/2 -translate-y-1/2">
-                            <div id="passwordMatchIcon" class="hidden"></div>
+                            @error('password_confirmation')
+                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            @else
+                                <div id="passwordMatchIcon" class="hidden"></div>
+                            @enderror
                         </div>
                         <button type="button" onclick="togglePassword('password_confirmation')"
                             class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                 id="password_confirmation-toggle-icon">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 616 0z" />
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 01 6 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                         </button>
                     </div>
+                    @error('password_confirmation')
+                        <div class="mt-1">
+                            <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
             </div>
 
-            <!-- Área para validación de contraseñas -->
-            <div class="h-6 relative">
-                <div id="passwordMatchValidation"
-                    class="absolute top-0 left-0 w-full opacity-0 transform translate-y-1 transition-all duration-200">
-                </div>
-            </div>
+
         </div>
 
         <!-- Botones de acción -->
@@ -337,7 +324,7 @@
                     <svg id="actionIcon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                     </svg>
-                    <span id="actionText">Siguiente</span>
+                    <span id="actionText">{{ $mostrarFormulario ? 'Registrarse' : 'Siguiente' }}</span>
                 </div>
             </button>
 
@@ -366,4 +353,12 @@
             </a>
         </div>
     </form>
-@endsection 
+
+    @if (session('showSuccessModal'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                mostrarModalRegistroExitoso();
+            });
+        </script>
+    @endif
+@endsection

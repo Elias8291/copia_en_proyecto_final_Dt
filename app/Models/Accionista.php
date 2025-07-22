@@ -5,19 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Accionista extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
         'proveedor_id',
         'nombre_completo',
         'rfc',
         'porcentaje_participacion',
-        'activo'
+        'activo',
     ];
 
     protected $casts = [
@@ -31,7 +31,7 @@ class Accionista extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn(string $eventName) => "Accionista {$eventName}")
+            ->setDescriptionForEvent(fn (string $eventName) => "Accionista {$eventName}")
             ->useLogName('accionista');
     }
 

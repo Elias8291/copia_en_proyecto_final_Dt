@@ -14,8 +14,7 @@ if (typeof DomicilioMap === 'undefined') {
             // Verificar si el elemento del mapa existe
             const mapElement = document.getElementById("map");
             if (!mapElement) {
-                console.warn('Elemento #map no encontrado, saltando inicialización de Google Maps');
-                return;
+                return; // No hay elemento de mapa, salir silenciosamente
             }
 
             const initialPosition = { lat: -34.397, lng: 150.644 };

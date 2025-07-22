@@ -8,9 +8,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes, HasRoles;
 
@@ -19,27 +18,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'correo',
         'rfc',
         'password',
-        'estado',
+        'confirmacion',
+        'confirmation_token',
         'verification_token',
-        'fecha_verificacion_correo',
+        'ultimo_acceso',
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'fecha_verificacion_correo' => 'datetime',
-        'ultimo_acceso' => 'datetime',
-        'password' => 'hashed',
-    ];
-
-    public function getEmailForVerification()
-    {
-        return $this->correo;
-    }
 
     public function proveedor()
     {

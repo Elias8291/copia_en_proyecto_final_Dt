@@ -13,29 +13,29 @@ class VerificationController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
-            return redirect()->route('login')->with('error', 
+        if (! $user) {
+            return redirect()->route('login')->with('error',
                 'El enlace de verificación no es válido.');
         }
 
         if ($user->estado === 'activo') {
-            return redirect()->route('login')->with('info', 
+            return redirect()->route('login')->with('info',
                 'Tu cuenta ya ha sido verificada. Puedes iniciar sesión.');
         }
 
         if ($user->verification_token !== $token) {
-            return redirect()->route('login')->with('error', 
+            return redirect()->route('login')->with('error',
                 'El enlace de verificación no es válido o ha expirado.');
         }
 
         // Verificar si han pasado más de 72 horas
         if ($user->created_at->diffInHours(now()) > 72) {
             Log::info('Token de verificación expirado', ['user_id' => $user->id]);
-            
+
             // Eliminar usuario y datos relacionados
             $this->deleteUserData($user);
-            
-            return redirect()->route('register')->with('error', 
+
+            return redirect()->route('register')->with('error',
                 'El enlace de verificación ha expirado. Tu cuenta ha sido eliminada. Por favor, regístrate nuevamente.');
         }
 
@@ -43,12 +43,12 @@ class VerificationController extends Controller
         $user->update([
             'estado' => 'activo',
             'email_verified_at' => now(),
-            'verification_token' => null
+            'verification_token' => null,
         ]);
 
         Log::info('Usuario verificado exitosamente', ['user_id' => $user->id]);
 
-        return redirect()->route('login')->with('verification_success', 
+        return redirect()->route('login')->with('verification_success',
             '¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.');
     }
 
@@ -56,22 +56,23 @@ class VerificationController extends Controller
     public function resend(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,correo'
+            'email' => 'required|email|exists:users,correo',
         ]);
 
         $user = User::where('correo', $request->email)
-                   ->where('estado', 'pendiente')
-                   ->first();
+            ->where('estado', 'pendiente')
+            ->first();
 
-        if (!$user) {
-            return back()->with('error', 
+        if (! $user) {
+            return back()->with('error',
                 'No se encontró una cuenta pendiente de verificación con este correo.');
         }
 
         // Verificar si han pasado más de 72 horas
         if ($user->created_at->diffInHours(now()) > 72) {
             $this->deleteUserData($user);
-            return back()->with('error', 
+
+            return back()->with('error',
                 'Tu cuenta ha expirado y ha sido eliminada. Por favor, regístrate nuevamente.');
         }
 
@@ -81,7 +82,7 @@ class VerificationController extends Controller
 
         Log::info('Correo de verificación reenviado', ['user_id' => $user->id]);
 
-        return back()->with('success', 
+        return back()->with('success',
             'Correo de verificación reenviado exitosamente.');
     }
 
@@ -92,7 +93,7 @@ class VerificationController extends Controller
         if ($user->proveedor) {
             $user->proveedor->delete();
         }
-        
+
         $user->delete();
     }
-} 
+}

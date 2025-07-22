@@ -16,11 +16,10 @@ class SolicitudCorreccionesEvent
     /**
      * Create a new event instance.
      *
-     * @param Tramite $tramite
      * @return void
      */
     public function __construct(Tramite $tramite)
     {
         $this->tramite = $tramite;
     }
-} 
+}

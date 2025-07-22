@@ -16,7 +16,7 @@ class Tramite extends Model
         'fecha_inicio',
         'fecha_finalizacion',
         'observaciones',
-        'procesado_por'
+        'procesado_por',
     ];
 
     protected $casts = [

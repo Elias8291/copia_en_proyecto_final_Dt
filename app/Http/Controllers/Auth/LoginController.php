@@ -30,17 +30,17 @@ class LoginController extends Controller
 
         $user = User::where('rfc', $request->rfc)->first();
 
-        if (!$user) {
+        if (! $user) {
             return $this->loginError($request, 'No se encontró una cuenta con este RFC.');
         }
 
-        if (!Hash::check($request->password, $user->password)) {
+        if (! Hash::check($request->password, $user->password)) {
             SystemLogService::loginFailed($user->correo);
             return $this->loginError($request, 'La contraseña es incorrecta.');
         }
 
-        if (!$this->isUserVerified($user)) {
-            return $this->loginError($request, $this->getVerificationMessage($user));
+        if (! $user->verification) {
+            return $this->loginError($request, 'Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o spam.');
         }
 
         return $this->performLogin($request, $user);
@@ -84,30 +84,6 @@ class LoginController extends Controller
         return redirect()->back()
             ->withInput($request->only('rfc', 'remember'))
             ->with('error', $message);
-    }
-
-    private function isUserVerified(User $user): bool
-    {
-        // Si el estado es 'Activo', permitir acceso sin verificar correo
-        if ($user->estado === 'activo') {
-            return true;
-        }
-        
-        // Para otros estados, verificar que no sea 'pendiente' y que el correo esté verificado
-        return $user->estado !== 'pendiente' && $user->fecha_verificacion_correo !== null;
-    }
-
-    private function getVerificationMessage(User $user): string
-    {
-        if ($user->estado === 'pendiente') {
-            return 'Tu cuenta está pendiente de verificación. Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o spam.';
-        }
-
-        if ($user->fecha_verificacion_correo === null) {
-            return 'Debes confirmar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o spam.';
-        }
-
-        return 'Tu cuenta no está activa. Contacta al administrador para más información.';
     }
 
     private function performLogin(Request $request, User $user)

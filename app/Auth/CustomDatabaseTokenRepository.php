@@ -22,7 +22,6 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     /**
      * Determine if a token record exists and is valid.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @param  string  $token
      * @return bool
      */
@@ -40,7 +39,6 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     /**
      * Create a new token record.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @return string
      */
     public function create(CanResetPasswordContract $user)
@@ -62,7 +60,6 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     /**
      * Delete a token record.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @return void
      */
     public function delete(CanResetPasswordContract $user)
@@ -73,7 +70,6 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     /**
      * Delete all existing reset tokens from the database.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @return int
      */
     protected function deleteExisting(CanResetPasswordContract $user)
@@ -84,7 +80,6 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     /**
      * Determine if the given user recently created a password reset token.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @return bool
      */
     public function recentlyCreatedToken(CanResetPasswordContract $user)
@@ -95,4 +90,4 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
 
         return $record && $this->tokenRecentlyCreated($record['created_at']);
     }
-} 
+}

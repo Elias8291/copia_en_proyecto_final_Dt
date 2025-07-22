@@ -22,4 +22,4 @@ class Log extends Model
         'url',
         'method',
     ];
-} 
+}

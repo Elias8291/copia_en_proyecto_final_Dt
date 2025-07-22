@@ -4,23 +4,24 @@ namespace App\Exceptions;
 
 use App\Services\ErrorLogService;
 use App\Traits\ApiResponseTrait;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Illuminate\Session\TokenMismatchException;
-use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
     use ApiResponseTrait;
+
     /**
      * A list of exception types with their corresponding custom log levels.
      *
@@ -80,7 +81,7 @@ class Handler extends ExceptionHandler
     protected function renderWebException(Request $request, Throwable $e)
     {
         // Log web errors (except for common ones like 404)
-        if (!($e instanceof NotFoundHttpException) && !($e instanceof ValidationException)) {
+        if (! ($e instanceof NotFoundHttpException) && ! ($e instanceof ValidationException)) {
             ErrorLogService::logError($e, $request);
         }
 
@@ -91,6 +92,7 @@ class Handler extends ExceptionHandler
 
         if ($e instanceof AccessDeniedHttpException) {
             ErrorLogService::logUnauthorizedAccess($request, 'web_access_denied');
+
             return response()->view('errors.403', [], 403);
         }
 
@@ -101,11 +103,13 @@ class Handler extends ExceptionHandler
 
         if ($e instanceof TokenMismatchException) {
             ErrorLogService::logCsrfMismatch($request);
+
             return response()->view('errors.419', [], 419);
         }
 
         if ($e instanceof TooManyRequestsHttpException) {
             ErrorLogService::logRateLimit($request);
+
             return response()->view('errors.429', [], 429);
         }
 
@@ -120,16 +124,16 @@ class Handler extends ExceptionHandler
         // Handle general HTTP exceptions
         if ($e instanceof HttpException) {
             $statusCode = $e->getStatusCode();
-            
+
             if (view()->exists("errors.{$statusCode}")) {
                 return response()->view("errors.{$statusCode}", [
-                    'exception' => $e
+                    'exception' => $e,
                 ], $statusCode);
             }
         }
 
         // Handle 500 errors in production
-        if (app()->environment('production') && !($e instanceof HttpException)) {
+        if (app()->environment('production') && ! ($e instanceof HttpException)) {
             return response()->view('errors.500', [], 500);
         }
 
@@ -142,7 +146,7 @@ class Handler extends ExceptionHandler
     protected function renderApiException(Request $request, Throwable $e)
     {
         // Log API errors
-        if (!($e instanceof ValidationException)) {
+        if (! ($e instanceof ValidationException)) {
             ErrorLogService::logApiError(
                 $e instanceof HttpException ? $e->getStatusCode() : 500,
                 $e->getMessage(),
@@ -161,6 +165,7 @@ class Handler extends ExceptionHandler
 
         if ($e instanceof AccessDeniedHttpException) {
             ErrorLogService::logUnauthorizedAccess($request, 'access_denied');
+
             return $this->forbiddenResponse('Acceso no autorizado');
         }
 
@@ -170,11 +175,13 @@ class Handler extends ExceptionHandler
 
         if ($e instanceof TokenMismatchException) {
             ErrorLogService::logCsrfMismatch($request);
+
             return $this->errorResponse('Token CSRF inválido o expirado', 419);
         }
 
         if ($e instanceof TooManyRequestsHttpException) {
             ErrorLogService::logRateLimit($request);
+
             return $this->rateLimitResponse('Demasiadas solicitudes', $e->getRetryAfter() ?? 60);
         }
 
@@ -189,6 +196,7 @@ class Handler extends ExceptionHandler
         if ($e instanceof HttpException) {
             $statusCode = $e->getStatusCode();
             $message = $e->getMessage() ?: $this->getDefaultMessage($statusCode);
+
             return $this->errorResponse($message, $statusCode);
         }
 
@@ -201,7 +209,7 @@ class Handler extends ExceptionHandler
      */
     protected function getDefaultMessage(int $statusCode): string
     {
-        return match($statusCode) {
+        return match ($statusCode) {
             400 => 'Solicitud incorrecta',
             401 => 'No autorizado',
             403 => 'Acceso prohibido',

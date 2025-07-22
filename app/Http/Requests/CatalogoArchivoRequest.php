@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CatalogoArchivoRequest extends FormRequest
 {
@@ -42,7 +42,7 @@ class CatalogoArchivoRequest extends FormRequest
                 Rule::in(['Física', 'Moral', 'Ambas']),
             ],
             'tipo_archivo' => [
-                'required', 
+                'required',
                 Rule::in(['png', 'pdf', 'mp3']),
             ],
             'es_visible' => [
@@ -61,16 +61,16 @@ class CatalogoArchivoRequest extends FormRequest
             'nombre.string' => 'El nombre debe ser una cadena de texto.',
             'nombre.max' => 'El nombre no puede tener más de 100 caracteres.',
             'nombre.unique' => 'Ya existe un archivo con este nombre.',
-            
+
             'descripcion.string' => 'La descripción debe ser una cadena de texto.',
             'descripcion.max' => 'La descripción no puede tener más de 500 caracteres.',
-            
+
             'tipo_persona.required' => 'Debe seleccionar el tipo de persona.',
             'tipo_persona.in' => 'El tipo de persona debe ser: Física, Moral o Ambas.',
-            
+
             'tipo_archivo.required' => 'Debe seleccionar el tipo de archivo.',
             'tipo_archivo.in' => 'El tipo de archivo debe ser: PDF, PNG o MP3.',
-            
+
             'es_visible.boolean' => 'El estado de visibilidad debe ser verdadero o falso.',
         ];
     }
@@ -102,7 +102,7 @@ class CatalogoArchivoRequest extends FormRequest
         }
 
         // Limpiar la descripción
-        if ($this->has('descripcion') && !empty($this->descripcion)) {
+        if ($this->has('descripcion') && ! empty($this->descripcion)) {
             $this->merge([
                 'descripcion' => trim($this->descripcion),
             ]);
@@ -113,7 +113,7 @@ class CatalogoArchivoRequest extends FormRequest
         }
 
         // Normalizar el boolean es_visible
-        if (!$this->has('es_visible')) {
+        if (! $this->has('es_visible')) {
             $this->merge([
                 'es_visible' => false,
             ]);
@@ -140,10 +140,10 @@ class CatalogoArchivoRequest extends FormRequest
     public function getValidatedData(): array
     {
         $validated = $this->validated();
-        
+
         // Asegurar que es_visible sea boolean
         $validated['es_visible'] = $this->boolean('es_visible', false);
-        
+
         return $validated;
     }
-} 
+}

@@ -14,12 +14,12 @@ class SystemLogService
     public static function log(string $level, string $message, string $channel = 'system', array $context = [], ?Request $request = null)
     {
         $request = $request ?? request();
-        
+
         Log::create([
             'level' => $level,
             'message' => $message,
             'channel' => $channel,
-            'context' => !empty($context) ? json_encode($context) : null,
+            'context' => ! empty($context) ? json_encode($context) : null,
             'user_id' => Auth::id(),
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
@@ -88,7 +88,7 @@ class SystemLogService
         self::info("Usuario creado: {$name} ({$email})", 'usuarios', [
             'user_id' => $userId,
             'name' => $name,
-            'email' => $email
+            'email' => $email,
         ]);
     }
 
@@ -97,7 +97,7 @@ class SystemLogService
         self::info("Usuario actualizado: {$name} ({$email})", 'usuarios', [
             'user_id' => $userId,
             'name' => $name,
-            'email' => $email
+            'email' => $email,
         ]);
     }
 
@@ -106,7 +106,7 @@ class SystemLogService
         self::warning("Usuario eliminado: {$name} ({$email})", 'usuarios', [
             'user_id' => $userId,
             'name' => $name,
-            'email' => $email
+            'email' => $email,
         ]);
     }
 
@@ -115,7 +115,7 @@ class SystemLogService
         self::info("Rol asignado a usuario: {$userName} -> {$roleName}", 'permisos', [
             'user_id' => $userId,
             'user_name' => $userName,
-            'role_name' => $roleName
+            'role_name' => $roleName,
         ]);
     }
 
@@ -126,7 +126,7 @@ class SystemLogService
     {
         self::info("Rol creado: {$roleName}", 'permisos', [
             'role_id' => $roleId,
-            'role_name' => $roleName
+            'role_name' => $roleName,
         ]);
     }
 
@@ -134,7 +134,7 @@ class SystemLogService
     {
         self::info("Rol actualizado: {$roleName}", 'permisos', [
             'role_id' => $roleId,
-            'role_name' => $roleName
+            'role_name' => $roleName,
         ]);
     }
 
@@ -142,7 +142,7 @@ class SystemLogService
     {
         self::warning("Rol eliminado: {$roleName}", 'permisos', [
             'role_id' => $roleId,
-            'role_name' => $roleName
+            'role_name' => $roleName,
         ]);
     }
 
@@ -231,7 +231,7 @@ class SystemLogService
     {
         self::info("Proveedor creado: {$nombre}", 'proveedores', [
             'proveedor_id' => $proveedorId,
-            'nombre' => $nombre
+            'nombre' => $nombre,
         ]);
     }
 
@@ -239,7 +239,7 @@ class SystemLogService
     {
         self::info("Proveedor actualizado: {$nombre}", 'proveedores', [
             'proveedor_id' => $proveedorId,
-            'nombre' => $nombre
+            'nombre' => $nombre,
         ]);
     }
 
@@ -247,7 +247,7 @@ class SystemLogService
     {
         self::warning("Proveedor eliminado: {$nombre}", 'proveedores', [
             'proveedor_id' => $proveedorId,
-            'nombre' => $nombre
+            'nombre' => $nombre,
         ]);
     }
 
@@ -259,7 +259,7 @@ class SystemLogService
         self::info("Cita creada: {$fecha} para {$solicitante}", 'citas', [
             'cita_id' => $citaId,
             'fecha' => $fecha,
-            'solicitante' => $solicitante
+            'solicitante' => $solicitante,
         ]);
     }
 
@@ -268,7 +268,7 @@ class SystemLogService
         self::warning("Cita cancelada: {$fecha} para {$solicitante}", 'citas', [
             'cita_id' => $citaId,
             'fecha' => $fecha,
-            'solicitante' => $solicitante
+            'solicitante' => $solicitante,
         ]);
     }
 
@@ -277,9 +277,9 @@ class SystemLogService
      */
     public static function accessDenied(string $permission, string $url)
     {
-        self::warning("Acceso denegado por permisos insuficientes", 'security', [
+        self::warning('Acceso denegado por permisos insuficientes', 'security', [
             'required_permission' => $permission,
-            'attempted_url' => $url
+            'attempted_url' => $url,
         ]);
     }
 
@@ -291,7 +291,7 @@ class SystemLogService
     /**
      * Registra una acción en el log del sistema
      */
-    public static function registrarAccion(string $accion, string $descripcion, int $registro_id = null, string $tabla = null)
+    public static function registrarAccion(string $accion, string $descripcion, ?int $registro_id = null, ?string $tabla = null)
     {
         return Log::create([
             'accion' => $accion,
@@ -299,7 +299,7 @@ class SystemLogService
             'registro_id' => $registro_id,
             'tabla' => $tabla,
             'usuario_id' => Auth::check() ? Auth::id() : null,
-            'ip' => request()->ip()
+            'ip' => request()->ip(),
         ]);
     }
-} 
+}

@@ -40,6 +40,6 @@ class CatalogoActividad extends Model
 
     public function scopeBuscarPorNombre($query, string $termino)
     {
-        return $query->where('nombre', 'LIKE', '%' . $termino . '%');
+        return $query->where('nombre', 'LIKE', '%'.$termino.'%');
     }
-} 
+}

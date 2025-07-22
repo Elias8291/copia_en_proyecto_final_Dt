@@ -48,4 +48,4 @@ return [
     'terms' => 'términos y condiciones',
     'privacy' => 'política de privacidad',
 
-]; 
+];

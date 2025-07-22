@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Proveedor;
 use App\Models\User;
 use App\Services\ProveedorService;
+use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
-use Carbon\Carbon;
 
 class ProveedorController extends Controller
 {
@@ -18,6 +18,7 @@ class ProveedorController extends Controller
     {
         $this->proveedorService = $proveedorService;
     }
+
     /**
      * Mostrar lista de proveedores
      */
@@ -29,14 +30,14 @@ class ProveedorController extends Controller
         // Filtros de búsqueda
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('rfc', 'like', "%{$search}%")
-                  ->orWhere('razon_social', 'like', "%{$search}%")
-                  ->orWhere('pv_numero', 'like', "%{$search}%")
-                  ->orWhereHas('usuario', function($userQuery) use ($search) {
-                      $userQuery->where('nombre', 'like', "%{$search}%")
-                               ->orWhere('correo', 'like', "%{$search}%");
-                  });
+                    ->orWhere('razon_social', 'like', "%{$search}%")
+                    ->orWhere('pv_numero', 'like', "%{$search}%")
+                    ->orWhereHas('usuario', function ($userQuery) use ($search) {
+                        $userQuery->where('nombre', 'like', "%{$search}%")
+                            ->orWhere('correo', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -56,9 +57,9 @@ class ProveedorController extends Controller
             'activos' => Proveedor::where('estado_padron', 'Activo')->count(),
             'pendientes' => Proveedor::where('estado_padron', 'Pendiente')->count(),
             'vencidos' => Proveedor::where('estado_padron', 'Vencido')
-                ->orWhere(function($q) {
+                ->orWhere(function ($q) {
                     $q->where('fecha_vencimiento_padron', '<', Carbon::now())
-                      ->where('estado_padron', 'Activo');
+                        ->where('estado_padron', 'Activo');
                 })->count(),
         ];
 
@@ -114,7 +115,7 @@ class ProveedorController extends Controller
     public function show(Proveedor $proveedor): View
     {
         $proveedor->load(['usuario', 'tramites', 'accionistas', 'contactos']);
-        
+
         return view('proveedores.show', compact('proveedor'));
     }
 
@@ -124,7 +125,7 @@ class ProveedorController extends Controller
     public function edit(Proveedor $proveedor): View
     {
         $proveedor->load('usuario');
-        
+
         return view('proveedores.edit', compact('proveedor'));
     }
 
@@ -135,8 +136,8 @@ class ProveedorController extends Controller
     {
         $validated = $request->validate([
             'nombre' => 'required|string|max:255',
-            'correo' => 'required|email|unique:users,correo,' . $proveedor->usuario_id,
-            'rfc' => 'required|string|size:12|unique:proveedores,rfc,' . $proveedor->id,
+            'correo' => 'required|email|unique:users,correo,'.$proveedor->usuario_id,
+            'rfc' => 'required|string|size:12|unique:proveedores,rfc,'.$proveedor->id,
             'tipo_persona' => 'required|in:Física,Moral',
             'razon_social' => 'nullable|string|max:255',
             'estado_padron' => 'required|in:Activo,Inactivo,Pendiente,Vencido,Rechazado',
@@ -171,7 +172,7 @@ class ProveedorController extends Controller
     public function destroy(Proveedor $proveedor): RedirectResponse
     {
         $proveedor->delete();
-        
+
         return redirect()->route('proveedores.index')
             ->with('success', 'Proveedor eliminado exitosamente.');
     }
@@ -189,7 +190,7 @@ class ProveedorController extends Controller
 
         $proveedorData = [
             'usuario_id' => $user->id,
-            'rfc' => $data['rfc'], 
+            'rfc' => $data['rfc'],
             'tipo_persona' => $this->determineTipoPersona($data['rfc']),
             'estado_padron' => 'Pendiente',
         ];

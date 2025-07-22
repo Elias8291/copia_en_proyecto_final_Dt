@@ -35,14 +35,14 @@ class TiposAsentamientoSeeder extends Seeder
             'Exhacienda',
             'Finca',
             'Campamento',
-            'Zona naval'
+            'Zona naval',
         ];
 
         $tipos = [];
         foreach ($tiposAsentamiento as $index => $nombre) {
             $tipos[] = [
                 'id' => $index + 1,
-                'nombre' => $nombre
+                'nombre' => $nombre,
             ];
         }
 

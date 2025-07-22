@@ -19,4 +19,4 @@ class CatalogoSector extends Model
     {
         return $this->hasMany(CatalogoActividad::class, 'sector_id');
     }
-} 
+}

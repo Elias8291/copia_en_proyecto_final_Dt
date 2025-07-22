@@ -301,24 +301,13 @@
         <script src="{{ asset('js/tramites/formularios/actividades-buscar.js') }}"></script>
         <script src="{{ asset('js/tramites/codigo-postal-handler.js') }}"></script>
 
-                        <script>
+                <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const totalSteps = {{ $totalSteps }};
                 const stepNames = @json($stepNames);
                 const tipoPersona = '{{ $tipoPersona }}';
                 
-                console.log('Formulario cargado:', {
-                    totalSteps: totalSteps,
-                    stepNames: stepNames,
-                    tipoPersona: tipoPersona
-                });
-                
-                console.log('Secciones encontradas:', document.querySelectorAll('.step-section').length);
-                document.querySelectorAll('.step-section').forEach((section, index) => {
-                    console.log(`Sección ${index + 1}:`, section.dataset.step, section);
-                });
-                
-                // Inicializar navegación con lógica mejorada para botones
+                // Inicializar componentes del formulario
                 window.formularioNavegacion = new FormularioNavegacion(totalSteps, stepNames, tipoPersona);
                 window.actividadesBuscar = new ActividadesBuscar();
                 window.codigoPostalHandler = new CodigoPostalHandler();       

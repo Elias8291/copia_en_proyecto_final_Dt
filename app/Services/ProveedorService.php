@@ -3,28 +3,27 @@
 namespace App\Services;
 
 use App\Models\Proveedor;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class ProveedorService
 {
     /**
      * Get the proveedor associated with the authenticated user
-     *
-     * @return Proveedor|null
      */
     public function getProveedorByUser(): ?Proveedor
     {
         $user = Auth::user();
 
-        if (!$user instanceof User) {
+        if (! $user instanceof User) {
             return null;
         }
 
         try {
             return $user->proveedor()->first();
         } catch (\Exception $e) {
-            \Log::error('Error al obtener proveedor: ' . $e->getMessage());
+            \Log::error('Error al obtener proveedor: '.$e->getMessage());
+
             return null;
         }
     }
@@ -37,12 +36,13 @@ class ProveedorService
             'actualizacion' => false,
             'is_administrative' => false,
             'message' => '',
-            'estado_vigencia' => null
+            'estado_vigencia' => null,
         ];
 
-        if (!$proveedor) {
+        if (! $proveedor) {
             $defaults['inscripcion'] = true;
             $defaults['message'] = 'Para comenzar, realice su inscripción al padrón de proveedores.';
+
             return $defaults;
         }
 
@@ -54,7 +54,7 @@ class ProveedorService
             case 'Vencido':
             case 'Inactivo':
                 $defaults['inscripcion'] = true;
-                $defaults['message'] = 'Su registro está ' . strtolower($estado) . '. Debe realizar el proceso de inscripción.';
+                $defaults['message'] = 'Su registro está '.strtolower($estado).'. Debe realizar el proceso de inscripción.';
                 break;
 
             case 'Activo':
@@ -78,8 +78,6 @@ class ProveedorService
 
     /**
      * Verifica si el usuario autenticado tiene un proveedor asociado en estado Activo
-     *
-     * @return bool
      */
     public function hasActiveProveedor(): bool
     {
@@ -93,7 +91,7 @@ class ProveedorService
      */
     private function getEstadoVigencia($proveedor): ?string
     {
-        if (!$proveedor || !$proveedor->fecha_vencimiento_padron) {
+        if (! $proveedor || ! $proveedor->fecha_vencimiento_padron) {
             return null;
         }
 
@@ -118,7 +116,7 @@ class ProveedorService
      */
     private function estaEnPeriodoRenovacion($proveedor): bool
     {
-        if (!$proveedor || !$proveedor->fecha_vencimiento_padron || $proveedor?->estado_padron !== 'Activo') {
+        if (! $proveedor || ! $proveedor->fecha_vencimiento_padron || $proveedor?->estado_padron !== 'Activo') {
             return false;
         }
 

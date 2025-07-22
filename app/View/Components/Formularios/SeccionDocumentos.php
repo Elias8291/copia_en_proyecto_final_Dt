@@ -7,24 +7,33 @@ use Illuminate\View\Component;
 class SeccionDocumentos extends Component
 {
     public $title;
+
     public $tramite;
+
     public $mostrar_navegacion;
+
     public $documentos;
+
     public $readonly;
+
     public $en_revision;
-    
+
     // ✨ NUEVAS PROPIEDADES PARA ARCHIVOS PESADOS
     public $max_file_size;
+
     public $allowed_extensions;
+
     public $upload_timeout;
+
     public $chunk_size;
+
     public $enable_progress;
 
     public function __construct(
-        $title = 'Documentos Requeridos', 
-        $tramite = null, 
-        $mostrar_navegacion = true, 
-        $documentos = [], 
+        $title = 'Documentos Requeridos',
+        $tramite = null,
+        $mostrar_navegacion = true,
+        $documentos = [],
         $readonly = false,
         $en_revision = false,
         $max_file_size = 104857600, // 100MB por defecto
@@ -39,7 +48,7 @@ class SeccionDocumentos extends Component
         $this->documentos = $documentos;
         $this->readonly = $readonly;
         $this->en_revision = $en_revision;
-        
+
         // ✨ Configuración para archivos pesados
         $this->max_file_size = $max_file_size;
         $this->allowed_extensions = $allowed_extensions;
@@ -47,7 +56,7 @@ class SeccionDocumentos extends Component
         $this->chunk_size = $chunk_size;
         $this->enable_progress = $enable_progress;
     }
-    
+
     /**
      * Obtiene el tamaño máximo de archivo formateado
      */
@@ -55,27 +64,27 @@ class SeccionDocumentos extends Component
     {
         return $this->formatBytes($this->max_file_size);
     }
-    
+
     /**
      * Obtiene las extensiones permitidas como string
      */
     public function getAllowedExtensionsString()
     {
-        return implode(', ', array_map(function($ext) {
-            return '.' . strtoupper($ext);
+        return implode(', ', array_map(function ($ext) {
+            return '.'.strtoupper($ext);
         }, $this->allowed_extensions));
     }
-    
+
     /**
      * Obtiene las extensiones para el atributo accept del input
      */
     public function getAcceptAttribute()
     {
-        return implode(',', array_map(function($ext) {
-            return '.' . $ext;
+        return implode(',', array_map(function ($ext) {
+            return '.'.$ext;
         }, $this->allowed_extensions));
     }
-    
+
     /**
      * Verifica si la subida de archivos pesados está habilitada
      */
@@ -83,7 +92,7 @@ class SeccionDocumentos extends Component
     {
         return $this->max_file_size > 50 * 1024 * 1024; // Más de 50MB se considera pesado
     }
-    
+
     /**
      * Obtiene la configuración de JavaScript para el frontend
      */
@@ -96,10 +105,10 @@ class SeccionDocumentos extends Component
             'chunkSize' => $this->chunk_size,
             'enableProgress' => $this->enable_progress,
             'maxFileSizeFormatted' => $this->getMaxFileSizeFormatted(),
-            'allowedExtensionsString' => $this->getAllowedExtensionsString()
+            'allowedExtensionsString' => $this->getAllowedExtensionsString(),
         ];
     }
-    
+
     /**
      * Formatea bytes en formato legible
      */
@@ -108,33 +117,33 @@ class SeccionDocumentos extends Component
         if ($size == 0) {
             return '0 B';
         }
-        
+
         $base = log($size, 1024);
         $suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
-        
-        return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
+
+        return round(pow(1024, $base - floor($base)), $precision).' '.$suffixes[floor($base)];
     }
-    
+
     /**
      * Determina si se debe mostrar el indicador de progreso
      */
     public function shouldShowProgress()
     {
-        return $this->enable_progress && !$this->readonly;
+        return $this->enable_progress && ! $this->readonly;
     }
-    
+
     /**
      * Obtiene el mensaje descriptivo para el tipo de archivos
      */
     public function getFileTypeDescription()
     {
         $description = $this->getAllowedExtensionsString();
-        $description .= ', máximo ' . $this->getMaxFileSizeFormatted();
-        
+        $description .= ', máximo '.$this->getMaxFileSizeFormatted();
+
         if ($this->isHeavyFileUploadEnabled()) {
             $description .= ' (Subida optimizada para archivos pesados)';
         }
-        
+
         return $description;
     }
 
@@ -142,4 +151,4 @@ class SeccionDocumentos extends Component
     {
         return view('components.formularios.seccion-documentos');
     }
-} 
+}

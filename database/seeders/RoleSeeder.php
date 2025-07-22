@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
@@ -16,47 +16,47 @@ class RoleSeeder extends Seeder
     public function run()
     {
         $this->command->info('Creando roles...');
-        
+
         // === SUPER ADMINISTRADOR ===
         Role::firstOrCreate([
             'name' => 'Super Administrador',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         // === ADMINISTRADOR ===
         Role::firstOrCreate([
             'name' => 'Administrador',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         // === REVISOR DE TRÁMITES ===
         Role::firstOrCreate([
             'name' => 'Revisor de Trámites',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         // === GESTOR DE PROVEEDORES ===
         Role::firstOrCreate([
             'name' => 'Gestor de Proveedores',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         // === SOLICITANTE ===
         Role::firstOrCreate([
             'name' => 'Solicitante',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         // === PROVEEDOR ===
         Role::firstOrCreate([
             'name' => 'Proveedor',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         // === OPERADOR ===
         Role::firstOrCreate([
             'name' => 'Operador',
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         $this->command->info('✅ Roles creados exitosamente');
@@ -68,7 +68,7 @@ class RoleSeeder extends Seeder
     private function asignarPermisosSeguro($role, $permisos)
     {
         $permisosExistentes = [];
-        
+
         foreach ($permisos as $permiso) {
             if (Permission::where('name', $permiso)->where('guard_name', 'web')->exists()) {
                 $permisosExistentes[] = $permiso;
@@ -77,7 +77,7 @@ class RoleSeeder extends Seeder
             }
         }
 
-        if (!empty($permisosExistentes)) {
+        if (! empty($permisosExistentes)) {
             $role->syncPermissions($permisosExistentes);
         }
     }

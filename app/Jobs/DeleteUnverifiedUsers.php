@@ -31,7 +31,7 @@ class DeleteUnverifiedUsers implements ShouldQueue
             Log::info('Eliminando usuario no verificado', [
                 'user_id' => $user->id,
                 'email' => $user->correo,
-                'created_at' => $user->created_at
+                'created_at' => $user->created_at,
             ]);
 
             // Eliminar registros relacionados en cascada
@@ -52,4 +52,4 @@ class DeleteUnverifiedUsers implements ShouldQueue
             Log::info('Usuario no verificado eliminado exitosamente', ['user_id' => $this->userId]);
         }
     }
-} 
+}

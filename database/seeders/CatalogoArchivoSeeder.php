@@ -32,7 +32,7 @@ class CatalogoArchivoSeeder extends Seeder
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
             ],
-            
+
             // Documentos PDF - Persona Moral
             [
                 'nombre' => 'Acta Constitutiva',
@@ -62,7 +62,7 @@ class CatalogoArchivoSeeder extends Seeder
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
             ],
-            
+
             // Documentos comunes
             [
                 'nombre' => 'Constancia de Situación Fiscal',
@@ -78,7 +78,7 @@ class CatalogoArchivoSeeder extends Seeder
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
             ],
-            
+
             // Imágenes PNG
             [
                 'nombre' => 'Logotipo de la Empresa',
@@ -101,7 +101,7 @@ class CatalogoArchivoSeeder extends Seeder
                 'tipo_archivo' => 'png',
                 'es_visible' => true,
             ],
-            
+
             // Archivos de Audio MP3
             [
                 'nombre' => 'Grabación de Entrevista',
@@ -117,7 +117,7 @@ class CatalogoArchivoSeeder extends Seeder
                 'tipo_archivo' => 'mp3',
                 'es_visible' => false,
             ],
-            
+
             // Documentos adicionales
             [
                 'nombre' => 'Carta de Antecedentes No Penales',
@@ -167,6 +167,6 @@ class CatalogoArchivoSeeder extends Seeder
             CatalogoArchivo::create($archivo);
         }
 
-        $this->command->info('Catálogo de archivos creado exitosamente con ' . count($archivos) . ' registros.');
+        $this->command->info('Catálogo de archivos creado exitosamente con '.count($archivos).' registros.');
     }
-} 
+}

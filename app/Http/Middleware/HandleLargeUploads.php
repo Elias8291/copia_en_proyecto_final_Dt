@@ -11,8 +11,6 @@ class HandleLargeUploads
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
      * @return mixed
      */
     public function handle(Request $request, Closure $next)
@@ -36,13 +34,13 @@ class HandleLargeUploads
         // Configurar límites dinámicamente para uploads
         if ($request->hasFile('archivo') || str_contains($request->url(), 'upload-documento')) {
             Log::info('🚀 Configurando límites para archivos grandes...');
-            
+
             ini_set('upload_max_filesize', '50M');
             ini_set('post_max_size', '60M');
             ini_set('memory_limit', '512M');
             ini_set('max_execution_time', 300);
             ini_set('max_input_time', 300);
-            
+
             // Verificar que se aplicaron los cambios
             Log::info('📊 Valores PHP DESPUÉS:', [
                 'upload_max_filesize' => ini_get('upload_max_filesize'),
@@ -54,4 +52,4 @@ class HandleLargeUploads
 
         return $next($request);
     }
-} 
+}

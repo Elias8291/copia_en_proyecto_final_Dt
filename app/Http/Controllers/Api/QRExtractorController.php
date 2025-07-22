@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\SATScraperService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,14 +25,14 @@ class QRExtractorController extends Controller
     {
         try {
             $request->validate([
-                'pdf' => 'required|file|mimes:pdf|max:5120' // 5MB máximo
+                'pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
             ]);
 
             $file = $request->file('pdf');
 
             // Guardar temporalmente el archivo
             $tempPath = $file->store('temp', 'local');
-            $fullPath = storage_path('app/' . $tempPath);
+            $fullPath = storage_path('app/'.$tempPath);
 
             try {
                 // Usar Python script para extraer QR del PDF
@@ -41,17 +41,17 @@ class QRExtractorController extends Controller
                 if ($qrUrl) {
                     // Scrapear datos del SAT usando la URL extraída
                     $satData = $this->satScraperService->extractDataFromQRUrl($qrUrl);
-                    
+
                     return response()->json([
                         'success' => true,
                         'url' => $qrUrl,
                         'sat_data' => $satData,
-                        'message' => 'Código QR extraído y datos procesados exitosamente'
+                        'message' => 'Código QR extraído y datos procesados exitosamente',
                     ]);
                 } else {
                     return response()->json([
                         'success' => false,
-                        'error' => 'No se encontró código QR en el PDF'
+                        'error' => 'No se encontró código QR en el PDF',
                     ], 404);
                 }
             } finally {
@@ -62,14 +62,14 @@ class QRExtractorController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Archivo inválido. Debe ser un PDF de máximo 5MB.',
-                'details' => $e->errors()
+                'details' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Error extrayendo QR del PDF: ' . $e->getMessage());
+            Log::error('Error extrayendo QR del PDF: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'error' => 'Error interno del servidor al procesar el PDF'
+                'error' => 'Error interno del servidor al procesar el PDF',
             ], 500);
         }
     }
@@ -83,7 +83,7 @@ class QRExtractorController extends Controller
             $pythonScript = app_path('Python/qr_extractor.py');
 
             // Verificar que el script existe
-            if (!file_exists($pythonScript)) {
+            if (! file_exists($pythonScript)) {
                 throw new \Exception('Script de Python no encontrado');
             }
 
@@ -103,7 +103,8 @@ class QRExtractorController extends Controller
 
             return $result['success'] ? $result['url'] : null;
         } catch (\Exception $e) {
-            Log::error('Error en script Python: ' . $e->getMessage());
+            Log::error('Error en script Python: '.$e->getMessage());
+
             return null;
         }
     }
@@ -116,7 +117,7 @@ class QRExtractorController extends Controller
         try {
             $nodeScript = app_path('JavaScript/qr_extractor.js');
 
-            if (!file_exists($nodeScript)) {
+            if (! file_exists($nodeScript)) {
                 return null;
             }
 
@@ -131,7 +132,8 @@ class QRExtractorController extends Controller
 
             return $result['success'] ? $result['url'] : null;
         } catch (\Exception $e) {
-            Log::error('Error en script Node.js: ' . $e->getMessage());
+            Log::error('Error en script Node.js: '.$e->getMessage());
+
             return null;
         }
     }
@@ -143,16 +145,16 @@ class QRExtractorController extends Controller
     {
         try {
             $request->validate([
-                'url' => 'required|url'
+                'url' => 'required|url',
             ]);
 
             $url = $request->input('url');
-            
+
             // Verificar que sea una URL del SAT
-            if (!str_contains($url, 'siat.sat.gob.mx')) {
+            if (! str_contains($url, 'siat.sat.gob.mx')) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'La URL debe ser del sitio oficial del SAT'
+                    'error' => 'La URL debe ser del sitio oficial del SAT',
                 ], 400);
             }
 
@@ -162,21 +164,21 @@ class QRExtractorController extends Controller
                 'success' => true,
                 'url' => $url,
                 'sat_data' => $satData,
-                'message' => 'Datos extraídos exitosamente'
+                'message' => 'Datos extraídos exitosamente',
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'error' => 'URL inválida',
-                'details' => $e->errors()
+                'details' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Error scrapeando datos del SAT: ' . $e->getMessage());
+            Log::error('Error scrapeando datos del SAT: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'error' => 'Error interno del servidor al procesar los datos'
+                'error' => 'Error interno del servidor al procesar los datos',
             ], 500);
         }
     }

@@ -10,7 +10,7 @@ class PaisSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Cargando países...');
-        
+
         $paises = [
             'México',
             'Estados Unidos',
@@ -37,16 +37,16 @@ class PaisSeeder extends Seeder
             'Puerto Rico',
         ];
 
-        $paisesData = array_map(function($nombre) {
+        $paisesData = array_map(function ($nombre) {
             return [
                 'nombre' => $nombre,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
         }, $paises);
-        
+
         DB::table('paises')->insert($paisesData);
-        
+
         $this->command->info('Países cargados exitosamente');
     }
 }

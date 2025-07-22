@@ -10,26 +10,23 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Super Administrador
         $superAdmin = User::firstOrCreate(['correo' => '20161302@itoaxaca.edu.mx'], [
             'nombre' => 'Elias Abisai Ramos Jacinto',
             'rfc' => 'RAJE020226G97',
-            'estado' => 'activo',
             'password' => Hash::make('gSSKAtlVP'),
-            'fecha_verificacion_correo' => now(),
-
+            'verification' => true,
             'verification_token' => null,
+            'ultimo_acceso' => null,
         ]);
         $superAdmin->assignRole('Super Administrador');
 
-        // Administrador
         $admin = User::firstOrCreate(['correo' => '20161273@itoaxaca.edu.mx'], [
             'nombre' => 'Jacqueline Patricia Miguel Pensamiento Dominguez',
             'rfc' => 'MIDJ020222G49',
-            'estado' => 'activo',
             'password' => Hash::make('vHiTUCYQ'),
-            'fecha_verificacion_correo' => now(),
+            'verification' => true,
             'verification_token' => null,
+            'ultimo_acceso' => null,
         ]);
         $admin->assignRole('Administrador');
 

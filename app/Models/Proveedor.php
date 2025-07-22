@@ -16,11 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $rfc
  * @property string $tipo_persona
  * @property string $estado_padron
- * @property bool $es_activo
  * @property \Carbon\Carbon|null $fecha_alta_padron
  * @property \Carbon\Carbon|null $fecha_vencimiento_padron
- * @property string|null $observaciones
- * @property string|null $razon_social
  * @property \Carbon\Carbon|null $created_at
  * @property \Carbon\Carbon|null $updated_at
  */
@@ -36,24 +33,19 @@ class Proveedor extends Model
         'rfc',
         'tipo_persona',
         'estado_padron',
-        'es_activo',
         'fecha_alta_padron',
-        'fecha_vencimiento_padron',
-        'observaciones',
-        'razon_social'
+        'fecha_vencimiento_padron'
     ];
 
     protected $casts = [
         'fecha_alta_padron' => 'date',
         'fecha_vencimiento_padron' => 'date',
-        'es_activo' => 'boolean',
         'estado_padron' => 'string',
         'tipo_persona' => 'string',
     ];
 
     protected $attributes = [
         'estado_padron' => 'Pendiente',
-        'es_activo' => true,
     ];
 
     public function user(): BelongsTo
@@ -66,10 +58,7 @@ class Proveedor extends Model
         return $this->hasMany(Tramite::class, 'proveedor_id');
     }
 
-    public function scopeActivos($query)
-    {
-        return $query->where('es_activo', true);
-    }
+    // Scope activos removido - columna es_activo no existe en la tabla actual
 
     public function scopePorEstado($query, string $estado)
     {

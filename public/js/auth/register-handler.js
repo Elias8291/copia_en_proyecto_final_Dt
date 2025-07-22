@@ -1,262 +1,253 @@
+// Variable global para almacenar datos del SAT
+let satDataGlobal = null;
+
 /**
- * Manejador de registro con extracción de datos SAT
+ * Determinar tipo de persona basándose en la longitud del RFC
+ * @param {string} rfc - RFC del contribuyente
+ * @returns {string} - 'Física' o 'Moral'
  */
-class RegisterHandler {
-    constructor() {
-        this.extractor = null;
-        this.satModal = null;
-        this.datosSAT = null;
-        this.init();
+function determinarTipoPersona(rfc) {
+    if (!rfc || typeof rfc !== 'string') {
+        console.warn('⚠️ RFC inválido para determinar tipo de persona:', rfc);
+        return 'Física'; // Default a Física
     }
-
-    init() {
-        document.addEventListener('DOMContentLoaded', () => {
-            this.initializeComponents();
-            this.bindEvents();
-        });
+    
+    // Limpiar el RFC (quitar espacios y convertir a mayúsculas)
+    const rfcLimpio = rfc.trim().toUpperCase();
+    
+    // Validar que sea un RFC válido (solo letras y números)
+    const rfcRegex = /^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/;
+    if (!rfcRegex.test(rfcLimpio)) {
+        console.warn('⚠️ RFC no tiene formato válido:', rfcLimpio);
+        return 'Física'; // Default a Física si el formato es inválido
     }
-
-    initializeComponents() {
-        console.log('🚀 Inicializando componentes...');
-
-        this.extractor = new ConstanciaExtractor({
-            debug: true
-        });
-
-        this.satModal = new SATModal({
-            onContinue: () => {
-                console.log('🔄 Botón continuar presionado en modal');
-                this.satModal.hide();
-                this.continueWithRegistration();
-            },
-            onClose: () => {
-                console.log('🔄 Modal cerrado');
-            }
-        });
-
-        console.log('✅ Componentes inicializados');
-    }
-
-    bindEvents() {
-        // Eventos globales
-        window.uploadFile = (input) => this.uploadFile(input);
-        window.handleActionButton = () => this.handleActionButton();
-        window.togglePassword = (fieldId) => this.togglePassword(fieldId);
-        window.continueWithRegistration = () => this.continueWithRegistration();
-    }
-
-    uploadFile(input) {
-        if (input.files && input.files.length > 0) {
-            const file = input.files[0];
-            this.updateFileName(file.name);
-            this.processFile(file);
-        }
-    }
-
-    handleActionButton() {
-        const input = document.getElementById('document');
-        if (input?.files?.length > 0) {
-            this.processFile(input.files[0]);
-        } else {
-            input?.click();
-        }
-    }
-
-    togglePassword(fieldId) {
-        const field = document.getElementById(fieldId);
-        const icon = document.getElementById(fieldId + '-toggle-icon');
-
-        if (field && icon) {
-            const isPassword = field.type === 'password';
-            field.type = isPassword ? 'text' : 'password';
-
-            const eyeIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
-            const eyeOffIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0712 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 711.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m6.121-6.121A9.97 9.97 0 0721 12c0 .906-.117 1.785-.337 2.625m-3.846 6.321L9.878 9.878"></path>';
-
-            icon.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
-        }
-    }
-
-    async processFile(file) {
-        console.log('🚀 Procesando archivo:', file.name);
-
-        await this.extractor.extractWithCallbacks(file, {
-            onStart: () => {
-                console.log('📋 Iniciando extracción...');
-                this.showProcessingIndicator(true);
-            },
-            onProgress: (message) => {
-                console.log('📋 Progreso:', message);
-            },
-            onSuccess: (satData, qrUrl) => {
-                console.log('✅ ¡Éxito! Datos extraídos:', satData);
-                this.datosSAT = satData;
-                this.fillHiddenInputs(satData);
-                this.showSuccessMessage('¡Datos extraídos exitosamente! Completando formulario...');
-                
-                setTimeout(() => {
-                    this.continueWithRegistration();
-                }, 1500);
-            },
-            onError: (error) => {
-                console.error('❌ Error:', error);
-                this.showErrorMessage(error);
-            },
-            onFinish: () => {
-                console.log('🏁 Proceso terminado');
-                this.showProcessingIndicator(false);
-            }
-        });
-    }
-
-    continueWithRegistration() {
-        console.log('📝 Iniciando proceso de registro...');
-
-        const registrationForm = document.getElementById('registrationForm');
-        const uploadArea = document.getElementById('uploadArea');
-        const actionButton = document.getElementById('actionButton');
-
-        if (registrationForm && uploadArea) {
-            // Animación de transición
-            uploadArea.style.transform = 'translateY(-20px)';
-            uploadArea.style.opacity = '0.5';
-
-            setTimeout(() => {
-                registrationForm.classList.remove('hidden');
-                registrationForm.style.transform = 'translateY(20px)';
-                registrationForm.style.opacity = '0';
-
-                setTimeout(() => {
-                    registrationForm.style.transform = 'translateY(0)';
-                    registrationForm.style.opacity = '1';
-                }, 50);
-            }, 200);
-
-            // Actualizar botón
-            this.updateActionButton(actionButton);
-        }
-
-        console.log('📝 Formulario de registro mostrado');
-    }
-
-    updateActionButton(actionButton) {
-        if (actionButton) {
-            const actionText = actionButton.querySelector('span');
-            const actionIcon = actionButton.querySelector('svg');
-
-            if (actionText) actionText.textContent = 'Registrarse';
-            if (actionIcon) {
-                actionIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>';
-            }
-        }
-    }
-
-    updateFileName(fileName) {
-        const el = document.getElementById('fileName');
-        if (el) el.textContent = fileName;
-    }
-
-    showProcessingIndicator(show) {
-        const indicator = document.getElementById('processingStatus');
-        if (indicator) {
-            indicator.classList.toggle('hidden', !show);
-        } else if (show) {
-            this.createProcessingIndicator();
-        }
-    }
-
-    createProcessingIndicator() {
-        const uploadArea = document.getElementById('uploadArea');
-        if (uploadArea) {
-            const processingDiv = document.createElement('div');
-            processingDiv.id = 'processingStatus';
-            processingDiv.className = 'mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3';
-            processingDiv.innerHTML = `
-                <div class="flex items-center justify-center space-x-2">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                    <span class="text-xs text-primary font-medium">Extrayendo datos fiscales automáticamente...</span>
-                </div>
-            `;
-            uploadArea.appendChild(processingDiv);
-        }
-    }
-
-    fillHiddenInputs(satData) {
-        const fields = {
-            'satRfc': 'rfc',
-            'satNombre': 'nombre',
-            'satCurp': 'curp',
-            'satRegimenFiscal': 'regimen_fiscal',
-            'satEstatus': 'estatus',
-            'satEntidadFederativa': 'entidad_federativa',
-            'satMunicipio': 'municipio',
-            'satEmail': 'email',
-            'satTipoPersona': 'tipo_persona',
-            'satCp': 'cp',
-            'satColonia': 'colonia',
-            'satNombreVialidad': 'nombre_vialidad',
-            'satNumeroExterior': 'numero_exterior',
-            'satNumeroInterior': 'numero_interior'
-        };
-
-        Object.entries(fields).forEach(([fieldId, dataKey]) => {
-            const element = document.getElementById(fieldId);
-            if (element && satData[dataKey]) {
-                element.value = satData[dataKey];
-            }
-        });
-
-        console.log('📋 Campos llenados con datos SAT');
-    }
-
-    showSuccessMessage(message) {
-        this.showNotification(message, 'success');
-    }
-
-    showErrorMessage(error) {
-        this.showNotification(error, 'error');
-    }
-
-    showNotification(message, type = 'success') {
-        const isSuccess = type === 'success';
-        const bgColor = isSuccess ? 'bg-emerald-500' : 'bg-red-500';
-        const icon = isSuccess 
-            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
-            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
-        const title = isSuccess ? '¡Éxito!' : 'Error al procesar archivo';
-
-        const notificationDiv = document.createElement('div');
-        notificationDiv.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-4 rounded-lg shadow-lg z-50 transform translate-x-full transition-transform duration-300`;
-        
-        notificationDiv.innerHTML = `
-            <div class="flex items-center space-x-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    ${icon}
-                </svg>
-                <div>
-                    <h4 class="font-semibold">${title}</h4>
-                    <p class="text-sm">${message}</p>
-                </div>
-                ${!isSuccess ? '<button onclick="this.parentElement.parentElement.remove()" class="text-white/80 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>' : ''}
-            </div>
-        `;
-
-        document.body.appendChild(notificationDiv);
-
-        // Animación de entrada
-        setTimeout(() => {
-            notificationDiv.classList.remove('translate-x-full');
-            notificationDiv.classList.add('translate-x-0');
-        }, 10);
-
-        // Auto-remover
-        const timeout = isSuccess ? 3000 : 5000;
-        setTimeout(() => {
-            notificationDiv.classList.add('translate-x-full');
-            setTimeout(() => notificationDiv.remove(), 300);
-        }, timeout);
+    
+    if (rfcLimpio.length === 13) {
+        // RFC de 13 caracteres = Persona Física
+        console.log('✅ RFC de 13 caracteres → Persona Física');
+        return 'Física';
+    } else if (rfcLimpio.length === 12) {
+        // RFC de 12 caracteres = Persona Moral
+        console.log('✅ RFC de 12 caracteres → Persona Moral');
+        return 'Moral';
+    } else {
+        // Longitud no estándar, defaultear a Física
+        console.warn('⚠️ RFC con longitud no estándar (' + rfcLimpio.length + ' caracteres) → Default a Persona Física');
+        return 'Física';
     }
 }
 
-// Inicializar
-new RegisterHandler();
+/**
+ * Manejador simplificado para extracción de datos fiscales del SAT
+ */
+class RegisterHandler {
+    constructor() {
+        this.extractor = new ConstanciaExtractor({ debug: true });
+    }
+
+    /**
+     * Procesa un archivo PDF para extraer datos fiscales del SAT
+     * @param {File} file - Archivo PDF de la constancia fiscal
+     * @returns {Promise<Object>} - Datos extraídos del SAT o error
+     */
+    async processFile(file) {
+        try {
+            console.log("🚀 Procesando archivo:", file.name);
+
+            const result = await this.extractor.extract(file);
+
+            if (result.success) {
+                console.log("✅ Datos extraídos:", result.sat_data);
+                return {
+                    success: true,
+                    sat_data: result.sat_data,
+                    qr_url: result.qr_url,
+                };
+            } else {
+                console.error("❌ Error:", result.error);
+                return {
+                    success: false,
+                    error: result.error,
+                };
+            }
+        } catch (error) {
+            console.error("❌ Error inesperado:", error.message);
+            return {
+                success: false,
+                error: "Error interno: " + error.message,
+            };
+        }
+    }
+}
+
+// Función global para el upload
+window.uploadFile = async function (input) {
+    if (input.files && input.files.length > 0) {
+        const file = input.files[0];
+        const handler = new RegisterHandler();
+
+        // Actualizar nombre del archivo
+        const fileNameEl = document.getElementById("fileName");
+        if (fileNameEl) fileNameEl.textContent = file.name;
+
+        // Mostrar indicador de procesamiento
+        const processingStatus = document.getElementById("processingStatus");
+        if (processingStatus) processingStatus.classList.remove("hidden");
+
+        // Procesar archivo
+        const result = await handler.processFile(file);
+
+        // Ocultar indicador
+        if (processingStatus) processingStatus.classList.add("hidden");
+
+        if (result.success) {
+            // Guardar datos del SAT globalmente
+            satDataGlobal = result.sat_data;
+            
+            // Llenar campos ocultos
+            fillHiddenInputs(result.sat_data);
+
+            // Mostrar formulario de registro
+            showRegistrationForm();
+        } else {
+            alert("Error: " + result.error);
+        }
+    }
+};
+
+// Función para llenar campos ocultos
+function fillHiddenInputs(satData) {
+    const fields = {
+        sat_rfc: "rfc",
+        sat_nombre: "nombre",
+        sat_tipo_persona: "tipo_persona",
+        // No llenar sat_email - el usuario debe introducir su propio email
+    };
+
+    Object.entries(fields).forEach(([fieldId, dataKey]) => {
+        const element = document.getElementById(fieldId);
+        if (element && satData[dataKey]) {
+            element.value = satData[dataKey];
+        }
+    });
+}
+
+// Función para mostrar formulario de registro
+function showRegistrationForm() {
+    const registrationForm = document.getElementById("registrationForm");
+    const actionButton = document.getElementById("actionButton");
+
+    if (registrationForm) {
+        registrationForm.classList.remove("hidden");
+    }
+
+    if (actionButton) {
+        const actionText = actionButton.querySelector("span");
+        if (actionText) actionText.textContent = "Registrarse";
+    }
+}
+
+// Función global para el botón de acción
+window.handleActionButton = function () {
+    const input = document.getElementById("document");
+    const registrationForm = document.getElementById("registrationForm");
+
+    if (registrationForm && !registrationForm.classList.contains("hidden")) {
+        // Si el formulario ya está visible, enviar con datos del SAT
+        submitRegistrationWithSatData();
+    } else {
+        // Si no, abrir selector de archivo
+        input?.click();
+    }
+};
+
+// Función para enviar registro con datos del SAT
+function submitRegistrationWithSatData() {
+    const form = document.querySelector("form");
+    
+    if (!form) {
+        alert('❌ No se encontró el formulario');
+        return;
+    }
+    
+    // Validaciones básicas del lado cliente
+    const email = document.getElementById('email')?.value?.trim();
+    const password = document.getElementById('password')?.value;
+    const passwordConfirmation = document.getElementById('password_confirmation')?.value;
+    
+    if (!email) {
+        alert('❌ El correo electrónico es obligatorio');
+        document.getElementById('email')?.focus();
+        return;
+    }
+    
+    // Validar formato de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        alert('❌ Por favor ingrese un correo electrónico con formato válido');
+        document.getElementById('email')?.focus();
+        return;
+    }
+    
+    if (!password) {
+        alert('❌ La contraseña es obligatoria');
+        document.getElementById('password')?.focus();
+        return;
+    }
+    
+    if (password !== passwordConfirmation) {
+        alert('❌ Las contraseñas no coinciden');
+        document.getElementById('password_confirmation')?.focus();
+        return;
+    }
+    
+    // Si hay datos del SAT, llenar los campos antes de enviar
+    if (satDataGlobal) {
+        console.log('🔍 Llenando datos del SAT en el formulario:', satDataGlobal);
+        
+        // Llenar campos ocultos con datos del SAT
+        const rfc = satDataGlobal.rfc || '';
+        const tipoPersona = determinarTipoPersona(rfc);
+        
+        // Establecer valores en campos ocultos
+        document.getElementById('sat_rfc').value = rfc;
+        document.getElementById('sat_nombre').value = satDataGlobal.nombre || '';
+        document.getElementById('sat_tipo_persona').value = tipoPersona;
+        document.getElementById('sat_email').value = satDataGlobal.email || '';
+        
+        console.log('✅ Datos del SAT establecidos en el formulario');
+    }
+    
+    // Mostrar loading
+    showLoading('Registrando usuario...');
+    
+    // Enviar formulario normalmente (sin AJAX)
+    form.submit();
+}
+
+// Función de loading simple
+function showLoading(message) {
+    const button = document.getElementById('actionButton');
+    if (button) {
+        button.disabled = true;
+        button.querySelector('span').textContent = message || 'Procesando...';
+    }
+}
+
+// Función global para toggle de contraseña
+window.togglePassword = function (fieldId) {
+    const field = document.getElementById(fieldId);
+    const icon = document.getElementById(fieldId + "-toggle-icon");
+
+    if (field && icon) {
+        const isPassword = field.type === "password";
+        field.type = isPassword ? "text" : "password";
+
+        const eyeIcon =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 01 6 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+        const eyeOffIcon =
+            '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 01 12 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 01 1.563-3.029m5.858.908a3 3 0 11 4.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m6.121-6.121A9.97 9.97 0 01 21 12c0 .906-.117 1.785-.337 2.625m-3.846 6.321L9.878 9.878"></path>';
+
+        icon.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
+    }
+};

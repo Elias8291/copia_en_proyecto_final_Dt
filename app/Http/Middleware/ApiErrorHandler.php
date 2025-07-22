@@ -3,9 +3,9 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Http\JsonResponse;
 
 class ApiErrorHandler
 {
@@ -17,7 +17,7 @@ class ApiErrorHandler
         $response = $next($request);
 
         // Only handle API requests
-        if (!$request->expectsJson() && !$request->is('api/*')) {
+        if (! $request->expectsJson() && ! $request->is('api/*')) {
             return $response;
         }
 
@@ -39,7 +39,7 @@ class ApiErrorHandler
 
         // Try to decode existing JSON response
         $data = json_decode($content, true);
-        
+
         // If it's already a proper JSON error response, return it
         if (is_array($data) && isset($data['error'])) {
             return response()->json($data, $statusCode);
@@ -71,7 +71,7 @@ class ApiErrorHandler
      */
     protected function getErrorMessage(int $statusCode): string
     {
-        return match($statusCode) {
+        return match ($statusCode) {
             400 => 'Solicitud incorrecta',
             401 => 'No autorizado',
             403 => 'Acceso prohibido',

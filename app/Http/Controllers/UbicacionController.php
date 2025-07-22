@@ -13,13 +13,13 @@ class UbicacionController extends Controller
     public function buscarPorCodigoPostal(Request $request)
     {
         $request->validate([
-            'codigo_postal' => 'required|string|min:5|max:5'
+            'codigo_postal' => 'required|string|min:5|max:5',
         ]);
 
         $codigoPostal = $request->codigo_postal;
 
         try {
-            $ubicaciones = DB::select("
+            $ubicaciones = DB::select('
                 SELECT 
                     a.nombre AS asentamiento,
                     a.codigo_postal,
@@ -41,25 +41,25 @@ class UbicacionController extends Controller
                 INNER JOIN paises p ON e.pais_id = p.id
                 WHERE a.codigo_postal = ?
                 ORDER BY a.nombre ASC
-            ", [$codigoPostal]);
+            ', [$codigoPostal]);
 
             if (empty($ubicaciones)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No se encontraron datos para el código postal proporcionado'
+                    'message' => 'No se encontraron datos para el código postal proporcionado',
                 ], 404);
             }
 
             return response()->json([
                 'success' => true,
                 'data' => $ubicaciones,
-                'total' => count($ubicaciones)
+                'total' => count($ubicaciones),
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al buscar la información: ' . $e->getMessage()
+                'message' => 'Error al buscar la información: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -70,21 +70,21 @@ class UbicacionController extends Controller
     public function getEstados()
     {
         try {
-            $estados = DB::select("
+            $estados = DB::select('
                 SELECT id, nombre 
                 FROM estados 
                 ORDER BY nombre ASC
-            ");
+            ');
 
             return response()->json([
                 'success' => true,
-                'data' => $estados
+                'data' => $estados,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los estados: ' . $e->getMessage()
+                'message' => 'Error al obtener los estados: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -95,26 +95,26 @@ class UbicacionController extends Controller
     public function getMunicipiosPorEstado(Request $request)
     {
         $request->validate([
-            'estado_id' => 'required|integer'
+            'estado_id' => 'required|integer',
         ]);
 
         try {
-            $municipios = DB::select("
+            $municipios = DB::select('
                 SELECT id, nombre 
                 FROM municipios 
                 WHERE estado_id = ?
                 ORDER BY nombre ASC
-            ", [$request->estado_id]);
+            ', [$request->estado_id]);
 
             return response()->json([
                 'success' => true,
-                'data' => $municipios
+                'data' => $municipios,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los municipios: ' . $e->getMessage()
+                'message' => 'Error al obtener los municipios: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -125,26 +125,26 @@ class UbicacionController extends Controller
     public function getLocalidadesPorMunicipio(Request $request)
     {
         $request->validate([
-            'municipio_id' => 'required|integer'
+            'municipio_id' => 'required|integer',
         ]);
 
         try {
-            $localidades = DB::select("
+            $localidades = DB::select('
                 SELECT id, nombre 
                 FROM localidades 
                 WHERE municipio_id = ?
                 ORDER BY nombre ASC
-            ", [$request->municipio_id]);
+            ', [$request->municipio_id]);
 
             return response()->json([
                 'success' => true,
-                'data' => $localidades
+                'data' => $localidades,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener las localidades: ' . $e->getMessage()
+                'message' => 'Error al obtener las localidades: '.$e->getMessage(),
             ], 500);
         }
     }

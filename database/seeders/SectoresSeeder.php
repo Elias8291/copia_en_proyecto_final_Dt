@@ -11,18 +11,20 @@ class SectoresSeeder extends Seeder
     public function run()
     {
         $this->command->info('Cargando sectores...');
-        
+
         $jsonPath = database_path('json/sectores.json');
-        
-        if (!File::exists($jsonPath)) {
+
+        if (! File::exists($jsonPath)) {
             $this->command->error('Error: Archivo sectores.json no encontrado en database/json/');
+
             return;
         }
-        
+
         $data = json_decode(File::get($jsonPath), true);
-        
-        if (!$data || !isset($data['Hoja1'])) {
+
+        if (! $data || ! isset($data['Hoja1'])) {
             $this->command->error('Error: Archivo de sectores inválido o estructura incorrecta');
+
             return;
         }
 
@@ -36,7 +38,7 @@ class SectoresSeeder extends Seeder
         })->toArray();
 
         DB::table('sectores')->insert($sectores);
-        
-        $this->command->info('Sectores cargados exitosamente: ' . count($sectores) . ' registros');
+
+        $this->command->info('Sectores cargados exitosamente: '.count($sectores).' registros');
     }
 }

@@ -18,7 +18,7 @@ class DatosProveedor extends Model
         'curp',
         'razon_social',
         'pagina_web',
-        'telefono'
+        'telefono',
     ];
 
     public function tramite()

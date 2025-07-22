@@ -21,21 +21,21 @@ class CheckSessionExpiry
         if (Auth::check() && $request->session()->isStarted()) {
             $sessionLifetime = config('session.lifetime', 30); // minutos
             $lastActivity = Session::get('last_activity');
-            
+
             if ($lastActivity) {
                 $timeSinceLastActivity = now()->diffInMinutes($lastActivity);
-                
+
                 // Si han pasado más minutos que el límite de sesión
                 if ($timeSinceLastActivity > $sessionLifetime) {
                     Auth::logout();
                     Session::invalidate();
                     Session::regenerateToken();
-                    
+
                     return redirect()->route('login')
                         ->with('session_expired', 'Tu sesión ha expirado por inactividad. Por favor, inicia sesión nuevamente.');
                 }
             }
-            
+
             // Actualizar la hora de última actividad solo para usuarios autenticados
             Session::put('last_activity', now());
         }

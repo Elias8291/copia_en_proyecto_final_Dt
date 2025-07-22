@@ -68,4 +68,4 @@ return [
         'files' => 'archivos',
     ],
 
-]; 
+];

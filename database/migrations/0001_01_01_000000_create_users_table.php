@@ -12,12 +12,11 @@ return new class extends Migration
             $table->id();
             $table->string('nombre');
             $table->string('correo')->unique();
-            $table->timestamp('fecha_verificacion_correo')->nullable();
             $table->string('password');
             $table->rememberToken();
-            $table->string('rfc', 13);
+            $table->string('rfc', 13); // Soporta tanto 12 (Moral) como 13 (Física) caracteres
             $table->timestamp('ultimo_acceso')->nullable();
-            $table->enum('estado', ['pendiente', 'activo', 'inactivo', 'suspendido'])->default('pendiente');
+            $table->boolean('verification')->default(0);
             $table->string('verification_token')->nullable();
             $table->timestamps();
             $table->softDeletes();

@@ -12,13 +12,15 @@ class CatalogoArchivoController extends Controller
     {
         $perPage = $request->get('per_page', 10);
         $allowedPerPage = [5, 10, 25, 50, 100];
-        if (!in_array($perPage, $allowedPerPage)) {
+        if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 10;
         }
         $archivos = CatalogoArchivo::orderBy('nombre', 'asc')->paginate($perPage);
         $archivos->appends($request->query());
+
         return view('archivos.index', compact('archivos', 'perPage'));
     }
+
     public function porTipoPersona(string $tipoPersona)
     {
         return CatalogoArchivo::where('tipo_persona', $tipoPersona)

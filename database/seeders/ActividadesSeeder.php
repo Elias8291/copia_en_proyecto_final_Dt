@@ -27,7 +27,7 @@ class ActividadesSeeder extends Seeder
             $jsonData = File::get($jsonPath);
             $data = json_decode($jsonData, true);
 
-            if (!isset($data['sectores']) || !isset($data['actividades'])) {
+            if (! isset($data['sectores']) || ! isset($data['actividades'])) {
                 throw new \Exception('Formato de archivo JSON inválido');
             }
 
@@ -62,7 +62,7 @@ class ActividadesSeeder extends Seeder
                 }
             }
 
-            if (!empty($actividadesLote)) {
+            if (! empty($actividadesLote)) {
                 DB::table('actividades_economicas')->insert($actividadesLote);
             }
 
@@ -70,7 +70,7 @@ class ActividadesSeeder extends Seeder
             $this->command->info('Actividades cargadas exitosamente desde DENUE');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->command->error('Error al cargar desde DENUE: ' . $e->getMessage());
+            $this->command->error('Error al cargar desde DENUE: '.$e->getMessage());
             $this->poblarDesdeJsonLocal();
         }
     }
@@ -80,8 +80,9 @@ class ActividadesSeeder extends Seeder
         try {
             $jsonPath = database_path('json/actividades.json');
 
-            if (!File::exists($jsonPath)) {
+            if (! File::exists($jsonPath)) {
                 $this->command->error('No se encontró el archivo de actividades.json');
+
                 return;
             }
 
@@ -96,6 +97,7 @@ class ActividadesSeeder extends Seeder
                 $dataKey = null;
             } else {
                 $this->command->error('Formato de archivo JSON inválido');
+
                 return;
             }
 
@@ -138,7 +140,7 @@ class ActividadesSeeder extends Seeder
                 }
             }
 
-            if (!empty($actividades)) {
+            if (! empty($actividades)) {
                 $chunks = array_chunk($actividades, 500);
                 foreach ($chunks as $chunk) {
                     DB::table('actividades_economicas')->insert($chunk);
@@ -146,7 +148,7 @@ class ActividadesSeeder extends Seeder
                 $this->command->info('Actividades cargadas exitosamente desde JSON local');
             }
         } catch (\Exception $e) {
-            $this->command->error('Error al cargar actividades: ' . $e->getMessage());
+            $this->command->error('Error al cargar actividades: '.$e->getMessage());
         }
     }
 

@@ -24,8 +24,6 @@ class ProfileUpdateRequest extends FormRequest
 
     /**
      * Get custom messages for validator errors.
-     *
-     * @return array
      */
     public function messages(): array
     {
@@ -38,4 +36,4 @@ class ProfileUpdateRequest extends FormRequest
             'address.required' => 'La dirección es obligatoria.',
         ];
     }
-} 
+}

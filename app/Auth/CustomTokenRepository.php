@@ -2,15 +2,16 @@
 
 namespace App\Auth;
 
-use Illuminate\Support\Str;
+use Carbon\Carbon;
+use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Contracts\Auth\CanResetPassword;
-use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class CustomTokenRepository
 {
     protected $table;
+
     protected $expire;
 
     public function __construct($table = 'password_reset_tokens', $expire = 60)
@@ -25,15 +26,15 @@ class CustomTokenRepository
     public function create(CanResetPassword $user)
     {
         $this->deleteExisting($user);
-        
+
         $token = $this->createNewToken();
-        
+
         DB::table($this->table)->insert([
             'correo' => $user->getEmailForPasswordReset(),
             'token' => Hash::make($token),
             'created_at' => new Carbon,
         ]);
-        
+
         return $token;
     }
 
@@ -47,7 +48,7 @@ class CustomTokenRepository
             ->first();
 
         return $record &&
-               !$this->tokenExpired($record->created_at) &&
+               ! $this->tokenExpired($record->created_at) &&
                Hash::check($token, $record->token);
     }
 
@@ -91,15 +92,15 @@ class CustomTokenRepository
     public function findUserByToken($correo, $token)
     {
         $user = \App\Models\User::where('correo', $correo)->first();
-        
-        if (!$user) {
+
+        if (! $user) {
             return null;
         }
 
-        if (!$this->exists($user, $token)) {
+        if (! $this->exists($user, $token)) {
             return null;
         }
 
         return $user;
     }
-} 
+}

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Foundation\Auth\ResetsPasswords;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
 
 class ResetPasswordController extends Controller
 {
@@ -22,7 +22,6 @@ class ResetPasswordController extends Controller
     /**
      * Display the password reset view for the given token.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  string|null  $token
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
@@ -30,14 +29,13 @@ class ResetPasswordController extends Controller
     {
         return view('auth.reset-password')->with([
             'token' => $token,
-            'email' => $request->email
+            'email' => $request->email,
         ]);
     }
 
     /**
      * Reset the given user's password.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function reset(Request $request)
@@ -56,11 +54,11 @@ class ResetPasswordController extends Controller
         ]);
 
         $tokenRepository = app('auth.password.tokens');
-        
+
         // Find user by correo and validate token
         $user = $tokenRepository->findUserByToken($request->email, $request->token);
-        
-        if (!$user) {
+
+        if (! $user) {
             return redirect()->back()
                 ->withInput($request->only('email'))
                 ->withErrors(['email' => 'El enlace de recuperación es inválido o ha expirado.']);
@@ -69,14 +67,14 @@ class ResetPasswordController extends Controller
         // Update password
         $user->password = Hash::make($request->password);
         $user->save();
-        
+
         // Delete the token
         $tokenRepository->delete($user);
-        
+
         // Log the user in
         \Illuminate\Support\Facades\Auth::login($user);
 
         return redirect($this->redirectPath())
             ->with('status', 'Tu contraseña ha sido restablecida exitosamente.');
     }
-} 
+}

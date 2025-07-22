@@ -7,7 +7,9 @@ use Illuminate\View\Component;
 class SeccionTerminos extends Component
 {
     public $tipoTramite;
+
     public $rfc;
+
     public $tipoPersona;
 
     public function __construct($tipoTramite = 'inscripcion', $rfc = '', $tipoPersona = 'Física')
@@ -21,4 +23,4 @@ class SeccionTerminos extends Component
     {
         return view('components.formularios.seccion-terminos');
     }
-} 
+}

@@ -15,4 +15,4 @@ class VerifyCsrfToken extends Middleware
         'api/*', // Eximir todas las rutas API de verificación CSRF
         'api/extract-qr-url', // Específicamente eximir esta ruta
     ];
-} 
+}

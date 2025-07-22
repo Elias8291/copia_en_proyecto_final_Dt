@@ -48,6 +48,8 @@ Route::middleware(['web', 'auth'])->group(function () {
 // VERIFICACIÓN DE EMAIL
 Route::get('/verificar-email/{id}/{token}', [VerificationController::class, 'verify'])
     ->name('verification.verify');
+Route::get('/verify-email/{token}', [RegisterController::class, 'verifyEmail'])
+    ->name('verification.verify.token');
 Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
     ->name('verification.resend');
 

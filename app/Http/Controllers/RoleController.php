@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
@@ -19,17 +19,17 @@ class RoleController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        
+
         // Validar que sea un número válido y esté en las opciones permitidas
         $allowedPerPage = [5, 10, 25, 50, 100];
-        if (!in_array($perPage, $allowedPerPage)) {
+        if (! in_array($perPage, $allowedPerPage)) {
             $perPage = 10;
         }
 
         $roles = Role::with('permissions')
             ->orderBy('name', 'asc')
             ->paginate($perPage);
-        
+
         // Mantener el parámetro per_page en los enlaces de paginación
         $roles->appends($request->query());
 
@@ -42,6 +42,7 @@ class RoleController extends Controller
     public function create()
     {
         $permissions = Permission::orderBy('name', 'asc')->get();
+
         return view('roles.create', compact('permissions'));
     }
 
@@ -54,12 +55,12 @@ class RoleController extends Controller
             'name' => 'required|string|max:255|unique:roles,name',
             'description' => 'nullable|string|max:500',
             'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id'
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role = Role::create([
             'name' => $request->name,
-            'guard_name' => 'web'
+            'guard_name' => 'web',
         ]);
 
         if ($request->has('permissions')) {
@@ -77,7 +78,7 @@ class RoleController extends Controller
     {
         $permissions = Permission::orderBy('name', 'asc')->get();
         $rolePermissions = $role->permissions->pluck('id')->toArray();
-        
+
         return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
@@ -87,14 +88,14 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,' . $role->id,
+            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
             'description' => 'nullable|string|max:500',
             'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id'
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role->update([
-            'name' => $request->name
+            'name' => $request->name,
         ]);
 
         $role->syncPermissions($request->permissions ?? []);

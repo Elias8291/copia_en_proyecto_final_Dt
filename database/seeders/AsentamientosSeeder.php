@@ -11,16 +11,17 @@ class AsentamientosSeeder extends Seeder
     public function run()
     {
         echo "Cargando asentamientos...\n";
-        
-        if (!$data = json_decode(File::get(database_path('json/asentamientos.json')), true)) {
+
+        if (! $data = json_decode(File::get(database_path('json/asentamientos.json')), true)) {
             return $this->command->error('Error al cargar asentamientos.json');
         }
 
         // Verificar que existan localidades en la base de datos
         $localidadesCount = DB::table('localidades')->count();
-        
+
         if ($localidadesCount === 0) {
             echo "Error: No hay localidades en la base de datos\n";
+
             return;
         }
 
@@ -28,11 +29,12 @@ class AsentamientosSeeder extends Seeder
         $totalAsentamientos = count($data['settlements'] ?? []);
         echo "Total de asentamientos a procesar: $totalAsentamientos\n";
 
-        collect($data['settlements'] ?? [])->chunk(500)->each(function($chunk) use (&$insertedCount) {
-            $asentamientos = $chunk->map(function($item) {
+        collect($data['settlements'] ?? [])->chunk(500)->each(function ($chunk) use (&$insertedCount) {
+            $asentamientos = $chunk->map(function ($item) {
                 // Verificar que el item tenga los campos necesarios
-                if (!isset($item['name']) || !isset($item['zip_code']) || !isset($item['localidad_id']) || !isset($item['settlement_type_id'])) {
-                    echo "Advertencia: Registro incompleto - " . json_encode($item) . "\n";
+                if (! isset($item['name']) || ! isset($item['zip_code']) || ! isset($item['localidad_id']) || ! isset($item['settlement_type_id'])) {
+                    echo 'Advertencia: Registro incompleto - '.json_encode($item)."\n";
+
                     return null;
                 }
 
@@ -43,30 +45,30 @@ class AsentamientosSeeder extends Seeder
                     'tipo_asentamiento_id' => $this->getTipoAsentamientoId($item['settlement_type_id']),
                 ];
             })->filter()->toArray();
-            
-            if (!empty($asentamientos)) {
+
+            if (! empty($asentamientos)) {
                 try {
                     DB::table('asentamientos')->insert($asentamientos);
                     $insertedCount += count($asentamientos);
                     echo "Insertados: $insertedCount asentamientos...\n";
                 } catch (\Exception $e) {
-                    echo "Error al insertar lote: " . $e->getMessage() . "\n";
+                    echo 'Error al insertar lote: '.$e->getMessage()."\n";
                     // Intentar insertar uno por uno para identificar registros problemáticos
                     foreach ($asentamientos as $asentamiento) {
                         try {
                             DB::table('asentamientos')->insert([$asentamiento]);
                             $insertedCount++;
                         } catch (\Exception $e) {
-                            echo "Error al insertar: " . json_encode($asentamiento) . " - " . $e->getMessage() . "\n";
+                            echo 'Error al insertar: '.json_encode($asentamiento).' - '.$e->getMessage()."\n";
                         }
                     }
                 }
             }
         });
-        
+
         echo "Asentamientos cargados exitosamente: $insertedCount de $totalAsentamientos\n";
     }
-    
+
     private function getTipoAsentamientoId($settlementTypeId)
     {
         // Mapeo de tipos de asentamiento - devuelve el ID de la tabla tipos_asentamiento
@@ -96,7 +98,7 @@ class AsentamientosSeeder extends Seeder
             23 => 23, // Campamento
             24 => 24, // Zona naval
         ];
-        
+
         return $tiposMap[$settlementTypeId] ?? 1; // Default to Colonia (ID 1)
     }
 }

@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Tramite;
-use App\Models\Proveedor;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Services\ProveedorService;
 use App\Services\TramiteService;
+use Illuminate\Http\Request;
 
 class TramiteController extends Controller
 {
     protected $proveedorService;
+
     protected $tramiteService;
 
     public function __construct(ProveedorService $proveedorService, TramiteService $tramiteService)
@@ -27,7 +25,7 @@ class TramiteController extends Controller
     public function index()
     {
         $proveedor = $this->proveedorService->getProveedorByUser();
-        
+
         return view('tramites.index', $this->tramiteService->getDatosTramitesIndex($proveedor));
     }
 
@@ -39,7 +37,7 @@ class TramiteController extends Controller
         $proveedor = $this->proveedorService->getProveedorByUser();
 
         // Validar acceso al trámite
-        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
@@ -55,7 +53,7 @@ class TramiteController extends Controller
         $proveedor = $this->proveedorService->getProveedorByUser();
 
         // Validar acceso al trámite
-        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
@@ -74,7 +72,7 @@ class TramiteController extends Controller
         $proveedor = $this->proveedorService->getProveedorByUser();
 
         // Validar acceso al trámite
-        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
@@ -90,7 +88,7 @@ class TramiteController extends Controller
         $proveedor = $this->proveedorService->getProveedorByUser();
 
         // Validar acceso al trámite
-        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'No tiene permisos para realizar este trámite.');
         }
@@ -101,7 +99,7 @@ class TramiteController extends Controller
         if ($resultado['success']) {
             // Limpiar datos de sesión después del envío exitoso
             $this->tramiteService->limpiarDatosSesion();
-            
+
             return redirect($resultado['redirect'])
                 ->with('success', $resultado['message']);
         }

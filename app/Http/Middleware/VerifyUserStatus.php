@@ -13,11 +13,11 @@ class VerifyUserStatus
     {
         if (Auth::check() && Auth::user()->estado !== 'activo') {
             Auth::logout();
-            
-            return redirect()->route('login')->with('error', 
+
+            return redirect()->route('login')->with('error',
                 'Tu cuenta no está verificada. Por favor, verifica tu correo electrónico antes de continuar.');
         }
 
         return $next($request);
     }
-} 
+}

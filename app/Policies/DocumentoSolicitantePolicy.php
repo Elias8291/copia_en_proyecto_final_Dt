@@ -23,8 +23,6 @@ class DocumentoSolicitantePolicy
     /**
      * Determina si el usuario puede ver el documento.
      *
-     * @param User $user
-     * @param DocumentoSolicitante $documentoSolicitante
      * @return bool
      */
     public function ver(User $user, DocumentoSolicitante $documentoSolicitante)
@@ -37,4 +35,4 @@ class DocumentoSolicitantePolicy
                $user->can('revision-tramites.ver') ||
                $user->hasRole('admin');
     }
-} 
+}

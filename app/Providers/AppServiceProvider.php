@@ -2,11 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Auth;
 use App\Services\ProveedorService;
-use App\Models\Estado;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
                         'globalTramites' => $tramitesDisponibles,
                         'hasActiveProveedor' => $hasActiveProveedor,
                         'proveedorEstado' => $proveedor?->estado_padron ?? null,
-                        'proveedorRazonSocial' => $proveedor?->razon_social ?? null
+                        'proveedorRazonSocial' => $proveedor?->razon_social ?? null,
                     ]);
                 } catch (\Exception $e) {
                     // En caso de error, proporcionar valores por defecto
@@ -35,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
                         'globalTramites' => [],
                         'hasActiveProveedor' => false,
                         'proveedorEstado' => null,
-                        'proveedorRazonSocial' => null
+                        'proveedorRazonSocial' => null,
                     ]);
                 }
             }

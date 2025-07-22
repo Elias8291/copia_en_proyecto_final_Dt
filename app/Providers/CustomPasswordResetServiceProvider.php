@@ -2,10 +2,9 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Auth\Passwords\PasswordBrokerManager;
-use App\Auth\CustomPasswordBroker;
 use App\Auth\CustomDatabaseTokenRepository;
+use App\Auth\CustomPasswordBroker;
+use Illuminate\Support\ServiceProvider;
 
 class CustomPasswordResetServiceProvider extends ServiceProvider
 {
@@ -24,17 +23,17 @@ class CustomPasswordResetServiceProvider extends ServiceProvider
     {
         $this->app->make('auth.password')->extend('custom', function ($app, $name, $config) {
             $key = $app['config']['app.key'];
-            
+
             if (empty($key)) {
                 throw new \RuntimeException('Application key not set.');
             }
 
             $connection = $config['connection'] ?? null;
-            
+
             $table = $config['table'];
             $hashKey = $config['key'] ?? $key;
             $expire = $config['expire'];
-            
+
             $tokenRepository = new CustomDatabaseTokenRepository(
                 $app['db']->connection($connection),
                 $app['hash'],
@@ -44,8 +43,8 @@ class CustomPasswordResetServiceProvider extends ServiceProvider
             );
 
             $users = $app['auth']->createUserProvider($config['provider'] ?? null);
-            
+
             return new CustomPasswordBroker($tokenRepository, $users);
         });
     }
-} 
+}

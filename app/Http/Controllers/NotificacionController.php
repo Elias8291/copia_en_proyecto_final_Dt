@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 class NotificacionController extends Controller
 {
     public function index()
@@ -21,7 +19,7 @@ class NotificacionController extends Controller
         return response()->json([
             'success' => true,
             'notificaciones' => [],
-            'contador_no_leidas' => 0
+            'contador_no_leidas' => 0,
         ]);
     }
 
@@ -37,12 +35,13 @@ class NotificacionController extends Controller
         if ($notificaciones->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'El usuario no tiene notificaciones asociadas.'
+                'message' => 'El usuario no tiene notificaciones asociadas.',
             ]);
         }
+
         return response()->json([
             'success' => true,
-            'notificaciones' => $notificaciones
+            'notificaciones' => $notificaciones,
         ]);
     }
-} 
+}

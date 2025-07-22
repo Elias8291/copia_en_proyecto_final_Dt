@@ -8,9 +8,7 @@
  */
 
 // Evitar redeclaración si ya existe
-if (window.ConstanciaExtractor) {
-    console.log('⚠️ ConstanciaExtractor ya está definido, saltando redeclaración');
-} else {
+if (typeof ConstanciaExtractor === 'undefined') {
 
 class ConstanciaExtractor {
     constructor(options = {}) {
@@ -27,17 +25,13 @@ class ConstanciaExtractor {
      */
     async extract(file) {
         try {
-            if (this.options.debug) {
-                console.log('🚀 ConstanciaExtractor: Iniciando extracción de', file.name);
-            }
-
             // Validar archivo
             const validation = this.validateFile(file);
             if (!validation.valid) {
                 return { success: false, error: validation.error };
             }
 
-            // Paso 1: Extraer QR del PDF (usando la API que SÍ funciona)
+            // Paso 1: Extraer QR del PDF
             const qrResult = await this.extractQRFromPDF(file);
             if (!qrResult.success) {
                 return qrResult;
@@ -57,10 +51,6 @@ class ConstanciaExtractor {
             };
 
         } catch (error) {
-            if (this.options.debug) {
-                console.error('❌ ConstanciaExtractor: Error:', error);
-            }
-            
             return {
                 success: false,
                 error: 'Error interno: ' + error.message
@@ -109,10 +99,6 @@ class ConstanciaExtractor {
 
             const data = await response.json();
 
-            if (this.options.debug) {
-                console.log('🔍 QR Extract Response:', data);
-            }
-
             if (data.success && data.url) {
                 return {
                     success: true,
@@ -159,10 +145,6 @@ class ConstanciaExtractor {
             });
 
             const data = await response.json();
-
-            if (this.options.debug) {
-                console.log('🏛️ SAT Scraping Response:', data);
-            }
 
             if (data.success && data.sat_data && data.sat_data.success) {
                 return {

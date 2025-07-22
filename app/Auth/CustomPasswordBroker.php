@@ -2,9 +2,9 @@
 
 namespace App\Auth;
 
+use Closure;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
-use Closure;
 use Illuminate\Support\Arr;
 
 class CustomPasswordBroker extends PasswordBroker
@@ -12,11 +12,9 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Send a password reset link to a user.
      *
-     * @param  array  $credentials
-     * @param  \Closure|null  $callback
      * @return string
      */
-    public function sendResetLink(array $credentials, Closure $callback = null)
+    public function sendResetLink(array $credentials, ?Closure $callback = null)
     {
         // Change 'email' to 'correo' for our custom field
         if (isset($credentials['email'])) {
@@ -49,8 +47,6 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Reset the password for the given token.
      *
-     * @param  array  $credentials
-     * @param  \Closure  $callback
      * @return mixed
      */
     public function reset(array $credentials, Closure $callback)
@@ -79,7 +75,6 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Get the user for the given credentials.
      *
-     * @param  array  $credentials
      * @return \Illuminate\Contracts\Auth\CanResetPassword|null
      */
     public function getUser(array $credentials)
@@ -98,7 +93,6 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Validate a password reset for the given credentials.
      *
-     * @param  array  $credentials
      * @return \Illuminate\Contracts\Auth\CanResetPassword|string
      */
     protected function validateReset(array $credentials)
@@ -117,7 +111,6 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Validate the given password reset token.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @param  string  $token
      * @return bool
      */
@@ -129,7 +122,6 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Create a new password reset token for the given user.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @return string
      */
     public function createToken(CanResetPasswordContract $user)
@@ -140,7 +132,6 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Delete password reset tokens of the given user.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @return void
      */
     public function deleteToken(CanResetPasswordContract $user)
@@ -151,11 +142,10 @@ class CustomPasswordBroker extends PasswordBroker
     /**
      * Determine if the given user recently created a password reset token.
      *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
      * @return bool
      */
     public function recentlyCreatedToken(CanResetPasswordContract $user)
     {
         return $this->tokens->recentlyCreatedToken($user);
     }
-} 
+}

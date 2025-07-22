@@ -1,8 +1,5 @@
 @props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true])
 
-{{-- DEBUG: Verificar que la sección se renderiza --}}
-<script>console.log('Vista accionistas renderizada');</script>
-
 <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
     <!-- Encabezado con icono -->
     <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">

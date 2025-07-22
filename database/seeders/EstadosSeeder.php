@@ -10,7 +10,7 @@ class EstadosSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Cargando estados...');
-        
+
         $estados = [
             'Aguascalientes',
             'Baja California',
@@ -47,7 +47,7 @@ class EstadosSeeder extends Seeder
         ];
         $mexicoId = DB::table('paises')->where('nombre', 'México')->first()->id ?? 1;
 
-        $estadosData = array_map(function($nombre) use ($mexicoId) {
+        $estadosData = array_map(function ($nombre) use ($mexicoId) {
             return [
                 'pais_id' => $mexicoId,
                 'nombre' => $nombre,
@@ -55,9 +55,9 @@ class EstadosSeeder extends Seeder
                 'updated_at' => now(),
             ];
         }, $estados);
-        
+
         DB::table('estados')->insert($estadosData);
-        
+
         $this->command->info('Estados cargados exitosamente');
     }
 }

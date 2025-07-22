@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('actividad_id')->constrained('actividades_economicas');
             $table->boolean('es_principal')->default(false);
             $table->timestamps();
-            
+
             $table->unique(['tramite_id', 'actividad_id']);
         });
     }

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\Tramite;
 use App\Models\Proveedor;
-use App\Services\ProveedorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -28,7 +26,7 @@ class TramiteService
 
         return [
             'globalTramites' => $tramitesDisponibles,
-            'proveedor' => $proveedor
+            'proveedor' => $proveedor,
         ];
     }
 
@@ -38,6 +36,7 @@ class TramiteService
     public function validarAccesoTramite(string $tipo, ?Proveedor $proveedor): bool
     {
         $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
+
         return $tramitesDisponibles[$tipo] ?? false;
     }
 
@@ -48,7 +47,7 @@ class TramiteService
     {
         return [
             'tipo' => $tipo,
-            'proveedor' => $proveedor
+            'proveedor' => $proveedor,
         ];
     }
 
@@ -102,7 +101,7 @@ class TramiteService
             'tramites' => $tramitesDisponibles,
             'titulo' => $this->getTituloTramite($tipo),
             'descripcion' => $this->getDescripcionTramite($tipo),
-            'datosSat' => $datosSat
+            'datosSat' => $datosSat,
         ];
     }
 
@@ -113,11 +112,11 @@ class TramiteService
     {
         // TODO: Implementar lógica de guardado según el tipo de trámite
         // Por ahora solo simulamos el éxito
-        
+
         return [
             'success' => true,
             'message' => 'Trámite enviado correctamente.',
-            'redirect' => route('tramites.index')
+            'redirect' => route('tramites.index'),
         ];
     }
 
@@ -129,7 +128,7 @@ class TramiteService
         $titulos = [
             'inscripcion' => 'Inscripción al Padrón de Proveedores',
             'renovacion' => 'Renovación de Registro',
-            'actualizacion' => 'Actualización de Datos'
+            'actualizacion' => 'Actualización de Datos',
         ];
 
         return $titulos[$tipo] ?? 'Formulario de Trámite';
@@ -143,7 +142,7 @@ class TramiteService
         $descripciones = [
             'inscripcion' => 'Complete todos los campos requeridos para su inscripción inicial.',
             'renovacion' => 'Actualice y confirme sus datos para la renovación anual.',
-            'actualizacion' => 'Modifique únicamente los campos que requieren actualización.'
+            'actualizacion' => 'Modifique únicamente los campos que requieren actualización.',
         ];
 
         return $descripciones[$tipo] ?? 'Complete el formulario correspondiente.';
@@ -156,12 +155,12 @@ class TramiteService
     {
         $keys = [
             'sat_rfc', 'sat_nombre', 'sat_tipo_persona', 'sat_curp',
-            'sat_cp', 'sat_colonia', 'sat_nombre_vialidad', 
-            'sat_numero_exterior', 'sat_numero_interior'
+            'sat_cp', 'sat_colonia', 'sat_nombre_vialidad',
+            'sat_numero_exterior', 'sat_numero_interior',
         ];
 
         foreach ($keys as $key) {
             Session::forget($key);
         }
     }
-} 
+}

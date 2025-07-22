@@ -1,11 +1,12 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\ActividadesController;
-use App\Http\Controllers\UbicacionController;
 use App\Http\Controllers\Api\ErrorController;
+use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\CatalogoArchivoController;
+use App\Http\Controllers\UbicacionController;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,8 +42,6 @@ Route::middleware(['auth:sanctum'])->prefix('archivos')->name('archivos.')->grou
     Route::get('/buscar', [CatalogoArchivoController::class, 'buscar'])->name('buscar');
     Route::get('/estadisticas', [CatalogoArchivoController::class, 'estadisticas'])->name('estadisticas');
 });
-
-
 
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
 

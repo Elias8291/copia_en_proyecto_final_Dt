@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Estado;
 
 class EstadoController extends Controller
@@ -14,15 +13,15 @@ class EstadoController extends Controller
     {
         try {
             $estados = Estado::orderBy('nombre')->get();
-            
+
             return response()->json([
                 'success' => true,
-                'data' => $estados
+                'data' => $estados,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Error al obtener los estados'
+                'message' => 'Error al obtener los estados',
             ], 500);
         }
     }

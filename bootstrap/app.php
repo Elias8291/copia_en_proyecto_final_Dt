@@ -1,9 +1,9 @@
 <?php
 
+use App\Http\Controllers\LogController;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Controllers\LogController;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,7 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-  $middleware->append(\App\Http\Middleware\AutoLoggingMiddleware::class);
+        $middleware->append(\App\Http\Middleware\AutoLoggingMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Capturar todas las excepciones y registrarlas automáticamente
@@ -23,13 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
                     'trace' => $e->getTraceAsString(),
-                    'class' => get_class($e)
+                    'class' => get_class($e),
                 ]);
             } catch (\Exception $logException) {
                 // Si falla el logging, usar el log de Laravel como respaldo
                 \Illuminate\Support\Facades\Log::error('Error al registrar excepción en BD', [
                     'original_error' => $e->getMessage(),
-                    'logging_error' => $logException->getMessage()
+                    'logging_error' => $logException->getMessage(),
                 ]);
             }
         });

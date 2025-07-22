@@ -27,23 +27,24 @@ class ConfigureSessionSecurity extends Command
     public function handle()
     {
         $lifetime = $this->option('lifetime');
-        
+
         $this->info('Configurando seguridad de sesiones...');
-        
+
         // Verificar si existe el archivo .env
-        if (!File::exists(base_path('.env'))) {
+        if (! File::exists(base_path('.env'))) {
             if (File::exists(base_path('.env.example'))) {
                 File::copy(base_path('.env.example'), base_path('.env'));
                 $this->info('Archivo .env creado desde .env.example');
             } else {
                 $this->error('No se pudo encontrar .env ni .env.example');
+
                 return 1;
             }
         }
-        
+
         $envPath = base_path('.env');
         $envContent = File::get($envPath);
-        
+
         // Configuraciones de sesión
         $sessionConfigs = [
             'SESSION_DRIVER' => 'database',
@@ -51,11 +52,11 @@ class ConfigureSessionSecurity extends Command
             'SESSION_EXPIRE_ON_CLOSE' => 'false',
             'SESSION_ENCRYPT' => 'false',
         ];
-        
+
         foreach ($sessionConfigs as $key => $value) {
-            $pattern = '/^' . preg_quote($key, '/') . '=.*$/m';
-            $replacement = $key . '=' . $value;
-            
+            $pattern = '/^'.preg_quote($key, '/').'=.*$/m';
+            $replacement = $key.'='.$value;
+
             if (preg_match($pattern, $envContent)) {
                 $envContent = preg_replace($pattern, $replacement, $envContent);
                 $this->info("Actualizado: {$key}={$value}");
@@ -64,13 +65,13 @@ class ConfigureSessionSecurity extends Command
                 $this->info("Agregado: {$key}={$value}");
             }
         }
-        
+
         File::put($envPath, $envContent);
-        
+
         $this->info('✓ Configuración de sesiones actualizada');
         $this->info("✓ Tiempo de vida de sesión: {$lifetime} minutos");
         $this->warn('⚠ Ejecuta "php artisan config:cache" para aplicar los cambios');
-        
+
         return 0;
     }
 }

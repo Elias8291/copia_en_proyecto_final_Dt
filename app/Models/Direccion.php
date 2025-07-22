@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 
 class Direccion extends Model
 {
-    use HasFactory, SoftDeletes, LogsActivity;
+    use HasFactory, LogsActivity, SoftDeletes;
 
     protected $table = 'direcciones';
 
@@ -26,7 +26,7 @@ class Direccion extends Model
         'estado_id',
         'coordenadas_id',
         'es_principal',
-        'activo'
+        'activo',
     ];
 
     protected $casts = [
@@ -40,7 +40,7 @@ class Direccion extends Model
             ->logAll()
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn(string $eventName) => "Dirección {$eventName}")
+            ->setDescriptionForEvent(fn (string $eventName) => "Dirección {$eventName}")
             ->useLogName('direccion');
     }
 

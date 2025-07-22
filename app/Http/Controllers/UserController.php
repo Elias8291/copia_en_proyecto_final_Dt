@@ -2,17 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    
     public function index(Request $request)
     {
         $users = User::with('roles')->orderBy('nombre', 'asc')->paginate(12);
@@ -22,8 +17,9 @@ class UserController extends Controller
             // Si solicita todos los usuarios para filtrado del cliente
             if ($request->has('all')) {
                 $allUsers = User::with('roles')->orderBy('nombre', 'asc')->get();
+
                 return response()->json([
-                    'users' => $allUsers
+                    'users' => $allUsers,
                 ]);
             }
 

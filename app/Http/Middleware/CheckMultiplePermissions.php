@@ -11,19 +11,18 @@ class CheckMultiplePermissions
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @param  string  ...$permissions
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
     public function handle(Request $request, Closure $next, ...$permissions)
     {
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         $user = Auth::user();
-        
+
         // Si el usuario tiene el permiso 'super-admin', permitir acceso a todo
         if ($user->can('super-admin')) {
             return $next($request);
@@ -39,4 +38,4 @@ class CheckMultiplePermissions
         // Si no tiene ningún permiso, denegar acceso
         abort(403, 'No tienes permisos suficientes para acceder a esta sección.');
     }
-} 
+}

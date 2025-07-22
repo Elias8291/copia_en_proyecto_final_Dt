@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Log;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log as LogFacade;
 
@@ -37,21 +36,21 @@ class LogController extends Controller
     private static function createLog(string $level, string $message, string $channel, array $context): void
     {
         $request = request();
-        
+
         // Crear log en base de datos
         Log::create([
             'level' => $level,
             'message' => $message,
             'channel' => $channel,
-            'context' => !empty($context) ? json_encode($context) : null,
+            'context' => ! empty($context) ? json_encode($context) : null,
             'user_id' => Auth::check() ? Auth::id() : null,
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
             'url' => $request->fullUrl(),
-            'method' => $request->method()
+            'method' => $request->method(),
         ]);
 
         // Crear log en Laravel también
         LogFacade::$level($message, $context);
     }
-} 
+}

@@ -3,11 +3,11 @@
 namespace App\Services;
 
 use App\Models\Tramite;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 
 class OficioService
 {
@@ -32,7 +32,7 @@ class OficioService
             Log::info('Oficio generado exitosamente', [
                 'tramite_id' => $tramite->id,
                 'tipo' => $tipoOficio,
-                'numero' => $numeroOficio
+                'numero' => $numeroOficio,
             ]);
 
             return [
@@ -43,14 +43,14 @@ class OficioService
                 'tipo_oficio' => $tipoOficio,
                 'tramite_id' => $tramite->id,
                 'generado_por' => Auth::id(),
-                'fecha_generacion' => now()
+                'fecha_generacion' => now(),
             ];
 
         } catch (\Exception $e) {
             Log::error('Error al generar oficio:', [
                 'tramite_id' => $tramite->id,
                 'tipo' => $tipoOficio,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
 
             return [];
@@ -64,7 +64,7 @@ class OficioService
     {
         $año = date('Y');
         $consecutivo = rand(1000, 9999); // Generar número aleatorio ya que no guardamos en BD
-        
+
         return sprintf('OFICIO-PV-%s-%04d', $año, $consecutivo);
     }
 
@@ -78,7 +78,7 @@ class OficioService
             'tramite' => $tramite,
             'numero_oficio' => $numeroOficio,
             'fecha' => now()->format('d/m/Y'),
-            'tipo_oficio' => $tipoOficio
+            'tipo_oficio' => $tipoOficio,
         ];
 
         // Renderizar vista según el tipo de oficio
@@ -100,8 +100,8 @@ class OficioService
      */
     protected function guardarArchivo($pdf, Tramite $tramite, string $numeroOficio): string
     {
-        $nombreArchivo = str_replace(['/', '\\', ' '], '_', $numeroOficio) . '.pdf';
-        $rutaArchivo = 'oficios/' . $tramite->id . '/' . $nombreArchivo;
+        $nombreArchivo = str_replace(['/', '\\', ' '], '_', $numeroOficio).'.pdf';
+        $rutaArchivo = 'oficios/'.$tramite->id.'/'.$nombreArchivo;
 
         Storage::put($rutaArchivo, $pdf->output());
 
@@ -114,13 +114,13 @@ class OficioService
     public function descargarOficio(Tramite $tramite, string $tipoOficio): \Symfony\Component\HttpFoundation\Response
     {
         $oficioData = $this->generarOficio($tramite, $tipoOficio);
-        
+
         if (empty($oficioData)) {
             abort(500, 'Error al generar el oficio');
         }
 
-        $nombreArchivo = str_replace(['/', '\\', ' '], '_', $oficioData['numero_oficio']) . '.pdf';
-        
+        $nombreArchivo = str_replace(['/', '\\', ' '], '_', $oficioData['numero_oficio']).'.pdf';
+
         return $oficioData['pdf']->download($nombreArchivo);
     }
 
@@ -130,11 +130,11 @@ class OficioService
     public function mostrarOficio(Tramite $tramite, string $tipoOficio): \Symfony\Component\HttpFoundation\Response
     {
         $oficioData = $this->generarOficio($tramite, $tipoOficio);
-        
+
         if (empty($oficioData)) {
             abort(500, 'Error al generar el oficio');
         }
 
         return $oficioData['pdf']->stream();
     }
-} 
+}

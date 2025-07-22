@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 class ErrorController extends Controller
 {
     use ApiResponseTrait;
+
     /**
      * Handle 404 errors for API routes
      */
@@ -69,7 +70,7 @@ class ErrorController extends Controller
     /**
      * Generic error handler
      */
-    public function genericError(Request $request, int $statusCode = 500, string $message = null): JsonResponse
+    public function genericError(Request $request, int $statusCode = 500, ?string $message = null): JsonResponse
     {
         $defaultMessages = [
             400 => 'Solicitud incorrecta',
@@ -86,6 +87,7 @@ class ErrorController extends Controller
         ];
 
         $finalMessage = $message ?? $defaultMessages[$statusCode] ?? 'Error del servidor';
+
         return $this->errorResponse($finalMessage, $statusCode);
     }
 
@@ -112,7 +114,7 @@ class ErrorController extends Controller
     {
         $errorType = $request->get('type', '500');
 
-        return match($errorType) {
+        return match ($errorType) {
             '404' => $this->notFoundResponse('Recurso de prueba no encontrado'),
             '403' => $this->forbiddenResponse('Acceso denegado para prueba'),
             '419' => $this->errorResponse('Token CSRF de prueba inválido', 419),

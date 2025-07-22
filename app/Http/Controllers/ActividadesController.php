@@ -10,14 +10,14 @@ class ActividadesController extends Controller
     public function buscador(Request $request)
     {
         if ($request->filled('nombre')) {
-            $resultados = ActividadEconomica::where('nombre', 'like', '%' . $request->nombre . '%')
+            $resultados = ActividadEconomica::where('nombre', 'like', '%'.$request->nombre.'%')
                 ->where('estado_validacion', 'Validada')
                 ->take(10)
                 ->get(['id', 'nombre']);
-    
+
             return response()->json($resultados);
         }
-    
+
         return response()->json([]);
     }
 }

@@ -11,7 +11,7 @@ class ErrorLogService
     /**
      * Log error with context information
      */
-    public static function logError(Throwable $exception, Request $request = null): void
+    public static function logError(Throwable $exception, ?Request $request = null): void
     {
         $context = [
             'exception' => get_class($exception),
@@ -31,15 +31,15 @@ class ErrorLogService
             ];
 
             // Add request data (be careful with sensitive information)
-            if (!$request->isMethod('GET')) {
+            if (! $request->isMethod('GET')) {
                 $requestData = $request->except(['password', 'password_confirmation', 'token']);
-                if (!empty($requestData)) {
+                if (! empty($requestData)) {
                     $context['request']['data'] = $requestData;
                 }
             }
         }
 
-        Log::error('Application Error: ' . $exception->getMessage(), $context);
+        Log::error('Application Error: '.$exception->getMessage(), $context);
     }
 
     /**
@@ -57,7 +57,7 @@ class ErrorLogService
             'user_id' => auth()->id(),
         ];
 
-        Log::warning('API Error: ' . $message, $context);
+        Log::warning('API Error: '.$message, $context);
     }
 
     /**
@@ -75,7 +75,7 @@ class ErrorLogService
             'timestamp' => now()->toISOString(),
         ], $additionalData);
 
-        Log::warning('Security Event: ' . $type, $context);
+        Log::warning('Security Event: '.$type, $context);
     }
 
     /**
