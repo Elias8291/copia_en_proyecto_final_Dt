@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamp('fecha_inicio')->nullable();
             $table->timestamp('fecha_finalizacion')->nullable();
             $table->text('observaciones')->nullable();
-            $table->foreignId('procesado_por')->nullable()->constrained('users');
+            $table->foreignId('revisado_por')->nullable()->constrained('users');
             $table->timestamps();
         });
     }

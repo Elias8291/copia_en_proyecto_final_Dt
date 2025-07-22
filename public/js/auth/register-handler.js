@@ -7,33 +7,37 @@ let satDataGlobal = null;
  * @returns {string} - 'Física' o 'Moral'
  */
 function determinarTipoPersona(rfc) {
-    if (!rfc || typeof rfc !== 'string') {
-        console.warn('⚠️ RFC inválido para determinar tipo de persona:', rfc);
-        return 'Física'; // Default a Física
+    if (!rfc || typeof rfc !== "string") {
+        console.warn("⚠️ RFC inválido para determinar tipo de persona:", rfc);
+        return "Física"; // Default a Física
     }
-    
+
     // Limpiar el RFC (quitar espacios y convertir a mayúsculas)
     const rfcLimpio = rfc.trim().toUpperCase();
-    
+
     // Validar que sea un RFC válido (solo letras y números)
     const rfcRegex = /^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/;
     if (!rfcRegex.test(rfcLimpio)) {
-        console.warn('⚠️ RFC no tiene formato válido:', rfcLimpio);
-        return 'Física'; // Default a Física si el formato es inválido
+        console.warn("⚠️ RFC no tiene formato válido:", rfcLimpio);
+        return "Física"; // Default a Física si el formato es inválido
     }
-    
+
     if (rfcLimpio.length === 13) {
         // RFC de 13 caracteres = Persona Física
-        console.log('✅ RFC de 13 caracteres → Persona Física');
-        return 'Física';
+        console.log("✅ RFC de 13 caracteres → Persona Física");
+        return "Física";
     } else if (rfcLimpio.length === 12) {
         // RFC de 12 caracteres = Persona Moral
-        console.log('✅ RFC de 12 caracteres → Persona Moral');
-        return 'Moral';
+        console.log("✅ RFC de 12 caracteres → Persona Moral");
+        return "Moral";
     } else {
         // Longitud no estándar, defaultear a Física
-        console.warn('⚠️ RFC con longitud no estándar (' + rfcLimpio.length + ' caracteres) → Default a Persona Física');
-        return 'Física';
+        console.warn(
+            "⚠️ RFC con longitud no estándar (" +
+                rfcLimpio.length +
+                " caracteres) → Default a Persona Física"
+        );
+        return "Física";
     }
 }
 
@@ -103,14 +107,19 @@ window.uploadFile = async function (input) {
         if (result.success) {
             // Guardar datos del SAT globalmente
             satDataGlobal = result.sat_data;
-            
+
             // Llenar campos ocultos
             fillHiddenInputs(result.sat_data);
 
             // Mostrar formulario de registro
             showRegistrationForm();
         } else {
-            alert("Error: " + result.error);
+            // Mostrar modal de error con título y descripción personalizados
+            const titulo = "Error al procesar el archivo";
+            const descripcion =
+                result.error ||
+                "No se pudo extraer la información del código QR. Verifica que el archivo contenga un código QR válido de la constancia fiscal del SAT.";
+            mostrarModalError(titulo, descripcion);
         }
     }
 };
@@ -164,73 +173,79 @@ window.handleActionButton = function () {
 // Función para enviar registro con datos del SAT
 function submitRegistrationWithSatData() {
     const form = document.querySelector("form");
-    
+
     if (!form) {
-        alert('❌ No se encontró el formulario');
+        alert("❌ No se encontró el formulario");
         return;
     }
-    
+
     // Validaciones básicas del lado cliente
-    const email = document.getElementById('email')?.value?.trim();
-    const password = document.getElementById('password')?.value;
-    const passwordConfirmation = document.getElementById('password_confirmation')?.value;
-    
+    const email = document.getElementById("email")?.value?.trim();
+    const password = document.getElementById("password")?.value;
+    const passwordConfirmation = document.getElementById(
+        "password_confirmation"
+    )?.value;
+
     if (!email) {
-        alert('❌ El correo electrónico es obligatorio');
-        document.getElementById('email')?.focus();
+        alert("❌ El correo electrónico es obligatorio");
+        document.getElementById("email")?.focus();
         return;
     }
-    
+
     // Validar formato de correo
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        alert('❌ Por favor ingrese un correo electrónico con formato válido');
-        document.getElementById('email')?.focus();
+        alert("❌ Por favor ingrese un correo electrónico con formato válido");
+        document.getElementById("email")?.focus();
         return;
     }
-    
+
     if (!password) {
-        alert('❌ La contraseña es obligatoria');
-        document.getElementById('password')?.focus();
+        alert("❌ La contraseña es obligatoria");
+        document.getElementById("password")?.focus();
         return;
     }
-    
+
     if (password !== passwordConfirmation) {
-        alert('❌ Las contraseñas no coinciden');
-        document.getElementById('password_confirmation')?.focus();
+        alert("❌ Las contraseñas no coinciden");
+        document.getElementById("password_confirmation")?.focus();
         return;
     }
-    
+
     // Si hay datos del SAT, llenar los campos antes de enviar
     if (satDataGlobal) {
-        console.log('🔍 Llenando datos del SAT en el formulario:', satDataGlobal);
-        
+        console.log(
+            "🔍 Llenando datos del SAT en el formulario:",
+            satDataGlobal
+        );
+
         // Llenar campos ocultos con datos del SAT
-        const rfc = satDataGlobal.rfc || '';
+        const rfc = satDataGlobal.rfc || "";
         const tipoPersona = determinarTipoPersona(rfc);
-        
+
         // Establecer valores en campos ocultos
-        document.getElementById('sat_rfc').value = rfc;
-        document.getElementById('sat_nombre').value = satDataGlobal.nombre || '';
-        document.getElementById('sat_tipo_persona').value = tipoPersona;
-        document.getElementById('sat_email').value = satDataGlobal.email || '';
-        
-        console.log('✅ Datos del SAT establecidos en el formulario');
+        document.getElementById("sat_rfc").value = rfc;
+        document.getElementById("sat_nombre").value =
+            satDataGlobal.nombre || "";
+        document.getElementById("sat_tipo_persona").value = tipoPersona;
+        document.getElementById("sat_email").value = satDataGlobal.email || "";
+
+        console.log("✅ Datos del SAT establecidos en el formulario");
     }
-    
+
     // Mostrar loading
-    showLoading('Registrando usuario...');
-    
+    showLoading("Registrando usuario...");
+
     // Enviar formulario normalmente (sin AJAX)
     form.submit();
 }
 
 // Función de loading simple
 function showLoading(message) {
-    const button = document.getElementById('actionButton');
+    const button = document.getElementById("actionButton");
     if (button) {
         button.disabled = true;
-        button.querySelector('span').textContent = message || 'Procesando...';
+        button.querySelector("span").textContent = message || "Procesando...";
     }
 }
 

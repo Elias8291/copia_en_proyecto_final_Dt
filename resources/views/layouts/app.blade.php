@@ -60,8 +60,6 @@
         </div>
     </div>
 
-    <!-- Modal de Éxito Global -->
-    @include('components.success-modal')
 
     @stack('scripts')
 

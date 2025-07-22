@@ -62,6 +62,9 @@
 
     <!-- Modal de Registro Exitoso -->
     @include('components.modals.auth.registration-success')
+    
+    <!-- Modal de Error -->
+    @include('components.modals.general.error')
 
     @php
         $mostrarFormulario = old('sat_rfc') || $errors->any();
