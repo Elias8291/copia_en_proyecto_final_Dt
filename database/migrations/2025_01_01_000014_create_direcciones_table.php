@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('municipio');
             $table->foreignId('id_estado')->constrained('estados');
             $table->foreignId('coordenadas_id')->nullable()->constrained('coordenadas');
-            $table->foreignId('id_tramite')->nullable()->constrained('tramites');
+            $table->foreignId('id_tramite')->nullable()->constrained('tramites')->onDelete('cascade');
             $table->timestamps();
         });
     }

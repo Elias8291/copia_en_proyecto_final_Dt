@@ -77,9 +77,8 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <i class="fas fa-map-marked-alt text-gray-500"></i>
                     </div>
-                    <select id="estado" name="estado" 
-                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm"
-                            required>
+                    <select id="estado" name="estado_id" 
+                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
                         <option value="">Seleccione un estado</option>
                         <!-- Las opciones se cargarán dinámicamente -->
                     </select>
@@ -87,7 +86,6 @@
                         <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
                 </div>
-                <input type="hidden" id="estado_id" name="estado_id">
                 <p class="mt-1 text-sm text-gray-500" id="estado-help-text">Se carga automáticamente con código postal</p>
             </div>
 
@@ -102,8 +100,7 @@
                         <i class="fas fa-city text-gray-500"></i>
                     </div>
                     <select id="municipio" name="municipio" 
-                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm"
-                            required disabled>
+                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
                         <option value="">Seleccione un municipio</option>
                     </select>
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -133,7 +130,6 @@
                            aria-label="Asentamiento o colonia"
                            required>
                 </div>
-                <input type="hidden" id="asentamiento_id" name="asentamiento_id">
             </div>
 
             <div class="form-group">

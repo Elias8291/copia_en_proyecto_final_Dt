@@ -10,8 +10,7 @@ return new class extends Migration
     {
         Schema::create('datos_generales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
-            $table->string('rfc', 13)->nullable();
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
             $table->string('curp', 18)->nullable();
             $table->string('razon_social')->nullable();
             $table->string('pagina_web')->nullable();

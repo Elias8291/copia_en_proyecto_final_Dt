@@ -41,8 +41,7 @@
                            value="{{ old('apoderado_nombre') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Nombre completo del apoderado legal"
-                           aria-label="Nombre completo del apoderado"
-                           required>
+                           aria-label="Nombre completo del apoderado">
                 </div>
             </div>
 
@@ -61,8 +60,7 @@
                            placeholder="RFC del apoderado"
                            maxlength="13"
                            pattern="[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}"
-                           aria-label="RFC del apoderado"
-                           required>
+                           aria-label="RFC del apoderado">
                 </div>
             </div>
         </div>
@@ -91,8 +89,7 @@
                            value="{{ old('poder_numero_escritura') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Número de escritura del poder"
-                           aria-label="Número de escritura del poder"
-                           required>
+                           aria-label="Número de escritura del poder">
                 </div>
             </div>
 
@@ -108,8 +105,7 @@
                     <input type="date" id="poder_fecha_constitucion" name="poder_fecha_constitucion" 
                            value="{{ old('poder_fecha_constitucion') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
-                           aria-label="Fecha de constitución del poder"
-                           required>
+                           aria-label="Fecha de constitución del poder">
                 </div>
             </div>
         </div>
@@ -129,8 +125,7 @@
                            value="{{ old('poder_notario_nombre') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Nombre completo del notario"
-                           aria-label="Nombre del notario"
-                           required>
+                           aria-label="Nombre del notario">
                 </div>
             </div>
 
@@ -145,8 +140,7 @@
                     </div>
                     <select id="poder_entidad_federativa" name="poder_entidad_federativa" 
                             class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 appearance-none shadow-sm"
-                            aria-label="Entidad federativa del notario"
-                            required>
+                            aria-label="Entidad federativa del notario">
                         <option value="">Seleccione la entidad federativa</option>
                         <!-- Estados se cargarán dinámicamente -->
                     </select>
@@ -172,8 +166,7 @@
                            value="{{ old('poder_notario_numero') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: 123"
-                           aria-label="Número del notario"
-                           required>
+                           aria-label="Número del notario">
                 </div>
             </div>
 
@@ -190,8 +183,7 @@
                            value="{{ old('poder_numero_registro') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: REG-2024-001"
-                           aria-label="Número de registro"
-                           required>
+                           aria-label="Número de registro">
                 </div>
             </div>
         </div>

@@ -54,6 +54,10 @@
             <form id="formulario-tramite" method="POST" action="{{ route('tramites.store', $tipo_tramite) }}"
                 enctype="multipart/form-data">
                 @csrf
+                
+                <input type="hidden" name="test_campo_1" value="test_value_1">
+                <input type="hidden" name="test_campo_2" value="test_value_2">
+                <input type="hidden" name="tipo_tramite_hidden" value="{{ $tipo_tramite }}">
 
                 @php
                     $rfcUsuario = Auth::user()->rfc ?? ($datosSat['rfc'] ?? '');
@@ -85,7 +89,6 @@
 
                 <div class="space-y-8">
 
-                    <!-- SECCIÓN 1: DATOS GENERALES -->
                     <div class="section-container">
                         @include('tramites.partials.datos-generales', [
                             'tipo' => $tipo_tramite,
@@ -95,7 +98,6 @@
                         ])
                     </div>
 
-                    <!-- SEPARADOR ELEGANTE -->
                     <div class="flex items-center justify-center py-6">
                         <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
                         <div class="px-6">
@@ -104,7 +106,6 @@
                         <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
                     </div>
 
-                    <!-- SECCIÓN 2: DOMICILIO -->
                     <div class="section-container">
                         @include('tramites.partials.domicilio', [
                             'tipo' => $tipo_tramite,
@@ -290,7 +291,7 @@
                             <span class="text-sm sm:text-base">Guardar Borrador</span>
                         </button>
 
-                        <button type="submit" id="btn-enviar"
+                        <button type="button" id="btn-enviar"
                             class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -305,22 +306,183 @@
     </div>
 
     @push('scripts')
-        <!-- Módulos JavaScript separados -->
-        <script src="{{ asset('js/tramites/formularios/formulario-navegacion.js') }}"></script>
+        <!-- Sistema Profesional de Trámites -->
+        <script src="{{ asset('js/tramites/tramite-form-manager.js') }}"></script>
+        
+        <!-- Módulos JavaScript opcionales -->
         <script src="{{ asset('js/tramites/formularios/actividades-buscar.js') }}"></script>
         <script src="{{ asset('js/tramites/codigo-postal-handler.js') }}"></script>
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const totalSteps = {{ $totalSteps }};
-                const stepNames = @json($stepNames);
-                const tipoPersona = '{{ $tipoPersona }}';
+                // Inicializar ActividadesBuscar
+                if (typeof ActividadesBuscar !== 'undefined') {
+                    window.actividadesBuscar = new ActividadesBuscar();
+                }
+                
+                // Inicializar TramiteFormManager para AJAX
+                if (typeof TramiteFormManager !== 'undefined') {
+                    const formElement = document.getElementById('formulario-tramite');
+                    if (formElement) {
+                        window.tramiteFormManager = new TramiteFormManager(formElement);
+                    }
+                }
+                
+                // Inicializar CodigoPostalHandler
+                if (typeof CodigoPostalHandler !== 'undefined') {
+                    window.codigoPostalHandler = new CodigoPostalHandler();
+                }
 
-                // Inicializar componentes del formulario
-                window.formularioNavegacion = new FormularioNavegacion(totalSteps, stepNames, tipoPersona);
-                window.actividadesBuscar = new ActividadesBuscar();
-                window.codigoPostalHandler = new CodigoPostalHandler();
+                // 🎯 NUEVO: Actualizar tipo de persona dinámicamente
+                const rfcInput = document.querySelector('input[name="rfc"]');
+                const tipoPersonaInput = document.querySelector('input[name="tipo_persona"]');
+                
+                function actualizarTipoPersona() {
+                    if (rfcInput && tipoPersonaInput) {
+                        const rfc = rfcInput.value.trim().toUpperCase();
+                        let tipoPersona = 'Física'; // Default
+                        
+                        if (rfc.length === 12) {
+                            tipoPersona = 'Moral';
+                        } else if (rfc.length === 13) {
+                            tipoPersona = 'Física';
+                        }
+                        
+                        // Actualizar input hidden
+                        tipoPersonaInput.value = tipoPersona;
+                        
+                        // Actualizar display visual (buscar el span que muestra el tipo)
+                        const tipoPersonaSpan = document.querySelector('.section-container span[data-tipo-persona]') || 
+                                              document.querySelector('input[name="tipo_persona"]').closest('.section-container').querySelector('span');
+                        
+                        if (tipoPersonaSpan && tipoPersonaSpan.textContent.includes('Persona')) {
+                            tipoPersonaSpan.textContent = tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral';
+                        }
+                        
+                        console.log(`🎯 Tipo de persona actualizado: ${tipoPersona} (RFC: ${rfc}, ${rfc.length} chars)`);
+                        
+                        // Mostrar/ocultar secciones según tipo de persona
+                        mostrarOcultarSeccionesMoral(tipoPersona === 'Moral');
+                    }
+                }
+                
+                function mostrarOcultarSeccionesMoral(esMoral) {
+                    console.log(`📋 Configurando formulario para: ${esMoral ? 'Persona Moral' : 'Persona Física'}`);
+                    // Aquí se puede agregar lógica para mostrar/ocultar secciones
+                }
+                
+                // Agregar event listener al campo RFC
+                if (rfcInput) {
+                    // Convertir a mayúsculas automáticamente
+                    rfcInput.addEventListener('input', function(e) {
+                        e.target.value = e.target.value.toUpperCase();
+                        actualizarTipoPersona();
+                    });
+                    
+                    rfcInput.addEventListener('blur', actualizarTipoPersona);
+                    
+                    // Ejecutar una vez al cargar la página
+                    setTimeout(actualizarTipoPersona, 100);
+                }
             });
+            
+            window.modulosAdicionalsCargados = true;
+            
+            // 🔧 FUNCIÓN DE DEBUG GLOBAL - Ejecutar en consola: window.debugFormulario()
+            window.debugFormulario = function() {
+                console.log('🔧 === DEBUG MANUAL DEL FORMULARIO ===');
+                
+                const form = document.getElementById('formulario-tramite');
+                if (!form) {
+                    console.error('❌ Formulario no encontrado');
+                    return;
+                }
+                
+                // Verificar todos los campos requeridos
+                const camposRequeridos = form.querySelectorAll('[required]');
+                console.log(`📋 Total campos requeridos: ${camposRequeridos.length}`);
+                
+                let errores = [];
+                camposRequeridos.forEach((campo, index) => {
+                    const nombre = campo.name || campo.id || `campo-${index}`;
+                    const valor = campo.value || '';
+                    const tipo = campo.type || 'text';
+                    
+                    if (tipo === 'checkbox') {
+                        if (!campo.checked) {
+                            errores.push(`❌ ${nombre}: NO MARCADO (requerido)`);
+                        } else {
+                            console.log(`✅ ${nombre}: MARCADO`);
+                        }
+                    } else if (!valor.trim()) {
+                        errores.push(`❌ ${nombre}: VACÍO (requerido)`);
+                    } else {
+                        console.log(`✅ ${nombre}: "${valor}"`);
+                    }
+                });
+                
+                // Verificar actividades específicamente
+                const actividades = document.querySelectorAll('input[name="actividades[]"]');
+                console.log(`📋 Actividades encontradas: ${actividades.length}`);
+                if (actividades.length === 0) {
+                    errores.push(`❌ actividades[]: NO HAY ACTIVIDADES SELECCIONADAS`);
+                }
+                
+                // Verificar select de estado
+                const estadoSelect = document.querySelector('select[name="estado_id"]');
+                if (estadoSelect) {
+                    if (!estadoSelect.value || estadoSelect.value === '') {
+                        errores.push(`❌ estado_id: NO SELECCIONADO`);
+                    } else {
+                        console.log(`✅ estado_id: "${estadoSelect.value}"`);
+                    }
+                }
+                
+                // Mostrar resumen
+                if (errores.length > 0) {
+                    console.log(`🚨 ERRORES ENCONTRADOS (${errores.length}):`);
+                    errores.forEach(error => console.log(`   ${error}`));
+                } else {
+                    console.log(`🎉 TODOS LOS CAMPOS REQUERIDOS ESTÁN COMPLETOS`);
+                }
+                
+                return {
+                    totalCampos: camposRequeridos.length,
+                    errores: errores,
+                    formularioValido: errores.length === 0
+                };
+            };
+            
+            console.log('🔧 DEBUG: Función window.debugFormulario() disponible en consola');
+            
+            // 🛠️ TEMPORAL: Cargar estados manualmente para testing
+            setTimeout(function() {
+                const estadoSelect = document.querySelector('select[name="estado_id"]');
+                if (estadoSelect && estadoSelect.options.length <= 1) {
+                    console.log('🛠️ Cargando estados manualmente para testing...');
+                    
+                    // Estados principales de México
+                    const estados = [
+                        {id: 1, nombre: 'Aguascalientes'},
+                        {id: 9, nombre: 'Ciudad de México'},
+                        {id: 14, nombre: 'Jalisco'},
+                        {id: 19, nombre: 'Nuevo León'},
+                        {id: 21, nombre: 'Puebla'},
+                        {id: 26, nombre: 'Sonora'},
+                        {id: 30, nombre: 'Veracruz'}
+                    ];
+                    
+                    estados.forEach(estado => {
+                        const option = document.createElement('option');
+                        option.value = estado.id;
+                        option.textContent = estado.nombre;
+                        estadoSelect.appendChild(option);
+                    });
+                    
+                    console.log(`✅ ${estados.length} estados cargados para testing`);
+                    console.log('💡 Selecciona un estado para continuar');
+                }
+            }, 1000);
         </script>
     @endpush
 @endsection

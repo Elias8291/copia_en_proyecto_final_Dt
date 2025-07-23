@@ -48,12 +48,32 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-id-card text-gray-500"></i>
                     </div>
-                    <input type="text" name="rfc" required readonly
-                        value="{{ old('rfc', $datosSat['rfc'] ?? ($proveedor->rfc ?? '')) }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-600 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
-                        aria-label="RFC de la empresa">
+                    @php
+                        $rfcValue = old('rfc', $datosSat['rfc'] ?? (Auth::user()->rfc ?? ''));
+                        // Limpiar RFC de espacios y convertir a mayúsculas
+                        $rfcValue = strtoupper(trim($rfcValue));
+                    @endphp
+                    <input type="text" name="rfc" required
+                        value="{{ $rfcValue }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                        aria-label="RFC de la empresa"
+                        placeholder="Ej: ABC123456789 (12) o ABCD123456789 (13)"
+                        maxlength="13"
+                        pattern="[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}"
+                        style="text-transform: uppercase;">
                 </div>
-                <p class="mt-1 text-sm text-gray-500">El RFC no puede modificarse</p>
+                @if(!empty($rfcValue))
+                    <p class="mt-1 text-sm text-green-600">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        RFC cargado: {{ $rfcValue }} ({{ strlen($rfcValue) }} caracteres) - 
+                        {{ strlen($rfcValue) === 12 ? 'Persona Moral' : (strlen($rfcValue) === 13 ? 'Persona Física' : 'Longitud incorrecta') }}
+                    </p>
+                @else
+                    <p class="mt-1 text-sm text-amber-600">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Ejemplos: <strong>ABC123456789</strong> (Moral) o <strong>ABCD123456789</strong> (Física)
+                    </p>
+                @endif
             </div>
 
             <div class="form-group">
@@ -67,7 +87,7 @@
                         <i class="fas fa-user-tag text-gray-500"></i>
                     </div>
                     <div class="block w-full pl-10 pr-4 py-2.5 text-gray-600 bg-gray-50 border border-gray-200 rounded-lg flex items-center shadow-sm">
-                        <span>{{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}</span>
+                        <span data-tipo-persona>{{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}</span>
                         <svg class="w-4 h-4 ml-auto text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
@@ -133,6 +153,11 @@
                     <!-- Actividades seleccionadas -->
                     <div id="actividades-seleccionadas" class="space-y-2">
                         <p class="text-sm text-gray-500">No se han seleccionado actividades económicas</p>
+                    </div>
+
+                    <!-- Campos hidden para actividades (se llenan via JavaScript) -->
+                    <div id="actividades-hidden-inputs">
+                        <!-- Los inputs hidden se agregarán aquí dinámicamente por JavaScript -->
                     </div>
                 </div>
             </div>

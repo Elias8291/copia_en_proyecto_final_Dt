@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('instrumento_notarial_id')->constrained('instrumentos_notariales');
             $table->string('nombre_apoderado');
             $table->string('rfc');
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
             $table->timestamps();
         });
     }

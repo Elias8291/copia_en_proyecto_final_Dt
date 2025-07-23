@@ -121,15 +121,16 @@ if (typeof FormularioNavegacion === "undefined") {
                 this.btnAnterior.disabled = this.currentStep === 1;
             }
 
-            // Botones siguiente/enviar
-            if (this.currentStep === this.totalSteps) {
-                if (this.btnSiguiente)
-                    this.btnSiguiente.classList.add("hidden");
-                if (this.btnEnviar) this.btnEnviar.classList.remove("hidden");
-            } else {
-                if (this.btnSiguiente)
-                    this.btnSiguiente.classList.remove("hidden");
-                if (this.btnEnviar) this.btnEnviar.classList.add("hidden");
+            // SIEMPRE mostrar el botón de envío (sin importar el paso)
+            if (this.btnEnviar) {
+                this.btnEnviar.classList.remove("hidden");
+            }
+
+            // Solo ocultar botón siguiente si hay un botón de navegación
+            if (this.btnSiguiente && this.currentStep === this.totalSteps) {
+                this.btnSiguiente.classList.add("hidden");
+            } else if (this.btnSiguiente) {
+                this.btnSiguiente.classList.remove("hidden");
             }
         }
 

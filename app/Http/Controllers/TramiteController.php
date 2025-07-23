@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Services\ProveedorService;
 use App\Services\TramiteService;
+use App\Http\Requests\TramiteFormularioRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class TramiteController extends Controller
 {
@@ -81,31 +84,114 @@ class TramiteController extends Controller
     }
 
     /**
-     * Procesa el envío del formulario
+     * Procesa el envío del formulario de trámite
      */
-    public function store(Request $request, $tipo)
+    public function store(TramiteFormularioRequest $request, $tipo)
     {
-        $proveedor = $this->proveedorService->getProveedorByUser();
+        Log::info('Procesando trámite', [
+            'tipo' => $tipo,
+            'usuario_id' => Auth::id()
+        ]);
 
-        // Validar acceso al trámite
-        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
-            return redirect()->route('tramites.index')
-                ->with('error', 'No tiene permisos para realizar este trámite.');
+        try {
+            $proveedor = $this->proveedorService->getProveedorByUser();
+
+            if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+                Log::warning('Acceso denegado al trámite', [
+                    'tipo' => $tipo, 
+                    'usuario_id' => Auth::id()
+                ]);
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No tiene permisos para realizar este trámite.'
+                    ], 403);
+                }
+                
+                return redirect()->route('tramites.index')
+                    ->with('error', 'No tiene permisos para realizar este trámite.');
+            }
+
+            $resultado = $this->tramiteService->procesarEnvioFormulario($request, $tipo, $proveedor);
+
+            if ($resultado['success']) {
+                $this->tramiteService->limpiarDatosSesion();
+                
+                Log::info('Trámite procesado exitosamente', [
+                    'tramite_id' => $resultado['tramite_id'] ?? null
+                ]);
+
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $resultado['message'],
+                        'tramite_id' => $resultado['tramite_id'],
+                        'redirect' => $resultado['redirect']
+                    ], 200);
+                }
+
+                return redirect($resultado['redirect'])
+                    ->with('success', $resultado['message'])
+                    ->with('tramite_id', $resultado['tramite_id']);
+            }
+
+            Log::error('Error en procesamiento del trámite', [
+                'mensaje' => $resultado['message'] ?? 'Error desconocido'
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $resultado['message'] ?? 'Error al procesar el trámite.'
+                ], 422);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', $resultado['message'] ?? 'Error al procesar el trámite.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Manejar errores de validación específicamente
+            Log::warning('Errores de validación en trámite', [
+                'errors' => $e->errors(),
+                'tipo' => $tipo,
+                'usuario_id' => Auth::id()
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Por favor corrija los errores en el formulario.',
+                    'errors' => $e->errors(),
+                    'validation_failed' => true
+                ], 422);
+            }
+
+            return back()
+                ->withErrors($e->errors())
+                ->withInput()
+                ->with('error', 'Por favor corrija los errores en el formulario.');
+
+        } catch (\Exception $e) {
+            Log::error('Excepción en procesamiento de trámite', [
+                'error' => $e->getMessage(),
+                'tipo' => $tipo,
+                'usuario_id' => Auth::id(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error interno del servidor. Por favor, intente nuevamente.'
+                ], 500);
+            }
+
+            return back()
+                ->withInput()
+                ->with('error', 'Error interno del servidor. Por favor, intente nuevamente.');
         }
-
-        // Procesar el formulario usando el servicio
-        $resultado = $this->tramiteService->procesarEnvioFormulario($request, $tipo, $proveedor);
-
-        if ($resultado['success']) {
-            // Limpiar datos de sesión después del envío exitoso
-            $this->tramiteService->limpiarDatosSesion();
-
-            return redirect($resultado['redirect'])
-                ->with('success', $resultado['message']);
-        }
-
-        return back()
-            ->withInput()
-            ->with('error', $resultado['message'] ?? 'Error al procesar el trámite.');
     }
 }

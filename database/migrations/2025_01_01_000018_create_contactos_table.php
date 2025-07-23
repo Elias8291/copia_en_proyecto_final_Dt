@@ -14,7 +14,7 @@ return new class extends Migration
             $table->string('cargo');
             $table->string('correo_electronico');
             $table->string('telefono', 50);
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
             $table->timestamps();
         });
     }

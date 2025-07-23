@@ -13,7 +13,7 @@ class Accionista extends Model
     use HasFactory, LogsActivity, SoftDeletes;
 
     protected $fillable = [
-        'proveedor_id',
+        'tramite_id',
         'nombre_completo',
         'rfc',
         'porcentaje_participacion',
@@ -35,8 +35,8 @@ class Accionista extends Model
             ->useLogName('accionista');
     }
 
-    public function proveedor()
+    public function tramite()
     {
-        return $this->belongsTo(Proveedor::class);
+        return $this->belongsTo(Tramite::class);
     }
 }

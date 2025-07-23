@@ -117,20 +117,23 @@ class CodigoPostalHandler {
             this.codigoPostalInput.classList.add('bg-white');
         }
 
-        // Deshabilitar selects para modo automático
+        // NO deshabilitar selects - solo hacerlos de solo lectura visualmente
         if (this.estadoSelect) {
-            this.estadoSelect.disabled = true;
+            this.estadoSelect.disabled = false; // MANTENER HABILITADO
             this.estadoSelect.classList.add('bg-gray-100');
+            this.estadoSelect.style.pointerEvents = 'none'; // Evitar clicks pero mantener habilitado
         }
         
         if (this.municipioSelect) {
-            this.municipioSelect.disabled = true;
+            this.municipioSelect.disabled = false; // MANTENER HABILITADO
             this.municipioSelect.classList.add('bg-gray-100');
+            this.municipioSelect.style.pointerEvents = 'none'; // Evitar clicks pero mantener habilitado
         }
 
         if (this.localidadSelect) {
-            this.localidadSelect.disabled = true;
+            this.localidadSelect.disabled = false; // MANTENER HABILITADO
             this.localidadSelect.classList.add('bg-gray-100');
+            this.localidadSelect.style.pointerEvents = 'none'; // Evitar clicks pero mantener habilitado
         }
 
         // Actualizar textos de ayuda
@@ -144,11 +147,26 @@ class CodigoPostalHandler {
             this.codigoPostalInput.classList.add('bg-white');
         }
 
-        // Habilitar selects para modo manual
+        // Habilitar selects para modo manual y restaurar interactividad
         if (this.estadoSelect) {
             this.estadoSelect.disabled = false;
             this.estadoSelect.classList.remove('bg-gray-100');
             this.estadoSelect.classList.add('bg-white');
+            this.estadoSelect.style.pointerEvents = 'auto'; // Restaurar clicks
+        }
+        
+        if (this.municipioSelect) {
+            this.municipioSelect.disabled = false;
+            this.municipioSelect.classList.remove('bg-gray-100');
+            this.municipioSelect.classList.add('bg-white');
+            this.municipioSelect.style.pointerEvents = 'auto'; // Restaurar clicks
+        }
+
+        if (this.localidadSelect) {
+            this.localidadSelect.disabled = false;
+            this.localidadSelect.classList.remove('bg-gray-100');
+            this.localidadSelect.classList.add('bg-white');
+            this.localidadSelect.style.pointerEvents = 'auto'; // Restaurar clicks
         }
 
         // Actualizar textos de ayuda
@@ -202,11 +220,11 @@ class CodigoPostalHandler {
         // Limpiar opciones existentes excepto la primera
         this.estadoSelect.innerHTML = '<option value="">Seleccione un estado</option>';
 
-        // Agregar estados
+        // Agregar estados - USAR ID COMO VALUE
         this.estadosData.forEach(estado => {
             const option = document.createElement('option');
-            option.value = estado.nombre;
-            option.textContent = estado.nombre;
+            option.value = String(estado.id); // USAR ID NUMÉRICO COMO VALUE
+            option.textContent = estado.nombre; // MOSTRAR NOMBRE COMO TEXTO
             option.dataset.estadoId = estado.id;
             this.estadoSelect.appendChild(option);
         });
@@ -417,7 +435,7 @@ class CodigoPostalHandler {
         // Tomar el primer resultado
         const ubicacion = ubicaciones[0];
 
-        // Cargar datos en los selects
+        // Cargar datos en los selects - USAR LOS IDs CORRECTOS DE LOS CAMPOS
         this.setSelectValue('estado', ubicacion.estado, ubicacion.estado_id);
         this.setSelectValue('municipio', ubicacion.municipio, ubicacion.municipio_id);
         this.setSelectValue('localidad', ubicacion.localidad, ubicacion.localidad_id);
@@ -431,34 +449,44 @@ class CodigoPostalHandler {
             this.setFieldValue('asentamiento_id', ubicacion.asentamiento_id);
         }
 
-        // Guardar IDs para uso posterior
+        // Guardar IDs para uso posterior - ASEGURAR QUE SE GUARDEN CORRECTAMENTE
         this.setFieldValue('pais_id', ubicacion.pais_id);
-        this.setFieldValue('estado_id', ubicacion.estado_id);
         this.setFieldValue('municipio_id', ubicacion.municipio_id);
         this.setFieldValue('localidad_id', ubicacion.localidad_id);
+        
+        // FORZAR el valor del estado_id de manera directa
+        this.forceSetEstadoId(ubicacion.estado_id);
+        
+        // DEBUG: Verificar que los campos se estén estableciendo correctamente
+        console.log('🔍 DEBUG Código Postal Handler:');
+        console.log('   📍 Estado ID:', ubicacion.estado_id);
+        console.log('   📍 Municipio ID:', ubicacion.municipio_id);
+        console.log('   📍 Campo estado_id value:', document.querySelector('[name="estado_id"]')?.value);
+        console.log('   📍 Select estado value:', document.getElementById('estado')?.value);
     }
 
     setSelectValue(selectId, value, dataId) {
         const select = document.getElementById(selectId);
         if (!select) return;
 
-        // Buscar la opción que coincida
+        // Buscar la opción que coincida por ID numérico
         for (let option of select.options) {
-            if (option.value === value) {
+            if (option.value === String(dataId)) {
                 option.selected = true;
-                break;
+                return; // Salir si encontramos la opción
             }
         }
 
-        // Si no existe la opción, crearla
-        if (select.value !== value) {
-            const newOption = document.createElement('option');
-            newOption.value = value;
-            newOption.textContent = value;
-            newOption.dataset[selectId + 'Id'] = dataId;
-            newOption.selected = true;
-            select.appendChild(newOption);
-        }
+        // Si no existe la opción, crearla con ID como value
+        const newOption = document.createElement('option');
+        newOption.value = String(dataId); // USAR EL ID NUMÉRICO COMO VALUE
+        newOption.textContent = value; // MOSTRAR EL NOMBRE COMO TEXTO
+        newOption.dataset[selectId + 'Id'] = dataId;
+        newOption.selected = true;
+        select.appendChild(newOption);
+        
+        // Asegurar que el select tenga el valor correcto
+        select.value = String(dataId);
     }
 
     crearSelectorAsentamientos(ubicaciones) {
@@ -470,7 +498,7 @@ class CodigoPostalHandler {
         if (!select) {
             select = document.createElement('select');
             select.id = 'asentamiento_select';
-            select.name = 'asentamiento_select';
+            select.name = 'asentamiento';
             select.className = asentamientoField.className;
             
             // Reemplazar input con select
@@ -515,6 +543,42 @@ class CodigoPostalHandler {
             // Disparar evento change para otros listeners
             field.dispatchEvent(new Event('change', { bubbles: true }));
         }
+    }
+
+    forceSetEstadoId(estadoId) {
+        // Método para forzar el valor del estado_id de múltiples maneras
+        console.log('🔧 Forzando estado_id:', estadoId);
+        
+        // 1. Establecer el valor en el select del estado
+        const estadoSelect = document.getElementById('estado');
+        if (estadoSelect) {
+            estadoSelect.value = String(estadoId);
+            console.log('   ✅ Select estado value establecido:', estadoSelect.value);
+        }
+        
+        // 2. Buscar campo hidden estado_id y establecer valor
+        let estadoIdField = document.querySelector('[name="estado_id"]');
+        if (estadoIdField) {
+            estadoIdField.value = String(estadoId);
+            console.log('   ✅ Campo estado_id encontrado y establecido:', estadoIdField.value);
+        } else {
+            // 3. Si no existe campo hidden, crearlo
+            estadoIdField = document.createElement('input');
+            estadoIdField.type = 'hidden';
+            estadoIdField.name = 'estado_id';
+            estadoIdField.value = String(estadoId);
+            
+            // Agregarlo al formulario
+            const form = document.getElementById('formulario-tramite') || document.querySelector('form');
+            if (form) {
+                form.appendChild(estadoIdField);
+                console.log('   ✅ Campo hidden estado_id creado y agregado:', estadoIdField.value);
+            }
+        }
+        
+        // 4. Verificar que el valor se estableció correctamente
+        const finalField = document.querySelector('[name="estado_id"]');
+        console.log('   🔍 Verificación final estado_id:', finalField?.value);
     }
 
     limpiarCamposUbicacion() {

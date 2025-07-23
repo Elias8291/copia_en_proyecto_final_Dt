@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Archivo extends Model
+{
+    use HasFactory;
+
+    protected $table = 'archivos';
+
+    protected $fillable = [
+        'nombre_original',
+        'ruta_archivo',
+        'idCatalogoArchivo',
+        'observaciones',
+        'fecha_cotejo',
+        'cotejado_por',
+        'aprobado',
+        'tramite_id',
+    ];
+
+    protected $casts = [
+        'fecha_cotejo' => 'datetime',
+        'aprobado' => 'boolean',
+    ];
+
+    public function tramite()
+    {
+        return $this->belongsTo(Tramite::class);
+    }
+
+    public function catalogoArchivo()
+    {
+        return $this->belongsTo(CatalogoArchivo::class, 'idCatalogoArchivo');
+    }
+
+    public function cotejadoPor()
+    {
+        return $this->belongsTo(User::class, 'cotejado_por');
+    }
+} 

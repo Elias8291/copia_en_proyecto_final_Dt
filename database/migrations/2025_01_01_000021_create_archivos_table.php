@@ -17,7 +17,7 @@ return new class extends Migration
             $table->timestamp('fecha_cotejo')->nullable();
             $table->foreignId('cotejado_por')->nullable()->constrained('users');
             $table->boolean('aprobado')->default(false);
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
             $table->timestamps();
         });
     }

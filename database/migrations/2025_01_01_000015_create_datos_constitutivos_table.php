@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('datos_constitutivos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('instrumento_notarial_id')->constrained('instrumentos_notariales');
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
             $table->timestamps();
         });
     }

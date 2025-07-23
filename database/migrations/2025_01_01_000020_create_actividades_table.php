@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('actividades', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
             $table->foreignId('actividad_id')->constrained('actividades_economicas');
             $table->timestamps();
 

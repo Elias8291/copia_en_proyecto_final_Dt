@@ -85,14 +85,21 @@ if (typeof ActividadesBuscar === 'undefined') {
     }
     
     addActividad(actividad) {
+        console.log('🎯 INTENTANDO AGREGAR ACTIVIDAD:', actividad);
+        
         // Evitar duplicados
         if (this.actividadesSeleccionadas.find(a => a.id === actividad.id)) {
+            console.log('⚠️ Actividad duplicada, no se agrega:', actividad.id);
             return;
         }
         
         this.actividadesSeleccionadas.push(actividad);
+        console.log('✅ Actividad agregada al array:', this.actividadesSeleccionadas);
+        
         this.updateSelectedActividades();
         this.clearSearch();
+        
+        console.log('🔧 Proceso de agregar actividad completado');
     }
     
     removeActividad(id) {
@@ -101,13 +108,20 @@ if (typeof ActividadesBuscar === 'undefined') {
     }
     
     updateSelectedActividades() {
-        // Remover inputs hidden anteriores
-        document.querySelectorAll('input[name="actividades_economicas[]"]').forEach(input => {
+        console.log('🔄 INICIANDO updateSelectedActividades');
+        console.log('📊 Actividades a procesar:', this.actividadesSeleccionadas);
+        
+        // Limpiar TODOS los inputs de actividades anteriores
+        const inputsAnteriores = document.querySelectorAll('input[name="actividades[]"]');
+        console.log('🗑️ Limpiando inputs anteriores:', inputsAnteriores.length);
+        inputsAnteriores.forEach(input => {
+            console.log('   Removiendo input:', input.value, input.id);
             input.remove();
         });
         
         if (!this.actividadesSeleccionadas.length) {
             this.seleccionadasContainer.innerHTML = '<p class="text-sm text-slate-500">No se han seleccionado actividades económicas</p>';
+            console.log('ℹ️ No hay actividades, mostrando mensaje vacío');
             return;
         }
         
@@ -124,18 +138,63 @@ if (typeof ActividadesBuscar === 'undefined') {
         `).join('');
         
         this.seleccionadasContainer.innerHTML = html;
+        console.log('🎨 HTML de actividades seleccionadas actualizado');
         
-        // Agregar inputs hidden al formulario
-        const formulario = document.getElementById('formulario-tramite');
-        if (formulario) {
-            this.actividadesSeleccionadas.forEach(act => {
+        // Agregar inputs hidden al formulario SIEMPRE que haya actividades
+        const contenedorActividades = document.getElementById('actividades-hidden-inputs');
+        console.log('🔍 Buscando contenedor actividades-hidden-inputs:', !!contenedorActividades);
+        
+        if (contenedorActividades) {
+            // Limpiar contenedor
+            console.log('🧹 Limpiando contenedor de inputs hidden');
+            contenedorActividades.innerHTML = '';
+            
+            // Verificar que el contenedor esté en el formulario
+            const formulario = contenedorActividades.closest('form');
+            console.log('📋 Contenedor está en formulario:', !!formulario);
+            if (formulario) {
+                console.log('   ID del formulario:', formulario.id);
+                console.log('   Action del formulario:', formulario.action);
+            }
+            
+            // Agregar cada actividad como input hidden
+            this.actividadesSeleccionadas.forEach((act, index) => {
                 const input = document.createElement('input');
                 input.type = 'hidden';
-                input.name = 'actividades_economicas[]';
+                input.name = 'actividades[]';
                 input.value = act.id;
-                formulario.appendChild(input);
+                input.setAttribute('data-actividad-id', act.id);
+                input.id = `actividad-input-${act.id}`; // ID único para debugging
+                contenedorActividades.appendChild(input);
+                
+                console.log(`✅ Input hidden ${index + 1} creado:`, {
+                    name: input.name,
+                    value: input.value,
+                    id: act.id,
+                    nombre: act.nombre,
+                    inputId: input.id
+                });
+            });
+            
+            // Verificar que los inputs se crearon correctamente
+            const inputsCreados = contenedorActividades.querySelectorAll('input[name="actividades[]"]');
+            console.log('🎯 RESUMEN FINAL:');
+            console.log(`   Total inputs creados: ${inputsCreados.length}`);
+            console.log(`   Actividades seleccionadas: ${this.actividadesSeleccionadas.length}`);
+            console.log('   IDs:', this.actividadesSeleccionadas.map(a => a.id));
+            console.log('   Nombres:', this.actividadesSeleccionadas.map(a => a.nombre));
+            
+        } else {
+            console.error('❌ CRÍTICO: No se encontró el contenedor actividades-hidden-inputs');
+            console.error('   Verificando elementos del DOM...');
+            const todosLosIds = ['actividades-hidden-inputs', 'buscador-actividad', 'resultados-actividades', 'actividades-seleccionadas'];
+            todosLosIds.forEach(id => {
+                const elemento = document.getElementById(id);
+                console.error(`   ${id}:`, !!elemento);
             });
         }
+        
+        console.log('✅ updateSelectedActividades COMPLETADO');
     }
     
     clearSearch() {
@@ -177,6 +236,33 @@ if (typeof ActividadesBuscar === 'undefined') {
     setupGlobalFunctions() {
         // Hacer disponible globalmente para onclick handlers
         window.actividadesBuscar = this;
+    }
+    
+    // Método para verificar el estado actual (útil para debugging)
+    verificarEstado() {
+        console.log('🔍 === VERIFICACIÓN DE ESTADO ACTIVIDADES ===');
+        console.log('📊 Actividades seleccionadas:', this.actividadesSeleccionadas.length);
+        console.log('📋 Lista:', this.actividadesSeleccionadas);
+        
+        const inputs = document.querySelectorAll('input[name="actividades[]"]');
+        console.log('🎯 Inputs hidden encontrados:', inputs.length);
+        
+        inputs.forEach((input, index) => {
+            console.log(`   Input ${index + 1}: value="${input.value}", id="${input.id}"`);
+        });
+        
+        const contenedor = document.getElementById('actividades-hidden-inputs');
+        console.log('📦 Contenedor existe:', !!contenedor);
+        if (contenedor) {
+            console.log('📦 Contenedor HTML:', contenedor.innerHTML);
+        }
+        
+        console.log('✅ === FIN VERIFICACIÓN ===');
+        return {
+            seleccionadas: this.actividadesSeleccionadas.length,
+            inputs: inputs.length,
+            contenedor: !!contenedor
+        };
     }
 }
 
