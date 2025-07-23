@@ -19,7 +19,6 @@
             </div>
 
             <div class="hidden md:flex items-center space-x-4 pr-4">
-                <!-- Icono de Notificaciones -->
                 <div class="relative" x-data="{ notificationsOpen: false }">
                     <button @click="notificationsOpen = !notificationsOpen"
                         class="group p-1.5 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary relative">
@@ -29,27 +28,19 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        <!-- Indicador de notificaciones -->
                         <span class="absolute -top-0.5 -right-0.5 flex h-5 w-5">
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span
-                                class="relative inline-flex rounded-full h-5 w-5 bg-primary items-center justify-center">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-5 w-5 bg-primary items-center justify-center">
                                 <span class="text-white text-xs font-bold">3</span>
                             </span>
                         </span>
                     </button>
 
                     <!-- Panel de notificaciones -->
-                    <div x-show="notificationsOpen" @click.away="notificationsOpen = false"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="origin-top-right absolute right-0 mt-3 w-96 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 focus:outline-none z-50 overflow-hidden"
-                        style="display: none;">
+                    <div x-show="notificationsOpen" 
+                         @click.away="notificationsOpen = false"
+                         class="origin-top-right absolute right-0 mt-3 w-96 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 focus:outline-none z-50 overflow-hidden"
+                         style="display: none;">
 
                         <div
                             class="px-4 py-3 bg-gradient-to-r from-primary to-primary-dark flex items-center justify-between">
@@ -205,14 +196,10 @@
                             </div>
                         </button>
                     </div>
-                    <div x-show="open" @click.away="open = false"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="transform opacity-0 scale-95"
-                        x-transition:enter-end="transform opacity-100 scale-100"
-                        x-transition:leave="transition ease-in duration-150"
-                        x-transition:leave-start="transform opacity-100 scale-100"
-                        x-transition:leave-end="transform opacity-0 scale-95"
-                        class="origin-top-right absolute right-0 mt-3 w-64 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 divide-y divide-gray-100 focus:outline-none z-50 overflow-hidden">
+                    <div x-show="open" 
+                         @click.away="open = false"
+                         class="origin-top-right absolute right-0 mt-3 w-64 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 divide-y divide-gray-100 focus:outline-none z-50 overflow-hidden"
+                         style="display: none;">
 
                         <!-- Header del usuario -->
                         <div class="px-4 py-4 bg-gradient-to-r from-primary/10 to-primary-dark/10">
