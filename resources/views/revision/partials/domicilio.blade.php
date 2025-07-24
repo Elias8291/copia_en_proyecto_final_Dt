@@ -1,28 +1,6 @@
 @props(['tramite', 'direccion' => null, 'editable' => false])
 
-<div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
-    <!-- Encabezado con icono -->
-    <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-        <div class="flex items-center space-x-4">
-            <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <i class="fas fa-map-marker-alt text-xl"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold text-gray-800">Domicilio</h2>
-                <p class="text-sm text-gray-500 mt-1">Dirección fiscal del proveedor</p>
-            </div>
-        </div>
-        @if($editable)
-            <div class="flex items-center space-x-2">
-                <button type="button" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
-                    <i class="fas fa-edit mr-1"></i>
-                    Editar
-                </button>
-            </div>
-        @endif
-    </div>
-
-    @if($direccion)
+@if($direccion)
         <div class="space-y-8">
             <!-- Dirección Principal -->
             <div>
@@ -225,18 +203,17 @@
                 </div>
             </div>
         </div>
-    @else
-        <!-- Estado sin dirección -->
-        <div class="text-center py-12">
-            <div class="flex flex-col items-center justify-center space-y-4">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-map-marker-alt text-gray-400 text-2xl"></i>
-                </div>
-                <div class="text-gray-500">
-                    <p class="font-medium text-sm">No hay información de domicilio</p>
-                    <p class="text-xs mt-1">La dirección no ha sido registrada para este trámite.</p>
-                </div>
+@else
+    <!-- Estado sin dirección -->
+    <div class="text-center py-12">
+        <div class="flex flex-col items-center justify-center space-y-4">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-map-marker-alt text-gray-400 text-2xl"></i>
+            </div>
+            <div class="text-gray-500">
+                <p class="font-medium text-sm">No hay información de domicilio</p>
+                <p class="text-xs mt-1">La dirección no ha sido registrada para este trámite.</p>
             </div>
         </div>
-    @endif
-</div>
+    </div>
+@endif

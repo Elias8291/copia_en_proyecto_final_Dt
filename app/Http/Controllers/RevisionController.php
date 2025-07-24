@@ -494,4 +494,75 @@ class RevisionController extends Controller
             ], 500);
         }
     }
+
+    public function addGeneralComment(Request $request, Tramite $tramite)
+    {
+        try {
+            $request->validate([
+                'comment' => 'required|string|max:1000',
+                'decision' => 'required|in:aprobar,rechazar,corregir,comentar'
+            ]);
+
+            // Obtener comentarios existentes
+            $comentarios = json_decode($tramite->comentarios_revision ?? '[]', true);
+            
+            // Agregar nuevo comentario
+            $nuevoComentario = [
+                'usuario' => Auth::user()->name,
+                'comentario' => $request->comment,
+                'decision' => $request->decision,
+                'fecha' => now()->format('d/m/Y H:i'),
+                'usuario_id' => Auth::id()
+            ];
+            
+            $comentarios[] = $nuevoComentario;
+            
+            // Preparar datos para actualizar
+            $updateData = [
+                'comentarios_revision' => json_encode($comentarios),
+                'revisado_por' => Auth::id(),
+                'updated_at' => now()
+            ];
+
+            // Si hay una decisión que cambia el estado del trámite
+            if ($request->decision !== 'comentar') {
+                $nuevoEstado = match($request->decision) {
+                    'aprobar' => 'Aprobado',
+                    'rechazar' => 'Rechazado',
+                    'corregir' => 'Para_Correccion',
+                    default => $tramite->estado
+                };
+                
+                $updateData['estado'] = $nuevoEstado;
+                $updateData['observaciones'] = $request->comment;
+                
+                // Si se aprueba o rechaza, marcar fecha de finalización
+                if (in_array($nuevoEstado, ['Aprobado', 'Rechazado'])) {
+                    $updateData['fecha_finalizacion'] = now();
+                }
+            }
+
+            // Actualizar el trámite
+            $tramite->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Comentario agregado exitosamente',
+                'usuario' => Auth::user()->name,
+                'comment' => $nuevoComentario
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al agregar comentario general al trámite', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -172,6 +172,134 @@
                     </div>
                 </div>
 
+                <!-- Comentario General del Trámite -->
+                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-6">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div
+                            class="w-10 h-10 bg-gradient-to-br from-gray-500 to-gray-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Comentario General</h3>
+                    </div>
+
+                    <!-- Comentarios existentes -->
+                    @if (isset($tramite->comentarios_revision) && $tramite->comentarios_revision)
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">Comentarios anteriores:</h4>
+                            <div class="space-y-3">
+                                @php
+                                    $comentarios = is_string($tramite->comentarios_revision)
+                                        ? json_decode($tramite->comentarios_revision, true)
+                                        : $tramite->comentarios_revision;
+                                @endphp
+                                @if (is_array($comentarios))
+                                    @foreach ($comentarios as $comentario)
+                                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="text-sm font-medium text-gray-900">
+                                                        {{ $comentario['usuario'] ?? 'Revisor' }}
+                                                    </span>
+                                                    @if (isset($comentario['decision']))
+                                                        @if ($comentario['decision'] === 'aprobar')
+                                                            <span
+                                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                                <svg class="w-3 h-3 mr-1" fill="none"
+                                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2" d="M5 13l4 4L19 7" />
+                                                                </svg>
+                                                                Aprobado
+                                                            </span>
+                                                        @elseif($comentario['decision'] === 'rechazar')
+                                                            <span
+                                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                                                <svg class="w-3 h-3 mr-1" fill="none"
+                                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                                Rechazado
+                                                            </span>
+                                                        @elseif($comentario['decision'] === 'corregir')
+                                                            <span
+                                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                                                                <svg class="w-3 h-3 mr-1" fill="none"
+                                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                                        stroke-width="2"
+                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                                </svg>
+                                                                Correcciones
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
+                                                <span class="text-xs text-gray-500">
+                                                    {{ $comentario['fecha'] ?? now()->format('d/m/Y H:i') }}
+                                                </span>
+                                            </div>
+                                            <p class="text-sm text-gray-700">{{ $comentario['comentario'] }}</p>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Formulario para nuevo comentario -->
+                    <form id="generalCommentForm" onsubmit="submitGeneralComment(event)">
+                        <div class="mb-4">
+                            <label for="general_comment" class="block text-sm font-medium text-gray-700 mb-2">
+                                Agregar comentario general sobre el trámite:
+                            </label>
+                            <textarea id="general_comment" name="comentario" rows="4"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9D2449] focus:border-[#9D2449] resize-none"
+                                placeholder="Escribe tus observaciones generales sobre este trámite..." required></textarea>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <label class="flex items-center">
+                                    <input type="radio" name="decision" value="aprobar"
+                                        class="text-green-600 focus:ring-green-500">
+                                    <span class="ml-2 text-sm text-green-700">Aprobar con este comentario</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="decision" value="rechazar"
+                                        class="text-red-600 focus:ring-red-500">
+                                    <span class="ml-2 text-sm text-red-700">Rechazar con este comentario</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="decision" value="corregir"
+                                        class="text-orange-600 focus:ring-orange-500">
+                                    <span class="ml-2 text-sm text-orange-700">Solicitar correcciones</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="decision" value="comentar"
+                                        class="text-gray-600 focus:ring-gray-500" checked>
+                                    <span class="ml-2 text-sm text-gray-700">Solo comentar</span>
+                                </label>
+                            </div>
+                            <button type="submit"
+                                class="px-6 py-2 bg-[#9D2449] text-white rounded-lg hover:bg-[#8a203f] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9D2449] focus:ring-offset-2">
+                                Guardar Comentario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="flex items-center justify-center py-6">
+                    <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+                    <div class="px-6">
+                        <div class="w-2 h-2 bg-slate-400 rounded-full"></div>
+                    </div>
+                    <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
+                </div>
+
                 <!-- Acciones de Revisión -->
                 <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
@@ -220,4 +348,166 @@
 @endsection
 
 @push('scripts')
+    <script>
+        // Función para enviar comentario general
+        function submitGeneralComment(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const comentario = formData.get('comentario');
+            const decision = formData.get('decision');
+
+            if (!comentario.trim()) {
+                alert('Por favor, escribe un comentario.');
+                return;
+            }
+
+            // Mostrar indicador de carga
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+
+            // Enviar comentario general
+            fetch(`/revision/{{ $tramite->id }}/add-general-comment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    },
+                    body: JSON.stringify({
+                        comment: comentario,
+                        decision: decision
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Limpiar formulario
+                        form.reset();
+                        form.querySelector('input[value="comentar"]').checked = true;
+
+                        // Mostrar mensaje de éxito
+                        showSuccessMessage('Comentario guardado exitosamente');
+
+                        // Si hay una decisión que cambia el estado, recargar la página
+                        if (decision !== 'comentar') {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            // Agregar comentario a la lista dinámicamente
+                            addGeneralCommentToList({
+                                usuario: data.usuario || 'Revisor',
+                                comentario: comentario,
+                                decision: decision,
+                                fecha: new Date().toLocaleString('es-ES')
+                            });
+                        }
+                    } else {
+                        alert('Error al guardar el comentario: ' + (data.message || 'Error desconocido'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                })
+                .finally(() => {
+                    // Restaurar botón
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                });
+        }
+
+        // Función para agregar comentario general a la lista
+        function addGeneralCommentToList(commentData) {
+            // Buscar o crear la sección de comentarios anteriores
+            let commentsSection = document.querySelector('.space-y-3');
+            if (!commentsSection) {
+                // Crear la sección si no existe
+                const form = document.getElementById('generalCommentForm');
+                const newSection = document.createElement('div');
+                newSection.className = 'mb-6';
+                newSection.innerHTML = `
+            <h4 class="text-sm font-medium text-gray-700 mb-3">Comentarios anteriores:</h4>
+            <div class="space-y-3"></div>
+        `;
+                form.parentNode.insertBefore(newSection, form);
+                commentsSection = newSection.querySelector('.space-y-3');
+            }
+
+            // Crear elemento del comentario
+            const commentElement = document.createElement('div');
+            commentElement.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
+
+            let decisionBadge = '';
+            if (commentData.decision === 'aprobar') {
+                decisionBadge = `
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Aprobado
+            </span>
+        `;
+            } else if (commentData.decision === 'rechazar') {
+                decisionBadge = `
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                Rechazado
+            </span>
+        `;
+            } else if (commentData.decision === 'corregir') {
+                decisionBadge = `
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Correcciones
+            </span>
+        `;
+            }
+
+            commentElement.innerHTML = `
+        <div class="flex items-start justify-between mb-2">
+            <div class="flex items-center space-x-2">
+                <span class="text-sm font-medium text-gray-900">${commentData.usuario}</span>
+                ${decisionBadge}
+            </div>
+            <span class="text-xs text-gray-500">${commentData.fecha}</span>
+        </div>
+        <p class="text-sm text-gray-700">${commentData.comentario}</p>
+    `;
+
+            // Agregar al inicio de la lista
+            commentsSection.insertBefore(commentElement, commentsSection.firstChild);
+        }
+
+        // Función para mostrar mensaje de éxito
+        function showSuccessMessage(message) {
+            // Crear elemento de notificación
+            const notification = document.createElement('div');
+            notification.className =
+                'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full';
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Mostrar notificación
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+
+            // Ocultar después de 3 segundos
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
 @endpush

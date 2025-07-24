@@ -1,30 +1,5 @@
 @props(['tramite', 'actividades' => [], 'editable' => false])
 
-<div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
-    <!-- Encabezado con icono -->
-    <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-        <div class="flex items-center space-x-4">
-            <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <i class="fas fa-industry text-xl"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold text-gray-800">Actividades Económicas</h2>
-                <p class="text-sm text-gray-500 mt-1">Actividades registradas del proveedor</p>
-            </div>
-        </div>
-        <div class="flex items-center space-x-2">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {{ count($actividades) }} actividad{{ count($actividades) !== 1 ? 'es' : '' }}
-            </span>
-            @if($editable)
-                <button type="button" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
-                    <i class="fas fa-edit mr-1"></i>
-                    Revisar
-                </button>
-            @endif
-        </div>
-    </div>
-
     @if(count($actividades) > 0)
         <div class="space-y-4">
             @foreach($actividades as $index => $actividad)
@@ -179,5 +154,4 @@
                 </div>
             </div>
         </div>
-    @endif
-</div>
+@endif

@@ -1,28 +1,6 @@
 @props(['tramite', 'proveedor', 'editable' => false])
 
-<div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
-    <!-- Encabezado con icono -->
-    <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-        <div class="flex items-center space-x-4">
-            <div class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <i class="fas fa-user-tie text-xl"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
-                <p class="text-sm text-gray-500 mt-1">Información básica del proveedor</p>
-            </div>
-        </div>
-        @if($editable)
-            <div class="flex items-center space-x-2">
-                <button type="button" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors">
-                    <i class="fas fa-edit mr-1"></i>
-                    Editar
-                </button>
-            </div>
-        @endif
-    </div>
-
-    <div class="space-y-8">
+<div class="space-y-8">
         <!-- Información Básica -->
         <div>
             <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
@@ -231,5 +209,4 @@
                 </div>
             </div>
         </div>
-    </div>
 </div>

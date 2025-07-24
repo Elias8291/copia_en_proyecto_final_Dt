@@ -132,6 +132,7 @@ Route::middleware(['auth'])->prefix('revision')->name('revision.')->group(functi
     Route::post('/documento/{archivo}/toggle-approval', [RevisionController::class, 'toggleApproval'])->name('documento.toggle-approval');
     Route::post('/documento/{archivo}/update-status', [RevisionController::class, 'updateDocumentStatus'])->name('documento.update-status');
     Route::post('/documento/{archivo}/add-comment', [RevisionController::class, 'addDocumentComment'])->name('documento.add-comment');
+    Route::post('/{tramite}/add-general-comment', [RevisionController::class, 'addGeneralComment'])->name('add-general-comment');
     Route::get('/', [RevisionController::class, 'index'])->name('index');
     Route::get('/pendientes/lista', [RevisionController::class, 'pendientes'])->name('pendientes');
     Route::get('/en-revision/lista', [RevisionController::class, 'enRevision'])->name('en-revision');
