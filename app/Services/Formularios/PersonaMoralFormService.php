@@ -184,23 +184,25 @@ class PersonaMoralFormService
     }
 
     /**
-     * Obtener datos de persona moral asociados a un trámite
+     * Obtener datos constitutivos asociados a un trámite
      */
     public function obtenerDatos(Tramite $tramite): ?array
     {
-        $personaMoral = $tramite->personaMoral;
-        if (!$personaMoral) {
+        $datosConstitutivos = $tramite->datosConstitutivos;
+        if (!$datosConstitutivos) {
             return null;
         }
 
+        $instrumentoNotarial = $datosConstitutivos->instrumentoNotarial;
+
         return [
-            'razon_social' => $personaMoral->razon_social ?? null,
-            'rfc' => $personaMoral->rfc ?? null,
-            'fecha_constitucion' => $personaMoral->fecha_constitucion ?? null,
-            'capital_social' => $personaMoral->capital_social ?? null,
-            'objeto_social' => $personaMoral->objeto_social ?? null,
-            'representante_legal' => $personaMoral->representante_legal ?? null,
-            'poder_representante' => $personaMoral->poder_representante ?? null,
+            'fecha_constitucion' => $instrumentoNotarial->fecha_constitucion ?? 'N/A',
+            'numero_escritura' => $instrumentoNotarial->numero_escritura ?? 'N/A',
+            'notario' => $instrumentoNotarial->nombre_notario ?? 'N/A',
+            'entidad_federativa' => $instrumentoNotarial->entidad_federativa ?? 'N/A',
+            'numero_notario' => $instrumentoNotarial->numero_notario ?? 'N/A',
+            'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? 'N/A',
+            'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? 'N/A',
         ];
     }
 }

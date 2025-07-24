@@ -165,6 +165,16 @@
                                 </svg>
                             </button>
 
+                            <!-- Revisar Datos -->
+                            <a href="{{ route('revision.revisar-datos', $tramite->id) }}"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-orange-600 hover:text-orange-900 hover:bg-orange-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                                title="Revisar datos completos">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </a>
+
                             <!-- Historial -->
                             <a href="{{ route('revision.historial', $tramite->id) }}"
                                 class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-purple-600 hover:text-purple-900 hover:bg-purple-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
@@ -326,6 +336,16 @@
                     </svg>
                     Estado
                 </button>
+
+                <!-- Revisar Datos -->
+                <a href="{{ route('revision.revisar-datos', $tramite->id) }}"
+                    class="flex-1 inline-flex items-center justify-center px-3 py-3 text-sm font-semibold text-orange-700 bg-orange-50 border-2 border-orange-200 rounded-xl hover:bg-orange-100 hover:border-orange-300 hover:text-orange-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Datos
+                </a>
 
                 <!-- Historial -->
                 <a href="{{ route('revision.historial', $tramite->id) }}"

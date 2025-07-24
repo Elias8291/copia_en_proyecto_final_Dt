@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+// use Illuminate\Database\Eloquent\SoftDeletes;
 // use Spatie\Activitylog\LogOptions;
 // use Spatie\Activitylog\Traits\LogsActivity;
 
 class Direccion extends Model
 {
-    use HasFactory, SoftDeletes; // Removed LogsActivity trait temporarily
+    use HasFactory; // Removed SoftDeletes and LogsActivity traits temporarily
 
     protected $table = 'direcciones';
 

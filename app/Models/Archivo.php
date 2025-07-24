@@ -41,4 +41,28 @@ class Archivo extends Model
     {
         return $this->belongsTo(User::class, 'cotejado_por');
     }
+
+    /**
+     * Generar URL para visualizar el documento
+     */
+    public function getUrlVisualizacionAttribute()
+    {
+        if ($this->tramite_id) {
+            $filename = basename($this->ruta_archivo);
+            return route('revision.documento', [
+                'tramite' => $this->tramite_id,
+                'archivo' => $this->id,
+                'filename' => $filename
+            ]);
+        }
+        return null;
+    }
+
+    /**
+     * Generar URL para descargar el documento
+     */
+    public function getUrlDescargaAttribute()
+    {
+        return $this->getUrlVisualizacionAttribute();
+    }
 } 

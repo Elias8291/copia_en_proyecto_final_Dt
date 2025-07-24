@@ -3,10 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tramite;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RevisionController extends Controller
 {
@@ -21,7 +20,7 @@ class RevisionController extends Controller
         $tramites = Tramite::with(['proveedor', 'revisadoPor', 'datosGenerales'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
-        
+
         $tramites->appends($request->query());
 
         return view('revision.index', compact('tramites', 'perPage'));
@@ -30,8 +29,8 @@ class RevisionController extends Controller
     public function show(Tramite $tramite)
     {
         $tramite->load([
-            'proveedor', 
-            'revisadoPor', 
+            'proveedor',
+            'revisadoPor',
             'datosGenerales',
             'datosConstitutivos',
             'apoderadoLegal',
@@ -40,7 +39,7 @@ class RevisionController extends Controller
             'actividades.actividad',
             'archivos.catalogoArchivo'
         ]);
-        
+
         return view('revision.show', compact('tramite'));
     }
 
@@ -55,7 +54,7 @@ class RevisionController extends Controller
                 'revisado_por' => $request->revisor_id,
                 'estado' => 'En_Revision'
             ]);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Revisor asignado exitosamente.'
@@ -91,7 +90,7 @@ class RevisionController extends Controller
             }
 
             $tramite->update($updateData);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Estado actualizado exitosamente.'
@@ -134,60 +133,365 @@ class RevisionController extends Controller
         return view('revision.mis-revisiones', compact('tramites'));
     }
 
-    public function estadisticas()
-    {
-        $estadisticas = [
-            'total' => Tramite::count(),
-            'por_estado' => Tramite::select('estado', DB::raw('count(*) as total'))
-                ->groupBy('estado')
-                ->pluck('total', 'estado'),
-            'por_tipo' => Tramite::select('tipo_tramite', DB::raw('count(*) as total'))
-                ->groupBy('tipo_tramite')
-                ->pluck('total', 'tipo_tramite'),
-            'pendientes' => Tramite::where('estado', 'Pendiente')->count(),
-            'en_revision' => Tramite::where('estado', 'En_Revision')->count(),
-            'aprobados_hoy' => Tramite::where('estado', 'Aprobado')
-                ->whereDate('fecha_finalizacion', today())->count(),
-            'mis_asignados' => Tramite::where('revisado_por', Auth::id())
-                ->whereIn('estado', ['En_Revision', 'Por_Cotejar'])->count()
-        ];
 
-        return response()->json($estadisticas);
+
+    public function revisarDatos(Tramite $tramite)
+    {
+        try {
+            // Cargar todas las relaciones necesarias del trámite
+            $tramite->load([
+                'proveedor',
+                'revisadoPor',
+                'datosGenerales',
+                'datosConstitutivos',
+                'apoderadoLegal',
+                'contactos',
+                'accionistas',
+                'direcciones.estado',
+                'actividades',
+                'archivos.catalogoArchivo'
+            ]);
+
+            return view('revision.revisar-datos', compact('tramite'));
+        } catch (\Exception $e) {
+            Log::error('Error al cargar datos del trámite para revisión', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Error al cargar los datos del trámite: ' . $e->getMessage());
+        }
     }
 
-    public function historial(Tramite $tramite)
+    public function servirDocumento($tramiteId, $archivoId, $filename)
     {
-        // Aquí podrías implementar un sistema de historial de cambios
-        // Por ahora, solo mostramos la información básica del trámite
-        $tramite->load(['proveedor', 'revisadoPor', 'datosGenerales']);
-        
-        return view('revision.historial', compact('tramite'));
+        try {
+            // Buscar el trámite
+            $tramite = Tramite::findOrFail($tramiteId);
+            
+            // Buscar el archivo específico del trámite
+            $archivo = $tramite->archivos()->where('id', $archivoId)->first();
+            
+            if (!$archivo) {
+                Log::error('Archivo no encontrado en BD', [
+                    'tramite_id' => $tramiteId,
+                    'archivo_id' => $archivoId
+                ]);
+                abort(404, 'Documento no encontrado');
+            }
+
+            // Construir posibles rutas del archivo
+            $rutasPosibles = [
+                storage_path('app/' . $archivo->ruta_archivo),
+                storage_path('app/public/' . $archivo->ruta_archivo),
+                public_path('storage/' . $archivo->ruta_archivo),
+                public_path($archivo->ruta_archivo)
+            ];
+            
+            $rutaCompleta = null;
+            foreach ($rutasPosibles as $ruta) {
+                if (file_exists($ruta)) {
+                    $rutaCompleta = $ruta;
+                    break;
+                }
+            }
+            
+            if (!$rutaCompleta) {
+                Log::error('Archivo físico no encontrado en ninguna ubicación', [
+                    'tramite_id' => $tramiteId,
+                    'archivo_id' => $archivoId,
+                    'ruta_bd' => $archivo->ruta_archivo,
+                    'rutas_verificadas' => $rutasPosibles
+                ]);
+                abort(404, 'Archivo físico no encontrado');
+            }
+
+            // Obtener el tipo MIME del archivo
+            $mimeType = mime_content_type($rutaCompleta) ?: 'application/octet-stream';
+            
+            // Retornar el archivo como respuesta
+            return response()->file($rutaCompleta, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . ($archivo->nombre_original ?: $filename) . '"'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al servir documento', [
+                'tramite_id' => $tramiteId,
+                'archivo_id' => $archivoId,
+                'filename' => $filename,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'Error interno del servidor: ' . $e->getMessage()], 500);
+        }
     }
 
-    public function exportar(Request $request)
+    public function mostrarDocumento($archivoId)
     {
-        $estado = $request->get('estado');
-        $fechaInicio = $request->get('fecha_inicio');
-        $fechaFin = $request->get('fecha_fin');
+        try {
+            // Buscar el archivo
+            $archivo = \App\Models\Archivo::findOrFail($archivoId);
+            
+            // Verificar que el usuario tenga acceso al trámite
+            $tramite = $archivo->tramite;
+            if (!$tramite) {
+                abort(404, 'Trámite no encontrado');
+            }
 
-        $query = Tramite::with(['proveedor', 'revisadoPor', 'datosGenerales']);
+            // Construir posibles rutas del archivo
+            $rutasPosibles = [
+                storage_path('app/' . $archivo->ruta_archivo),
+                storage_path('app/public/' . $archivo->ruta_archivo),
+                public_path('storage/' . $archivo->ruta_archivo),
+                public_path($archivo->ruta_archivo)
+            ];
+            
+            $rutaCompleta = null;
+            foreach ($rutasPosibles as $ruta) {
+                if (file_exists($ruta)) {
+                    $rutaCompleta = $ruta;
+                    break;
+                }
+            }
+            
+            if (!$rutaCompleta) {
+                Log::error('Archivo físico no encontrado', [
+                    'archivo_id' => $archivoId,
+                    'ruta_bd' => $archivo->ruta_archivo,
+                    'rutas_verificadas' => $rutasPosibles
+                ]);
+                abort(404, 'Archivo físico no encontrado');
+            }
 
-        if ($estado) {
-            $query->where('estado', $estado);
+            // Obtener el tipo MIME del archivo
+            $mimeType = mime_content_type($rutaCompleta) ?: 'application/octet-stream';
+            
+            // Retornar el archivo como respuesta
+            return response()->file($rutaCompleta, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . $archivo->nombre_original . '"'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al mostrar documento', [
+                'archivo_id' => $archivoId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'Error interno del servidor: ' . $e->getMessage()], 500);
         }
+    }
 
-        if ($fechaInicio && $fechaFin) {
-            $query->whereBetween('created_at', [$fechaInicio, $fechaFin]);
+    public function descargarDocumento($archivoId)
+    {
+        try {
+            // Buscar el archivo
+            $archivo = \App\Models\Archivo::findOrFail($archivoId);
+            
+            // Verificar que el usuario tenga acceso al trámite
+            $tramite = $archivo->tramite;
+            if (!$tramite) {
+                abort(404, 'Trámite no encontrado');
+            }
+
+            // Construir posibles rutas del archivo
+            $rutasPosibles = [
+                storage_path('app/' . $archivo->ruta_archivo),
+                storage_path('app/public/' . $archivo->ruta_archivo),
+                public_path('storage/' . $archivo->ruta_archivo),
+                public_path($archivo->ruta_archivo)
+            ];
+            
+            $rutaCompleta = null;
+            foreach ($rutasPosibles as $ruta) {
+                if (file_exists($ruta)) {
+                    $rutaCompleta = $ruta;
+                    break;
+                }
+            }
+            
+            if (!$rutaCompleta) {
+                Log::error('Archivo físico no encontrado para descarga', [
+                    'archivo_id' => $archivoId,
+                    'ruta_bd' => $archivo->ruta_archivo,
+                    'rutas_verificadas' => $rutasPosibles
+                ]);
+                abort(404, 'Archivo físico no encontrado');
+            }
+
+            // Retornar el archivo como descarga
+            return response()->download($rutaCompleta, $archivo->nombre_original);
+
+        } catch (\Exception $e) {
+            Log::error('Error al descargar documento', [
+                'archivo_id' => $archivoId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'Error interno del servidor: ' . $e->getMessage()], 500);
         }
+    }
 
-        $tramites = $query->get();
+    public function toggleApproval(Request $request, $archivoId)
+    {
+        try {
+            // Buscar el archivo
+            $archivo = \App\Models\Archivo::findOrFail($archivoId);
+            
+            // Verificar que el usuario tenga acceso al trámite
+            $tramite = $archivo->tramite;
+            if (!$tramite) {
+                return response()->json(['success' => false, 'message' => 'Trámite no encontrado'], 404);
+            }
 
-        // Aquí implementarías la lógica de exportación (Excel, PDF, etc.)
-        // Por ahora, devolvemos JSON
-        return response()->json([
-            'success' => true,
-            'data' => $tramites,
-            'total' => $tramites->count()
-        ]);
+            // Actualizar el estado de aprobación
+            $archivo->update([
+                'aprobado' => $request->boolean('approved'),
+                'revisado_por' => Auth::id(),
+                'fecha_revision' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Estado de aprobación actualizado exitosamente',
+                'approved' => $archivo->aprobado
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al cambiar estado de aprobación', [
+                'archivo_id' => $archivoId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateDocumentStatus(Request $request, $archivoId)
+    {
+        try {
+            $request->validate([
+                'status' => 'required|in:aprobado,rechazado,pendiente',
+                'comment' => 'nullable|string|max:1000'
+            ]);
+
+            // Buscar el archivo
+            $archivo = \App\Models\Archivo::findOrFail($archivoId);
+            
+            // Verificar que el usuario tenga acceso al trámite
+            $tramite = $archivo->tramite;
+            if (!$tramite) {
+                return response()->json(['success' => false, 'message' => 'Trámite no encontrado'], 404);
+            }
+
+            // Actualizar el estado del documento
+            $updateData = [
+                'aprobado' => $request->status === 'aprobado',
+                'revisado_por' => Auth::id(),
+                'fecha_revision' => now()
+            ];
+
+            if ($request->filled('comment')) {
+                $updateData['observaciones'] = $request->comment;
+            }
+
+            $archivo->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Estado del documento actualizado exitosamente',
+                'status' => $request->status
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar estado del documento', [
+                'archivo_id' => $archivoId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function addDocumentComment(Request $request, $archivoId)
+    {
+        try {
+            $request->validate([
+                'comment' => 'required|string|max:1000',
+                'decision' => 'required|in:aprobar,rechazar,pendiente'
+            ]);
+
+            // Buscar el archivo
+            $archivo = \App\Models\Archivo::findOrFail($archivoId);
+            
+            // Verificar que el usuario tenga acceso al trámite
+            $tramite = $archivo->tramite;
+            if (!$tramite) {
+                return response()->json(['success' => false, 'message' => 'Trámite no encontrado'], 404);
+            }
+
+            // Obtener comentarios existentes
+            $comentarios = json_decode($archivo->comentarios_revision ?? '[]', true);
+            
+            // Agregar nuevo comentario
+            $nuevoComentario = [
+                'usuario' => Auth::user()->name,
+                'comentario' => $request->comment,
+                'decision' => $request->decision,
+                'fecha' => now()->format('d/m/Y H:i'),
+                'usuario_id' => Auth::id()
+            ];
+            
+            $comentarios[] = $nuevoComentario;
+            
+            // Actualizar el archivo con el nuevo comentario
+            $updateData = [
+                'comentarios_revision' => json_encode($comentarios),
+                'revisado_por' => Auth::id(),
+                'fecha_revision' => now()
+            ];
+
+            // Si hay una decisión, actualizar también el estado
+            if ($request->decision !== 'pendiente') {
+                $updateData['aprobado'] = $request->decision === 'aprobar';
+                if ($request->decision !== 'pendiente') {
+                    $updateData['observaciones'] = $request->comment;
+                }
+            }
+
+            $archivo->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Comentario agregado exitosamente',
+                'usuario' => Auth::user()->name,
+                'comment' => $nuevoComentario
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al agregar comentario al documento', [
+                'archivo_id' => $archivoId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error interno del servidor: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

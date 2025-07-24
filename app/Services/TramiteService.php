@@ -199,7 +199,6 @@ class TramiteService
         $proveedorCreado = Proveedor::create([
             'usuario_id' => Auth::id(),
             'rfc' => $rfc,
-            'razon_social' => $request->input('razon_social', 'Razón Social Default'),
             'tipo_persona' => $this->determinarTipoPersona($rfc),
             'estado_padron' => 'Pendiente',
             'fecha_alta_padron' => now()->toDateString(),
@@ -320,9 +319,9 @@ class TramiteService
             'proveedor',
             'archivos',
             'datosGenerales',
-            'contacto',
-            'personaMoral',
-            'direccion',
+            'contactos',
+            'datosConstitutivos',
+            'direcciones',
             'actividades'
         ])->find($tramiteId);
 
@@ -333,8 +332,8 @@ class TramiteService
         return [
             'tramite' => $tramite,
             'datos_generales' => $this->datosGeneralesFormService->obtenerDatos($tramite),
-            'persona_moral' => $this->personaMoralFormService->obtenerDatos($tramite),
-            'direccion' => $this->direccionFormService->obtenerDatos($tramite),
+            'datos_constitutivos' => $this->personaMoralFormService->obtenerDatos($tramite),
+            'direcciones' => $this->direccionFormService->obtenerDatos($tramite),
             'actividades' => $this->actividadesFormService->obtenerDatos($tramite),
             'documentos' => $this->documentosFormService->obtenerDocumentos($tramite),
             'resumen' => $this->generarResumenTramite($tramite)
@@ -347,7 +346,7 @@ class TramiteService
     private function generarResumenTramite(Tramite $tramite): array
     {
         return [
-            'folio' => str_pad($tramite->id, 4, '0', STR_PAD_LEFT),
+            'folio' => str_pad((string) $tramite->id, 4, '0', STR_PAD_LEFT),
             'tipo_tramite' => $tramite->tipo_tramite,
             'estado' => $tramite->estado,
             'fecha_creacion' => $tramite->created_at->format('d/m/Y H:i'),
@@ -385,9 +384,9 @@ class TramiteService
     {
         $secciones = [
             'datos_generales' => $tramite->datosGenerales !== null,
-            'contacto' => $tramite->contacto !== null,
-            'persona_moral' => $tramite->personaMoral !== null,
-            'direccion' => $tramite->direccion !== null,
+            'contactos' => $tramite->contactos->count() > 0,
+            'datos_constitutivos' => $tramite->datosConstitutivos !== null,
+            'direcciones' => $tramite->direcciones->count() > 0,
             'actividades' => $tramite->actividades->count() > 0,
             'documentos' => $tramite->archivos->count() > 0,
         ];

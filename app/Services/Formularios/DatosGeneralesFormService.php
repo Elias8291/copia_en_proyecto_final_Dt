@@ -96,25 +96,19 @@ class DatosGeneralesFormService
     public function obtenerDatos(Tramite $tramite): ?array
     {
         $datosGenerales = $tramite->datosGenerales;
-        $contacto = $tramite->contacto;
+        $contactos = $tramite->contactos;
 
-        if (!$datosGenerales && !$contacto) {
+        if (!$datosGenerales && $contactos->isEmpty()) {
             return null;
         }
 
         return [
-            'datos_generales' => $datosGenerales ? [
-                'razon_social' => $datosGenerales->razon_social,
-                'telefono' => $datosGenerales->telefono,
-                'curp' => $datosGenerales->curp,
-                'pagina_web' => $datosGenerales->pagina_web,
-            ] : null,
-            'contacto' => $contacto ? [
-                'nombre_contacto' => $contacto->nombre_contacto,
-                'cargo' => $contacto->cargo,
-                'correo_electronico' => $contacto->correo_electronico,
-                'telefono' => $contacto->telefono,
-            ] : null,
+            'razon_social' => $datosGenerales->razon_social ?? 'N/A',
+            'rfc' => $datosGenerales->rfc ?? 'N/A',
+            'tipo_persona' => $datosGenerales->tipo_persona ?? 'N/A',
+            'email' => $contactos->first()?->correo_electronico ?? 'N/A',
+            'telefono' => $datosGenerales->telefono ?? $contactos->first()?->telefono ?? 'N/A',
+            'sitio_web' => $datosGenerales->pagina_web ?? 'N/A',
         ];
     }
 
@@ -123,6 +117,6 @@ class DatosGeneralesFormService
      */
     public function tienesDatosCompletos(Tramite $tramite): bool
     {
-        return $tramite->datosGenerales !== null && $tramite->contacto !== null;
+        return $tramite->datosGenerales !== null && !$tramite->contactos->isEmpty();
     }
 }

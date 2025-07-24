@@ -175,7 +175,7 @@ class DocumentosFormService
                 'extension' => $archivo->extension,
                 'tamaño' => $archivo->tamaño,
                 'fecha_subida' => $archivo->created_at->format('d/m/Y H:i'),
-                'url_descarga' => route('archivos.descargar', $archivo->id),
+                'url_descarga' => '#',
                 'descripcion' => $archivo->catalogoArchivo?->descripcion ?? '',
             ];
         })->groupBy('tipo_documento')->toArray();
