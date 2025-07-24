@@ -81,7 +81,9 @@
                             class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
                         <option value="">Seleccione un estado</option>
                         <!-- Las opciones se cargarán dinámicamente -->
+                        <option value="otro">Otro</option>
                     </select>
+                    <input type="text" id="estado_otro" name="estado_otro" class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" placeholder="Especifique otro estado">
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
@@ -102,7 +104,9 @@
                     <select id="municipio" name="municipio" 
                             class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
                         <option value="">Seleccione un municipio</option>
+                        <option value="otro">Otro</option>
                     </select>
+                    <input type="text" id="municipio_otro" name="municipio_otro" class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" placeholder="Especifique otro municipio">
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
@@ -123,26 +127,16 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <i class="fas fa-home text-gray-500"></i>
                     </div>
-                    <input type="text" id="asentamiento" name="asentamiento" 
-                           value="{{ old('asentamiento') }}"
-                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
-                           placeholder="Ingrese el asentamiento/colonia"
-                           aria-label="Asentamiento o colonia"
-                           required>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label for="tipo_asentamiento" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Asentamiento</label>
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                        <i class="fas fa-map-signs text-gray-500"></i>
+                    <select id="asentamiento" name="asentamiento" 
+                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
+                        <option value="">Seleccione un asentamiento</option>
+                        <!-- Opciones dinámicas por JS -->
+                        <option value="otro">Otro</option>
+                    </select>
+                    <input type="text" id="asentamiento_otro" name="asentamiento_otro" class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" placeholder="Especifique otro asentamiento">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
-                    <input type="text" id="tipo_asentamiento" name="tipo_asentamiento" 
-                           value="{{ old('tipo_asentamiento') }}"
-                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
-                           placeholder="Ej: Colonia, Fraccionamiento"
-                           aria-label="Tipo de asentamiento">
                 </div>
             </div>
         </div>
@@ -229,7 +223,3 @@
     </div>
 
 </div>
-
-@push('scripts')
-<script src="{{ asset('js/domicilio.js') }}"></script>
-@endpush

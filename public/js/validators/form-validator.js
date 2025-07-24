@@ -1,7 +1,3 @@
-/**
- * Validador de Formularios
- * Maneja validaciones en tiempo real para formularios
- */
 class FormValidator {
     constructor() {
         this.validationState = {
@@ -11,14 +7,12 @@ class FormValidator {
         };
     }
 
-    /** Validar email del lado del cliente */
     async validateEmail(email) {
         if (!email || email.length < 5) {
             this.clearValidationMessage('email');
             return;
         }
 
-        // Validación básica del email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const isValid = emailRegex.test(email);
         
@@ -31,24 +25,18 @@ class FormValidator {
         }
     }
 
-    /** Validar RFC del lado del cliente */
     async validateRfc(rfc) {
         if (!rfc || rfc.length < 10) {
             this.validationState.rfc.valid = null;
             return;
         }
 
-        // Validación básica del RFC (formato general)
         const rfcRegex = /^[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9][A-Z1-9][0-9A]$/;
         const isValid = rfcRegex.test(rfc.toUpperCase()) && rfc.length >= 12 && rfc.length <= 13;
         
         this.validationState.rfc.valid = isValid;
-        
-        // No mostramos mensaje visual para RFC por ahora, solo guardamos el estado
-        console.log(`RFC ${rfc}: ${isValid ? 'válido' : 'inválido'}`);
     }
 
-    /** Validar coincidencia de contraseñas */
     validatePasswordMatch() {
         const password = document.getElementById('password');
         const passwordConfirmation = document.getElementById('password_confirmation');
@@ -74,7 +62,6 @@ class FormValidator {
         this.showPasswordMatchValidation(passwordsMatch, passwordStrong);
     }
 
-    /** Validar fortaleza de contraseña */
     validatePasswordStrength(password) {
         if (password.length < 8) return { valid: false, message: 'Mínimo 8 caracteres' };
         
@@ -94,7 +81,6 @@ class FormValidator {
         }
     }
 
-    /** Mostrar mensaje de validación */
     showValidationMessage(field, message, isValid) {
         if (field !== 'email') return;
         
@@ -135,7 +121,6 @@ class FormValidator {
         }
     }
 
-    /** Mostrar loading de validación */
     showValidationLoading(field, show) {
         if (field !== 'email') return;
         
@@ -150,7 +135,6 @@ class FormValidator {
         }
     }
 
-    /** Limpiar mensaje de validación */
     clearValidationMessage(field) {
         if (field !== 'email') {
             if (field === 'rfc' && this.validationState[field]) {
@@ -179,7 +163,6 @@ class FormValidator {
         this.validationState[field].valid = null;
     }
 
-    /** Mostrar validación de contraseñas */
     showPasswordMatchValidation(passwordsMatch, passwordStrength) {
         const validationDiv = document.getElementById('passwordMatchValidation');
         const iconDiv = document.getElementById('passwordMatchIcon');
@@ -240,7 +223,6 @@ class FormValidator {
         };
     }
 
-    /** Limpiar validación de contraseñas */
     clearPasswordMatchValidation() {
         const validationDiv = document.getElementById('passwordMatchValidation');
         const iconDiv = document.getElementById('passwordMatchIcon');
@@ -266,8 +248,5 @@ class FormValidator {
     }
 }
 
-// Crear instancia global
 window.formValidator = new FormValidator();
-
-// Exponer validationState globalmente para compatibilidad
-window.validationState = window.formValidator.validationState;  
+window.validationState = window.formValidator.validationState;

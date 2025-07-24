@@ -20,4 +20,16 @@ class ActividadesController extends Controller
 
         return response()->json([]);
     }
+
+    public function buscar(Request $request)
+    {
+        if ($request->filled('q')) {
+            $resultados = ActividadEconomica::where('nombre', 'like', '%'.$request->q.'%')
+                ->where('estado_validacion', 'Validada')
+                ->take(10)
+                ->get(['id', 'nombre', 'codigo', 'descripcion']);
+            return response()->json($resultados);
+        }
+        return response()->json([]);
+    }
 }

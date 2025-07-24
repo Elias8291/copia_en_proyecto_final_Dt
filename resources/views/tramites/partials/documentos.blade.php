@@ -11,6 +11,10 @@
     }
 @endphp
 
+@push('scripts')
+    <script src="{{ asset('js/tramites/handlers/documentos-handler.js') }}"></script>
+@endpush
+
 <div class="max-w-7xl mx-auto space-y-8" {{ $attributes }}>
     <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
         <!-- Encabezado con icono -->
@@ -115,56 +119,3 @@
         </div>
     </div>
 </div>
-
-<script>
-// Función para manejar la subida de archivos con feedback visual
-function handleFileUpload(input, documentoId) {
-    const file = input.files[0];
-    const statusElement = document.getElementById(`status_${documentoId}`);
-    const filenameElement = document.getElementById(`filename_${documentoId}`);
-    
-    if (file) {
-        // Cambiar el estado a "Archivo Seleccionado"
-        statusElement.className = "px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full";
-        statusElement.innerHTML = `
-            <i class="fas fa-check mr-1"></i>
-            Archivo Seleccionado
-        `;
-        
-        // Mostrar el nombre del archivo
-        filenameElement.textContent = file.name;
-        filenameElement.classList.remove('hidden');
-        
-        console.log(`✅ Archivo seleccionado para documento ${documentoId}:`, file.name);
-        console.log(`📁 Tamaño: ${(file.size / 1024).toFixed(2)} KB`);
-        console.log(`📄 Tipo: ${file.type}`);
-        
-    } else {
-        // Volver al estado pendiente
-        statusElement.className = "px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full";
-        statusElement.innerHTML = `
-            <i class="fas fa-clock mr-1"></i>
-            Pendiente
-        `;
-        
-        // Ocultar el nombre del archivo
-        filenameElement.classList.add('hidden');
-        
-        console.log(`❌ Archivo removido para documento ${documentoId}`);
-    }
-}
-
-// Debug: Mostrar archivos seleccionados
-window.mostrarArchivosSeleccionados = function() {
-    const inputs = document.querySelectorAll('input[type="file"]');
-    console.log('📁 ARCHIVOS SELECCIONADOS:');
-    inputs.forEach(input => {
-        if (input.files[0]) {
-            console.log(`   - ${input.name}: ${input.files[0].name}`);
-        }
-    });
-};
-
-console.log('📎 Sistema de documentos inicializado');
-console.log('💡 Para ver archivos seleccionados, ejecuta: mostrarArchivosSeleccionados()');
-</script>
