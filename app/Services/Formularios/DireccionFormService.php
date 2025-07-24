@@ -98,4 +98,36 @@ class DireccionFormService
 
         return $errores;
     }
+
+    /**
+     * Obtener dirección asociada a un trámite
+     */
+    public function obtenerDatos(Tramite $tramite): ?array
+    {
+        $direccion = $tramite->direccion;
+        if (!$direccion) {
+            return null;
+        }
+
+        return [
+            'calle' => $direccion->calle,
+            'numero_exterior' => $direccion->numero_exterior,
+            'numero_interior' => $direccion->numero_interior,
+            'colonia' => $direccion->colonia ?? $direccion->colonia_asentamiento ?? null,
+            'municipio' => $direccion->municipio,
+            'estado' => $direccion->estado ?? $direccion->id_estado ?? null,
+            'codigo_postal' => $direccion->codigo_postal,
+            'pais' => $direccion->pais ?? 'México',
+            'direccion_completa' => collect([
+                $direccion->calle,
+                $direccion->numero_exterior,
+                $direccion->numero_interior ? "Int. {$direccion->numero_interior}" : null,
+                $direccion->colonia ?? $direccion->colonia_asentamiento ?? null,
+                $direccion->municipio,
+                $direccion->estado ?? $direccion->id_estado ?? null,
+                $direccion->codigo_postal,
+                $direccion->pais ?? 'México',
+            ])->filter()->implode(', '),
+        ];
+    }
 }

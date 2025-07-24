@@ -40,7 +40,7 @@ class ProveedorService
         }
 
         return Tramite::where('proveedor_id', $proveedor->id)
-            ->whereIn('estado', ['Pendiente', 'En Revisión', 'Documentos Pendientes'])
+            ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado', 'Aprobado'])
             ->exists();
     }
 
@@ -54,7 +54,7 @@ class ProveedorService
         }
 
         return Tramite::where('proveedor_id', $proveedor->id)
-            ->whereIn('estado', ['Pendiente', 'En Revisión', 'Documentos Pendientes'])
+            ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado', 'Aprobado'])
             ->latest()
             ->first();
     }
@@ -76,7 +76,7 @@ class ProveedorService
             'estado_color' => $this->getEstadoColor($tramite->estado),
             'estado_descripcion' => $this->getEstadoDescripcion($tramite->estado),
             'siguiente_paso' => $this->getSiguientePaso($tramite->estado),
-            'puede_editar' => in_array($tramite->estado, ['Pendiente', 'Documentos Pendientes'])
+            'puede_editar' => in_array($tramite->estado, ['Para_Correccion', 'Pendiente'])
         ];
     }
 
@@ -87,9 +87,12 @@ class ProveedorService
     {
         return match($estado) {
             'Pendiente' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            'En Revisión' => 'bg-blue-100 text-blue-800 border-blue-200',
-            'Documentos Pendientes' => 'bg-orange-100 text-orange-800 border-orange-200',
-            'Aprobado' => 'bg-green-100 text-green-800 border-green-200',
+            'En_Revision' => 'bg-blue-100 text-blue-800 border-blue-200',
+            'Para_Correccion' => 'bg-amber-100 text-amber-800 border-amber-200',
+            'Por_Cotejar' => 'bg-purple-100 text-purple-800 border-purple-200',
+            'Cancelado' => 'bg-gray-100 text-gray-800 border-gray-200',
+            'Enviado' => 'bg-blue-100 text-blue-800 border-blue-200',
+            'Aprobado' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
             'Rechazado' => 'bg-red-100 text-red-800 border-red-200',
             default => 'bg-gray-100 text-gray-800 border-gray-200'
         };
@@ -102,8 +105,11 @@ class ProveedorService
     {
         return match($estado) {
             'Pendiente' => 'Su trámite está en revisión por el equipo del padrón de proveedores.',
-            'En Revisión' => 'Un especialista está revisando su documentación y datos proporcionados.',
-            'Documentos Pendientes' => 'Se requieren documentos adicionales o correcciones en la documentación.',
+            'En_Revision' => 'Su expediente está siendo revisado minuciosamente por nuestro equipo técnico.',
+            'Para_Correccion' => 'Su trámite requiere correcciones. Revise las observaciones del equipo administrativo.',
+            'Por_Cotejar' => 'Su documentación está siendo cotejada y verificada por nuestro equipo especializado.',
+            'Cancelado' => 'Su trámite ha sido cancelado. Puede consultar los motivos o iniciar un nuevo proceso.',
+            'Enviado' => 'Su trámite ha sido enviado y está pendiente de revisión inicial.',
             'Aprobado' => 'Su trámite ha sido aprobado exitosamente.',
             'Rechazado' => 'Su trámite ha sido rechazado. Revise las observaciones.',
             default => 'Estado del trámite no reconocido.'
@@ -117,8 +123,11 @@ class ProveedorService
     {
         return match($estado) {
             'Pendiente' => 'Espere a que un especialista revise su solicitud. Le notificaremos cualquier actualización.',
-            'En Revisión' => 'Su trámite está siendo evaluado. Manténgase atento a las notificaciones.',
-            'Documentos Pendientes' => 'Revise las observaciones y suba los documentos solicitados lo antes posible.',
+            'En_Revision' => 'Su trámite está siendo evaluado minuciosamente. Manténgase atento a las notificaciones.',
+            'Para_Correccion' => 'Revise las observaciones específicas y corrija la información señalada antes de reenviar.',
+            'Por_Cotejar' => 'Su documentación está en proceso de verificación. Este proceso puede tomar algunos días.',
+            'Cancelado' => 'Contacte al área de soporte para conocer los motivos o inicie un nuevo proceso.',
+            'Enviado' => 'Su trámite ha sido recibido y será asignado a un especialista para revisión.',
             'Aprobado' => 'Su trámite ha sido completado exitosamente.',
             'Rechazado' => 'Revise las observaciones y puede iniciar un nuevo proceso si es necesario.',
             default => 'Contacte al área de soporte para más información.'

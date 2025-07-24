@@ -1,4 +1,4 @@
-@props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true])
+@props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => [], 'editable' => true])
 
 <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
     <!-- Encabezado con icono -->
@@ -52,7 +52,7 @@
                         <i class="fas fa-map-pin text-gray-500"></i>
                     </div>
                     <input type="text" id="codigo_postal" name="codigo_postal"
-                           value="{{ old('codigo_postal') }}"
+                           value="{{ old('codigo_postal', $datosSat['cp'] ?? '') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: 01000"
                            pattern="[0-9]{5}"
@@ -134,6 +134,8 @@
                         <option value="otro">Otro</option>
                     </select>
                     <input type="text" id="asentamiento_otro" name="asentamiento_otro" class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" placeholder="Especifique otro asentamiento">
+                    <!-- Campo oculto para datos SAT -->
+                    <input type="hidden" id="sat_colonia" value="{{ $datosSat['colonia'] ?? '' }}">
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
@@ -154,7 +156,7 @@
                         <i class="fas fa-road text-gray-500"></i>
                     </div>
                     <input type="text" id="calle" name="calle"
-                           value="{{ old('calle') }}"
+                           value="{{ old('calle', $datosSat['nombre_vialidad'] ?? '') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: Av. Principal"
                            maxlength="100"
@@ -174,7 +176,7 @@
                         <i class="fas fa-hashtag text-gray-500"></i>
                     </div>
                     <input type="text" id="numero_exterior" name="numero_exterior"
-                           value="{{ old('numero_exterior') }}"
+                           value="{{ old('numero_exterior', $datosSat['numero_exterior'] ?? '') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: 123 o S/N"
                            maxlength="10"
@@ -191,7 +193,7 @@
                         <i class="fas fa-door-open text-gray-500"></i>
                     </div>
                     <input type="text" id="numero_interior" name="numero_interior"
-                           value="{{ old('numero_interior') }}"
+                           value="{{ old('numero_interior', $datosSat['numero_interior'] ?? '') }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: 5A"
                            maxlength="10"
@@ -221,5 +223,45 @@
         <input type="hidden" id="longitud" name="longitud">
 
     </div>
+
+    @if(!empty($datosSat['colonia']))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Si hay datos SAT de colonia, intentar preseleccionar después de cargar asentamientos
+            const satColonia = document.getElementById('sat_colonia')?.value;
+            if (satColonia) {
+                // Observar cambios en el select de asentamiento para preseleccionar
+                const asentamientoSelect = document.getElementById('asentamiento');
+                if (asentamientoSelect) {
+                    // Función para intentar seleccionar la colonia
+                    function trySelectColonia() {
+                        const options = asentamientoSelect.options;
+                        for (let i = 0; i < options.length; i++) {
+                            if (options[i].text.toLowerCase().includes(satColonia.toLowerCase()) ||
+                                options[i].value.toLowerCase().includes(satColonia.toLowerCase())) {
+                                asentamientoSelect.selectedIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Observar cuando se agreguen nuevas opciones al select
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                                setTimeout(trySelectColonia, 100);
+                            }
+                        });
+                    });
+                    
+                    observer.observe(asentamientoSelect, { childList: true });
+                    
+                    // También intentar inmediatamente en caso de que ya estén cargadas
+                    setTimeout(trySelectColonia, 500);
+                }
+            }
+        });
+    </script>
+    @endif
 
 </div>

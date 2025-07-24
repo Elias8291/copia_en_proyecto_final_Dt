@@ -6,58 +6,92 @@ namespace App\Services;
 
 use App\Models\Proveedor;
 use App\Models\Tramite;
-use App\Models\DatosGenerales;
-use App\Models\Direccion;
-use App\Models\Contacto;
-use App\Models\Accionista;
-use App\Models\InstrumentoNotarial;
-use App\Models\DatosConstitutivos;
-use App\Models\ApoderadoLegal;
-use App\Models\Archivo;
-use App\Models\ActividadEconomica;
 use App\Http\Requests\TramiteFormularioRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+use App\Services\Formularios\DatosGeneralesFormService;
+use App\Services\Formularios\DocumentosFormService;
+use App\Services\Formularios\PersonaMoralFormService;
+use App\Services\Formularios\DireccionFormService;
+use App\Services\Formularios\ActividadesFormService;
+
 class TramiteService
 {
-    protected $proveedorService;
+    private const RFC_PERSONA_MORAL_LENGTH = 12;
+    private const RFC_PERSONA_FISICA_LENGTH = 13;
+    
+    private const TIPOS_TRAMITE = [
+        'inscripcion' => [
+            'titulo' => 'Inscripción al Padrón de Proveedores',
+            'descripcion' => 'Complete la información para registrarse como proveedor del gobierno.',
+            'mensaje_exito' => 'Su solicitud de inscripción ha sido enviada correctamente. Recibirá una notificación cuando sea revisada.'
+        ],
+        'renovacion' => [
+            'titulo' => 'Renovación de Registro',
+            'descripcion' => 'Actualice y renueve su registro en el padrón de proveedores.',
+            'mensaje_exito' => 'Su solicitud de renovación ha sido procesada exitosamente.'
+        ],
+        'actualizacion' => [
+            'titulo' => 'Actualización de Datos',
+            'descripcion' => 'Modifique los datos de su registro existente.',
+            'mensaje_exito' => 'Sus datos han sido actualizados correctamente.'
+        ]
+    ];
 
-    public function __construct(ProveedorService $proveedorService)
-    {
-        $this->proveedorService = $proveedorService;
-    }
+    private const CLAVES_SESION_SAT = [
+        'sat_rfc', 'sat_nombre', 'sat_tipo_persona', 'sat_curp',
+        'sat_cp', 'sat_colonia', 'sat_nombre_vialidad',
+        'sat_numero_exterior', 'sat_numero_interior'
+    ];
 
-    /**
-     * Obtiene los datos necesarios para la vista de selección de trámites
-     */
+    public function __construct(
+        private ProveedorService $proveedorService,
+        private DatosConstitutivosService $datosConstitutivosService,
+        private DatosGeneralesFormService $datosGeneralesFormService,
+        private DocumentosFormService $documentosFormService,
+        private PersonaMoralFormService $personaMoralFormService,
+        private DireccionFormService $direccionFormService,
+        private ActividadesFormService $actividadesFormService,
+    ) {}
+
+    // ============================================================================
+    // MÉTODOS PÚBLICOS PRINCIPALES
+    // ============================================================================
+
     public function getDatosTramitesIndex(?Proveedor $proveedor): array
     {
-        $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
-
         return [
-            'globalTramites' => $tramitesDisponibles,
+            'globalTramites' => $this->proveedorService->determinarTramitesDisponibles($proveedor),
             'proveedor' => $proveedor,
         ];
     }
 
-    /**
-     * Valida el acceso a un trámite específico
-     */
     public function validarAccesoTramite(string $tipo, ?Proveedor $proveedor): bool
     {
         $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
-
+        
+        // Log para debug
+        Log::info('Validando acceso a trámite', [
+            'tipo' => $tipo,
+            'proveedor_id' => $proveedor?->id,
+            'tramites_disponibles' => $tramitesDisponibles,
+            'resultado' => $tramitesDisponibles[$tipo] ?? false
+        ]);
+        
+        // Para development, ser más permisivo
+        if (app()->environment('local', 'development')) {
+            if (in_array($tipo, ['inscripcion', 'renovacion', 'actualizacion'])) {
+                return true;
+            }
+        }
+        
         return $tramitesDisponibles[$tipo] ?? false;
     }
 
-    /**
-     * Obtiene los datos para la vista de constancia
-     */
     public function getDatosConstancia(string $tipo, ?Proveedor $proveedor): array
     {
         return [
@@ -66,30 +100,79 @@ class TramiteService
         ];
     }
 
-    /**
-     * Procesa los datos de la constancia SAT y los guarda en sesión
-     */
     public function procesarDatosConstancia(Request $request): void
     {
-        Session::put([
-            'sat_rfc' => $request->sat_rfc,
-            'sat_nombre' => $request->sat_nombre,
-            'sat_tipo_persona' => $request->sat_tipo_persona,
-            'sat_curp' => $request->sat_curp,
-            'sat_cp' => $request->sat_cp,
-            'sat_colonia' => $request->sat_colonia,
-            'sat_nombre_vialidad' => $request->sat_nombre_vialidad,
-            'sat_numero_exterior' => $request->sat_numero_exterior,
-            'sat_numero_interior' => $request->sat_numero_interior,
-        ]);
+        $datosSat = [];
+        foreach (self::CLAVES_SESION_SAT as $clave) {
+            $datosSat[$clave] = $request->input($clave);
+        }
+
+        Session::put($datosSat);
     }
 
-    /**
-     * Obtiene los datos del SAT desde la sesión
-     */
+    public function getDatosFormulario(string $tipo, ?Proveedor $proveedor): array
+    {
+        return [
+            'tipo_tramite' => $tipo,
+            'proveedor' => $proveedor,
+            'tramites' => $this->proveedorService->determinarTramitesDisponibles($proveedor),
+            'titulo' => $this->getTituloTramite($tipo),
+            'descripcion' => $this->getDescripcionTramite($tipo),
+            'datosSat' => $this->getDatosSatDeSesion(),
+        ];
+    }
+
+    public function procesarEnvioFormulario(TramiteFormularioRequest $request, string $tipo, ?Proveedor $proveedor): array
+    {
+        Log::info('Iniciando procesamiento de formulario', [
+            'tipo' => $tipo,
+            'usuario_id' => Auth::id(),
+            'files_count' => count($request->allFiles())
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $proveedor = $this->asegurarProveedor($proveedor, $request);
+            $tramite = $this->crearTramite($tipo, $proveedor);
+            
+            $this->procesarDatosTramite($tramite, $request);
+
+            DB::commit();
+
+            return $this->crearRespuestaExitosa($tipo, $tramite);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->crearRespuestaError($e, $tipo);
+        }
+    }
+
+    public function limpiarDatosSesion(): void
+    {
+        foreach (self::CLAVES_SESION_SAT as $clave) {
+            Session::forget($clave);
+        }
+    }
+
+    // ============================================================================
+    // MÉTODOS DE UTILIDAD PÚBLICOS
+    // ============================================================================
+
+    public function getTituloTramite(string $tipo): string
+    {
+        return self::TIPOS_TRAMITE[$tipo]['titulo'] ?? 'Formulario de Trámite';
+    }
+
+    public function getDescripcionTramite(string $tipo): string
+    {
+        return self::TIPOS_TRAMITE[$tipo]['descripcion'] ?? 'Procese su trámite completando el formulario.';
+    }
+
     public function getDatosSatDeSesion(): array
     {
         return [
+            'rfc' => Session::get('sat_rfc'),
             'razon_social' => Session::get('sat_nombre'),
             'tipo_persona' => Session::get('sat_tipo_persona'),
             'curp' => Session::get('sat_curp'),
@@ -101,607 +184,223 @@ class TramiteService
         ];
     }
 
-    /**
-     * Obtiene los datos completos para el formulario de trámite
-     */
-    public function getDatosFormulario(string $tipo, ?Proveedor $proveedor): array
+    // ============================================================================
+    // MÉTODOS PRIVADOS - GESTIÓN DE PROVEEDORES
+    // ============================================================================
+
+    private function asegurarProveedor(?Proveedor $proveedor, TramiteFormularioRequest $request): Proveedor
     {
-        $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
-        $datosSat = $this->getDatosSatDeSesion();
-
-        return [
-            'tipo_tramite' => $tipo,
-            'proveedor' => $proveedor,
-            'tramites' => $tramitesDisponibles,
-            'titulo' => $this->getTituloTramite($tipo),
-            'descripcion' => $this->getDescripcionTramite($tipo),
-            'datosSat' => $datosSat,
-        ];
-    }
-
-    /**
-     * Procesa el envío del formulario de trámite - VERSIÓN REFACTORIZADA Y LIMPIA
-     */
-    public function procesarEnvioFormulario(TramiteFormularioRequest $request, string $tipo, ?Proveedor $proveedor): array
-    {
-        try {
-            Log::info('Procesando envío de formulario', [
-                'tipo' => $tipo,
-                'usuario_id' => Auth::id(),
-                'files_received' => count($request->allFiles())
-            ]);
-
-            DB::beginTransaction();
-
-            // 1. Crear o usar proveedor existente
-            if (!$proveedor) {
-                $proveedor = $this->crearProveedorSimple($request->all());
-                Log::info('Proveedor creado', ['id' => $proveedor->id]);
-            }
-
-            // 2. Crear trámite
-            $tramite = $this->crearTramite($tipo, $proveedor);
-            Log::info('Trámite creado', ['id' => $tramite->id]);
-
-            // 3. Guardar datos usando servicios especializados
-            app(DatosGeneralesService::class)->guardar($tramite, $request);
-            app(DireccionService::class)->guardar($tramite, $request);
-            app(ContactoService::class)->guardar($tramite, $request);
-            app(ActividadesService::class)->guardar($tramite, $request);
-            app(DocumentosService::class)->guardar($tramite, $request);
-
-            // 4. Procesar datos específicos de Persona Moral
-            if ($this->esPersonaMoral($request)) {
-                $this->procesarPersonaMoral($tramite, $request);
-            }
-
-            DB::commit();
-
-            return [
-                'success' => true,
-                'message' => $this->getMensajeExito($tipo),
-                'tramite_id' => $tramite->id,
-                'redirect' => route('tramites.exito')
-            ];
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error en procesamiento de formulario', [
-                'error' => $e->getMessage(),
-                'tipo' => $tipo,
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'Error al procesar el trámite: ' . $e->getMessage()
-            ];
-        }
-    }
-
-    /**
-     * Métodos simplificados ahora reemplazados por servicios especializados
-     */
-
-    private function guardarInstrumentoNotarialSimple(array $datos): ?InstrumentoNotarial
-    {
-        // Verificar si hay datos constitutivos
-        if (empty($datos['numero_escritura']) && empty($datos['notario_nombre'])) {
-            Log::info('No hay datos constitutivos para procesar');
-            return null;
+        if ($proveedor) {
+            return $proveedor;
         }
 
-        Log::info('Procesando instrumento notarial', [
-            'numero_escritura' => $datos['numero_escritura'] ?? 'NO ENVIADO',
-            'notario_nombre' => $datos['notario_nombre'] ?? 'NO ENVIADO',
-            'fecha_constitucion' => $datos['fecha_constitucion'] ?? 'NO ENVIADO'
+        $rfc = $this->normalizarRfc($request->input('rfc'));
+        
+        $proveedorCreado = Proveedor::create([
+            'usuario_id' => Auth::id(),
+            'rfc' => $rfc,
+            'razon_social' => $request->input('razon_social', 'Razón Social Default'),
+            'tipo_persona' => $this->determinarTipoPersona($rfc),
+            'estado_padron' => 'Pendiente',
+            'fecha_alta_padron' => now()->toDateString(),
         ]);
 
-        try {
-            $instrumentoNotarial = InstrumentoNotarial::create([
-                'numero_escritura' => $datos['numero_escritura'] ?? 'N/A',
-                'numero_escritura_constitutiva' => $datos['numero_escritura'] ?? 'N/A', // Usar el mismo número
-                'fecha_constitucion' => $datos['fecha_constitucion'] ?? now()->toDateString(),
-                'nombre_notario' => $datos['notario_nombre'] ?? 'Notario Default',
-                'entidad_federativa' => $datos['entidad_federativa'] ?? 'No especificado',
-                'numero_notario' => !empty($datos['notario_numero']) ? (int) $datos['notario_numero'] : 1,
-                'numero_registro_publico' => $datos['numero_registro'] ?? 'N/A',
-                'fecha_inscripcion' => $datos['fecha_inscripcion'] ?? now()->toDateString(),
-            ]);
+        Log::info('Proveedor creado', ['id' => $proveedorCreado->id, 'rfc' => $rfc]);
 
-            Log::info('Instrumento notarial creado exitosamente', [
-                'id' => $instrumentoNotarial->id,
-                'numero_escritura' => $instrumentoNotarial->numero_escritura
-            ]);
-
-            return $instrumentoNotarial;
-
-        } catch (\Exception $e) {
-            Log::error('Error al crear instrumento notarial', [
-                'error' => $e->getMessage(),
-                'datos' => $datos
-            ]);
-            return null;
-        }
+        return $proveedorCreado;
     }
 
-    private function guardarDatosConstitutivosSimple(Tramite $tramite, InstrumentoNotarial $instrumentoNotarial): void
+    // ============================================================================
+    // MÉTODOS PRIVADOS - GESTIÓN DE TRÁMITES
+    // ============================================================================
+
+    private function crearTramite(string $tipo, Proveedor $proveedor): Tramite
     {
-        try {
-            DatosConstitutivos::create([
-                'tramite_id' => $tramite->id,
-                'instrumento_notarial_id' => $instrumentoNotarial->id,
-            ]);
-
-            Log::info('Datos constitutivos guardados exitosamente', [
-                'tramite_id' => $tramite->id,
-                'instrumento_notarial_id' => $instrumentoNotarial->id
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error al guardar datos constitutivos', [
-                'error' => $e->getMessage(),
-                'tramite_id' => $tramite->id,
-                'instrumento_notarial_id' => $instrumentoNotarial->id
-            ]);
-        }
-    }
-
-    private function guardarAccionistasSimple(Tramite $tramite, array $accionistas): void
-    {
-        if (empty($accionistas) || !is_array($accionistas)) {
-            Log::info('No hay datos de accionistas para procesar');
-            return;
-        }
-
-        Log::info('Procesando accionistas', [
-            'tramite_id' => $tramite->id,
-            'accionistas_recibidos' => $accionistas,
-            'count' => count($accionistas)
-        ]);
-
-        $accionistasCreados = 0;
-
-        foreach ($accionistas as $index => $accionista) {
-            if (empty($accionista['nombre']) && empty($accionista['rfc'])) {
-                Log::info("Accionista #{$index} vacío, saltando");
-                continue;
-            }
-
-            try {
-                Accionista::create([
-                    'tramite_id' => $tramite->id,
-                    'nombre_completo' => $accionista['nombre'] ?? "Accionista #{$index}",
-                    'rfc' => $accionista['rfc'] ?? null,
-                    'porcentaje_participacion' => !empty($accionista['porcentaje']) ? (float) $accionista['porcentaje'] : 0.00,
-                ]);
-
-                $accionistasCreados++;
-
-                Log::info("Accionista #{$index} guardado exitosamente", [
-                    'nombre' => $accionista['nombre'] ?? "Accionista #{$index}",
-                    'rfc' => $accionista['rfc'] ?? 'SIN RFC',
-                    'porcentaje' => $accionista['porcentaje'] ?? '0.00'
-                ]);
-
-            } catch (\Exception $e) {
-                Log::error("Error al guardar accionista #{$index}", [
-                    'error' => $e->getMessage(),
-                    'accionista_data' => $accionista
-                ]);
-            }
-        }
-
-        Log::info('Procesamiento de accionistas completado', [
-            'tramite_id' => $tramite->id,
-            'total_procesados' => count($accionistas),
-            'total_guardados' => $accionistasCreados
-        ]);
-    }
-
-    /**
-     * 🎯 NUEVO: Guarda el apoderado legal simplificado para testing
-     */
-    private function guardarApoderadoLegalSimple(Tramite $tramite, InstrumentoNotarial $instrumentoNotarial, array $datos): void
-    {
-        // Verificar si hay datos del apoderado
-        if (empty($datos['apoderado_nombre']) && empty($datos['apoderado_rfc'])) {
-            Log::info('No hay datos del apoderado legal para procesar');
-            return;
-        }
-
-        Log::info('Procesando apoderado legal', [
-            'tramite_id' => $tramite->id,
-            'instrumento_notarial_id' => $instrumentoNotarial->id,
-            'apoderado_nombre' => $datos['apoderado_nombre'] ?? 'NO ENVIADO',
-            'apoderado_rfc' => $datos['apoderado_rfc'] ?? 'NO ENVIADO',
-            'poder_numero_escritura' => $datos['poder_numero_escritura'] ?? 'NO ENVIADO',
-            'poder_notario_nombre' => $datos['poder_notario_nombre'] ?? 'NO ENVIADO'
-        ]);
-
-        try {
-            // Determinar si usar el instrumento notarial existente o crear uno para el poder
-            $instrumentoNotarialPoder = $instrumentoNotarial;
-            
-            // Si se enviaron datos específicos del poder notarial, crear un nuevo instrumento
-            if (!empty($datos['poder_numero_escritura']) && $datos['poder_numero_escritura'] !== $datos['numero_escritura']) {
-                Log::info('Creando instrumento notarial específico para el poder');
-                
-                $instrumentoNotarialPoder = InstrumentoNotarial::create([
-                    'numero_escritura' => $datos['poder_numero_escritura'] ?? 'N/A',
-                    'numero_escritura_constitutiva' => $datos['poder_numero_escritura'] ?? 'N/A',
-                    'fecha_constitucion' => $datos['poder_fecha_constitucion'] ?? now()->toDateString(),
-                    'nombre_notario' => $datos['poder_notario_nombre'] ?? 'Notario Default',
-                    'entidad_federativa' => $datos['poder_entidad_federativa'] ?? 'No especificado',
-                    'numero_notario' => !empty($datos['poder_notario_numero']) ? (int) $datos['poder_notario_numero'] : 1,
-                    'numero_registro_publico' => $datos['poder_numero_registro'] ?? 'N/A',
-                    'fecha_inscripcion' => $datos['poder_fecha_inscripcion'] ?? now()->toDateString(),
-                ]);
-                
-                Log::info('Instrumento notarial del poder creado', [
-                    'id' => $instrumentoNotarialPoder->id,
-                    'numero_escritura' => $instrumentoNotarialPoder->numero_escritura
-                ]);
-            }
-
-            // Crear el apoderado legal
-            $apoderadoLegal = ApoderadoLegal::create([
-                'tramite_id' => $tramite->id,
-                'instrumento_notarial_id' => $instrumentoNotarialPoder->id,
-                'nombre_apoderado' => $datos['apoderado_nombre'] ?? 'Apoderado Default',
-                'rfc' => $datos['apoderado_rfc'] ?? null,
-            ]);
-
-            Log::info('Apoderado legal creado exitosamente', [
-                'id' => $apoderadoLegal->id,
-                'tramite_id' => $tramite->id,
-                'nombre_apoderado' => $apoderadoLegal->nombre_apoderado,
-                'rfc' => $apoderadoLegal->rfc,
-                'instrumento_notarial_id' => $instrumentoNotarialPoder->id
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error al guardar apoderado legal', [
-                'error' => $e->getMessage(),
-                'tramite_id' => $tramite->id,
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
-                'datos_apoderado' => [
-                    'apoderado_nombre' => $datos['apoderado_nombre'] ?? 'NULL',
-                    'apoderado_rfc' => $datos['apoderado_rfc'] ?? 'NULL',
-                ]
-            ]);
-        }
-    }
-
-    private function procesarArchivoIndividual(Tramite $tramite, string $campo, $archivo, int $index = null): void
-    {
-        if ($archivo && method_exists($archivo, 'isValid') && $archivo->isValid()) {
-            try {
-                preg_match('/documentos\[(\d+)\]/', $campo, $matches);
-                $catalogoId = $matches[1] ?? null;
-                
-                $nombreCarpeta = 'documentos/' . $tramite->id;
-                if ($index !== null) {
-                    $nombreCarpeta .= '/' . $catalogoId . '_' . $index;
-                }
-                
-                $rutaArchivo = $archivo->store($nombreCarpeta, 'public');
-                
-                \App\Models\Archivo::create([
-                    'tramite_id' => $tramite->id,
-                    'idCatalogoArchivo' => $catalogoId,
-                    'nombre_original' => $archivo->getClientOriginalName(),
-                    'ruta_archivo' => $rutaArchivo,
-                ]);
-                
-            } catch (\Exception $e) {
-                Log::warning('Error al guardar documento', [
-                    'tramite_id' => $tramite->id,
-                    'error' => $e->getMessage()
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Crea el trámite principal
-     */
-    private function crearTramite(string $tipo, ?Proveedor $proveedor): Tramite
-    {
-        return Tramite::create([
-            'proveedor_id' => $proveedor?->id,
+        $tramite = Tramite::create([
+            'proveedor_id' => $proveedor->id,
             'tipo_tramite' => ucfirst($tipo),
             'estado' => 'Pendiente',
             'fecha_inicio' => now(),
             'paso_actual' => 1,
-            'revisado_por' => 1, // Usuario administrador por defecto
+            'revisado_por' => 1,
         ]);
+
+        Log::info('Trámite creado', ['id' => $tramite->id, 'tipo' => $tipo]);
+
+        return $tramite;
     }
 
-    /**
-     * Guarda los datos generales del trámite
-     */
-    private function guardarDatosGenerales(Tramite $tramite, array $datos): void
+    private function procesarDatosTramite(Tramite $tramite, TramiteFormularioRequest $request): void
     {
-        DatosGenerales::create([
-            'tramite_id' => $tramite->id,
-            'curp' => $datos['curp'],
-            'razon_social' => $datos['razon_social'],
-            'pagina_web' => $datos['pagina_web'],
-            'telefono' => $datos['telefono'],
-        ]);
-    }
-
-    /**
-     * Guarda la dirección del trámite
-     */
-    private function guardarDireccion(Tramite $tramite, array $datos): void
-    {
-        Direccion::create([
-            'id_tramite' => $tramite->id,
-            'calle' => $datos['calle'],
-            'entre_calles' => $datos['entre_calles'],
-            'numero_exterior' => $datos['numero_exterior'],
-            'numero_interior' => $datos['numero_interior'],
-            'codigo_postal' => $datos['codigo_postal'],
-            'colonia_asentamiento' => $datos['colonia_asentamiento'],
-            'municipio' => $datos['municipio'],
-            'id_estado' => $datos['id_estado'],
-            'es_principal' => true,
-            'activo' => true,
-        ]);
-    }
-
-    /**
-     * Guarda el contacto del trámite
-     */
-    private function guardarContacto(Tramite $tramite, array $datos): void
-    {
-        Contacto::create([
-            'tramite_id' => $tramite->id,
-            'nombre_contacto' => $datos['nombre_contacto'],
-            'cargo' => $datos['cargo'],
-            'correo_electronico' => $datos['correo_electronico'],
-            'telefono' => $datos['telefono'],
-        ]);
-    }
-
-    /**
-     * Guarda las actividades económicas del trámite
-     */
-    private function guardarActividades(Tramite $tramite, array $actividadesIds): void
-    {
-        if (!empty($actividadesIds)) {
-            $tramite->actividades()->attach($actividadesIds);
+        // Datos principales usando servicios especializados
+        $this->guardarDatosPrincipales($tramite, $request);
+        
+        // Datos específicos de persona moral si aplica
+        if ($this->esPersonaMoral($request->input('rfc'))) {
+            $this->procesarPersonaMoral($tramite, $request);
         }
     }
 
-    /**
-     * Guarda el instrumento notarial
-     */
-    private function guardarInstrumentoNotarial(array $datos): InstrumentoNotarial
+    private function guardarDatosPrincipales(Tramite $tramite, TramiteFormularioRequest $request): void
     {
-        return InstrumentoNotarial::create([
-            'numero_escritura' => $datos['numero_escritura'],
-            'numero_escritura_constitutiva' => $datos['numero_escritura_constitutiva'],
-            'fecha_constitucion' => $datos['fecha_constitucion'],
-            'nombre_notario' => $datos['nombre_notario'],
-            'entidad_federativa' => $datos['entidad_federativa'],
-            'numero_notario' => $datos['numero_notario'],
-            'numero_registro_publico' => $datos['numero_registro_publico'],
-            'fecha_inscripcion' => $datos['fecha_inscripcion'],
-        ]);
+        app(DatosGeneralesService::class)->guardar($tramite, $request);
+        app(DireccionService::class)->guardar($tramite, $request);
+        app(ContactoService::class)->guardar($tramite, $request);
+        app(ActividadesService::class)->guardar($tramite, $request);
+        app(DocumentosService::class)->guardar($tramite, $request);
+
+        Log::info('Datos principales guardados', ['tramite_id' => $tramite->id]);
     }
 
-    /**
-     * Guarda los datos constitutivos
-     */
-    private function guardarDatosConstitutivos(Tramite $tramite, InstrumentoNotarial $instrumentoNotarial): void
-    {
-        DatosConstitutivos::create([
-            'tramite_id' => $tramite->id,
-            'instrumento_notarial_id' => $instrumentoNotarial->id,
-        ]);
-    }
+    // ============================================================================
+    // MÉTODOS PRIVADOS - PERSONA MORAL
+    // ============================================================================
 
-    /**
-     * Guarda el apoderado legal
-     */
-    private function guardarApoderadoLegal(Tramite $tramite, InstrumentoNotarial $instrumentoNotarial, array $datos): void
-    {
-        ApoderadoLegal::create([
-            'tramite_id' => $tramite->id,
-            'instrumento_notarial_id' => $instrumentoNotarial->id,
-            'nombre_apoderado' => $datos['nombre_apoderado'],
-            'rfc' => $datos['rfc'],
-        ]);
-    }
-
-    /**
-     * Guarda los accionistas
-     */
-    private function guardarAccionistas(Tramite $tramite, array $accionistas): void
-    {
-        foreach ($accionistas as $accionista) {
-            Accionista::create([
-                'tramite_id' => $tramite->id,
-                'nombre_completo' => $accionista['nombre'],
-                'rfc' => $accionista['rfc'],
-                'porcentaje_participacion' => $accionista['porcentaje'],
-                'activo' => true,
-            ]);
-        }
-    }
-
-    /**
-     * Guarda los archivos adjuntos
-     */
-    private function guardarArchivos(Tramite $tramite, array $archivos): void
-    {
-        foreach ($archivos as $catalogoId => $archivo) {
-            if ($archivo && is_uploaded_file($archivo->getRealPath())) {
-                $nombreOriginal = $archivo->getClientOriginalName();
-                $rutaArchivo = $archivo->store("tramites/{$tramite->id}", 'public');
-
-                Archivo::create([
-                    'tramite_id' => $tramite->id,
-                    'nombre_original' => $nombreOriginal,
-                    'ruta_archivo' => $rutaArchivo,
-                    'idCatalogoArchivo' => $catalogoId,
-                    'aprobado' => false,
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Actualiza o crea el proveedor si es necesario
-     */
-    private function actualizarProveedor(?Proveedor $proveedor, Tramite $tramite, array $datosGenerales): void
-    {
-        if (!$proveedor) {
-            // Crear nuevo proveedor
-            $nuevoProveedor = Proveedor::create([
-                'usuario_id' => Auth::id(),
-                'rfc' => $datosGenerales['rfc'],
-                'tipo_persona' => $this->esPersonaMoral($datosGenerales['rfc']) ? 'Moral' : 'Física',
-                'estado_padron' => 'Pendiente',
-                'fecha_alta_padron' => now()->toDateString(),
-            ]);
-
-            // Actualizar el trámite con el proveedor
-            $tramite->update(['proveedor_id' => $nuevoProveedor->id]);
-        }
-    }
-
-    /**
-     * Determina si es persona moral basado en la longitud del RFC
-     */
-    private function esPersonaMoral(string $rfc): bool
-    {
-        return strlen($rfc) === 12;
-    }
-
-    /**
-     * Obtiene el mensaje de éxito según el tipo de trámite
-     */
-    private function getMensajeExito(string $tipo): string
-    {
-        $mensajes = [
-            'inscripcion' => 'Su solicitud de inscripción ha sido enviada correctamente. Recibirá una notificación cuando sea revisada.',
-            'renovacion' => 'Su solicitud de renovación ha sido procesada exitosamente.',
-            'actualizacion' => 'Sus datos han sido actualizados correctamente.',
-        ];
-
-        return $mensajes[$tipo] ?? 'Trámite procesado exitosamente.';
-    }
-
-    /**
-     * Obtiene el título según el tipo de trámite
-     */
-    public function getTituloTramite(string $tipo): string
-    {
-        $titulos = [
-            'inscripcion' => 'Inscripción al Padrón de Proveedores',
-            'renovacion' => 'Renovación de Registro',
-            'actualizacion' => 'Actualización de Datos',
-        ];
-
-        return $titulos[$tipo] ?? 'Formulario de Trámite';
-    }
-
-    /**
-     * Obtiene la descripción según el tipo de trámite
-     */
-    public function getDescripcionTramite(string $tipo): string
-    {
-        $descripciones = [
-            'inscripcion' => 'Complete la información para registrarse como proveedor del gobierno.',
-            'renovacion' => 'Actualice y renueve su registro en el padrón de proveedores.',
-            'actualizacion' => 'Modifique los datos de su registro existente.',
-        ];
-
-        return $descripciones[$tipo] ?? 'Procese su trámite completando el formulario.';
-    }
-
-    /**
-     * Limpia los datos de sesión después del procesamiento
-     */
-    public function limpiarDatosSesion(): void
-    {
-        $keys = [
-            'sat_rfc', 'sat_nombre', 'sat_tipo_persona', 'sat_curp',
-            'sat_cp', 'sat_colonia', 'sat_nombre_vialidad',
-            'sat_numero_exterior', 'sat_numero_interior',
-        ];
-
-        foreach ($keys as $key) {
-            Session::forget($key);
-        }
-    }
-
-    /**
-     * Procesa datos específicos de Persona Moral
-     */
     private function procesarPersonaMoral(Tramite $tramite, TramiteFormularioRequest $request): void
     {
-        Log::info('Procesando datos de PERSONA MORAL', ['tramite_id' => $tramite->id]);
-
-        // Datos constitutivos e instrumento notarial
-        if ($request->filled('numero_escritura') || $request->filled('notario_nombre')) {
-            $instrumentoNotarial = $this->guardarInstrumentoNotarialSimple($request->all());
-            if ($instrumentoNotarial) {
-                $this->guardarDatosConstitutivosSimple($tramite, $instrumentoNotarial);
-                
-                // Apoderado legal
-                if ($request->filled('apoderado_nombre') || $request->filled('apoderado_rfc')) {
-                    $this->guardarApoderadoLegalSimple($tramite, $instrumentoNotarial, $request->all());
-                }
-            }
-        }
-
-        // Accionistas
-        if ($request->filled('accionistas')) {
-            $this->guardarAccionistasSimple($tramite, $request->input('accionistas', []));
-        }
+        Log::info('Procesando datos de persona moral', ['tramite_id' => $tramite->id]);
+        
+        $this->datosConstitutivosService->procesar($tramite, $request);
     }
 
-    /**
-     * Crea un proveedor simple basado en los datos del request
-     */
-    private function crearProveedorSimple(array $datos): Proveedor
-    {
-        $rfc = $this->procesarRfc($datos['rfc'] ?? null);
-        $tipoPersona = strlen($rfc) === 12 ? 'Moral' : 'Física';
-        
-        Log::info('Creando proveedor', [
-            'rfc' => $rfc,
-            'tipo_persona' => $tipoPersona
-        ]);
-        
-        return Proveedor::create([
-            'usuario_id' => Auth::id(),
-            'rfc' => $rfc,
-            'razon_social' => $datos['razon_social'] ?? 'Razón Social Default',
-            'tipo_persona' => $tipoPersona,
-            'estado_padron' => 'Pendiente',
-            'fecha_alta_padron' => now()->toDateString(),
-        ]);
-    }
+    // ============================================================================
+    // MÉTODOS PRIVADOS - UTILIDADES
+    // ============================================================================
 
-    /**
-     * Procesa y valida el RFC
-     */
-    private function procesarRfc(?string $rfc): string
+    private function normalizarRfc(?string $rfc): string
     {
         if (!empty($rfc) && strlen($rfc) >= 10) {
             return strtoupper(trim($rfc));
         }
-        
-        // Generar RFC temporal si no se proporciona uno válido
-        $timestamp = substr((string) time(), -6);
-        return 'TEMP' . $timestamp;
+
+        return 'TEMP' . substr((string) time(), -6);
+    }
+
+    private function determinarTipoPersona(string $rfc): string
+    {
+        return strlen($rfc) === self::RFC_PERSONA_MORAL_LENGTH ? 'Moral' : 'Física';
+    }
+
+    private function esPersonaMoral(string $rfc): bool
+    {
+        return strlen($rfc) === self::RFC_PERSONA_MORAL_LENGTH;
+    }
+
+    private function crearRespuestaExitosa(string $tipo, Tramite $tramite): array
+    {
+        return [
+            'success' => true,
+            'message' => self::TIPOS_TRAMITE[$tipo]['mensaje_exito'] ?? 'Trámite procesado exitosamente.',
+            'tramite_id' => $tramite->id,
+            'redirect' => route('tramites.exito')
+        ];
+    }
+
+    private function crearRespuestaError(\Exception $e, string $tipo): array
+    {
+        Log::error('Error en procesamiento de formulario', [
+            'error' => $e->getMessage(),
+            'tipo' => $tipo,
+            'line' => $e->getLine(),
+            'file' => $e->getFile()
+        ]);
+
+        return [
+            'success' => false,
+            'message' => 'Error al procesar el trámite: ' . $e->getMessage()
+        ];
+    }
+
+    /**
+     * Obtener todos los datos completos de un trámite
+     */
+    public function obtenerDatosCompletosTramite(int $tramiteId): ?array
+    {
+        $tramite = Tramite::with([
+            'proveedor',
+            'archivos',
+            'datosGenerales',
+            'contacto',
+            'personaMoral',
+            'direccion',
+            'actividades'
+        ])->find($tramiteId);
+
+        if (!$tramite) {
+            return null;
+        }
+
+        return [
+            'tramite' => $tramite,
+            'datos_generales' => $this->datosGeneralesFormService->obtenerDatos($tramite),
+            'persona_moral' => $this->personaMoralFormService->obtenerDatos($tramite),
+            'direccion' => $this->direccionFormService->obtenerDatos($tramite),
+            'actividades' => $this->actividadesFormService->obtenerDatos($tramite),
+            'documentos' => $this->documentosFormService->obtenerDocumentos($tramite),
+            'resumen' => $this->generarResumenTramite($tramite)
+        ];
+    }
+
+    /**
+     * Generar resumen del trámite
+     */
+    private function generarResumenTramite(Tramite $tramite): array
+    {
+        return [
+            'folio' => str_pad($tramite->id, 4, '0', STR_PAD_LEFT),
+            'tipo_tramite' => $tramite->tipo_tramite,
+            'estado' => $tramite->estado,
+            'fecha_creacion' => $tramite->created_at->format('d/m/Y H:i'),
+            'fecha_actualizacion' => $tramite->updated_at->format('d/m/Y H:i'),
+            'tiempo_transcurrido' => $tramite->tiempo_transcurrido,
+            'proveedor_id' => $tramite->proveedor_id,
+            'total_documentos' => $tramite->archivos->count(),
+            'completitud' => $this->calcularCompletitud($tramite),
+        ];
+    }
+
+    /**
+     * Formatear dirección completa
+     */
+    private function formatearDireccionCompleta($direccion): string
+    {
+        $partes = array_filter([
+            $direccion->calle,
+            $direccion->numero_exterior,
+            $direccion->numero_interior ? "Int. {$direccion->numero_interior}" : null,
+            $direccion->colonia,
+            $direccion->municipio,
+            $direccion->estado,
+            $direccion->codigo_postal,
+            $direccion->pais
+        ]);
+
+        return implode(', ', $partes);
+    }
+
+    /**
+     * Calcular completitud del trámite
+     */
+    private function calcularCompletitud(Tramite $tramite): array
+    {
+        $secciones = [
+            'datos_generales' => $tramite->datosGenerales !== null,
+            'contacto' => $tramite->contacto !== null,
+            'persona_moral' => $tramite->personaMoral !== null,
+            'direccion' => $tramite->direccion !== null,
+            'actividades' => $tramite->actividades->count() > 0,
+            'documentos' => $tramite->archivos->count() > 0,
+        ];
+
+        $completadas = array_sum($secciones);
+        $total = count($secciones);
+        $porcentaje = $total > 0 ? round(($completadas / $total) * 100) : 0;
+
+        return [
+            'secciones' => $secciones,
+            'completadas' => $completadas,
+            'total' => $total,
+            'porcentaje' => $porcentaje,
+        ];
     }
 }

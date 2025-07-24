@@ -143,6 +143,7 @@
                         @include('tramites.partials.domicilio', [
                             'tipo' => $tipo_tramite,
                             'proveedor' => $proveedor,
+                            'datosSat' => $datosSat,
                             'editable' => true,
                         ])
                     </div>

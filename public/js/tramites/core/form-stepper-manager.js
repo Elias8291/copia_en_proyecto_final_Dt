@@ -192,6 +192,15 @@ class FormStepperManager {
             if (form) {
                 const formData = new FormData(form);
                 try {
+                    // Agregar el token CSRF si no está presente
+                    if (!formData.has('_token')) {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                                         document.querySelector('input[name="_token"]')?.value;
+                        if (csrfToken) {
+                            formData.append('_token', csrfToken);
+                        }
+                    }
+                    
                     const response = await fetch(form.action, {
                         method: 'POST',
                         body: formData,
@@ -202,17 +211,22 @@ class FormStepperManager {
                     });
                     const data = await response.json();
                     console.log('Respuesta del backend:', data); // DEPURACIÓN
+                    console.log('Status de respuesta:', response.status); // DEPURACIÓN
+                    
                     if (data.success && data.redirect) {
                         window.location.href = data.redirect;
                     } else if (data.errors) {
                         this.showValidationErrors(data.errors);
                     } else if (data.message) {
-                        alert(data.message);
+                        console.error('Error del servidor:', data.message);
+                        alert('Error: ' + data.message);
                     } else {
-                        alert('Error desconocido. Revisa la consola.');
+                        console.error('Respuesta completa:', data);
+                        alert('Error desconocido. Revisa la consola para más detalles.');
                     }
                 } catch (err) {
-                    alert('Error inesperado al enviar el formulario.');
+                    console.error('Error en submitForm:', err);
+                    alert('Error inesperado al enviar el formulario: ' + err.message);
                 }
             }
         }

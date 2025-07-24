@@ -89,4 +89,40 @@ class DatosGeneralesFormService
 
         return $errores;
     }
+
+    /**
+     * Obtener datos generales de un trámite
+     */
+    public function obtenerDatos(Tramite $tramite): ?array
+    {
+        $datosGenerales = $tramite->datosGenerales;
+        $contacto = $tramite->contacto;
+
+        if (!$datosGenerales && !$contacto) {
+            return null;
+        }
+
+        return [
+            'datos_generales' => $datosGenerales ? [
+                'razon_social' => $datosGenerales->razon_social,
+                'telefono' => $datosGenerales->telefono,
+                'curp' => $datosGenerales->curp,
+                'pagina_web' => $datosGenerales->pagina_web,
+            ] : null,
+            'contacto' => $contacto ? [
+                'nombre_contacto' => $contacto->nombre_contacto,
+                'cargo' => $contacto->cargo,
+                'correo_electronico' => $contacto->correo_electronico,
+                'telefono' => $contacto->telefono,
+            ] : null,
+        ];
+    }
+
+    /**
+     * Verificar si tiene datos completos
+     */
+    public function tienesDatosCompletos(Tramite $tramite): bool
+    {
+        return $tramite->datosGenerales !== null && $tramite->contacto !== null;
+    }
 }

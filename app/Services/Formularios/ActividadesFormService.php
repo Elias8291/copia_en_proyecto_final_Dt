@@ -66,4 +66,19 @@ class ActividadesFormService
 
         return $errores;
     }
+
+    /**
+     * Obtener actividades asociadas a un trámite
+     */
+    public function obtenerDatos(Tramite $tramite): array
+    {
+        return $tramite->actividades->map(function($actividad) {
+            return [
+                'id' => $actividad->id,
+                'nombre' => $actividad->nombre,
+                'descripcion' => $actividad->descripcion,
+                'categoria' => $actividad->categoria,
+            ];
+        })->toArray();
+    }
 }

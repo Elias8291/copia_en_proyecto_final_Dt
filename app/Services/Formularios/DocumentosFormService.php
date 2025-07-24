@@ -160,4 +160,95 @@ class DocumentosFormService
 
         return $errores;
     }
+
+    /**
+     * Obtener documentos de un trámite organizados por tipo
+     */
+    public function obtenerDocumentos(Tramite $tramite): array
+    {
+        return $tramite->archivos->map(function($archivo) {
+            return [
+                'id' => $archivo->id,
+                'nombre_original' => $archivo->nombre_original,
+                'nombre_archivo' => $archivo->nombre_archivo,
+                'tipo_documento' => $archivo->catalogoArchivo?->nombre ?? 'Documento',
+                'extension' => $archivo->extension,
+                'tamaño' => $archivo->tamaño,
+                'fecha_subida' => $archivo->created_at->format('d/m/Y H:i'),
+                'url_descarga' => route('archivos.descargar', $archivo->id),
+                'descripcion' => $archivo->catalogoArchivo?->descripcion ?? '',
+            ];
+        })->groupBy('tipo_documento')->toArray();
+    }
+
+    /**
+     * Obtener resumen de documentos
+     */
+    public function obtenerResumenDocumentos(Tramite $tramite): array
+    {
+        $archivos = $tramite->archivos;
+        $totalTamaño = $archivos->sum('tamaño');
+        
+        return [
+            'total_archivos' => $archivos->count(),
+            'tamaño_total' => $this->formatearTamaño($totalTamaño),
+            'tipos_documento' => $archivos->groupBy('catalogoArchivo.nombre')->keys()->toArray(),
+            'ultimo_archivo' => $archivos->sortByDesc('created_at')->first()?->created_at->format('d/m/Y H:i'),
+        ];
+    }
+
+    /**
+     * Formatear tamaño de archivo
+     */
+    private function formatearTamaño(int $bytes): string
+    {
+        $unidades = ['B', 'KB', 'MB', 'GB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($unidades) - 1);
+        
+        $bytes /= pow(1024, $pow);
+        
+        return round($bytes, 2) . ' ' . $unidades[$pow];
+    }
+
+    /**
+     * Verificar si tiene documentos requeridos
+     */
+    public function tieneDocumentosRequeridos(Tramite $tramite): bool
+    {
+        // Aquí puedes definir qué documentos son requeridos según el tipo de trámite
+        $documentosRequeridos = $this->obtenerDocumentosRequeridos($tramite->tipo_tramite);
+        $documentosSubidos = $tramite->archivos->pluck('catalogoArchivo.nombre')->toArray();
+        
+        foreach ($documentosRequeridos as $requerido) {
+            if (!in_array($requerido, $documentosSubidos)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Obtener documentos requeridos por tipo de trámite
+     */
+    private function obtenerDocumentosRequeridos(string $tipoTramite): array
+    {
+        return match(strtolower($tipoTramite)) {
+            'inscripcion' => [
+                'Constancia de Situación Fiscal',
+                'Acta Constitutiva',
+                'Identificación del Representante Legal',
+            ],
+            'renovacion' => [
+                'Constancia de Situación Fiscal',
+                'Comprobante de Domicilio',
+            ],
+            'actualizacion' => [
+                'Constancia de Situación Fiscal',
+            ],
+            default => [],
+        };
+    }
 }

@@ -1,5 +1,3 @@
-// Handler para autocompletar domicilio por código postal
-
 document.addEventListener("DOMContentLoaded", function () {
     const cpInput = document.getElementById("codigo_postal");
     const estadoSelect = document.getElementById("estado");
@@ -13,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let isLoading = false;
 
     function buscarPorCP(cp) {
-        if (isLoading) return;
+        if (isLoading || !/^\d{5}$/.test(cp) || cp === lastSearchedCP) return;
         isLoading = true;
         estadoSelect.disabled = true;
         municipioSelect.disabled = true;
@@ -74,15 +72,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 municipioSelect.disabled = false;
                 asentamientoSelect.disabled = false;
                 isLoading = false;
+                lastSearchedCP = cp;
             });
     }
 
+    // Check for pre-filled value on page load
+    const initialCP = cpInput.value.trim();
+    if (/^\d{5}$/.test(initialCP)) {
+        buscarPorCP(initialCP);
+    }
+
+    // Event listener for input changes
     cpInput.addEventListener("input", function () {
         const cp = cpInput.value.trim();
-        if (/^\d{5}$/.test(cp) && cp !== lastSearchedCP) {
-            lastSearchedCP = cp;
+        if (/^\d{5}$/.test(cp)) {
             buscarPorCP(cp);
-        } else if (cp.length < 5) {
+        } else {
             lastSearchedCP = "";
             estadoSelect.innerHTML =
                 '<option value="">Seleccione un estado</option>';

@@ -182,4 +182,25 @@ class PersonaMoralFormService
 
         return $errores;
     }
+
+    /**
+     * Obtener datos de persona moral asociados a un trámite
+     */
+    public function obtenerDatos(Tramite $tramite): ?array
+    {
+        $personaMoral = $tramite->personaMoral;
+        if (!$personaMoral) {
+            return null;
+        }
+
+        return [
+            'razon_social' => $personaMoral->razon_social ?? null,
+            'rfc' => $personaMoral->rfc ?? null,
+            'fecha_constitucion' => $personaMoral->fecha_constitucion ?? null,
+            'capital_social' => $personaMoral->capital_social ?? null,
+            'objeto_social' => $personaMoral->objeto_social ?? null,
+            'representante_legal' => $personaMoral->representante_legal ?? null,
+            'poder_representante' => $personaMoral->poder_representante ?? null,
+        ];
+    }
 }

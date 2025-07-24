@@ -194,4 +194,80 @@ class TramiteController extends Controller
                 ->with('error', 'Error interno del servidor. Por favor, intente nuevamente.');
         }
     }
+
+    /**
+     * Página de éxito tras completar un trámite
+     */
+    public function exito(Request $request)
+    {
+        $tramiteId = session('tramite_id');
+        $mensaje = session('success', 'Su trámite ha sido enviado exitosamente.');
+        
+        return view('tramites.exito', [
+            'tramite_id' => $tramiteId,
+            'mensaje' => $mensaje
+        ]);
+    }
+
+    /**
+     * Mostrar datos completos de un trámite (ejemplo de uso)
+     */
+    public function mostrarDatosCompletos($id)
+    {
+        try {
+            $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int)$id);
+            
+            if (!$datosCompletos) {
+                return redirect()->back()->with('error', 'Trámite no encontrado');
+            }
+            
+            // Ejemplo de uso de los datos
+            $tramite = $datosCompletos['tramite'];
+            $resumen = $datosCompletos['resumen'];
+            $completitud = $resumen['completitud'];
+            
+            // Verificar permisos (ejemplo)
+            if ($tramite->proveedor_id !== Auth::user()->proveedor?->id) {
+                abort(403, 'No tienes permisos para ver este trámite');
+            }
+            
+            return view('tramites.detalle-completo', compact('datosCompletos'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error al obtener datos completos del trámite', [
+                'tramite_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->back()->with('error', 'Error al cargar los datos del trámite');
+        }
+    }
+
+    /**
+     * API para obtener datos completos del trámite (JSON)
+     */
+    public function obtenerDatosCompletosTramiteAPI($id)
+    {
+        try {
+            $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int)$id);
+            
+            if (!$datosCompletos) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Trámite no encontrado'
+                ], 404);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $datosCompletos
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los datos del trámite'
+            ], 500);
+        }
+    }
 }

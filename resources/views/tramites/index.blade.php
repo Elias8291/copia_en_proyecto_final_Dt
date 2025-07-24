@@ -50,7 +50,26 @@
                         @endif
                     </div>
                 </div>
-                @include('tramites.partials.tramite-pendiente')
+
+                @if ($globalTramites['tiene_tramite_pendiente'] && $globalTramites['tramite_pendiente'])
+                    @php
+                        $detalles = $globalTramites['tramite_pendiente'];
+                        $tramite = $detalles['tramite'];
+                        
+                        // Variables para la vista estado
+                        $tramite_id = str_pad($tramite->id, 4, '0', STR_PAD_LEFT);
+                        $estado = $tramite->estado;
+                        $paso_actual = $detalles['estado_descripcion'];
+                        $historial = []; // Puedes agregar historial si está disponible
+                    @endphp
+                    
+                    @include('tramites.estado', [
+                        'tramite_id' => $tramite_id,
+                        'estado' => $estado,
+                        'paso_actual' => $paso_actual,
+                        'historial' => $historial
+                    ])
+                @endif
 
                 @if (!($globalTramites['tiene_tramite_pendiente'] ?? false))
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
