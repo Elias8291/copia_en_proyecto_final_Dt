@@ -137,21 +137,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{archivo}', [CatalogoArchivoController::class, 'destroy'])->name('destroy');
     });
 
-    // ============================================================================
-    // MÓDULO DE CITAS
-    // ============================================================================
 
-    Route::prefix('citas')->name('citas.')->group(function () {
-        Route::get('/', [CitasController::class, 'index'])->name('index');
-        Route::get('/crear', [CitasController::class, 'create'])->name('create');
-        Route::post('/', [CitasController::class, 'store'])->name('store');
-        Route::get('/{cita}', [CitasController::class, 'show'])->name('show');
-        Route::get('/{cita}/editar', [CitasController::class, 'edit'])->name('edit');
-        Route::put('/{cita}', [CitasController::class, 'update'])->name('update');
-        Route::delete('/{cita}', [CitasController::class, 'destroy'])->name('destroy');
-        Route::patch('/{cita}/estado', [CitasController::class, 'cambiarEstado'])->name('cambiarEstado');
-        Route::get('/api/estadisticas', [CitasController::class, 'estadisticas'])->name('estadisticas');
-    });
 
     // ============================================================================
     // MÓDULO DE REVISIÓN DE TRÁMITES
@@ -172,7 +158,51 @@ Route::middleware('auth')->group(function () {
         Route::get('/seccion/{tramite}/{seccion}', [\App\Http\Controllers\RevisionSeccionController::class, 'show'])->name('seccion.show');
         // Nueva ruta para obtener información de identidad
         Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
+        // Rutas para cambio de estado y historial
+        Route::post('/{tramite}/cambiar-estado', [RevisionController::class, 'cambiarEstadoTramite'])->name('cambiar-estado');
+        Route::get('/{tramite}/historial-estados', [RevisionController::class, 'historialEstados'])->name('historial-estados');
 
+    });
+
+    // ============================================================================
+    // MÓDULO DE CITAS
+    // ============================================================================
+
+    Route::middleware(['auth'])->prefix('citas')->name('citas.')->group(function () {
+        // Rutas principales de citas
+        Route::get('/', [\App\Http\Controllers\CitaController::class, 'index'])->name('index');
+        Route::get('/crear', [\App\Http\Controllers\CitaController::class, 'createGeneral'])->name('create');
+        Route::get('/crear/general', [\App\Http\Controllers\CitaController::class, 'createGeneralForm'])->name('create.general');
+        Route::post('/', [\App\Http\Controllers\CitaController::class, 'storeGeneral'])->name('store');
+        
+        // Rutas específicas de citas (CRUD)
+        Route::get('/{cita}', [\App\Http\Controllers\CitaController::class, 'show'])->name('show');
+        Route::get('/{cita}/editar', [\App\Http\Controllers\CitaController::class, 'edit'])->name('edit');
+        Route::put('/{cita}', [\App\Http\Controllers\CitaController::class, 'update'])->name('update');
+        Route::post('/{cita}/cancelar', [\App\Http\Controllers\CitaController::class, 'cancelar'])->name('cancelar');
+        
+        // Rutas relacionadas con trámites
+        Route::get('/tramite/{tramite}', [\App\Http\Controllers\CitaController::class, 'citasTramite'])->name('tramite');
+        Route::get('/tramite/{tramite}/crear', [\App\Http\Controllers\CitaController::class, 'create'])->name('create.tramite');
+        Route::post('/tramite/{tramite}', [\App\Http\Controllers\CitaController::class, 'store'])->name('store.tramite');
+        
+        // Rutas de utilidad
+        Route::post('/verificar-disponibilidad', [\App\Http\Controllers\CitaController::class, 'verificarDisponibilidad'])->name('verificar-disponibilidad');
+    });
+
+    // ============================================================================
+    // MÓDULO DE NOTIFICACIONES 
+    // ============================================================================
+
+    Route::middleware(['auth'])->prefix('notificaciones')->name('notificaciones.')->group(function () {
+        Route::get('/', [NotificacionController::class, 'index'])->name('index');
+        Route::get('/contador', [NotificacionController::class, 'contador'])->name('contador');
+        Route::get('/header', [NotificacionController::class, 'header'])->name('header');
+        Route::post('/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasLeidas'])->name('marcar-todas-leidas');
+        Route::post('/marcar-leida', [NotificacionController::class, 'marcarComoLeida'])->name('marcar-leida');
+        Route::post('/eliminar-leidas', [NotificacionController::class, 'eliminarLeidas'])->name('eliminar-leidas');
+        Route::post('/eliminar', [NotificacionController::class, 'eliminarNotificacion'])->name('eliminar');
+        Route::get('/usuario', [NotificacionController::class, 'getUserNotifications'])->name('usuario');
     });
     
 });

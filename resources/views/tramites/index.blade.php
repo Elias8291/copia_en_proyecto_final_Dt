@@ -4,15 +4,15 @@
 
 @section('content')
     <div class="min-h-screen bg-gradient-to-br from-[#9D2449]/5 via-white to-[#B91C1C]/5">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 
-            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200/70">
-                <div class="p-6 border-b border-gray-200/70">
+            <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl overflow-hidden border border-gray-200/70">
+                <div class="p-4 sm:p-6 border-b border-gray-200/70">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3 sm:space-x-4">
                             <div
-                                class="bg-gradient-to-br from-[#9D2449] via-[#B91C1C] to-[#7a1d37] rounded-xl p-3 shadow-md">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="bg-gradient-to-br from-[#9D2449] via-[#B91C1C] to-[#7a1d37] rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-md">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 14l9-5-9-5-9 5 9 5z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -20,8 +20,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="text-2xl font-bold text-gray-800">Trámites Disponibles</h1>
-                                <p class="text-sm text-gray-500">Seleccione el tipo de trámite que desea realizar</p>
+                                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Trámites Disponibles</h1>
+                                <p class="text-xs sm:text-sm text-gray-500">Seleccione el tipo de trámite que desea realizar</p>
                             </div>
                         </div>
 
@@ -31,7 +31,7 @@
                                     <div class="flex items-center space-x-2">
                                         <div class="w-2 h-2 bg-[#9D2449] rounded-full"></div>
                                         <span
-                                            class="text-xs font-medium text-gray-600">{{ $proveedor->razon_social }}</span>
+                                            class="text-xs font-medium text-gray-600 truncate max-w-32 sm:max-w-none">{{ $proveedor->razon_social }}</span>
                                     </div>
                                     @php
                                         $estadoColor = match ($proveedor->estado_padron ?? 'Sin Estado') {
@@ -42,7 +42,7 @@
                                         };
                                     @endphp
                                     <span
-                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border {{ $estadoColor }}">
+                                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border {{ $estadoColor }} ml-2">
                                         {{ $proveedor->estado_padron ?? 'Sin Estado' }}
                                     </span>
                                 </div>
@@ -72,7 +72,7 @@
                 @endif
 
                 @if (!($globalTramites['tiene_tramite_pendiente'] ?? false))
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:mb-12">
                         @include('tramites.partials.tramite-card', [
                             'tipo' => 'inscripcion',
                             'titulo' => 'Inscripción al Padrón',
@@ -112,11 +112,11 @@
                 @endif
 
                 @if (!($globalTramites['tiene_tramite_pendiente'] ?? false))
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                        <div class="bg-white rounded-xl shadow-lg border border-gray-200/70 p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                <div class="bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-xl p-2 shadow-md mr-3">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6">
+                        <div class="bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg border border-gray-200/70 p-4 sm:p-6">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                                <div class="bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-md mr-2 sm:mr-3">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -124,36 +124,36 @@
                                 </div>
                                 Requisitos Generales
                             </h3>
-                            <div class="space-y-3">
+                            <div class="space-y-2 sm:space-y-3">
                                 <div
-                                    class="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                    <div class="w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></div>
-                                    <p class="text-gray-700 text-sm font-medium">Constancia de Situación Fiscal vigente
+                                    class="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
+                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#9D2449] rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Constancia de Situación Fiscal vigente
                                         (SAT)</p>
                                 </div>
                                 <div
-                                    class="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                    <div class="w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></div>
-                                    <p class="text-gray-700 text-sm font-medium">Documentación legal completa y actualizada
+                                    class="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
+                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#9D2449] rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Documentación legal completa y actualizada
                                     </p>
                                 </div>
                                 <div
-                                    class="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                    <div class="w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></div>
-                                    <p class="text-gray-700 text-sm font-medium">Información de contacto verificable</p>
+                                    class="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
+                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#9D2449] rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Información de contacto verificable</p>
                                 </div>
                                 <div
-                                    class="flex items-start space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
-                                    <div class="w-2 h-2 bg-[#9D2449] rounded-full mt-2 flex-shrink-0"></div>
-                                    <p class="text-gray-700 text-sm font-medium">Actividades económicas definidas</p>
+                                    class="flex items-start space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
+                                    <div class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#9D2449] rounded-full mt-1.5 sm:mt-2 flex-shrink-0"></div>
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Actividades económicas definidas</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-xl shadow-lg border border-gray-200/70 p-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                                <div class="bg-gradient-to-br from-[#B91C1C] to-[#DC2626] rounded-xl p-2 shadow-md mr-3">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                        <div class="bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg border border-gray-200/70 p-4 sm:p-6">
+                            <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center">
+                                <div class="bg-gradient-to-br from-[#B91C1C] to-[#DC2626] rounded-lg sm:rounded-xl p-1.5 sm:p-2 shadow-md mr-2 sm:mr-3">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -161,35 +161,35 @@
                                 </div>
                                 Proceso de Trámite
                             </h3>
-                            <div class="space-y-3">
+                            <div class="space-y-2 sm:space-y-3">
                                 <div
-                                    class="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    class="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
                                     <div
-                                        class="w-6 h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        class="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                                         1</div>
-                                    <p class="text-gray-700 text-sm font-medium">Cargar constancia de situación fiscal</p>
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Cargar constancia de situación fiscal</p>
                                 </div>
                                 <div
-                                    class="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    class="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
                                     <div
-                                        class="w-6 h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        class="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                                         2</div>
-                                    <p class="text-gray-700 text-sm font-medium">Completar formulario con datos precargados
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Completar formulario con datos precargados
                                     </p>
                                 </div>
                                 <div
-                                    class="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    class="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
                                     <div
-                                        class="w-6 h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        class="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                                         3</div>
-                                    <p class="text-gray-700 text-sm font-medium">Adjuntar documentos requeridos</p>
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Adjuntar documentos requeridos</p>
                                 </div>
                                 <div
-                                    class="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
+                                    class="flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
                                     <div
-                                        class="w-6 h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                                        class="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                                         4</div>
-                                    <p class="text-gray-700 text-sm font-medium">Revisión y aprobación administrativa</p>
+                                    <p class="text-gray-700 text-xs sm:text-sm font-medium">Revisión y aprobación administrativa</p>
                                 </div>
                             </div>
                         </div>
@@ -203,21 +203,21 @@
 
                     @if ($estadoVigencia === 'por_vencer')
                         <div
-                            class="mt-8 p-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-2xl shadow-lg">
+                            class="m-4 sm:m-6 lg:m-8 p-4 sm:p-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg sm:rounded-2xl shadow-lg">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0">
                                     <div
-                                        class="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                        class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-lg font-bold text-amber-800">Su registro está próximo a vencer</p>
-                                    <p class="text-amber-700 mt-1">
+                                <div class="ml-3 sm:ml-4">
+                                    <p class="text-base sm:text-lg font-bold text-amber-800">Su registro está próximo a vencer</p>
+                                    <p class="text-amber-700 mt-1 text-sm">
                                         Realice la renovación antes de la fecha de vencimiento para mantener activo su
                                         estado en el padrón.
                                         @if ($proveedor->fecha_vencimiento_padron)
@@ -229,21 +229,21 @@
                         </div>
                     @elseif($estadoVigencia === 'vencido')
                         <div
-                            class="mt-8 p-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-300 rounded-2xl shadow-lg">
+                            class="m-4 sm:m-6 lg:m-8 p-4 sm:p-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-300 rounded-lg sm:rounded-2xl shadow-lg">
                             <div class="flex items-start">
                                 <div class="flex-shrink-0">
                                     <div
-                                        class="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                        class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-red-500 to-pink-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </div>
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-lg font-bold text-red-800">Su registro ha vencido</p>
-                                    <p class="text-red-700 mt-1">
+                                <div class="ml-3 sm:ml-4">
+                                    <p class="text-base sm:text-lg font-bold text-red-800">Su registro ha vencido</p>
+                                    <p class="text-red-700 mt-1 text-sm">
                                         Debe realizar una nueva inscripción para reactivar su estado en el padrón de
                                         proveedores.
                                     </p>
@@ -255,21 +255,21 @@
 
                 @if (!$proveedor)
                     <div
-                        class="mt-8 p-6 bg-gradient-to-r from-[#9D2449]/10 to-[#B91C1C]/10 border border-[#9D2449]/20 rounded-2xl shadow-lg backdrop-blur-sm">
+                        class="m-4 sm:m-6 lg:m-8 p-4 sm:p-6 bg-gradient-to-r from-[#9D2449]/10 to-[#B91C1C]/10 border border-[#9D2449]/20 rounded-lg sm:rounded-2xl shadow-lg backdrop-blur-sm">
                         <div class="flex items-start">
                             <div class="flex-shrink-0">
                                 <div
-                                    class="w-10 h-10 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-xl flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                    class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-lg sm:rounded-xl flex items-center justify-center">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-lg font-bold text-[#9D2449]">Nuevo en el sistema</p>
-                                <p class="text-slate-700 mt-1">
+                            <div class="ml-3 sm:ml-4">
+                                <p class="text-base sm:text-lg font-bold text-[#9D2449]">Nuevo en el sistema</p>
+                                <p class="text-slate-700 mt-1 text-sm">
                                     Complete el proceso de inscripción para registrarse como proveedor y acceder a todos los
                                     servicios del padrón.
                                 </p>

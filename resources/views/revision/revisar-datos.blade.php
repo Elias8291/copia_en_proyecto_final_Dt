@@ -556,37 +556,86 @@
                         <h4 class="text-sm sm:text-base font-semibold text-gray-900 mb-2">Acciones de Revisión</h4>
                         <p class="text-xs sm:text-sm text-gray-500 mb-4">Seleccione la acción a realizar con este trámite</p>
 
-                        <div class="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 lg:space-x-4">
-                            <!-- Aprobar -->
-                            <button type="button" onclick="submitTramiteAction('aprobar')"
-                                class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-green-700 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-2 transition-all duration-200 flex-1 sm:flex-none">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 13l4 4 L19 7" />
-                                </svg>
-                                <span class="hidden sm:inline">Aprobar Trámite</span>
-                                <span class="sm:hidden">Aprobar</span>
-                            </button>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <!-- Aprobar Cotejo -->
+                            <form action="{{ route('revision.cambiar-estado', $tramite) }}" method="POST" class="w-full">
+                                @csrf
+                                <input type="hidden" name="nuevo_estado" value="Aprobado">
+                                <input type="hidden" name="observaciones" id="observaciones_aprobar_cotejo">
+                                <button type="submit" onclick="setObservaciones('observaciones_aprobar_cotejo')"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-green-700 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-2 transition-all duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4 L19 7" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Aprobar Cotejo</span>
+                                    <span class="sm:hidden">Aprobar</span>
+                                </button>
+                            </form>
+
+                            <!-- Por Cotejar -->
+                            <form action="{{ route('revision.cambiar-estado', $tramite) }}" method="POST" class="w-full">
+                                @csrf
+                                <input type="hidden" name="nuevo_estado" value="Por_Cotejar">
+                                <input type="hidden" name="observaciones" id="observaciones_por_cotejar">
+                                <button type="submit" onclick="setObservaciones('observaciones_por_cotejar')"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-blue-600 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 transition-all duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Por Cotejar</span>
+                                    <span class="sm:hidden">Cotejar</span>
+                                </button>
+                            </form>
+
                             <!-- Rechazar -->
-                            <button type="button" onclick="submitTramiteAction('rechazar')"
-                                class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-red-700 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2 transition-all duration-200 flex-1 sm:flex-none">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                <span class="hidden sm:inline">Rechazar Trámite</span>
-                                <span class="sm:hidden">Rechazar</span>
-                            </button>
-                            <!-- Solicitar Correcciones -->
-                            <button type="button" onclick="submitTramiteAction('corregir')"
-                                class="inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200 flex-1 sm:flex-none">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                <span class="hidden lg:inline">Solicitar Correcciones</span>
-                                <span class="lg:hidden">Correcciones</span>
-                            </button>
+                            <form action="{{ route('revision.cambiar-estado', $tramite) }}" method="POST" class="w-full">
+                                @csrf
+                                <input type="hidden" name="nuevo_estado" value="Rechazado">
+                                <input type="hidden" name="observaciones" id="observaciones_rechazar">
+                                <button type="submit" onclick="setObservaciones('observaciones_rechazar')"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-red-700 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2 transition-all duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Rechazar Trámite</span>
+                                    <span class="sm:hidden">Rechazar</span>
+                                </button>
+                            </form>
+
+                            <!-- Para Corrección -->
+                            <form action="{{ route('revision.cambiar-estado', $tramite) }}" method="POST" class="w-full">
+                                @csrf
+                                <input type="hidden" name="nuevo_estado" value="Para_Correccion">
+                                <input type="hidden" name="observaciones" id="observaciones_para_correccion">
+                                <button type="submit" onclick="setObservaciones('observaciones_para_correccion')"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span class="hidden lg:inline">Para Corrección</span>
+                                    <span class="lg:hidden">Corregir</span>
+                                </button>
+                            </form>
+
+                            <!-- Cancelar -->
+                            <form action="{{ route('revision.cambiar-estado', $tramite) }}" method="POST" class="w-full">
+                                @csrf
+                                <input type="hidden" name="nuevo_estado" value="Cancelado">
+                                <input type="hidden" name="observaciones" id="observaciones_cancelar">
+                                <button type="submit" onclick="setObservaciones('observaciones_cancelar')"
+                                    class="w-full inline-flex items-center justify-center px-4 py-2.5 sm:py-2 bg-gray-600 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 transition-all duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Cancelar</span>
+                                    <span class="sm:hidden">Cancelar</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -601,5 +650,17 @@
         window.tramiteId = {{ $tramite->id }};
         window.csrfToken = "{{ csrf_token() }}";
         window.revisionSeccionComentarioRoute = "{{ route('revision.seccion.comentario') }}";
+        
+        // Función simple para copiar el comentario al campo hidden
+        function setObservaciones(fieldId) {
+            const comentario = document.getElementById('general_comment').value;
+            if (!comentario || comentario.trim() === '') {
+                alert('Por favor, escriba un comentario general antes de realizar la acción.');
+                document.getElementById('general_comment').focus();
+                return false;
+            }
+            document.getElementById(fieldId).value = comentario;
+            return true;
+        }
     </script>
 @endpush

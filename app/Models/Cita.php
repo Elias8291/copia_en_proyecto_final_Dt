@@ -17,6 +17,8 @@ class Cita extends Model
         'fecha_cita',
         'tipo_cita',
         'estado',
+        'motivo',
+        'observaciones',
         'atendido_por'
     ];
 

@@ -87,6 +87,11 @@ class Tramite extends Model
         return $this->hasMany(Archivo::class);
     }
 
+    public function citas()
+    {
+        return $this->hasMany(\App\Models\Cita::class);
+    }
+
     /**
      * Obtiene el tiempo transcurrido desde la creación del trámite
      */

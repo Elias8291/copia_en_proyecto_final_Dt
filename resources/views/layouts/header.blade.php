@@ -1,6 +1,7 @@
 <nav class="bg-white border-b border-gray-200">
     <div class="w-full">
         <div class="flex justify-between h-16">
+            <!-- Logo y menú móvil -->
             <div class="flex items-center">
                 <button type="button"
                     class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary"
@@ -18,9 +19,11 @@
                 </div>
             </div>
 
+            <!-- Notificaciones y usuario -->
             <div class="hidden md:flex items-center space-x-4 pr-4">
-                <div class="relative" x-data="{ notificationsOpen: false }">
-                    <button @click="notificationsOpen = !notificationsOpen"
+                <!-- Notificaciones -->
+                <div class="relative" id="notifications-container">
+                    <button id="notifications-btn"
                         class="group p-1.5 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary relative">
                         <span class="sr-only">Ver notificaciones</span>
                         <svg class="w-6 h-6 text-gray-500 group-hover:text-primary transition-colors duration-200"
@@ -28,149 +31,51 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        <span class="absolute -top-0.5 -right-0.5 flex h-5 w-5">
+                        <span id="notifications-badge" class="absolute -top-0.5 -right-0.5 flex h-5 w-5" style="display: none;">
                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                             <span class="relative inline-flex rounded-full h-5 w-5 bg-primary items-center justify-center">
-                                <span class="text-white text-xs font-bold">3</span>
+                                <span class="text-white text-xs font-bold" id="notifications-count">0</span>
                             </span>
                         </span>
                     </button>
 
                     <!-- Panel de notificaciones -->
-                    <div x-show="notificationsOpen" 
-                         @click.away="notificationsOpen = false"
+                    <div id="notifications-panel" 
                          class="origin-top-right absolute right-0 mt-3 w-96 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 focus:outline-none z-50 overflow-hidden"
                          style="display: none;">
-
-                        <div
-                            class="px-4 py-3 bg-gradient-to-r from-primary to-primary-dark flex items-center justify-between">
+                        
+                        <!-- Header -->
+                        <div class="px-4 py-3 bg-gradient-to-r from-primary to-primary-dark flex items-center justify-between">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 text-white mr-2" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
+                                <svg class="w-5 h-5 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                                 </svg>
                                 <h3 class="text-white text-sm font-semibold">Notificaciones</h3>
                             </div>
-                            <span
-                                class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-primary bg-white rounded-full">
-                                3 nuevas
+                            <span id="notifications-header-count" class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-primary bg-white rounded-full" style="display: none;">
+                                <span id="notifications-header-number">0</span> nueva<span id="notifications-header-text">s</span>
                             </span>
                         </div>
 
-                        <div class="max-h-96 overflow-y-auto divide-y divide-gray-100">
-                            <div class="p-4 bg-primary-50/30 hover:bg-primary-50/50 transition-colors duration-200">
-                                <div class="flex">
-                                    <div class="flex-shrink-0 mr-3">
-                                        <div
-                                            class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">Nuevo trámite asignado</p>
-                                        <p class="text-sm text-gray-600 mt-1">Se ha asignado el trámite #12345 para su
-                                            revisión.</p>
-                                        <div class="mt-2 flex items-center justify-between">
-                                            <span class="text-xs text-gray-500">Hace 5 minutos</span>
-                                            <button
-                                                class="text-xs text-primary hover:text-primary-dark font-medium">Marcar
-                                                como leído</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <div class="p-4 bg-primary-50/30 hover:bg-primary-50/50 transition-colors duration-200">
-                                <div class="flex">
-                                    <div class="flex-shrink-0 mr-3">
-                                        <div
-                                            class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">Documento actualizado</p>
-                                        <p class="text-sm text-gray-600 mt-1">El proveedor ha actualizado su
-                                            documentación.</p>
-                                        <div class="mt-2 flex items-center justify-between">
-                                            <span class="text-xs text-gray-500">Hace 2 horas</span>
-                                            <button
-                                                class="text-xs text-primary hover:text-primary-dark font-medium">Marcar
-                                                como leído</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notificación no leída - Sistema -->
-                            <div class="p-4 bg-primary-50/30 hover:bg-primary-50/50 transition-colors duration-200">
-                                <div class="flex">
-                                    <div class="flex-shrink-0 mr-3">
-                                        <div
-                                            class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-yellow-600" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-900">Recordatorio</p>
-                                        <p class="text-sm text-gray-600 mt-1">Tiene 3 trámites pendientes por revisar.
-                                        </p>
-                                        <div class="mt-2 flex items-center justify-between">
-                                            <span class="text-xs text-gray-500">Ayer</span>
-                                            <button
-                                                class="text-xs text-primary hover:text-primary-dark font-medium">Marcar
-                                                como leído</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Notificación leída -->
-                            <div class="p-4 hover:bg-gray-50 transition-colors duration-200">
-                                <div class="flex">
-                                    <div class="flex-shrink-0 mr-3">
-                                        <div
-                                            class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-700">Mantenimiento programado</p>
-                                        <p class="text-sm text-gray-500 mt-1">El sistema estará en mantenimiento el
-                                            próximo domingo.</p>
-                                        <div class="mt-2 flex items-center justify-between">
-                                            <span class="text-xs text-gray-500">Hace 2 días</span>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Contenido -->
+                        <div class="max-h-96 overflow-y-auto divide-y divide-gray-100" id="notifications-content">
+                            <!-- Loading -->
+                            <div id="notifications-loading" class="p-4 flex items-center justify-center">
+                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                <span class="ml-2 text-sm text-gray-500">Cargando notificaciones...</span>
                             </div>
                         </div>
 
-                        <!-- Pie de notificaciones -->
+                        <!-- Footer -->
                         <div class="p-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                             <a href="{{ route('notificaciones.index') }}"
                                 class="text-xs text-primary hover:text-primary-dark font-medium">
                                 Ver todas las notificaciones
                             </a>
-                            <button class="text-xs text-gray-600 hover:text-gray-900 font-medium">
+                            <button id="mark-all-read-btn"
+                                    class="text-xs text-gray-600 hover:text-gray-900 font-medium"
+                                    style="display: none;">
                                 Marcar todas como leídas
                             </button>
                         </div>
@@ -274,3 +179,114 @@
         </div>
     </div>
 </nav>
+
+<script>
+// Notificaciones básicas
+let notificationsOpen = false;
+
+// Toggle panel
+document.getElementById('notifications-btn').addEventListener('click', function() {
+    const panel = document.getElementById('notifications-panel');
+    notificationsOpen = !notificationsOpen;
+    
+    if (notificationsOpen) {
+        panel.style.display = 'block';
+        loadNotifications();
+    } else {
+        panel.style.display = 'none';
+    }
+});
+
+// Cerrar al hacer clic fuera
+document.addEventListener('click', function(e) {
+    const container = document.getElementById('notifications-container');
+    if (!container.contains(e.target) && notificationsOpen) {
+        document.getElementById('notifications-panel').style.display = 'none';
+        notificationsOpen = false;
+    }
+});
+
+// Cargar notificaciones
+async function loadNotifications() {
+    try {
+        const response = await fetch('/notificaciones/header');
+        const data = await response.json();
+        
+        if (data.success) {
+            updateNotifications(data.notificaciones, data.contador_no_leidas);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Actualizar UI
+function updateNotifications(notifications, unreadCount) {
+    // Contador
+    const badge = document.getElementById('notifications-badge');
+    const count = document.getElementById('notifications-count');
+    
+    if (unreadCount > 0) {
+        badge.style.display = 'flex';
+        count.textContent = unreadCount;
+    } else {
+        badge.style.display = 'none';
+    }
+    
+    // Contenido
+    const content = document.getElementById('notifications-content');
+    
+    if (notifications.length === 0) {
+        content.innerHTML = '<div class="p-4 text-center text-gray-500">No hay notificaciones</div>';
+        return;
+    }
+    
+    const html = notifications.map(notif => `
+        <div class="p-4 ${notif.leida ? 'hover:bg-gray-50' : 'bg-blue-50'}">
+            <div class="flex">
+                <div class="flex-1">
+                    <p class="text-sm font-medium">${notif.titulo}</p>
+                    <p class="text-sm text-gray-600 mt-1">${notif.mensaje}</p>
+                    <div class="mt-2 flex justify-between items-center">
+                        <span class="text-xs text-gray-500">${formatDate(notif.created_at)}</span>
+                        ${!notif.leida ? `<button onclick="markAsRead(${notif.id})" class="text-xs text-blue-600">Marcar leído</button>` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+    
+    content.innerHTML = html;
+}
+
+// Marcar como leído
+async function markAsRead(id) {
+    try {
+        await fetch('/notificaciones/marcar-leida', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ notificacion_id: id })
+        });
+        loadNotifications();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// Formato fecha simple
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / (1000 * 60));
+    
+    if (diff < 60) return 'Hace ' + diff + ' min';
+    if (diff < 1440) return 'Hace ' + Math.floor(diff / 60) + ' h';
+    return date.toLocaleDateString();
+}
+
+// Cargar al inicio
+loadNotifications();
+</script>
