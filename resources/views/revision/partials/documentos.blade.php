@@ -1,458 +1,224 @@
 @props(['tramite', 'documentos' => [], 'editable' => false])
 
-    @if(count($documentos) > 0)
-        <div class="space-y-6">
-            @foreach($documentos as $documento)
-                <div class="bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
-                    <div class="flex items-start justify-between">
-                        <!-- Información del documento -->
-                        <div class="flex items-start space-x-4 flex-1">
-                            <!-- Icono del tipo de archivo -->
-                            <div class="flex-shrink-0">
-                                @php
-                                    $extension = pathinfo($documento['nombre_original'] ?? $documento['nombre'] ?? '', PATHINFO_EXTENSION);
-                                    $iconClass = match(strtolower($extension)) {
-                                        'pdf' => 'fas fa-file-pdf text-red-600',
-                                        'png', 'jpg', 'jpeg' => 'fas fa-file-image text-blue-600',
-                                        'mp3' => 'fas fa-file-audio text-purple-600',
-                                        'doc', 'docx' => 'fas fa-file-word text-blue-800',
-                                        'xls', 'xlsx' => 'fas fa-file-excel text-green-600',
-                                        default => 'fas fa-file text-gray-600',
-                                    };
-                                @endphp
-                                <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200">
-                                    <i class="{{ $iconClass }} text-xl"></i>
-                                </div>
+@if(count($documentos) > 0)
+    <div class="space-y-4">
+        @foreach($documentos as $documento)
+            <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-sm transition-shadow duration-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3 flex-1">
+                        <div class="flex-shrink-0">
+                            @php
+                                $extension = pathinfo($documento['nombre_original'] ?? $documento['nombre'] ?? '', PATHINFO_EXTENSION);
+                                $iconData = match(strtolower($extension)) {
+                                    'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-red-600'],
+                                    'png', 'jpg', 'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-blue-600'],
+                                    'mp3' => ['icon' => 'fas fa-file-audio', 'color' => 'text-purple-600'],
+                                    'doc', 'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-800'],
+                                    'xls', 'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-green-600'],
+                                    default => ['icon' => 'fas fa-file', 'color' => 'text-gray-600'],
+                                };
+                            @endphp
+                            <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
+                                <i class="{{ $iconData['icon'] }} {{ $iconData['color'] }} text-lg"></i>
                             </div>
-
-                            <!-- Detalles del documento -->
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-sm font-semibold text-gray-900 mb-1 truncate">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between mb-1">
+                                <h4 class="text-sm font-medium text-gray-900 truncate">
                                     {{ $documento['nombre_original'] ?? $documento['nombre'] ?? 'Documento' }}
                                 </h4>
-                                <div class="flex items-center space-x-4 text-xs text-gray-500 mb-2">
-                                    <span class="flex items-center">
-                                        <i class="fas fa-weight-hanging mr-1"></i>
-                                        {{ $documento['tamaño_formateado'] ?? $documento['tamaño'] ?? 'N/A' }}
-                                    </span>
-                                    <span class="flex items-center">
-                                        <i class="fas fa-calendar mr-1"></i>
-                                        {{ $documento['fecha_carga'] ?? $documento['created_at'] ?? 'N/A' }}
-                                    </span>
-                                </div>
-                                
-                                <!-- Tipo de documento -->
-                                @if(isset($documento['catalogo']))
-                                    <div class="mb-2">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">
+                                <div class="flex items-center space-x-2 ml-2">
+                                    @if(isset($documento['catalogo']))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700">
                                             {{ $documento['catalogo']['nombre'] ?? 'Documento' }}
                                         </span>
-                                    </div>
-                                @endif
-
-                                <!-- Estado de aprobación -->
-                                <div class="flex items-center space-x-2">
+                                    @endif
                                     @if(isset($documento['aprobado']))
-                                        @if($documento['aprobado'])
-                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800">
-                                                <i class="fas fa-check-circle mr-1"></i>
+                                        @if($documento['aprobado'] === true)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
                                                 Aprobado
                                             </span>
+                                        @elseif($documento['aprobado'] === false)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                                Rechazado
+                                            </span>
                                         @else
-                                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                <i class="fas fa-clock mr-1"></i>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/>
+                                                </svg>
                                                 Pendiente
                                             </span>
                                         @endif
                                     @endif
-
                                     @if(isset($documento['fecha_cotejo']) && $documento['fecha_cotejo'])
-                                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
-                                            <i class="fas fa-eye mr-1"></i>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
                                             Cotejado
                                         </span>
                                     @endif
                                 </div>
-
-                                <!-- Observaciones -->
-                                @if(isset($documento['observaciones']) && $documento['observaciones'])
-                                    <div class="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                        <div class="flex items-start space-x-2">
-                                            <i class="fas fa-comment-alt text-amber-600 text-sm mt-0.5"></i>
-                                            <div class="flex-1">
-                                                <p class="text-xs font-medium text-amber-800">Observaciones:</p>
-                                                <p class="text-xs text-amber-700 mt-1">{{ $documento['observaciones'] }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
                             </div>
-                        </div>
-
-                        <!-- Acciones -->
-                        <div class="flex items-center space-x-2 ml-4">
-                            <!-- Ver documento -->
-                            @php
-                                $urlDocumento = null;
-                                if (is_object($documento) && isset($documento->id) && isset($tramite)) {
-                                    $filename = basename($documento->ruta_archivo ?? 'documento');
-                                    $urlDocumento = route('documento.ver', [
-                                        'tramite' => $tramite->id,
-                                        'archivo' => $documento->id,
-                                        'filename' => $filename
-                                    ]);
-                                } elseif (is_array($documento) && isset($documento['url_descarga'])) {
-                                    $urlDocumento = $documento['url_descarga'];
-                                }
-                            @endphp
-                            
-                            <a href="{{ $urlDocumento ?? '#' }}" 
-                               target="_blank"
-                               class="inline-flex items-center px-3 py-2 text-xs font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                <i class="fas fa-eye mr-1"></i>
-                                Ver
-                            </a>
-
-                            <!-- Descargar -->
-                            <a href="{{ $urlDocumento ?? '#' }}" 
-                               download
-                               class="inline-flex items-center px-3 py-2 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                <i class="fas fa-download mr-1"></i>
-                                Descargar
-                            </a>
-
-                            @if($editable)
-                                <!-- Comentar -->
-                                <button type="button" 
-                                        onclick="toggleCommentSection('{{ $documento['id'] ?? $loop->index }}')"
-                                        class="inline-flex items-center px-3 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                        title="Agregar comentario">
-                                    <i class="fas fa-comment mr-1"></i>
-                                    Comentar
-                                </button>
-                                
-                                <!-- Aprobar/Rechazar -->
-                                <div class="flex items-center space-x-1">
-                                    <button type="button" 
-                                            onclick="approveDocument('{{ $documento['id'] ?? $loop->index }}', true)"
-                                            class="inline-flex items-center px-2 py-2 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-                                            title="Aprobar documento">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button type="button" 
-                                            onclick="approveDocument('{{ $documento['id'] ?? $loop->index }}', false)"
-                                            class="inline-flex items-center px-2 py-2 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                                            title="Rechazar documento">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                <span>{{ $documento['tamaño_formateado'] ?? $documento['tamaño'] ?? 'N/A' }}</span>
+                                <span>•</span>
+                                <span>{{ $documento['fecha_carga'] ?? $documento['created_at'] ?? 'N/A' }}</span>
+                            </div>
+                            @if(isset($documento['observaciones']) && $documento['observaciones'])
+                                <div class="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
+                                    <span class="font-medium text-amber-800">Observaciones:</span>
+                                    <span class="text-amber-700">{{ $documento['observaciones'] }}</span>
                                 </div>
                             @endif
                         </div>
                     </div>
-                    
-                    @if($editable)
-                        <!-- Sección de comentarios (inicialmente oculta) -->
-                        <div id="commentSection-{{ $documento['id'] ?? $loop->index }}" class="hidden mt-4 pt-4 border-t border-gray-200">
-                            <div class="bg-white rounded-lg border border-gray-200 p-4">
-                                <h5 class="text-sm font-medium text-gray-900 mb-3">Comentarios de Revisión</h5>
-                                
-                                <!-- Formulario para nuevo comentario -->
-                                <form onsubmit="submitComment(event, '{{ $documento['id'] ?? $loop->index }}')" class="mb-4">
-                                    <div class="mb-3">
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">Agregar comentario:</label>
-                                        <textarea 
-                                            name="comentario"
-                                            rows="3" 
-                                            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                            placeholder="Escribe tu comentario sobre este documento..."
-                                            required></textarea>
-                                    </div>
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <label class="flex items-center">
-                                                <input type="radio" name="decision" value="aprobar" class="text-green-600 focus:ring-green-500">
-                                                <span class="ml-2 text-xs text-green-700">Aprobar</span>
-                                            </label>
-                                            <label class="flex items-center">
-                                                <input type="radio" name="decision" value="rechazar" class="text-red-600 focus:ring-red-500">
-                                                <span class="ml-2 text-xs text-red-700">Rechazar</span>
-                                            </label>
-                                            <label class="flex items-center">
-                                                <input type="radio" name="decision" value="pendiente" class="text-yellow-600 focus:ring-yellow-500" checked>
-                                                <span class="ml-2 text-xs text-yellow-700">Solo comentar</span>
-                                            </label>
-                                        </div>
-                                        <div class="flex items-center space-x-2">
-                                            <button type="button" 
-                                                    onclick="toggleCommentSection('{{ $documento['id'] ?? $loop->index }}')"
-                                                    class="px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                                                Cancelar
-                                            </button>
-                                            <button type="submit" 
-                                                    class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-                                                Guardar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-                                
-                                <!-- Lista de comentarios existentes -->
-                                <div id="commentsList-{{ $documento['id'] ?? $loop->index }}" class="space-y-3">
-                                    @if(isset($documento['comentarios_revision']) && count($documento['comentarios_revision']) > 0)
-                                        @foreach($documento['comentarios_revision'] as $comentario)
-                                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                                <div class="flex items-start justify-between mb-2">
-                                                    <div class="flex items-center space-x-2">
-                                                        <span class="text-xs font-medium text-gray-900">
-                                                            {{ $comentario['usuario'] ?? 'Revisor' }}
-                                                        </span>
-                                                        @if(isset($comentario['decision']))
-                                                            @if($comentario['decision'] === 'aprobar')
-                                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                                    <i class="fas fa-check mr-1"></i>
-                                                                    Aprobado
-                                                                </span>
-                                                            @elseif($comentario['decision'] === 'rechazar')
-                                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                                                    <i class="fas fa-times mr-1"></i>
-                                                                    Rechazado
-                                                                </span>
-                                                            @endif
-                                                        @endif
-                                                    </div>
-                                                    <span class="text-xs text-gray-500">
-                                                        {{ $comentario['fecha'] ?? now()->format('d/m/Y H:i') }}
-                                                    </span>
-                                                </div>
-                                                <p class="text-xs text-gray-700">{{ $comentario['comentario'] }}</p>
-                                            </div>
-                                        @endforeach
-                                    @else
-                                        <p class="text-xs text-gray-500 italic">No hay comentarios para este documento.</p>
-                                    @endif
+                    <div class="flex items-center space-x-2 ml-4">
+                        <a href="{{ route('revision.verDocumento', [
+                            'tramite' => is_object($tramite) ? $tramite->id : $tramite['id'],
+                            'archivo' => $documento['id'],
+                            'filename' => basename($documento['ruta_archivo'] ?? 'documento')
+                        ]) }}" 
+                        target="_blank" 
+                        class="group inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors" 
+                        title="Ver documento">
+                            <svg class="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </a>
+                        @if($editable)
+                            <button type="button" 
+                                onclick="toggleDocumentComment({{ $documento['id'] }})"
+                                class="group inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors" 
+                                title="Comentar documento">
+                                <svg class="w-4 h-4 text-gray-600 group-hover:text-[#9D2449] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+                @if($editable)
+                    <div id="comment-form-{{ $documento['id'] }}" class="hidden mt-3 pt-3 border-t border-gray-200">
+                        <form class="documento-review-form" data-documento-id="{{ $documento['id'] }}">
+                            <div class="mb-3">
+                                <textarea 
+                                    name="comentario" 
+                                    rows="2"
+                                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9D2449] focus:border-[#9D2449] resize-none"
+                                    placeholder="Comentario sobre este documento..."></textarea>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <label class="flex items-center text-xs">
+                                        <input type="radio" name="decision_documento" value="aprobar" class="text-green-600 focus:outline-none focus:ring-green-500 mr-1">
+                                        <span class="text-green-700">Aprobar</span>
+                                    </label>
+                                    <label class="flex items-center text-xs">
+                                        <input type="radio" name="decision_documento" value="rechazar" class="text-red-600 focus:outline-none focus:ring-red-500 mr-1">
+                                        <span class="text-red-700">Rechazar</span>
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <button type="button" 
+                                        onclick="toggleDocumentComment({{ $documento['id'] }})"
+                                        class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 transition-colors">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" 
+                                        class="px-3 py-1 bg-[#9D2449] text-white rounded text-xs hover:bg-[#8a203f] transition-colors">
+                                        Guardar
+                                    </button>
                                 </div>
                             </div>
-                        </div>
-                    @endif
-                </div>
-            @endforeach
-        </div>
-
-        <!-- Resumen de documentos -->
-        <div class="mt-8 pt-6 border-t border-gray-200">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Total de documentos -->
-                <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-file text-blue-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-blue-900">Total</p>
-                            <p class="text-lg font-bold text-blue-800">{{ count($documentos) }}</p>
-                        </div>
+                        </form>
                     </div>
-                </div>
-
-                <!-- Documentos aprobados -->
-                <div class="bg-green-50 rounded-lg p-4 border border-green-200">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-check-circle text-green-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-green-900">Aprobados</p>
-                            <p class="text-lg font-bold text-green-800">
-                                {{ collect($documentos)->where('aprobado', true)->count() }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Documentos pendientes -->
-                <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-clock text-yellow-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-yellow-900">Pendientes</p>
-                            <p class="text-lg font-bold text-yellow-800">
-                                {{ collect($documentos)->where('aprobado', false)->count() }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                @endif
+            </div>
+        @endforeach
+    </div>
+@else
+    <div class="text-center py-12">
+        <div class="flex flex-col items-center justify-center space-y-3">
+            <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+            </div>
+            <div class="text-gray-500">
+                <p class="text-sm font-medium">No hay documentos adjuntos</p>
+                <p class="text-xs mt-1">Este trámite no tiene documentos cargados.</p>
             </div>
         </div>
-    @else
-        <!-- Estado sin documentos -->
-        <div class="text-center py-12">
-            <div class="flex flex-col items-center justify-center space-y-4">
-                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                    <i class="fas fa-file-upload text-gray-400 text-2xl"></i>
-                </div>
-                <div class="text-gray-500">
-                    <p class="font-medium text-sm">No hay documentos adjuntos</p>
-                    <p class="text-xs mt-1">Este trámite no tiene documentos cargados.</p>
-                </div>
-            </div>
-        </div>
+    </div>
 @endif
 
 @if($editable)
 <script>
-// Función para mostrar/ocultar la sección de comentarios
-function toggleCommentSection(documentId) {
-    const section = document.getElementById(`commentSection-${documentId}`);
-    if (section) {
-        section.classList.toggle('hidden');
-        
-        // Si se está mostrando, hacer scroll hacia la sección
-        if (!section.classList.contains('hidden')) {
-            section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+function toggleDocumentComment(documentoId) {
+    const form = document.getElementById(`comment-form-${documentoId}`);
+    if (form.classList.contains('hidden')) {
+        form.classList.remove('hidden');
+    } else {
+        form.classList.add('hidden');
+        form.querySelector('textarea').value = '';
+        // No hay opción comentar, así que no es necesario marcar checked
     }
 }
 
-// Función para aprobar/rechazar documento directamente
-function approveDocument(documentId, approved) {
-    const action = approved ? 'aprobar' : 'rechazar';
-    const message = approved ? '¿Estás seguro de aprobar este documento?' : '¿Estás seguro de rechazar este documento?';
-    
-    if (confirm(message)) {
-        // Aquí implementarías la llamada AJAX para actualizar el estado
-        updateDocumentStatus(documentId, approved ? 'aprobado' : 'rechazado', '');
-    }
-}
+// AJAX para guardar comentario y estado
 
-// Función para enviar comentario
-function submitComment(event, documentId) {
-    event.preventDefault();
-    
-    const form = event.target;
-    const formData = new FormData(form);
-    const comentario = formData.get('comentario');
-    const decision = formData.get('decision');
-    
-    if (!comentario.trim()) {
-        alert('Por favor, escribe un comentario.');
-        return;
-    }
-    
-    // Aquí implementarías la llamada AJAX para guardar el comentario
-    saveDocumentComment(documentId, comentario, decision);
-    
-    // Limpiar formulario
-    form.reset();
-    form.querySelector('input[value="pendiente"]').checked = true;
-    
-    // Ocultar sección de comentarios
-    toggleCommentSection(documentId);
-}
-
-// Función para actualizar el estado del documento (implementar con AJAX)
-function updateDocumentStatus(documentId, status, comment) {
-    // Ejemplo de implementación con fetch
-    fetch(`/revision/documento/${documentId}/update-status`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-        },
-        body: JSON.stringify({
-            status: status,
-            comment: comment
+document.querySelectorAll('.documento-review-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const documentoId = this.getAttribute('data-documento-id');
+        const comentario = this.querySelector('textarea[name="comentario"]').value;
+        const decision = this.querySelector('input[name="decision_documento"]:checked').value;
+        let aprobado = null;
+        if (decision === 'aprobar') aprobado = true;
+        else if (decision === 'rechazar') aprobado = false;
+        // Enviar AJAX para comentario
+        fetch(`/revision/documento/${documentoId}/comentario`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({ comentario })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Actualizar la UI para reflejar el cambio
-            location.reload(); // O actualizar dinámicamente
-        } else {
-            alert('Error al actualizar el estado del documento: ' + (data.message || 'Error desconocido'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al procesar la solicitud');
-    });
-}
-
-// Función para guardar comentario (implementar con AJAX)
-function saveDocumentComment(documentId, comment, decision) {
-    fetch(`/revision/documento/${documentId}/add-comment`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-        },
-        body: JSON.stringify({
-            comment: comment,
-            decision: decision
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Agregar el comentario a la lista sin recargar la página
-            addCommentToList(documentId, {
-                usuario: data.usuario || 'Revisor',
-                comentario: comment,
-                decision: decision,
-                fecha: new Date().toLocaleString('es-ES')
-            });
-            
-            // Si hay una decisión, actualizar el estado del documento
-            if (decision !== 'pendiente') {
-                updateDocumentStatus(documentId, decision === 'aprobar' ? 'aprobado' : 'rechazado', comment);
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Cambiar estado tanto en aprobar como en rechazar
+                if (aprobado !== null) {
+                    fetch(`/revision/documento/${documentoId}/estado`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ aprobado })
+                    })
+                    .then(res2 => res2.json())
+                    .then(data2 => {
+                        if (data2.success) {
+                            location.reload();
+                        }
+                    });
+                } else {
+                    location.reload();
+                }
             }
-        } else {
-            alert('Error al guardar el comentario: ' + (data.message || 'Error desconocido'));
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al procesar la solicitud');
+        });
     });
-}
-
-// Función para agregar comentario a la lista dinámicamente
-function addCommentToList(documentId, commentData) {
-    const commentsList = document.getElementById(`commentsList-${documentId}`);
-    if (!commentsList) return;
-    
-    // Remover mensaje de "no hay comentarios" si existe
-    const noCommentsMsg = commentsList.querySelector('.italic');
-    if (noCommentsMsg) {
-        noCommentsMsg.remove();
-    }
-    
-    // Crear elemento del comentario
-    const commentElement = document.createElement('div');
-    commentElement.className = 'bg-gray-50 rounded-lg p-3 border border-gray-200';
-    
-    let decisionBadge = '';
-    if (commentData.decision === 'aprobar') {
-        decisionBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"><i class="fas fa-check mr-1"></i>Aprobado</span>';
-    } else if (commentData.decision === 'rechazar') {
-        decisionBadge = '<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"><i class="fas fa-times mr-1"></i>Rechazado</span>';
-    }
-    
-    commentElement.innerHTML = `
-        <div class="flex items-start justify-between mb-2">
-            <div class="flex items-center space-x-2">
-                <span class="text-xs font-medium text-gray-900">${commentData.usuario}</span>
-                ${decisionBadge}
-            </div>
-            <span class="text-xs text-gray-500">${commentData.fecha}</span>
-        </div>
-        <p class="text-xs text-gray-700">${commentData.comentario}</p>
-    `;
-    
-    // Agregar al inicio de la lista
-    commentsList.insertBefore(commentElement, commentsList.firstChild);
-}
+});
 </script>
 @endif

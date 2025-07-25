@@ -2,13 +2,11 @@
 
 @if($direccion)
         <div class="space-y-8">
-            <!-- Dirección Principal -->
             <div>
                 <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
                     Dirección Principal
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Calle -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Calle
@@ -23,7 +21,6 @@
                         </div>
                     </div>
 
-                    <!-- Entre Calles -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Entre Calles
@@ -38,7 +35,6 @@
                         </div>
                     </div>
 
-                    <!-- Número Exterior -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Número Exterior
@@ -53,7 +49,6 @@
                         </div>
                     </div>
 
-                    <!-- Número Interior -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Número Interior
@@ -70,13 +65,11 @@
                 </div>
             </div>
 
-            <!-- Ubicación -->
             <div>
                 <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
                     Ubicación
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Código Postal -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Código Postal
@@ -91,7 +84,6 @@
                         </div>
                     </div>
 
-                    <!-- Colonia/Asentamiento -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Colonia/Asentamiento
@@ -106,7 +98,6 @@
                         </div>
                     </div>
 
-                    <!-- Municipio -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Municipio
@@ -121,7 +112,6 @@
                         </div>
                     </div>
 
-                    <!-- Estado -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Estado
@@ -138,14 +128,12 @@
                 </div>
             </div>
 
-            <!-- Coordenadas (si existen) -->
             @if($direccion->coordenadas)
             <div>
                 <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
                     Coordenadas Geográficas
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Latitud -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Latitud
@@ -160,7 +148,6 @@
                         </div>
                     </div>
 
-                    <!-- Longitud -->
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                             Longitud
@@ -178,7 +165,6 @@
             </div>
             @endif
 
-            <!-- Dirección Completa -->
             <div>
                 <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
                     Dirección Completa
@@ -204,7 +190,6 @@
             </div>
         </div>
 @else
-    <!-- Estado sin dirección -->
     <div class="text-center py-12">
         <div class="flex flex-col items-center justify-center space-y-4">
             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">

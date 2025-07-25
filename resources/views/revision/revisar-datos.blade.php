@@ -5,7 +5,7 @@
 @endpush
 
 @section('content')
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="min-h-screen">
         <div class="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Header Section -->
             <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 mb-8">
@@ -68,12 +68,15 @@
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900">Datos Generales</h3>
                     </div>
-
-                    @include('revision.partials.datos-generales', [
-                        'tramite' => $tramite,
-                        'proveedor' => $tramite->proveedor,
-                        'editable' => true,
-                    ])
+                    <div id="datosGeneralesGrid">
+                        <div id="datosGeneralesMain" class="transition-all duration-300">
+                            @include('revision.partials.datos-generales', [
+                                'tramite' => $tramite,
+                                'proveedor' => $tramite->proveedor,
+                                'editable' => true,
+                            ])
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-center py-6">
@@ -98,12 +101,15 @@
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900">Domicilio</h3>
                     </div>
-
-                    @include('revision.partials.domicilio', [
-                        'tramite' => $tramite,
-                        'direccion' => $tramite->direcciones->first(),
-                        'editable' => true,
-                    ])
+                    <div id="domicilioGrid">
+                        <div id="domicilioMain" class="transition-all duration-300">
+                            @include('revision.partials.domicilio', [
+                                'tramite' => $tramite,
+                                'direccion' => $tramite->direcciones->first(),
+                                'editable' => true,
+                            ])
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-center py-6">
@@ -126,12 +132,15 @@
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900">Actividades</h3>
                     </div>
-
-                    @include('revision.partials.actividades', [
-                        'tramite' => $tramite,
-                        'actividades' => $tramite->actividades ?? [],
-                        'editable' => true,
-                    ])
+                    <div id="actividadesGrid">
+                        <div id="actividadesMain" class="transition-all duration-300">
+                            @include('revision.partials.actividades', [
+                                'tramite' => $tramite,
+                                'actividades' => $tramite->actividades ?? [],
+                                'editable' => true,
+                            ])
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-center py-6">
@@ -154,12 +163,15 @@
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900">Documentos</h3>
                     </div>
-
-                    @include('revision.partials.documentos', [
-                        'tramite' => $tramite,
-                        'documentos' => $tramite->archivos ?? [],
-                        'editable' => true,
-                    ])
+                    <div id="documentosGrid">
+                        <div id="documentosMain" class="transition-all duration-300">
+                            @include('revision.partials.documentos', [
+                                'tramite' => $tramite,
+                                'documentos' => $tramite->archivos ?? [],
+                                'editable' => true,
+                            ])
+                        </div>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-center py-8">
@@ -187,158 +199,53 @@
 
                     <!-- Comentarios existentes -->
                     @if (isset($tramite->comentarios_revision) && $tramite->comentarios_revision)
-                        <div class="mb-6">
-                            <h4 class="text-sm font-medium text-gray-700 mb-3">Comentarios anteriores:</h4>
-                            <div class="space-y-3">
-                                @php
-                                    $comentarios = is_string($tramite->comentarios_revision)
-                                        ? json_decode($tramite->comentarios_revision, true)
-                                        : $tramite->comentarios_revision;
-                                @endphp
-                                @if (is_array($comentarios))
-                                    @foreach ($comentarios as $comentario)
-                                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                            <div class="flex items-start justify-between mb-2">
-                                                <div class="flex items-center space-x-2">
-                                                    <span class="text-sm font-medium text-gray-900">
-                                                        {{ $comentario['usuario'] ?? 'Revisor' }}
-                                                    </span>
-                                                    @if (isset($comentario['decision']))
-                                                        @if ($comentario['decision'] === 'aprobar')
-                                                            <span
-                                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                                <svg class="w-3 h-3 mr-1" fill="none"
-                                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2" d="M5 13l4 4L19 7" />
-                                                                </svg>
-                                                                Aprobado
-                                                            </span>
-                                                        @elseif($comentario['decision'] === 'rechazar')
-                                                            <span
-                                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                                                                <svg class="w-3 h-3 mr-1" fill="none"
-                                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                                </svg>
-                                                                Rechazado
-                                                            </span>
-                                                        @elseif($comentario['decision'] === 'corregir')
-                                                            <span
-                                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
-                                                                <svg class="w-3 h-3 mr-1" fill="none"
-                                                                    stroke="currentColor" viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                </svg>
-                                                                Correcciones
-                                                            </span>
-                                                        @endif
-                                                    @endif
-                                                </div>
-                                                <span class="text-xs text-gray-500">
-                                                    {{ $comentario['fecha'] ?? now()->format('d/m/Y H:i') }}
-                                                </span>
-                                            </div>
-                                            <p class="text-sm text-gray-700">{{ $comentario['comentario'] }}</p>
-                                        </div>
-                                    @endforeach
-                                @endif
-                            </div>
-                        </div>
+                        <!-- Sección de comentarios eliminada -->
                     @endif
 
                     <!-- Formulario para nuevo comentario -->
-                    <form id="generalCommentForm" onsubmit="submitGeneralComment(event)">
-                        <div class="mb-4">
-                            <label for="general_comment" class="block text-sm font-medium text-gray-700 mb-2">
-                                Agregar comentario general sobre el trámite:
-                            </label>
-                            <textarea id="general_comment" name="comentario" rows="4"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9D2449] focus:border-[#9D2449] resize-none"
-                                placeholder="Escribe tus observaciones generales sobre este trámite..." required></textarea>
-                        </div>
-
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-4">
-                                <label class="flex items-center">
-                                    <input type="radio" name="decision" value="aprobar"
-                                        class="text-green-600 focus:ring-green-500">
-                                    <span class="ml-2 text-sm text-green-700">Aprobar con este comentario</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="decision" value="rechazar"
-                                        class="text-red-600 focus:ring-red-500">
-                                    <span class="ml-2 text-sm text-red-700">Rechazar con este comentario</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="decision" value="corregir"
-                                        class="text-orange-600 focus:ring-orange-500">
-                                    <span class="ml-2 text-sm text-orange-700">Solicitar correcciones</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="decision" value="comentar"
-                                        class="text-gray-600 focus:ring-gray-500" checked>
-                                    <span class="ml-2 text-sm text-gray-700">Solo comentar</span>
-                                </label>
-                            </div>
-                            <button type="submit"
-                                class="px-6 py-2 bg-[#9D2449] text-white rounded-lg hover:bg-[#8a203f] transition-colors focus:outline-none focus:ring-2 focus:ring-[#9D2449] focus:ring-offset-2">
-                                Guardar Comentario
-                            </button>
-                        </div>
+                    <form id="generalCommentForm" onsubmit="submitGeneralComment(event)" class="flex-1">
+                        <label for="general_comment" class="block text-base font-semibold text-gray-900 mb-2">
+                            Comentario General del Trámite
+                        </label>
+                        <textarea id="general_comment" name="comentario" rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#9D2449] focus:border-[#9D2449] focus:outline-none resize-none text-gray-800"
+                            placeholder="Escribe aquí tus observaciones generales sobre este trámite..." required></textarea>
+                        <!-- Botón de Guardar Comentario eliminado -->
                     </form>
-                </div>
 
-                <div class="flex items-center justify-center py-6">
-                    <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-                    <div class="px-6">
-                        <div class="w-2 h-2 bg-slate-400 rounded-full"></div>
-                    </div>
-                    <div class="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent"></div>
-                </div>
+                    <!-- Acciones de Revisión -->
+                    <div class="border-t border-gray-200 pt-6 mt-6">
+                        <h4 class="text-base font-semibold text-gray-900 mb-2">Acciones de Revisión</h4>
+                        <p class="text-sm text-gray-500 mb-4">Seleccione la acción a realizar con este trámite</p>
 
-                <!-- Acciones de Revisión -->
-                <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Acciones de Revisión</h3>
-                            <p class="text-sm text-gray-500 mt-1">Seleccione la acción a realizar con este trámite</p>
-                            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mt-4">
-                                <!-- Aprobar -->
-                                <button type="button"
-                                    class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 focus:outline-none transition-all duration-200 shadow-lg hover:shadow-xl">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4 L19 7" />
-                                    </svg>
-                                    Aprobar Trámite
-                                </button>
-
-                                <!-- Rechazar -->
-                                <button type="button"
-                                    class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:from-red-700 hover:to-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl">
-                                    <svg class="w-5 h-5 mr-2xl" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                    Rechazar Trámite
-                                </button>
-
-                                <!-- Solicitar Correcciones -->
-                                <button type="button"
-                                    class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-xl hover:from-orange-700 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl">
-                                    <svg class="w-5 h-5 mr-2xl" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                    Solicitar Correcciones
-                                </button>
-                            </div>
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                            <!-- Aprobar -->
+                            <button type="button" onclick="submitTramiteAction('aprobar')"
+                                class="inline-flex items-center justify-center px-4 py-2 bg-green-700 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4 L19 7" />
+                                </svg>
+                                Aprobar Trámite
+                            </button>
+                            <!-- Rechazar -->
+                            <button type="button" onclick="submitTramiteAction('rechazar')"
+                                class="inline-flex items-center justify-center px-4 py-2 bg-red-700 text-white rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                Rechazar Trámite
+                            </button>
+                            <!-- Solicitar Correcciones -->
+                            <button type="button" onclick="submitTramiteAction('corregir')"
+                                class="inline-flex items-center justify-center px-4 py-2 bg-yellow-500 text-gray-900 rounded-lg font-semibold tracking-wide shadow-md text-sm hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Solicitar Correcciones
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -348,166 +255,5 @@
 @endsection
 
 @push('scripts')
-    <script>
-        // Función para enviar comentario general
-        function submitGeneralComment(event) {
-            event.preventDefault();
-
-            const form = event.target;
-            const formData = new FormData(form);
-            const comentario = formData.get('comentario');
-            const decision = formData.get('decision');
-
-            if (!comentario.trim()) {
-                alert('Por favor, escribe un comentario.');
-                return;
-            }
-
-            // Mostrar indicador de carga
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Guardando...';
-
-            // Enviar comentario general
-            fetch(`/revision/{{ $tramite->id }}/add-general-comment`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                    },
-                    body: JSON.stringify({
-                        comment: comentario,
-                        decision: decision
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Limpiar formulario
-                        form.reset();
-                        form.querySelector('input[value="comentar"]').checked = true;
-
-                        // Mostrar mensaje de éxito
-                        showSuccessMessage('Comentario guardado exitosamente');
-
-                        // Si hay una decisión que cambia el estado, recargar la página
-                        if (decision !== 'comentar') {
-                            setTimeout(() => {
-                                location.reload();
-                            }, 1500);
-                        } else {
-                            // Agregar comentario a la lista dinámicamente
-                            addGeneralCommentToList({
-                                usuario: data.usuario || 'Revisor',
-                                comentario: comentario,
-                                decision: decision,
-                                fecha: new Date().toLocaleString('es-ES')
-                            });
-                        }
-                    } else {
-                        alert('Error al guardar el comentario: ' + (data.message || 'Error desconocido'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error al procesar la solicitud');
-                })
-                .finally(() => {
-                    // Restaurar botón
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalText;
-                });
-        }
-
-        // Función para agregar comentario general a la lista
-        function addGeneralCommentToList(commentData) {
-            // Buscar o crear la sección de comentarios anteriores
-            let commentsSection = document.querySelector('.space-y-3');
-            if (!commentsSection) {
-                // Crear la sección si no existe
-                const form = document.getElementById('generalCommentForm');
-                const newSection = document.createElement('div');
-                newSection.className = 'mb-6';
-                newSection.innerHTML = `
-            <h4 class="text-sm font-medium text-gray-700 mb-3">Comentarios anteriores:</h4>
-            <div class="space-y-3"></div>
-        `;
-                form.parentNode.insertBefore(newSection, form);
-                commentsSection = newSection.querySelector('.space-y-3');
-            }
-
-            // Crear elemento del comentario
-            const commentElement = document.createElement('div');
-            commentElement.className = 'bg-gray-50 rounded-lg p-4 border border-gray-200';
-
-            let decisionBadge = '';
-            if (commentData.decision === 'aprobar') {
-                decisionBadge = `
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Aprobado
-            </span>
-        `;
-            } else if (commentData.decision === 'rechazar') {
-                decisionBadge = `
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Rechazado
-            </span>
-        `;
-            } else if (commentData.decision === 'corregir') {
-                decisionBadge = `
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-                Correcciones
-            </span>
-        `;
-            }
-
-            commentElement.innerHTML = `
-        <div class="flex items-start justify-between mb-2">
-            <div class="flex items-center space-x-2">
-                <span class="text-sm font-medium text-gray-900">${commentData.usuario}</span>
-                ${decisionBadge}
-            </div>
-            <span class="text-xs text-gray-500">${commentData.fecha}</span>
-        </div>
-        <p class="text-sm text-gray-700">${commentData.comentario}</p>
-    `;
-
-            // Agregar al inicio de la lista
-            commentsSection.insertBefore(commentElement, commentsSection.firstChild);
-        }
-
-        // Función para mostrar mensaje de éxito
-        function showSuccessMessage(message) {
-            // Crear elemento de notificación
-            const notification = document.createElement('div');
-            notification.className =
-                'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300 translate-x-full';
-            notification.textContent = message;
-
-            document.body.appendChild(notification);
-
-            // Mostrar notificación
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-
-            // Ocultar después de 3 segundos
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-    </script>
+    
 @endpush

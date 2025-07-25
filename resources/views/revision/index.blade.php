@@ -60,24 +60,7 @@
                                 <p class="text-sm text-gray-500">Administra y revisa los trámites de proveedores.</p>
                             </div>
                         </div>
-                        <div class="flex space-x-3">
-                            <a href="{{ route('revision.pendientes') }}"
-                                class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-orange-700 bg-orange-100 rounded-lg shadow-md hover:bg-orange-200 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:ring-offset-2">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Pendientes
-                            </a>
-                            <a href="{{ route('revision.mis-revisiones') }}"
-                                class="inline-flex items-center justify-center px-4 py-2.5 text-sm font-semibold text-blue-700 bg-blue-100 rounded-lg shadow-md hover:bg-blue-200 transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Mis Revisiones
-                            </a>
-                        </div>
+                       
                     </div>
                 </div>
 
