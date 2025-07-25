@@ -1,41 +1,40 @@
 @props(['tramite', 'actividades' => [], 'editable' => false])
 
 @if(count($actividades) > 0)
-    <div class="mb-4 flex flex-col sm:flex-row sm:space-x-3 space-y-2 sm:space-y-0 justify-end">
-        <div class="flex items-center bg-blue-50 border border-blue-100 rounded-md px-2.5 py-1 text-xs font-medium text-blue-800 shadow-sm">
-            <i class="fas fa-list mr-1 text-blue-400"></i>
+    <div class="mb-3 flex flex-col space-y-1.5 sm:mb-4 sm:flex-row sm:space-x-2 sm:space-y-0 sm:justify-end lg:space-x-3">
+        <div class="flex items-center bg-blue-50 border border-blue-100 rounded px-2 py-1 text-xs font-medium text-blue-800 shadow-sm">
+            <i class="fas fa-list mr-1 text-blue-400 text-xs"></i>
             Total: <span class="ml-1 font-bold">{{ count($actividades) }}</span>
         </div>
-        <div class="flex items-center bg-green-50 border border-green-100 rounded-md px-2.5 py-1 text-xs font-medium text-green-800 shadow-sm">
-            <i class="fas fa-check-circle mr-1 text-green-400"></i>
+        <div class="flex items-center bg-green-50 border border-green-100 rounded px-2 py-1 text-xs font-medium text-green-800 shadow-sm">
+            <i class="fas fa-check-circle mr-1 text-green-400 text-xs"></i>
             Validadas: <span class="ml-1 font-bold">{{ collect($actividades)->where('estado_validacion', 'Validada')->count() }}</span>
         </div>
-        <div class="flex items-center bg-yellow-50 border border-yellow-100 rounded-md px-2.5 py-1 text-xs font-medium text-yellow-800 shadow-sm">
-            <i class="fas fa-clock mr-1 text-yellow-400"></i>
+        <div class="flex items-center bg-yellow-50 border border-yellow-100 rounded px-2 py-1 text-xs font-medium text-yellow-800 shadow-sm">
+            <i class="fas fa-clock mr-1 text-yellow-400 text-xs"></i>
             Pendientes: <span class="ml-1 font-bold">{{ collect($actividades)->whereNotIn('estado_validacion', ['Validada', 'Rechazada'])->count() }}</span>
         </div>
     </div>
-    <div class="space-y-4">
+    <div class="space-y-3 sm:space-y-4">
         @foreach($actividades as $index => $actividad)
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-lg border border-gray-200 p-3 hover:shadow-md transition-all duration-200 sm:rounded-xl sm:p-4 lg:p-6">
                 <div class="flex items-start justify-between">
-                    <div class="flex items-start space-x-4 flex-1">
+                    <div class="flex items-start space-x-2 flex-1 sm:space-x-3 lg:space-x-4">
                         <div class="flex-shrink-0">
-                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200">
+                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200 sm:w-10 sm:h-10 lg:w-12 lg:h-12">
                                 @if(isset($actividad['es_principal']) && $actividad['es_principal'])
-                                    <i class="fas fa-star text-yellow-500 text-lg"></i>
+                                    <i class="fas fa-star text-yellow-500 text-sm sm:text-base lg:text-lg"></i>
                                 @else
-                                    <span class="text-[10px] font-semibold text-gray-400">#{{ $index + 1 }}</span>
+                                    <span class="text-xs font-semibold text-gray-400 sm:text-[10px]">#{{ $index + 1 }}</span>
                                 @endif
                             </div>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="mb-3">
-                                <h4 class="text-sm font-semibold text-gray-900">
+                            <div class="mb-2 sm:mb-3">
+                                <h4 class="text-xs font-semibold text-gray-900 leading-tight sm:text-sm">
                                     {{ $actividad['descripcion'] ?? $actividad['nombre'] ?? 'Actividad sin nombre' }}
                                 </h4>
                             </div>
-                    
                             <div class="flex items-center space-x-2">
                                 @if(isset($actividad['sector']) || isset($actividad['categoria']))
                                     <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">

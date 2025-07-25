@@ -49,7 +49,7 @@ class Archivo extends Model
     {
         if ($this->tramite_id) {
             $filename = basename($this->ruta_archivo);
-            return route('revision.documento', [
+            return route('revision.verDocumento', [
                 'tramite' => $this->tramite_id,
                 'archivo' => $this->id,
                 'filename' => $filename

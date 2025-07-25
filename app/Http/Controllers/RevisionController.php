@@ -44,7 +44,18 @@ class RevisionController extends Controller
     }
 
 
+    public function seleccionTipo(Tramite $tramite)
+    {
+        $tramite->load([
+            'proveedor',
+            'datosGenerales',
+            'archivos' => function ($query) {
+                $query->where('idCatalogoArchivo', 2)->with('catalogoArchivo');
+            }
+        ]);
 
+        return view('revision.seleccion-tipo', compact('tramite'));
+    }
 
     public function revisarDatos(Tramite $tramite)
     {
@@ -73,6 +84,8 @@ class RevisionController extends Controller
             return redirect()->back()->with('error', 'Error al cargar los datos del trámite: ' . $e->getMessage());
         }
     }
+
+
 
     public function verDocumento($tramiteId, $archivoId, $filename)
     {
@@ -137,5 +150,4 @@ class RevisionController extends Controller
             'aprobado' => $archivo->aprobado,
         ]);
     }
-   
 }

@@ -1,21 +1,21 @@
 @props(['tramite', 'direccion' => null, 'editable' => false])
 
 @if($direccion)
-        <div class="space-y-8">
+        <div class="space-y-4 sm:space-y-6 lg:space-y-8">
             <div>
-                <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
+                <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-100 sm:text-base sm:mb-4 sm:pb-3">
                     Dirección Principal
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
                     <div class="form-group field-container">
-                        <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
+                        <label class="block text-xs font-medium text-gray-700 mb-1.5 field-label sm:text-sm sm:mb-2">
                             Calle
                         </label>
                         <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-road text-gray-500"></i>
+                            <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none sm:pl-3">
+                                <i class="fas fa-road text-gray-500 text-xs sm:text-sm"></i>
                             </div>
-                            <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+                            <div class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm">
                                 {{ $direccion->calle ?? 'N/A' }}
                             </div>
                         </div>

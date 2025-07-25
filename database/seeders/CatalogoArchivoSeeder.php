@@ -2,171 +2,130 @@
 
 namespace Database\Seeders;
 
-use App\Models\CatalogoArchivo;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CatalogoArchivoSeeder extends Seeder
 {
     public function run(): void
     {
         $archivos = [
-            // Documentos PDF - Persona Física
             [
-                'nombre' => 'Identificación Oficial',
-                'descripcion' => 'Credencial de elector, pasaporte o cédula profesional vigente',
-                'tipo_persona' => 'Física',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => true,
-            ],
-            [
-                'nombre' => 'CURP',
-                'descripcion' => 'Clave Única de Registro de Población actualizada',
-                'tipo_persona' => 'Física',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => true,
-            ],
-            [
-                'nombre' => 'Comprobante de Domicilio',
-                'descripcion' => 'Recibo de servicios no mayor a 3 meses de antigüedad',
+                'nombre' => 'Constancia de situación fiscal',
+                'descripcion' => 'Documento emitido por la Secretaría de Hacienda y Crédito Público, actualizado, con fecha de expedición no mayor de tres meses anteriores a la fecha de solicitud.',
                 'tipo_persona' => 'Ambas',
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
-            ],
-
-            // Documentos PDF - Persona Moral
-            [
-                'nombre' => 'Acta Constitutiva',
-                'descripcion' => 'Escritura pública de constitución de la sociedad',
-                'tipo_persona' => 'Moral',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'nombre' => 'Poder Notarial',
-                'descripcion' => 'Poder del representante legal vigente',
-                'tipo_persona' => 'Moral',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => true,
-            ],
-            [
-                'nombre' => 'RFC de la Empresa',
-                'descripcion' => 'Registro Federal de Contribuyentes actualizado',
-                'tipo_persona' => 'Moral',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => true,
-            ],
-            [
-                'nombre' => 'Estados Financieros',
-                'descripcion' => 'Balance general y estado de resultados del último ejercicio',
-                'tipo_persona' => 'Moral',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => true,
-            ],
-
-            // Documentos comunes
-            [
-                'nombre' => 'Constancia de Situación Fiscal',
-                'descripcion' => 'Documento emitido por el SAT con datos actuales',
+                'nombre' => 'Identificación oficial',
+                'descripcion' => 'Copia simple de la identificación oficial con fotografía vigente de la persona o del representante legal.',
                 'tipo_persona' => 'Ambas',
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'nombre' => 'Opinión de Cumplimiento',
-                'descripcion' => 'Opinión positiva del SAT sobre obligaciones fiscales',
+                'nombre' => 'Currículum actualizado',
+                'descripcion' => 'Documento que contiene el giro, experiencia, relación de principales clientes, recursos materiales y humanos del proveedor.',
                 'tipo_persona' => 'Ambas',
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
-            ],
-
-            // Imágenes PNG
-            [
-                'nombre' => 'Logotipo de la Empresa',
-                'descripcion' => 'Logo oficial en alta resolución para documentos',
-                'tipo_persona' => 'Moral',
-                'tipo_archivo' => 'png',
-                'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'nombre' => 'Foto del Establecimiento',
-                'descripcion' => 'Fotografía del local comercial o planta industrial',
+                'nombre' => 'Comprobante de domicilio fiscal',
+                'descripcion' => 'Comprobante de domicilio fiscal con fecha de expedición no mayor de tres meses anteriores a la fecha de solicitud.',
                 'tipo_persona' => 'Ambas',
-                'tipo_archivo' => 'png',
+                'tipo_archivo' => 'pdf',
                 'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'nombre' => 'Fotografía del Representante',
-                'descripcion' => 'Foto tamaño credencial del representante legal',
-                'tipo_persona' => 'Moral',
-                'tipo_archivo' => 'png',
+                'nombre' => 'Croquis y fotografías del domicilio',
+                'descripcion' => 'Documento que incluye el croquis de localización y fotografías del domicilio del proveedor.',
+                'tipo_persona' => 'Ambas',
+                'tipo_archivo' => 'pdf',
                 'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
-
-            // Archivos de Audio MP3
             [
-                'nombre' => 'Grabación de Entrevista',
-                'descripcion' => 'Audio de la entrevista realizada al solicitante',
+                'nombre' => 'Carta poder simple',
+                'descripcion' => 'Carta poder simple acompañada de la copia de la identificación oficial con fotografía del aceptante, cuando sea una persona distinta al solicitante o al representante legal.',
+                'tipo_persona' => 'Ambas',
+                'tipo_archivo' => 'pdf',
+                'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Acuse de recibo de declaraciones',
+                'descripcion' => 'Copia simple del acuse de recibo emitido por el Servicio de Administración Tributaria correspondiente a la última declaración anual de impuestos y de las declaraciones provisionales.',
+                'tipo_persona' => 'Ambas',
+                'tipo_archivo' => 'pdf',
+                'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Video del domicilio fiscal',
+                'descripcion' => 'Video que muestra el domicilio fiscal del proveedor, evidenciando su ubicación y características.',
                 'tipo_persona' => 'Ambas',
                 'tipo_archivo' => 'mp3',
                 'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'nombre' => 'Declaración Jurada',
-                'descripcion' => 'Audio con la declaración bajo protesta de decir verdad',
-                'tipo_persona' => 'Ambas',
-                'tipo_archivo' => 'mp3',
-                'es_visible' => false,
-            ],
-
-            // Documentos adicionales
-            [
-                'nombre' => 'Carta de Antecedentes No Penales',
-                'descripcion' => 'Constancia de no tener antecedentes penales',
+                'nombre' => 'Acta de nacimiento',
+                'descripcion' => 'Acta de nacimiento actualizada, con fecha de expedición no mayor de tres meses anteriores a la fecha de solicitud.',
                 'tipo_persona' => 'Física',
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'nombre' => 'Licencia de Funcionamiento',
-                'descripcion' => 'Permiso municipal para operar el negocio',
+                'nombre' => 'Clave Única de Registro de Población',
+                'descripcion' => 'Copia simple de la Clave Única de Registro de Población (CURP).',
+                'tipo_persona' => 'Física',
+                'tipo_archivo' => 'pdf',
+                'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'nombre' => 'Acta constitutiva',
+                'descripcion' => 'Copia simple del acta constitutiva notariada de la sociedad, debidamente inscrita en el Registro Público de la Propiedad, incluyendo sus modificaciones si las hubiera.',
                 'tipo_persona' => 'Moral',
                 'tipo_archivo' => 'pdf',
                 'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'nombre' => 'Certificado de Calidad',
-                'descripcion' => 'Certificaciones ISO o similares (si aplica)',
+                'nombre' => 'Poder general notariado',
+                'descripcion' => 'Copia simple del poder general notariado para actos de administración del representante o apoderado legal.',
                 'tipo_persona' => 'Moral',
                 'tipo_archivo' => 'pdf',
-                'es_visible' => false,
-            ],
-            [
-                'nombre' => 'Manual de Procedimientos',
-                'descripcion' => 'Documento interno de procesos empresariales',
-                'tipo_persona' => 'Moral',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => false,
-            ],
-            [
-                'nombre' => 'Lista de Precios',
-                'descripcion' => 'Catálogo actualizado de productos o servicios',
-                'tipo_persona' => 'Ambas',
-                'tipo_archivo' => 'pdf',
                 'es_visible' => true,
-            ],
-            [
-                'nombre' => 'Contrato de Arrendamiento',
-                'descripcion' => 'Documento que acredita la posesión del inmueble',
-                'tipo_persona' => 'Ambas',
-                'tipo_archivo' => 'pdf',
-                'es_visible' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ];
 
+        // Insertar o actualizar cada archivo del catálogo
         foreach ($archivos as $archivo) {
-            CatalogoArchivo::create($archivo);
+            DB::table('catalogo_archivos')->updateOrInsert(
+                ['nombre' => $archivo['nombre']], // Condición para buscar
+                $archivo // Datos a insertar o actualizar
+            );
         }
-
-        $this->command->info('Catálogo de archivos creado exitosamente con '.count($archivos).' registros.');
     }
 }

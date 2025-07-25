@@ -159,6 +159,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware(['auth'])->prefix('revision')->name('revision.')->group(function () {
         Route::get('/', [RevisionController::class, 'index'])->name('index');
+        Route::get('/{tramite}/seleccion-tipo', [RevisionController::class, 'seleccionTipo'])->name('seleccion-tipo');
         Route::get('/{tramite}/revisar-datos', [RevisionController::class, 'revisarDatos'])->name('revisar-datos');
         Route::middleware(['auth'])->get('/documentos/{tramite}/{archivo}/{filename}', [RevisionController::class, 'verDocumento'])->name('verDocumento');
         Route::get('/{tramite}', [RevisionController::class, 'show'])->name('show');
@@ -166,6 +167,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/documento/{archivo}/comentario', [RevisionController::class, 'actualizarComentarioDocumento'])->name('documento.comentario');
         // Nueva ruta para actualizar estado de documento
         Route::post('/documento/{archivo}/estado', [RevisionController::class, 'actualizarEstadoDocumento'])->name('documento.estado');
+        // Comentarios de sección de revisión
+        Route::post('/seccion/comentario', [\App\Http\Controllers\RevisionSeccionController::class, 'store'])->name('seccion.comentario');
+        Route::get('/seccion/{tramite}/{seccion}', [\App\Http\Controllers\RevisionSeccionController::class, 'show'])->name('seccion.show');
+        // Nueva ruta para obtener información de identidad
+        Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
+
     });
     
 });
