@@ -214,29 +214,7 @@
                         </div>
                     </div>
 
-                    <!-- Citas -->
-                    <div class="bg-white rounded-2xl p-6 card-hover shadow-lg border border-gray-100/50 relative overflow-hidden group">
-                        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-rose-500 to-rose-300"></div>
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="bg-gradient-to-br from-rose-500 to-rose-600 w-12 h-12 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-calendar-check text-white text-lg"></i>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-3xl font-bold text-gray-800">{{ $totalCitas ?? 0 }}</p>
-                                <span class="inline-block px-3 py-1 text-xs font-medium text-rose-600 bg-rose-50 rounded-full mt-1">
-                                    {{ $citasHoy ?? 0 }} programadas hoy
-                                </span>
-                            </div>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-800 mb-1">Sistema de Citas</h3>
-                        <p class="text-sm text-gray-500">Agenda digitalizada</p>
-                        <div class="mt-4 pt-4 border-t border-gray-100/50">
-                            <a class="group inline-flex items-center text-rose-600 hover:text-rose-800 text-sm font-semibold transition-colors">
-                                <span>Ver calendario</span>
-                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                        </div>
-                    </div>
+
                 </div>
                 @endcan
 
@@ -293,22 +271,7 @@
                                 @endcan
                                 @endif
 
-                                <!-- Citas -->
-                                <a  class="group block p-6 hover:bg-gray-50/50 transition-colors">
-                                    <div class="flex items-center space-x-4">
-                                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                                            <i class="fas fa-calendar-check text-white text-lg"></i>
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-base font-bold text-gray-800 group-hover:gradient-text transition-colors">Agendar Cita</h4>
-                                            <p class="text-sm text-gray-500 mt-1">Programa tu visita para entrega de documentos</p>
-                                            <div class="flex items-center mt-2">
-                                                <span class="text-xs text-purple-600 font-medium">Programar cita</span>
-                                                <i class="fas fa-chevron-right text-xs text-purple-600 ml-1 group-hover:translate-x-1 transition-transform"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
+
 
 
                             </div>

@@ -8,7 +8,6 @@ use App\Http\Controllers\{
     UserController,
     ActividadesController,
     CatalogoArchivoController,
-    CitasController,
     RevisionController,
     RolesController,
     NotificacionController,
@@ -99,6 +98,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/test', [UserController::class, 'index'])->name('test'); // Ruta de prueba
         Route::get('/create', [UserController::class, 'create'])->name('create');
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
@@ -137,6 +137,17 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{archivo}', [CatalogoArchivoController::class, 'destroy'])->name('destroy');
     });
 
+    // =========================================================================
+    // MÓDULO DE CITAS
+    // =========================================================================
+    Route::resource('citas', \App\Http\Controllers\CitaController::class);
+
+    // =========================================================================
+    // MÓDULO DE DÍAS INHÁBILES
+    // =========================================================================
+    Route::resource('dias-inhabiles', \App\Http\Controllers\DiaInhabilController::class);
+    Route::post('/dias-inhabiles/verificar-fecha', [\App\Http\Controllers\DiaInhabilController::class, 'verificarFechaHabil'])->name('dias-inhabiles.verificar-fecha');
+    Route::get('/dias-inhabiles/proximos-dias', [\App\Http\Controllers\DiaInhabilController::class, 'proximosDiasHabiles'])->name('dias-inhabiles.proximos-dias');
 
 
     // ============================================================================
@@ -145,50 +156,32 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware(['auth'])->prefix('revision')->name('revision.')->group(function () {
         Route::get('/', [RevisionController::class, 'index'])->name('index');
-        Route::get('/{tramite}/seleccion-tipo', [RevisionController::class, 'seleccionTipo'])->name('seleccion-tipo');
-        Route::get('/{tramite}/revisar-datos', [RevisionController::class, 'revisarDatos'])->name('revisar-datos');
+        
+        // Ruta principal que maneja todos los tipos de revisión
+        Route::get('/{tramite}/{tipo?}', [RevisionController::class, 'revisarTramite'])
+            ->where('tipo', 'seleccion-tipo|documentos-presencial|revision-digital')
+            ->name('revisar');
+        
+        // Rutas de documentos y archivos
         Route::middleware(['auth'])->get('/documentos/{tramite}/{archivo}/{filename}', [RevisionController::class, 'verDocumento'])->name('verDocumento');
-        Route::get('/{tramite}', [RevisionController::class, 'show'])->name('show');
-        // Nueva ruta para actualizar comentario de documento
         Route::post('/documento/{archivo}/comentario', [RevisionController::class, 'actualizarComentarioDocumento'])->name('documento.comentario');
-        // Nueva ruta para actualizar estado de documento
         Route::post('/documento/{archivo}/estado', [RevisionController::class, 'actualizarEstadoDocumento'])->name('documento.estado');
-        // Comentarios de sección de revisión
+        Route::get('/documento/{archivo}/estado', [RevisionController::class, 'obtenerEstadoDocumento'])->name('documento.estado.get');
+        
+        // Rutas de secciones y comentarios
         Route::post('/seccion/comentario', [\App\Http\Controllers\RevisionSeccionController::class, 'store'])->name('seccion.comentario');
         Route::get('/seccion/{tramite}/{seccion}', [\App\Http\Controllers\RevisionSeccionController::class, 'show'])->name('seccion.show');
-        // Nueva ruta para obtener información de identidad
+        
+        // Ruta para comentario general
+        Route::post('/comentario-general', [RevisionController::class, 'guardarComentarioGeneral'])->name('comentario-general');
+        
+        // Rutas de información y estado
         Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
-        // Rutas para cambio de estado y historial
         Route::post('/{tramite}/cambiar-estado', [RevisionController::class, 'cambiarEstadoTramite'])->name('cambiar-estado');
         Route::get('/{tramite}/historial-estados', [RevisionController::class, 'historialEstados'])->name('historial-estados');
-
     });
 
-    // ============================================================================
-    // MÓDULO DE CITAS
-    // ============================================================================
 
-    Route::middleware(['auth'])->prefix('citas')->name('citas.')->group(function () {
-        // Rutas principales de citas
-        Route::get('/', [\App\Http\Controllers\CitaController::class, 'index'])->name('index');
-        Route::get('/crear', [\App\Http\Controllers\CitaController::class, 'createGeneral'])->name('create');
-        Route::get('/crear/general', [\App\Http\Controllers\CitaController::class, 'createGeneralForm'])->name('create.general');
-        Route::post('/', [\App\Http\Controllers\CitaController::class, 'storeGeneral'])->name('store');
-        
-        // Rutas específicas de citas (CRUD)
-        Route::get('/{cita}', [\App\Http\Controllers\CitaController::class, 'show'])->name('show');
-        Route::get('/{cita}/editar', [\App\Http\Controllers\CitaController::class, 'edit'])->name('edit');
-        Route::put('/{cita}', [\App\Http\Controllers\CitaController::class, 'update'])->name('update');
-        Route::post('/{cita}/cancelar', [\App\Http\Controllers\CitaController::class, 'cancelar'])->name('cancelar');
-        
-        // Rutas relacionadas con trámites
-        Route::get('/tramite/{tramite}', [\App\Http\Controllers\CitaController::class, 'citasTramite'])->name('tramite');
-        Route::get('/tramite/{tramite}/crear', [\App\Http\Controllers\CitaController::class, 'create'])->name('create.tramite');
-        Route::post('/tramite/{tramite}', [\App\Http\Controllers\CitaController::class, 'store'])->name('store.tramite');
-        
-        // Rutas de utilidad
-        Route::post('/verificar-disponibilidad', [\App\Http\Controllers\CitaController::class, 'verificarDisponibilidad'])->name('verificar-disponibilidad');
-    });
 
     // ============================================================================
     // MÓDULO DE NOTIFICACIONES 

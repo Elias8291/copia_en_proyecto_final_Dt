@@ -4,8 +4,8 @@
     <div class="space-y-3 sm:space-y-4">
         @foreach($documentos as $documento)
             <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow duration-200 sm:p-4">
-                <div class="flex items-start justify-between space-x-2 sm:items-center sm:space-x-3">
-                    <div class="flex items-start space-x-2 flex-1 sm:items-center sm:space-x-3">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                    <div class="flex items-start space-x-2 flex-1 sm:space-x-3">
                         <div class="flex-shrink-0">
                             @php
                                 $extension = pathinfo($documento['nombre_original'] ?? $documento['nombre'] ?? '', PATHINFO_EXTENSION);
@@ -23,7 +23,7 @@
                             </div>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="flex flex-col space-y-1 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-1">
+                            <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-2">
                                 <h4 class="text-xs font-medium text-gray-900 truncate sm:text-sm">
                                     {{ $documento['nombre_original'] ?? $documento['nombre'] ?? 'Documento' }}
                                 </h4>
@@ -35,7 +35,7 @@
                                     @endif
                                     @if(isset($documento['aprobado']))
                                         @if($documento['aprobado'] === true)
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 sm:px-2">
+                                            <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 sm:px-2">
                                                 <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                                 </svg>
@@ -43,7 +43,7 @@
                                                 <span class="sm:hidden">OK</span>
                                             </span>
                                         @elseif($documento['aprobado'] === false)
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 sm:px-2">
+                                            <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 sm:px-2">
                                                 <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                                 </svg>
@@ -51,7 +51,7 @@
                                                 <span class="sm:hidden">X</span>
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700 sm:px-2">
+                                            <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700 sm:px-2">
                                                 <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/>
                                                 </svg>
@@ -65,34 +65,35 @@
                                             <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             </svg>
-                                            Cotejado
+                                            <span class="hidden sm:inline">Cotejado</span>
+                                            <span class="sm:hidden">Cotej.</span>
                                         </span>
                                     @endif
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                            <div class="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500">
                                 <span>{{ $documento['tamaño_formateado'] ?? $documento['tamaño'] ?? 'N/A' }}</span>
-                                <span>•</span>
+                                <span class="hidden sm:inline">•</span>
                                 <span>{{ $documento['fecha_carga'] ?? $documento['created_at'] ?? 'N/A' }}</span>
                             </div>
                             @if(isset($documento['observaciones']) && $documento['observaciones'])
-                                <div class="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
+                                <div class="comentario-box mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
                                     <span class="font-medium text-amber-800">Observaciones:</span>
-                                    <span class="text-amber-700">{{ $documento['observaciones'] }}</span>
+                                    <span class="comentario-texto text-amber-700">{{ $documento['observaciones'] }}</span>
                                 </div>
                             @endif
                         </div>
                     </div>
-                    <div class="flex items-center space-x-1 ml-2 sm:space-x-2 sm:ml-4">
+                    <div class="flex items-center justify-end space-x-1 sm:space-x-2">
                         <a href="{{ route('revision.verDocumento', [
                             'tramite' => is_object($tramite) ? $tramite->id : $tramite['id'],
                             'archivo' => $documento['id'],
                             'filename' => basename($documento['ruta_archivo'] ?? 'documento')
                         ]) }}" 
                         target="_blank" 
-                        class="group inline-flex items-center justify-center w-6 h-6 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors sm:w-8 sm:h-8" 
+                        class="group inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors" 
                         title="Ver documento">
-                            <svg class="w-3 h-3 text-gray-600 group-hover:text-blue-600 transition-colors sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-gray-600 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
@@ -100,9 +101,9 @@
                         @if($editable)
                             <button type="button" 
                                 onclick="toggleDocumentComment({{ $documento['id'] }})"
-                                class="group inline-flex items-center justify-center w-6 h-6 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors sm:w-8 sm:h-8" 
+                                class="group inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors" 
                                 title="Comentar documento">
-                                <svg class="w-3 h-3 text-gray-600 group-hover:text-[#9D2449] transition-colors sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 text-gray-600 group-hover:text-[#9D2449] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                 </svg>
                             </button>
@@ -115,12 +116,12 @@
                             <div class="mb-3">
                                 <textarea 
                                     name="comentario" 
-                                    rows="2"
+                                    rows="3"
                                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9D2449] focus:border-[#9D2449] resize-none"
-                                    placeholder="Comentario sobre este documento..."></textarea>
+                                    placeholder="Comentario sobre este documento...">Observación de revisión presencial: </textarea>
                             </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
+                            <div class="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                                <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-3">
                                     <label class="flex items-center text-xs">
                                         <input type="radio" name="decision_documento" value="aprobar" class="text-green-600 focus:outline-none focus:ring-green-500 mr-1">
                                         <span class="text-green-700">Aprobar</span>
@@ -130,7 +131,7 @@
                                         <span class="text-red-700">Rechazar</span>
                                     </label>
                                 </div>
-                                <div class="flex items-center space-x-2">
+                                <div class="flex items-center justify-end space-x-2">
                                     <button type="button" 
                                         onclick="toggleDocumentComment({{ $documento['id'] }})"
                                         class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 transition-colors">

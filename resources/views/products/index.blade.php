@@ -2,74 +2,81 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    @php
-        $columns = [
+    <x-data-table 
+        title="Catálogo de Productos"
+        description="Gestiona el inventario de productos"
+        :data="$products"
+        :columns="[
             [
-                'label' => 'Archivo',
+                'label' => 'Producto',
                 'field' => 'nombre',
-                'type' => 'avatar'
+                'type' => 'avatar',
+                'subfield' => 'codigo',
+                'subfield_label' => 'Código'
             ],
             [
-                'label' => 'Tipo Persona',
-                'field' => 'tipo_persona',
-                'type' => 'text'
-            ],
-            [
-                'label' => 'Tipo Archivo',
-                'field' => 'tipo_archivo',
-                'type' => 'text'
-            ],
-            [
-                'label' => 'Estado',
-                'field' => 'estado',
+                'label' => 'Categoría',
+                'field' => 'categoria',
                 'type' => 'badge',
                 'colors' => [
-                    'visible' => 'bg-green-100 text-green-700 border-green-200',
-                    'oculto' => 'bg-gray-100 text-gray-700 border-gray-200'
+                    'electronica' => 'bg-blue-100 text-blue-700 border-blue-200',
+                    'ropa' => 'bg-purple-100 text-purple-700 border-purple-200',
+                    'hogar' => 'bg-green-100 text-green-700 border-green-200',
+                    'deportes' => 'bg-orange-100 text-orange-700 border-orange-200'
                 ]
+            ],
+            [
+                'label' => 'Stock',
+                'field' => 'stock',
+                'type' => 'badge',
+                'colors' => [
+                    'disponible' => 'bg-green-100 text-green-700 border-green-200',
+                    'agotado' => 'bg-red-100 text-red-700 border-red-200',
+                    'bajo' => 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                ]
+            ],
+            [
+                'label' => 'Precio',
+                'field' => 'precio'
             ],
             [
                 'label' => 'Fecha Creación',
                 'field' => 'created_at',
                 'type' => 'date'
             ]
-        ];
-
-        $filters = [
+        ]"
+        :filters="[
             [
-                'id' => 'tipo-persona',
+                'id' => 'categoria',
                 'type' => 'select',
-                'placeholder' => 'Tipo Persona',
+                'placeholder' => 'Categoría',
                 'options' => [
-                    'Física' => 'Física',
-                    'Moral' => 'Moral',
-                    'Ambas' => 'Ambas'
+                    'electronica' => 'Electrónica',
+                    'ropa' => 'Ropa',
+                    'hogar' => 'Hogar',
+                    'deportes' => 'Deportes'
                 ]
             ],
             [
-                'id' => 'tipo-archivo',
+                'id' => 'stock',
                 'type' => 'select',
-                'placeholder' => 'Tipo Archivo',
+                'placeholder' => 'Stock',
                 'options' => [
-                    'pdf' => 'PDF',
-                    'png' => 'PNG',
-                    'mp3' => 'MP3'
+                    'disponible' => 'Disponible',
+                    'agotado' => 'Agotado',
+                    'bajo' => 'Stock Bajo'
                 ]
             ],
             [
-                'id' => 'estado',
-                'type' => 'select',
-                'placeholder' => 'Estado',
-                'options' => [
-                    'visible' => 'Visible',
-                    'oculto' => 'Oculto'
-                ]
+                'id' => 'precio',
+                'type' => 'input',
+                'placeholder' => 'Precio mínimo'
             ]
-        ];
-
-        $actions = [
+        ]"
+        searchPlaceholder="Buscar productos por nombre, código o categoría..."
+        :actions="[
             'create' => [
-                'label' => 'Nuevo Archivo',
+                'label' => 'Nuevo Producto',
                 'color' => 'text-white',
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>'
             ],
@@ -88,17 +95,7 @@
                 'color' => 'text-red-600',
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>'
             ]
-        ];
-    @endphp
-
-    <x-simple-data-table 
-        title="Catálogo de Archivos"
-        description="Gestiona los tipos de archivos requeridos en los trámites"
-        :data="$archivos"
-        :columns="$columns"
-        :filters="$filters"
-        :actions="$actions"
-        searchPlaceholder="Buscar archivos por nombre..."
+        ]"
     />
 </div>
-@endsection
+@endsection 

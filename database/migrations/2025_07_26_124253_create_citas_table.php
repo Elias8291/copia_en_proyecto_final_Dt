@@ -6,22 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramite')->onDelete('cascade');
             $table->foreignId('proveedor_id')->nullable()->constrained('proveedores')->onDelete('cascade');
-            $table->timestamp('fecha_cita');
+            $table->dateTime('fecha_cita');
             $table->enum('tipo_cita', ['Revision', 'Cotejo', 'Entrega', 'Consulta', 'Otro', 'Reunion', 'Administrativa']);
             $table->enum('estado', ['Programada', 'Confirmada', 'Cancelada', 'Reagendada', 'Completada'])->default('Programada');
-            $table->string('motivo', 200)->nullable();
+            $table->foreignId('atendido_por')->nullable()->constrained('users')->onDelete('set null');
             $table->text('observaciones')->nullable();
-            $table->foreignId('atendido_por')->nullable()->constrained('users');
+            $table->text('motivo')->nullable();
             $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('citas');

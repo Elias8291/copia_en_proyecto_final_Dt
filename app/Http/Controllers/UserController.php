@@ -8,30 +8,21 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $users = User::with('roles')->orderBy('nombre', 'asc')->paginate(12);
-        $roles = Role::orderBy('name')->get();
+        // Obtener usuarios reales de la base de datos
+        $users = User::with('roles')
+            ->orderBy('nombre', 'asc')
+            ->get()
+            ->map(function ($user) {
+                // Agregar campos adicionales para el componente
+                $user->email = $user->correo; // Mapear correo a email para el componente
+                $user->rol = $user->roles->first() ? $user->roles->first()->name : 'user';
+                $user->estado = $user->deleted_at ? 'inactivo' : 'activo';
+                return $user;
+            });
 
-        if ($request->ajax()) {
-            // Si solicita todos los usuarios para filtrado del cliente
-            if ($request->has('all')) {
-                $allUsers = User::with('roles')->orderBy('nombre', 'asc')->get();
-
-                return response()->json([
-                    'users' => $allUsers,
-                ]);
-            }
-
-            // Respuesta Ajax normal con paginación
-            return response()->json([
-                'html' => view('users.partials.table', compact('users'))->render(),
-                'pagination' => view('users.partials.pagination', compact('users'))->render(),
-                'count' => $users->total(),
-            ]);
-        }
-
-        return view('users.index', compact('users', 'roles'));
+        return view('users.index', compact('users'));
     }
 
     public function create()
@@ -45,18 +36,19 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuario creado exitosamente');
     }
 
-    public function edit(User $user)
+    public function edit($id)
     {
-        return view('users.edit', compact('user'));
+        // TODO: Implementar lógica de edición
+        return view('users.edit', compact('id'));
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
         // TODO: Implementar lógica de actualización
         return redirect()->route('users.index')->with('success', 'Usuario actualizado exitosamente');
     }
 
-    public function destroy(User $user)
+    public function destroy($id)
     {
         // TODO: Implementar lógica de eliminación
         return redirect()->route('users.index')->with('success', 'Usuario eliminado exitosamente');

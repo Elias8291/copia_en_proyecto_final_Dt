@@ -4,175 +4,226 @@ namespace App\Services;
 
 use App\Models\Cita;
 use App\Models\Tramite;
+use App\Models\DiaInhabil;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class CitaService
 {
-    protected $notificacionService;
+    private const HORA_INICIO = 9; // 9:00 AM
+    private const HORA_FIN = 14; // 2:00 PM
+    private const DURACION_CITA = 30; // 30 minutos por cita
 
-    public function __construct(NotificacionService $notificacionService)
+    /**
+     * Verificar disponibilidad
+     */
+    public function verificarDisponibilidad($fechaCita)
     {
-        $this->notificacionService = $notificacionService;
+        return !Cita::where('fecha_cita', $fechaCita)->exists();
     }
 
     /**
-     * Agenda una cita para cotejo de documentos
+     * Cancelar cita
      */
-    public function agendarCitaCotejo(Tramite $tramite, string $fechaCita, ?int $atendidoPor = null): Cita
+    public function cancelarCita($citaId, $motivo = null)
+    {
+        $cita = Cita::findOrFail($citaId);
+        $cita->estado = 'Cancelada';
+        if ($motivo) {
+            $cita->observaciones = $motivo;
+        }
+        $cita->save();
+        return $cita;
+    }
+
+    /**
+     * Agendar cita automática para cotejo
+     */
+    public function agendarCitaCotejo(Tramite $tramite): ?Cita
     {
         try {
-            // Verificar que no exista ya una cita para este trámite
-            $citaExistente = Cita::where('tramite_id', $tramite->id)
-                ->where('tipo_cita', 'Cotejo')
-                ->where('estado', '!=', 'Cancelada')
-                ->first();
+            DB::beginTransaction();
 
-            if ($citaExistente) {
-                throw new \Exception('Ya existe una cita de cotejo para este trámite');
+            // Obtener el próximo horario disponible
+            $fechaCita = $this->obtenerProximoHorarioDisponible();
+
+            if (!$fechaCita) {
+                Log::warning('No se pudo encontrar horario disponible para cita de cotejo', [
+                    'tramite_id' => $tramite->id
+                ]);
+                DB::rollBack();
+                return null;
             }
 
+            // Crear la cita
             $cita = Cita::create([
                 'tramite_id' => $tramite->id,
-                'proveedor_id' => $tramite->proveedor_id,
+                'user_id' => $tramite->proveedor->user_id,
                 'fecha_cita' => $fechaCita,
                 'tipo_cita' => 'Cotejo',
-                'estado' => 'Agendada',
-                'atendido_por' => $atendidoPor
+                'estado' => 'Programada',
+                'motivo' => 'Cotejo presencial de documentos para trámite #' . $tramite->id,
+                'observaciones' => 'Cita automática generada al enviar trámite a cotejo'
             ]);
 
-            // Notificar al usuario sobre la nueva cita
-            $usuarioId = $tramite->proveedor->user->id;
-            $fechaFormateada = Carbon::parse($fechaCita)->format('d/m/Y H:i');
-            
-            $this->notificacionService->notificarNuevaCita(
-                $usuarioId,
-                $tramite->id,
-                $fechaFormateada
-            );
-
-            Log::info('Cita de cotejo agendada exitosamente', [
-                'tramite_id' => $tramite->id,
+            Log::info('Cita de cotejo agendada automáticamente', [
                 'cita_id' => $cita->id,
-                'fecha_cita' => $fechaCita
+                'tramite_id' => $tramite->id,
+                'fecha_cita' => $fechaCita->format('Y-m-d H:i:s')
             ]);
 
+            DB::commit();
             return $cita;
+
         } catch (\Exception $e) {
-            Log::error('Error al agendar cita de cotejo', [
+            DB::rollBack();
+            Log::error('Error al agendar cita de cotejo automática', [
                 'tramite_id' => $tramite->id,
                 'error' => $e->getMessage()
             ]);
-            throw $e;
+            return null;
         }
     }
 
     /**
-     * Obtiene las citas de un trámite
+     * Obtener el próximo horario disponible para cita
      */
-    public function obtenerCitasTramite(int $tramiteId)
+    private function obtenerProximoHorarioDisponible(): ?Carbon
     {
-        return Cita::where('tramite_id', $tramiteId)
-            ->orderBy('fecha_cita', 'desc')
-            ->get();
-    }
+        $fechaActual = Carbon::now();
+        
+        // Si es después de las 2 PM, empezar desde el siguiente día
+        if ($fechaActual->hour >= self::HORA_FIN) {
+            $fechaActual->addDay();
+        }
 
-    /**
-     * Actualiza el estado de una cita
-     */
-    public function actualizarEstadoCita(int $citaId, string $nuevoEstado, ?string $observaciones = null): bool
-    {
-        try {
-            $cita = Cita::findOrFail($citaId);
-            $cita->estado = $nuevoEstado;
+        // Buscar el próximo día hábil
+        $diaHabil = DiaInhabil::proximoDiaHabil($fechaActual);
+        
+        // Buscar horario disponible en los próximos 30 días
+        for ($dia = 0; $dia < 30; $dia++) {
+            $fechaBusqueda = $diaHabil->copy()->addDays($dia);
             
-            if ($observaciones) {
-                $cita->observaciones = $observaciones;
+            // Verificar que sea día hábil
+            if (!DiaInhabil::esHabil($fechaBusqueda)) {
+                continue;
             }
+
+            // Buscar horario disponible en ese día
+            $horarioDisponible = $this->buscarHorarioEnDia($fechaBusqueda);
             
-            $cita->save();
-
-            Log::info('Estado de cita actualizado', [
-                'cita_id' => $citaId,
-                'nuevo_estado' => $nuevoEstado
-            ]);
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Error al actualizar estado de cita', [
-                'cita_id' => $citaId,
-                'error' => $e->getMessage()
-            ]);
-            return false;
+            if ($horarioDisponible) {
+                return $horarioDisponible;
+            }
         }
+
+        return null;
     }
 
     /**
-     * Cancela una cita
+     * Buscar horario disponible en un día específico
      */
-    public function cancelarCita(int $citaId, string $motivo = null): bool
+    private function buscarHorarioEnDia(Carbon $fecha): ?Carbon
     {
-        try {
-            $cita = Cita::findOrFail($citaId);
-            $cita->estado = 'Cancelada';
-            $cita->observaciones = $motivo;
-            $cita->save();
-
-            // Notificar cancelación
-            $usuarioId = $cita->proveedor->user->id;
-            $this->notificacionService->crearNotificacion(
-                $usuarioId,
-                $cita->tramite_id,
-                'Cita',
-                'Cita cancelada',
-                "Su cita programada para el día " . Carbon::parse($cita->fecha_cita)->format('d/m/Y H:i') . " ha sido cancelada." . ($motivo ? " Motivo: {$motivo}" : "")
-            );
-
-            Log::info('Cita cancelada', [
-                'cita_id' => $citaId,
-                'motivo' => $motivo
-            ]);
-
-            return true;
-        } catch (\Exception $e) {
-            Log::error('Error al cancelar cita', [
-                'cita_id' => $citaId,
-                'error' => $e->getMessage()
-            ]);
-            return false;
-        }
-    }
-
-    /**
-     * Obtiene las citas pendientes de un proveedor
-     */
-    public function obtenerCitasPendientesProveedor(int $proveedorId)
-    {
-        return Cita::where('proveedor_id', $proveedorId)
-            ->where('estado', 'Agendada')
-            ->where('fecha_cita', '>=', now())
-            ->orderBy('fecha_cita', 'asc')
+        // Obtener todas las citas del día
+        $citasDelDia = Cita::whereDate('fecha_cita', $fecha->format('Y-m-d'))
+            ->where('estado', '!=', 'Cancelada')
+            ->orderBy('fecha_cita')
             ->get();
+
+        // Horarios disponibles (cada 30 minutos de 9 AM a 2 PM)
+        $horariosDisponibles = [];
+        $horaActual = $fecha->copy()->setTime(self::HORA_INICIO, 0, 0);
+        $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0, 0);
+
+        while ($horaActual < $horaFin) {
+            $horariosDisponibles[] = $horaActual->copy();
+            $horaActual->addMinutes(self::DURACION_CITA);
+        }
+
+        // Filtrar horarios ocupados
+        foreach ($citasDelDia as $cita) {
+            $fechaCita = Carbon::parse($cita->fecha_cita);
+            
+            // Remover horarios que se solapan
+            $horariosDisponibles = array_filter($horariosDisponibles, function($horario) use ($fechaCita) {
+                return $horario->diffInMinutes($fechaCita) >= self::DURACION_CITA;
+            });
+        }
+
+        // Retornar el primer horario disponible
+        return !empty($horariosDisponibles) ? reset($horariosDisponibles) : null;
     }
 
     /**
-     * Verifica disponibilidad de horario para una fecha
+     * Verificar si una fecha y hora específica está disponible
      */
-    public function verificarDisponibilidad(string $fecha, int $duracionMinutos = 60): bool
+    public function verificarDisponibilidadFechaHora(Carbon $fechaHora): bool
     {
-        $fechaInicio = Carbon::parse($fecha);
-        $fechaFin = $fechaInicio->copy()->addMinutes($duracionMinutos);
+        // Verificar que sea día hábil
+        if (!DiaInhabil::esHabil($fechaHora)) {
+            return false;
+        }
 
-        $citasExistentes = Cita::where('estado', 'Agendada')
-            ->where(function ($query) use ($fechaInicio, $fechaFin) {
-                $query->whereBetween('fecha_cita', [$fechaInicio, $fechaFin])
-                    ->orWhere(function ($q) use ($fechaInicio, $fechaFin) {
-                        $q->where('fecha_cita', '<', $fechaInicio)
-                            ->whereRaw('DATE_ADD(fecha_cita, INTERVAL 60 MINUTE) > ?', [$fechaInicio]);
-                    });
+        // Verificar que esté en horario laboral
+        $hora = $fechaHora->hour;
+        if ($hora < self::HORA_INICIO || $hora >= self::HORA_FIN) {
+            return false;
+        }
+
+        // Verificar que no haya citas solapadas
+        $citasSolapadas = Cita::whereDate('fecha_cita', $fechaHora->format('Y-m-d'))
+            ->where('estado', '!=', 'Cancelada')
+            ->where(function($query) use ($fechaHora) {
+                $query->where('fecha_cita', '<=', $fechaHora)
+                      ->where('fecha_cita', '>', $fechaHora->copy()->subMinutes(self::DURACION_CITA));
             })
-            ->count();
+            ->exists();
 
-        return $citasExistentes === 0;
+        return !$citasSolapadas;
+    }
+
+    /**
+     * Obtener horarios disponibles para una fecha específica
+     */
+    public function obtenerHorariosDisponibles(Carbon $fecha): array
+    {
+        if (!DiaInhabil::esHabil($fecha)) {
+            return [];
+        }
+
+        $horarios = [];
+        $horaActual = $fecha->copy()->setTime(self::HORA_INICIO, 0, 0);
+        $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0, 0);
+
+        while ($horaActual < $horaFin) {
+            if ($this->verificarDisponibilidadFechaHora($horaActual)) {
+                $horarios[] = $horaActual->copy();
+            }
+            $horaActual->addMinutes(self::DURACION_CITA);
+        }
+
+        return $horarios;
+    }
+
+    /**
+     * Obtener próximos días hábiles disponibles
+     */
+    public function obtenerProximosDiasHabiles(int $cantidad = 10): array
+    {
+        $dias = [];
+        $fechaActual = Carbon::now();
+
+        for ($i = 0; count($dias) < $cantidad; $i++) {
+            $fecha = $fechaActual->copy()->addDays($i);
+            
+            if (DiaInhabil::esHabil($fecha)) {
+                $dias[] = $fecha->format('Y-m-d');
+            }
+        }
+
+        return $dias;
     }
 } 

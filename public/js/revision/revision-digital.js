@@ -139,6 +139,9 @@ function guardarComentarioSeccion(seccion) {
     `;
         });
 }
+
+
+
 // Cargar comentarios y estado existentes al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     // tramiteId debe estar definido globalmente

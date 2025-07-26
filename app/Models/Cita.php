@@ -13,20 +13,29 @@ class Cita extends Model
 
     protected $fillable = [
         'tramite_id',
-        'proveedor_id',
+        'user_id',
         'fecha_cita',
         'tipo_cita',
         'estado',
-        'motivo',
+        'atendido_por',
         'observaciones',
-        'atendido_por'
+        'motivo'
     ];
 
     protected $casts = [
         'fecha_cita' => 'datetime',
     ];
 
-    // Relaciones
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function atendidoPor()
+    {
+        return $this->belongsTo(User::class, 'atendido_por');
+    }
+
     public function tramite()
     {
         return $this->belongsTo(Tramite::class);
@@ -36,25 +45,4 @@ class Cita extends Model
     {
         return $this->belongsTo(Proveedor::class);
     }
-
-    public function atendidoPor()
-    {
-        return $this->belongsTo(User::class, 'atendido_por');
-    }
-
-    // Scopes para filtros
-    public function scopeTipoCita($query, $tipo)
-    {
-        return $query->where('tipo_cita', $tipo);
-    }
-
-    public function scopeEstado($query, $estado)
-    {
-        return $query->where('estado', $estado);
-    }
-
-    public function scopeFechaEntre($query, $fechaInicio, $fechaFin)
-    {
-        return $query->whereBetween('fecha_cita', [$fechaInicio, $fechaFin]);
-    }
-}
+} 

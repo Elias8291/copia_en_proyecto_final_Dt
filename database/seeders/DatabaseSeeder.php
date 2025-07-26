@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             SectoresSeeder::class,
             ActividadesSeeder::class,
             CatalogoArchivoSeeder::class,
+            DiasInhabilesSeeder::class,
         ]);
     }
 }

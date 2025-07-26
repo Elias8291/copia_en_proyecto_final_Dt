@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Tramite;
 use App\Services\NotificacionService;
-use App\Services\CitaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -12,12 +11,10 @@ use Illuminate\Support\Facades\Log;
 class RevisionController extends Controller
 {
     protected $notificacionService;
-    protected $citaService;
 
-    public function __construct(NotificacionService $notificacionService, CitaService $citaService)
+    public function __construct(NotificacionService $notificacionService)
     {
         $this->notificacionService = $notificacionService;
-        $this->citaService = $citaService;
     }
 
     public function index(Request $request)
@@ -28,7 +25,7 @@ class RevisionController extends Controller
             $perPage = 10;
         }
 
-        $tramites = Tramite::with(['proveedor', 'revisadoPor', 'datosGenerales'])
+        $tramites = Tramite::with(['proveedor.user', 'revisadoPor', 'datosGenerales'])
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
 
@@ -37,28 +34,13 @@ class RevisionController extends Controller
         return view('revision.index', compact('tramites', 'perPage'));
     }
 
-    public function show(Tramite $tramite)
-    {
-        $tramite->load([
-            'proveedor',
-            'revisadoPor',
-            'datosGenerales',
-            'datosConstitutivos',
-            'apoderadoLegal',
-            'contactos',
-            'accionistas',
-            'actividades.actividad',
-            'archivos.catalogoArchivo'
-        ]);
 
-        return view('revision.show', compact('tramite'));
-    }
 
 
     public function seleccionTipo(Tramite $tramite)
     {
         $tramite->load([
-            'proveedor',
+            'proveedor.user',
             'datosGenerales',
             'archivos' => function ($query) {
                 $query->where('idCatalogoArchivo', 2)->with('catalogoArchivo');
@@ -68,11 +50,63 @@ class RevisionController extends Controller
         return view('revision.seleccion-tipo', compact('tramite'));
     }
 
+    public function documentosPresencial(Tramite $tramite)
+    {
+        $tramite->load([
+            'proveedor.user',
+            'datosGenerales',
+            'archivos.catalogoArchivo'
+        ]);
+
+        return view('revision.documentos-presencial', compact('tramite'));
+    }
+
+    /**
+     * Método principal para manejar diferentes tipos de revisión
+     */
+    public function revisarTramite(Tramite $tramite, $tipo = null)
+    {
+        try {
+            // Si no se especifica tipo, mostrar la vista principal
+            if (!$tipo) {
+                return $this->show($tramite);
+            }
+
+            // Validar que el tipo sea válido
+            $tiposValidos = ['seleccion-tipo', 'documentos-presencial', 'revision-digital'];
+            if (!in_array($tipo, $tiposValidos)) {
+                return redirect()->route('revision.revisar', $tramite)
+                    ->with('error', 'Tipo de revisión no válido');
+            }
+
+            // Redirigir según el tipo de revisión
+            switch ($tipo) {
+                case 'seleccion-tipo':
+                    return $this->seleccionTipo($tramite);
+                case 'documentos-presencial':
+                    return $this->documentosPresencial($tramite);
+                case 'revision-digital':
+                    return $this->revisarDatos($tramite);
+                default:
+                    return $this->show($tramite);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error en revisión de trámite', [
+                'tramite_id' => $tramite->id,
+                'tipo' => $tipo,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->route('revision.index')
+                ->with('error', 'Error al procesar la revisión: ' . $e->getMessage());
+        }
+    }
+
     public function revisarDatos(Tramite $tramite)
     {
         try {
             $tramite->load([
-                'proveedor',
+                'proveedor.user',
                 'revisadoPor',
                 'datosGenerales',
                 'datosConstitutivos',
@@ -84,7 +118,7 @@ class RevisionController extends Controller
                 'archivos.catalogoArchivo'
             ]);
 
-            return view('revision.revisar-datos', compact('tramite'));
+            return view('revision.revision-digital', compact('tramite'));
         } catch (\Exception $e) {
             Log::error('Error al cargar datos del trámite para revisión', [
                 'tramite_id' => $tramite->id,
@@ -97,6 +131,33 @@ class RevisionController extends Controller
     }
 
 
+
+    /**
+     * Obtiene información de identidad del trámite
+     */
+    public function obtenerInformacionIdentidad(Tramite $tramite)
+    {
+        try {
+            $tramite->load(['proveedor.user', 'datosGenerales']);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'proveedor' => $tramite->proveedor,
+                    'datos_generales' => $tramite->datosGenerales,
+                    'fecha_creacion' => $tramite->created_at,
+                    'estado_actual' => $tramite->estado
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al obtener información de identidad', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json(['error' => 'Error al obtener la información'], 500);
+        }
+    }
 
     public function verDocumento($tramiteId, $archivoId, $filename)
     {
@@ -163,6 +224,23 @@ class RevisionController extends Controller
     }
 
     /**
+     * Obtiene el estado y comentarios de un documento (archivo).
+     */
+    public function obtenerEstadoDocumento($archivoId)
+    {
+        $archivo = \App\Models\Archivo::findOrFail($archivoId);
+        
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'aprobado' => $archivo->aprobado,
+                'observaciones' => $archivo->observaciones,
+                'fecha_cotejo' => $archivo->fecha_cotejo,
+            ]
+        ]);
+    }
+
+    /**
      * Cambia el estado de un trámite y notifica al usuario
      */
     public function cambiarEstadoTramite(Request $request, Tramite $tramite)
@@ -179,23 +257,39 @@ class RevisionController extends Controller
             
             $this->actualizarTramite($tramite, $nuevoEstado, $request);
             $this->notificacionService->notificarCambioEstado($tramite, $estadoAnterior, $nuevoEstado);
-            $this->agendarCitaSiNecesario($tramite, $nuevoEstado, $request);
             $this->registrarLog($tramite, $estadoAnterior, $nuevoEstado);
 
             // Mensajes de éxito según el estado
             $mensajes = [
-                'Aprobado' => 'Tu trámite fue aprobado.',
-                'Por_Cotejar' => 'Tu trámite fue enviado a cotejo.',
+                'Aprobado' => 'Tu trámite fue aprobado exitosamente.',
+                'Por_Cotejar' => 'Tu trámite fue enviado a cotejo presencial exitosamente.',
                 'Rechazado' => 'Tu trámite fue rechazado.',
-                'Para_Correccion' => 'Tu trámite fue enviado a corrección.',
+                'Para_Correccion' => 'Tu trámite fue enviado para corrección.',
                 'Cancelado' => 'Tu trámite fue cancelado.',
                 'En_Revision' => 'Tu trámite fue enviado a revisión.',
                 'Pendiente' => 'Tu trámite fue marcado como pendiente.'
             ];
 
-            $mensaje = $mensajes[$nuevoEstado] ?? 'Tu trámite fue actualizado.';
+            $titulos = [
+                'Aprobado' => '¡Trámite Aprobado!',
+                'Por_Cotejar' => '¡Enviado a Cotejo!',
+                'Rechazado' => 'Trámite Rechazado',
+                'Para_Correccion' => 'Enviado para Corrección',
+                'Cancelado' => 'Trámite Cancelado',
+                'En_Revision' => 'Enviado a Revisión',
+                'Pendiente' => 'Trámite Pendiente'
+            ];
 
-            return redirect()->route('revision.index')->with('success', $mensaje);
+            $mensaje = $mensajes[$nuevoEstado] ?? 'Tu trámite fue actualizado exitosamente.';
+            $titulo = $titulos[$nuevoEstado] ?? '¡Trámite Procesado!';
+
+            return redirect()->route('revision.revisar', ['tramite' => $tramite, 'tipo' => 'revision-digital'])->with([
+                'success' => true,
+                'success_title' => $titulo,
+                'success_message' => $mensaje,
+                'success_accept_text' => 'Ir al listado',
+                'success_redirect' => route('revision.index')
+            ]);
 
         } catch (\Exception $e) {
             Log::error('Error al cambiar estado del trámite', [
@@ -203,7 +297,12 @@ class RevisionController extends Controller
                 'error' => $e->getMessage()
             ]);
 
-            return redirect()->route('revision.index')->with('error', 'Error al actualizar el estado del trámite: ' . $e->getMessage());
+            return redirect()->route('revision.revisar', ['tramite' => $tramite, 'tipo' => 'revision-digital'])->with([
+                'error' => true,
+                'error_title' => 'Error al procesar trámite',
+                'error_message' => 'Ha ocurrido un error al actualizar el estado del trámite: ' . $e->getMessage(),
+                'error_button_text' => 'Entendido'
+            ]);
         }
     }
 
@@ -219,28 +318,42 @@ class RevisionController extends Controller
             'observaciones' => $request->input('observaciones'),
             'revisado_por' => Auth::id()
         ]);
+
+        // Si el estado es "Por_Cotejar", agendar cita automáticamente
+        if ($nuevoEstado === 'Por_Cotejar') {
+            $this->agendarCitaCotejo($tramite);
+        }
     }
 
     /**
-     * Agenda cita si el estado es "Por_Cotejar"
+     * Agenda una cita automática para cotejo
      */
-    private function agendarCitaSiNecesario(Tramite $tramite, string $nuevoEstado, Request $request): void
+    private function agendarCitaCotejo(Tramite $tramite): void
     {
-        if ($nuevoEstado !== 'Por_Cotejar') {
-            return;
-        }
-
-        $fechaCita = $request->input('fecha_cita') ?: now()->addWeekday()->setTime(9, 0);
-
         try {
-            $this->citaService->agendarCitaCotejo($tramite, $fechaCita, Auth::id());
+            $citaService = app(\App\Services\CitaService::class);
+            $cita = $citaService->agendarCitaCotejo($tramite);
+
+            if ($cita) {
+                Log::info('Cita de cotejo agendada automáticamente', [
+                    'tramite_id' => $tramite->id,
+                    'cita_id' => $cita->id,
+                    'fecha_cita' => $cita->fecha_cita
+                ]);
+            } else {
+                Log::warning('No se pudo agendar cita automática para cotejo', [
+                    'tramite_id' => $tramite->id
+                ]);
+            }
         } catch (\Exception $e) {
-            Log::warning('No se pudo agendar cita automática', [
+            Log::error('Error al agendar cita automática para cotejo', [
                 'tramite_id' => $tramite->id,
                 'error' => $e->getMessage()
             ]);
         }
     }
+
+
 
     /**
      * Registra el log del cambio de estado
@@ -286,5 +399,18 @@ class RevisionController extends Controller
                 'message' => 'Error al obtener el historial de estados.'
             ], 500);
         }
+    }
+
+    public function guardarComentarioGeneral(Request $request)
+    {
+        $request->validate([
+            'tramite_id' => 'required|exists:tramites,id',
+            'comentario' => 'nullable|string|max:1000'
+        ]);
+
+        $tramite = Tramite::findOrFail($request->tramite_id);
+        $tramite->update(['comentarios_revision' => $request->comentario]);
+
+        return redirect()->back()->with('comentario_success', 'Comentario guardado correctamente');
     }
 }

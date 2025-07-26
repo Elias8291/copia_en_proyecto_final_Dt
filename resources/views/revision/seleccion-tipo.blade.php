@@ -1,236 +1,265 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen py-6">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded-lg p-2">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-xl font-bold text-gray-900">Seleccionar Tipo de Revisión</h1>
-                        <p class="text-sm text-gray-600">Trámite #{{ $tramite->id }}</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 rounded-full text-xs font-medium
-                        {{ $tramite->estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' : 
-                           ($tramite->estado === 'En_Revision' ? 'bg-blue-100 text-blue-800' : 
-                           ($tramite->estado === 'Aprobado' ? 'bg-green-100 text-green-800' : 
-                           ($tramite->estado === 'Por_Cotejar' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'))) }}">
-                        {{ str_replace('_', ' ', $tramite->estado) }}
-                    </span>
-                    <a href="{{ route('revision.index') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded-lg hover:shadow-md transition-all">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m7 7l-7 7z" />
-                        </svg>
-                        Volver
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Información del Trámite -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-lg font-bold text-gray-900">
-                        {{ $tramite->datosGenerales->razon_social ?? $tramite->proveedor->razon_social ?? 'Proveedor N/A' }}
-                    </h2>
-                    <p class="text-sm text-gray-600">
-                        RFC: {{ $tramite->datosGenerales->rfc ?? $tramite->proveedor->rfc ?? 'N/A' }} • 
-                        {{ $tramite->tipo_tramite === 'Inscripcion' ? 'Inscripción' : 
-                           ($tramite->tipo_tramite === 'Renovacion' ? 'Renovación' : 'Actualización') }}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Opciones de Revisión -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Revisión Digital -->
-            <div class="bg-white rounded-xl shadow-sm border-2 border-gray-200 hover:border-[#B4325E]/30 transition-all duration-300 p-6">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900">Revisión Digital</h3>
-                        <p class="text-sm text-gray-600">Revisa documentos y datos en línea</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-2 mb-6">
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Acceso completo a documentos</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Revisión detallada de datos</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Comentarios en tiempo real</span>
-                    </div>
-                </div>
-
-                <a href="/revision/{{ $tramite->id }}/revisar-datos"
-                    class="inline-flex items-center justify-center w-full px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded-lg hover:shadow-md transition-all">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Iniciar Revisión Digital
-                </a>
-            </div>
-
-            <!-- Revisión Presencial -->
-            <div class="bg-white rounded-xl shadow-sm border-2 {{ $tramite->estado === 'Por_Cotejar' ? 'border-orange-300 bg-orange-50' : 'border-gray-200' }} hover:border-[#B4325E]/30 transition-all duration-300 p-6 relative">
-                @if($tramite->estado === 'Por_Cotejar')
-                    <div class="absolute -top-2 -right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        Requerido
-                    </div>
-                @endif
-                
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="w-12 h-12 bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900">Revisión Presencial</h3>
-                        <p class="text-sm text-gray-600">Revisa documentos físicos</p>
-                    </div>
-                </div>
-                
-                <div class="space-y-2 mb-6">
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Documentos físicos originales</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Verificación de autenticidad</span>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <span>Entrevista si es necesario</span>
-                    </div>
-                </div>
-
-                <!-- Documentos del Trámite -->
-                @if($tramite->archivos->count() > 0)
-                    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <div class="flex items-center gap-2 mb-3">
-                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <span class="text-sm font-semibold text-green-900">Documentos Disponibles</span>
+    <div class="min-h-screen py-6">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200/70 mb-8">
+                <div class="p-6 border-b border-gray-200/70">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div class="flex items-center space-x-4">
+                            <div
+                                class="bg-gradient-to-br from-[#B4325E] via-[#93264B] to-[#7a1d37] rounded-xl p-3 shadow-md">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-800">Seleccionar Tipo de Revisión</h1>
+                                <p class="text-sm text-gray-500">Trámite #{{ $tramite->id }} •
+                                    {{ $tramite->datosGenerales->razon_social ?? ($tramite->proveedor->razon_social ?? 'Proveedor N/A') }}
+                                </p>
+                            </div>
                         </div>
-                        
-                        <div class="space-y-2">
-                            @foreach($tramite->archivos->take(3) as $archivo)
-                                <div class="flex items-center justify-between p-2 bg-white rounded border border-gray-200">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-                                            <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                            {{ $tramite->estado === 'Pendiente'
+                                ? 'bg-amber-100 text-amber-700'
+                                : ($tramite->estado === 'En_Revision'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : ($tramite->estado === 'Aprobado'
+                                        ? 'bg-green-100 text-green-700'
+                                        : ($tramite->estado === 'Por_Cotejar'
+                                            ? 'bg-orange-100 text-orange-700'
+                                            : 'bg-gray-100 text-gray-700'))) }}">
+                                {{ str_replace('_', ' ', $tramite->estado) }}
+                            </span>
+                            <a href="{{ route('revision.index') }}"
+                                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 19l-7-7m0 0l7-7m7 7l-7 7z" />
+                                </svg>
+                                Volver
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Opciones de Revisión -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Revisión Digital -->
+                <div
+                    class="bg-white shadow-md rounded-xl overflow-hidden {{ in_array($tramite->estado, ['Pendiente', 'En_Revision']) ? 'ring-2 ring-blue-300' : '' }}">
+                    <div class="p-9">
+                        @if (in_array($tramite->estado, ['Por_Cotejar', 'En_Revision']))
+                            <div class="text-center mb-4">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Revisión Completada
+                                </span>
+                            </div>
+                        @elseif($tramite->estado === 'Pendiente')
+                            <div class="text-center mb-4">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    Siguiente Paso
+                                </span>
+                            </div>
+                        @endif
+
+                        <svg class="w-12 h-12 mx-auto text-gray-400 sm:mx-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                stroke="#111827" />
+                        </svg>
+
+                        <h3 class="mt-6 text-2xl font-bold text-gray-900 sm:mt-10">Revisión Digital</h3>
+                        <p class="mt-6 text-base text-gray-600">Revisa documentos y datos en línea de forma completa</p>
+
+                        <div class="mt-6 space-y-3">
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Validar datos generales del proveedor</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Revisar actividades económicas</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                <span>Verificar documentos digitalizados</span>
+                            </div>
+                        </div>
+
+                        <a href="{{ route('revision.revisar', ['tramite' => $tramite->id, 'tipo' => 'revision-digital']) }}"
+                            class="mt-8 w-full inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors">
+                            Iniciar Revisión Digital
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Revisión Presencial -->
+                <div
+                    class="bg-white shadow-md rounded-xl overflow-hidden {{ $tramite->estado === 'Por_Cotejar' ? 'ring-2 ring-orange-300' : '' }}">
+                    <div class="p-9">
+                        @if ($tramite->estado === 'Por_Cotejar')
+                            <div class="text-center mb-4">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-700">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                    </svg>
+                                    Cotejo Pendiente
+                                </span>
+                            </div>
+                        @else
+                            <div class="text-center mb-4">
+                                <span
+                                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                    </svg>
+                                    Bloqueado
+                                </span>
+                            </div>
+                        @endif
+
+                        <svg class="w-12 h-12 mx-auto text-gray-400 sm:mx-0" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                stroke="#111827" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke="#111827" />
+                        </svg>
+
+                        <h3 class="mt-6 text-2xl font-bold text-gray-900 sm:mt-10">Cotejo Presencial</h3>
+                        <p class="mt-6 text-base text-gray-600">Verificar identidad del representante y cotejar documentos
+                            físicos originales</p>
+
+                        <!-- Documentos para cotejar -->
+                        @if ($tramite->archivos->count() > 0)
+                            <div class="mt-6">
+                                <h4 class="text-sm font-medium text-gray-900 mb-3">Documentos para cotejar:</h4>
+                                <div class="space-y-2 max-h-32 overflow-y-auto">
+                                    @foreach ($tramite->archivos->take(4) as $archivo)
+                                        <div
+                                            class="flex items-center justify-between gap-2 text-sm text-gray-600 bg-gray-50 rounded p-2">
+                                            <div class="flex items-center gap-2">
+                                                <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none"
+                                                    stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                                <span
+                                                    class="truncate">{{ $archivo->nombre_original ?? ($archivo->catalogoArchivo->nombre ?? 'Documento') }}</span>
+                                            </div>
+                                            <a href="{{ $archivo->getUrlVisualizacionAttribute() }}" target="_blank"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition-colors flex-shrink-0">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                Ver
+                                            </a>
                                         </div>
-                                        <span class="text-xs font-medium text-gray-900">{{ $archivo->nombre_original ?? $archivo->catalogoArchivo->nombre ?? 'Documento' }}</span>
-                                    </div>
-                                    <a href="{{ $archivo->getUrlVisualizacionAttribute() }}" target="_blank"
-                                        class="inline-flex items-center px-2 py-1 text-xs font-medium text-white bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded hover:shadow-sm transition-all">
-                                        <svg class="w-2 h-2 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    @endforeach
+                                    @if ($tramite->archivos->count() > 4)
+                                        <div class="text-xs text-gray-500 text-center py-1">
+                                            +{{ $tramite->archivos->count() - 4 }} documentos más
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @else
+                            <div class="mt-6">
+                                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                                    <div class="flex items-start gap-2">
+                                        <svg class="w-4 h-4 text-orange-600 mt-0.5 flex-shrink-0" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
-                                        Ver
-                                    </a>
+                                        <div class="text-xs text-orange-700">
+                                            <strong>Proceso de cotejo:</strong> Primero verificar identidad oficial del
+                                            representante, después cotejar documentos físicos originales.
+                                        </div>
+                                    </div>
                                 </div>
-                            @endforeach
-                            @if($tramite->archivos->count() > 3)
-                                <div class="text-center py-1">
-                                    <span class="text-xs text-gray-500">+{{ $tramite->archivos->count() - 3 }} más</span>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                                        <span
+                                            class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium">1</span>
+                                        <span>Verificar identidad oficial del representante</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                                        <span
+                                            class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium">2</span>
+                                        <span>Cotejar documentos físicos originales</span>
+                                    </div>
+                                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                                        <span
+                                            class="flex-shrink-0 w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-medium">3</span>
+                                        <span>Verificar autenticidad de sellos y firmas</span>
+                                    </div>
                                 </div>
-                            @endif
-                        </div>
-                    </div>
-                @endif
+                            </div>
+                        @endif
 
-                <!-- Botones de acción -->
-                <div class="grid grid-cols-3 gap-2">
-                    <button type="button" onclick="confirmarIdentificacion({{ $tramite->id }})"
-                        class="inline-flex items-center justify-center px-3 py-2 text-xs font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:ring-offset-2">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span class="hidden sm:inline">Confirmar</span>
-                        <span class="sm:hidden">✓</span>
-                    </button>
-                    
-                    <button type="button" onclick="cancelarRevision({{ $tramite->id }})"
-                        class="inline-flex items-center justify-center px-3 py-2 text-xs font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:ring-offset-2">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        <span class="hidden sm:inline">Cancelar</span>
-                        <span class="sm:hidden">✕</span>
-                    </button>
-                    
-                    <button type="button" onclick="regendarCita({{ $tramite->id }})"
-                        class="inline-flex items-center justify-center px-3 py-2 text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2">
-                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="hidden sm:inline">Regendar</span>
-                        <span class="sm:hidden">📅</span>
-                    </button>
+                        @if ($tramite->estado === 'Por_Cotejar')
+                            <a href="/revision/{{ $tramite->id }}/documentos-presencial"
+                                class="mt-8 w-full inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors">
+                                Iniciar Cotejo Presencial
+                            </a>
+                        @else
+                            <button disabled
+                                class="mt-8 w-full inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-gray-400 bg-gray-200 rounded-lg cursor-not-allowed">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                                Cotejo No Disponible
+                            </button>
+                        @endif
+                    </div>
                 </div>
             </div>
+
+
         </div>
-
-
     </div>
-</div>
 
-<script>
-    function confirmarIdentificacion(tramiteId) {
-        alert('Función de confirmar identificación en desarrollo. Por favor, contacte al administrador del sistema.');
-    }
-    
-    function cancelarRevision(tramiteId) {
-        alert('Función de cancelar revisión en desarrollo. Por favor, contacte al administrador del sistema.');
-    }
-    
-    function regendarCita(tramiteId) {
-        alert('Función de regendar cita en desarrollo. Por favor, contacte al administrador del sistema.');
-    }
-</script>
-@endsection 
+
+@endsection
