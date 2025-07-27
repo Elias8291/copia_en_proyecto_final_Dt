@@ -1,3 +1,4 @@
+if (typeof SimpleSATScraper === 'undefined') {
 class SimpleSATScraper {
     constructor() {
         this.baseUrl = '/api/scrape-sat-data';
@@ -75,4 +76,5 @@ class SimpleSATScraper {
     }
 }
 
-window.SimpleSATScraper = SimpleSATScraper; 
+window.SimpleSATScraper = SimpleSATScraper;
+} 

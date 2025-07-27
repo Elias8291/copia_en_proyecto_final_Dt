@@ -1,3 +1,4 @@
+if (typeof SimpleQRExtractor === 'undefined') {
 class SimpleQRExtractor {
     constructor() {
         this.pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -132,4 +133,5 @@ class SimpleQRExtractor {
     }
 }
 
-window.SimpleQRExtractor = SimpleQRExtractor; 
+window.SimpleQRExtractor = SimpleQRExtractor;
+} 
