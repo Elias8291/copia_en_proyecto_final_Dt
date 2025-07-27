@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-4">
+<div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8">
     <!-- Header mejorado -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
         <div class="p-4 border-b border-gray-100">
