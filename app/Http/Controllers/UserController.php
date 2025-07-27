@@ -91,7 +91,11 @@ class UserController extends Controller
             DB::commit();
 
             return redirect()->route('users.index')
-                ->with('success', 'Usuario creado exitosamente');
+                ->with('success', 'Usuario creado exitosamente')
+                ->with('success_title', '¡Usuario Creado!')
+                ->with('success_message', 'El usuario ha sido creado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -146,7 +150,11 @@ class UserController extends Controller
             DB::commit();
 
             return redirect()->route('users.index')
-                ->with('success', 'Usuario actualizado exitosamente');
+                ->with('success', 'Usuario actualizado exitosamente')
+                ->with('success_title', '¡Usuario Actualizado!')
+                ->with('success_message', 'El usuario ha sido actualizado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -168,7 +176,11 @@ class UserController extends Controller
             $user->delete();
 
             return redirect()->route('users.index')
-                ->with('success', 'Usuario eliminado exitosamente');
+                ->with('success', 'Usuario eliminado exitosamente')
+                ->with('success_title', '¡Usuario Eliminado!')
+                ->with('success_message', 'El usuario ha sido eliminado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
 
         } catch (\Exception $e) {
             return redirect()->route('users.index')
@@ -183,7 +195,11 @@ class UserController extends Controller
             $user->restore();
 
             return redirect()->route('users.index')
-                ->with('success', 'Usuario restaurado exitosamente');
+                ->with('success', 'Usuario restaurado exitosamente')
+                ->with('success_title', '¡Usuario Restaurado!')
+                ->with('success_message', 'El usuario ha sido restaurado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
 
         } catch (\Exception $e) {
             return redirect()->route('users.index')
@@ -205,7 +221,11 @@ class UserController extends Controller
             $user->forceDelete();
 
             return redirect()->route('users.index')
-                ->with('success', 'Usuario eliminado permanentemente');
+                ->with('success', 'Usuario eliminado permanentemente')
+                ->with('success_title', '¡Usuario Eliminado Permanentemente!')
+                ->with('success_message', 'El usuario ha sido eliminado permanentemente del sistema.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
 
         } catch (\Exception $e) {
             return redirect()->route('users.index')

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8">
+<div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8 -mt-4">
 
     <!-- Header mejorado -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
@@ -225,22 +225,22 @@
                     </label>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                         @foreach($roles as $role)
-                            <div class="relative">
+                            <div class="role-checkbox-container">
                                 <input type="checkbox" 
                                        name="roles[]" 
                                        id="role_{{ $role->id }}" 
                                        value="{{ $role->name }}"
                                        {{ in_array($role->name, old('roles', [])) ? 'checked' : '' }}
-                                       class="peer hidden">
+                                       class="role-checkbox hidden">
                                 <label for="role_{{ $role->id }}" 
-                                       class="flex items-center p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-200 peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:ring-1 peer-checked:ring-primary/30">
-                                    <div class="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center mr-2 peer-checked:border-primary peer-checked:bg-primary">
-                                        <svg class="w-2.5 h-2.5 text-white hidden peer-checked:block" fill="currentColor" viewBox="0 0 20 20">
+                                       class="role-label flex items-center p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300 hover:bg-gray-50 transition-all duration-200">
+                                    <div class="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center mr-2 role-checkbox-visual">
+                                        <svg class="w-2.5 h-2.5 text-white hidden role-check-icon" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                         </svg>
                                     </div>
                                     <div>
-                                        <span class="text-base font-medium text-gray-900">{{ ucfirst($role->name) }}</span>
+                                        <span class="text-base font-medium text-gray-700">{{ ucfirst($role->name) }}</span>
                                         @if($role->name === 'user')
                                             <span class="block text-xs text-gray-400">(Por defecto)</span>
                                         @endif
@@ -297,23 +297,23 @@ function togglePassword(inputId) {
 // Función para mejorar la funcionalidad de los checkboxes de roles
 document.addEventListener('DOMContentLoaded', function() {
     // Obtener todos los checkboxes de roles
-    const roleCheckboxes = document.querySelectorAll('input[name="roles[]"]');
+    const roleCheckboxes = document.querySelectorAll('.role-checkbox');
     
     // Función para actualizar el estado visual del checkbox
     function updateCheckboxVisual(checkbox) {
         const label = checkbox.nextElementSibling;
-        const checkboxDiv = label.querySelector('.border-gray-300');
-        const checkIcon = checkboxDiv.querySelector('svg');
+        const checkboxDiv = label.querySelector('.role-checkbox-visual');
+        const checkIcon = checkboxDiv.querySelector('.role-check-icon');
         
         if (checkbox.checked) {
             // Marcar como seleccionado
-            label.classList.add('border-primary', 'bg-primary/10', 'ring-1', 'ring-primary/30');
-            checkboxDiv.classList.add('border-primary', 'bg-primary');
+            label.classList.add('border-gray-400', 'bg-gray-100', 'ring-1', 'ring-gray-300');
+            checkboxDiv.classList.add('border-gray-500', 'bg-gray-500');
             checkIcon.classList.remove('hidden');
         } else {
             // Desmarcar
-            label.classList.remove('border-primary', 'bg-primary/10', 'ring-1', 'ring-primary/30');
-            checkboxDiv.classList.remove('border-primary', 'bg-primary');
+            label.classList.remove('border-gray-400', 'bg-gray-100', 'ring-1', 'ring-gray-300');
+            checkboxDiv.classList.remove('border-gray-500', 'bg-gray-500');
             checkIcon.classList.add('hidden');
         }
     }
@@ -329,9 +329,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Agregar funcionalidad de click en las etiquetas
-    const roleLabels = document.querySelectorAll('label[for^="role_"]');
+    const roleLabels = document.querySelectorAll('.role-label');
     roleLabels.forEach(function(label) {
         label.addEventListener('click', function(e) {
+            e.preventDefault();
             const checkbox = document.getElementById(this.getAttribute('for'));
             if (checkbox) {
                 checkbox.checked = !checkbox.checked;

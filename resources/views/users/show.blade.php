@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8">
+<div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8 -mt-4">
     <!-- Header mejorado -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
         <div class="p-4 border-b border-gray-100">
@@ -42,14 +42,14 @@
     <!-- Información del Usuario -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden">
         <!-- Header del Card -->
-        <div class="bg-gradient-to-r from-primary to-primary-dark px-4 py-3">
+        <div class="bg-gradient-to-r from-slate-100 to-slate-50 px-4 py-3 border-b border-slate-200">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center">
                     <span class="text-lg font-bold text-white">{{ strtoupper(substr($user->nombre, 0, 1)) }}</span>
                 </div>
                 <div>
-                    <h2 class="text-xl font-semibold text-white">{{ $user->nombre }}</h2>
-                    <p class="text-white/80 text-sm">{{ $user->email }}</p>
+                    <h2 class="text-xl font-semibold text-gray-800">{{ $user->nombre }}</h2>
+                    <p class="text-gray-600 text-sm">{{ $user->email }}</p>
                 </div>
                 <div class="ml-auto">
                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $user->deleted_at ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
@@ -125,15 +125,15 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     @forelse($user->roles as $role)
-                        <div class="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-2.5 border border-primary/20">
+                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-2.5 border border-gray-200/60">
                             <div class="flex items-center">
-                                <div class="w-5 h-5 bg-primary rounded-md flex items-center justify-center mr-2">
+                                <div class="w-5 h-5 bg-gray-400 rounded-md flex items-center justify-center mr-2">
                                     <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 </div>
                                 <div>
-                                    <span class="text-base font-semibold text-gray-900">{{ ucfirst($role->name) }}</span>
+                                    <span class="text-base font-semibold text-gray-700">{{ ucfirst($role->name) }}</span>
                                     <p class="text-xs text-gray-500">Rol asignado</p>
                                 </div>
                             </div>

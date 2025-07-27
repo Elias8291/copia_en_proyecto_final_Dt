@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
+<div class="w-full max-w-none mx-auto py-8">
+
     @php
         $columns = [
             [
@@ -86,7 +87,7 @@
                 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>',
                 'url' => 'users.destroy',
                 'method' => 'DELETE',
-                'modalTitle' => 'Confirmar Eliminación de Usuario',
+                'modalTitle' => 'Eliminar Usuario',
                 'modalMessage' => '¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer.',
                 'confirmText' => 'Eliminar Usuario',
                 'cancelText' => 'Cancelar',
@@ -105,4 +106,30 @@
         searchPlaceholder="Buscar usuarios por nombre, email o rol..."
     />
 </div>
+
+<!-- Modal de error -->
+<x-error-modal 
+    id="error-modal"
+    title="Error"
+    message="Ha ocurrido un error. Por favor, inténtalo de nuevo."
+    buttonText="OK"
+/>
+
+<!-- Modal de éxito -->
+<x-modal-exito 
+    id="success-modal"
+    title="¡Éxito!"
+    message="La operación se realizó correctamente."
+    acceptText="Aceptar"
+    :redirectUrl="route('users.index')"
+/>
+
+<!-- Mostrar modal de error si hay error de sesión -->
+@if(session('error'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showErrorModal('error-modal', 'Error', '{{ session('error') }}');
+});
+</script>
+@endif
 @endsection
