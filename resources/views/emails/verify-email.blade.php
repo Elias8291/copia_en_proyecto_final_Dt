@@ -23,7 +23,8 @@
         <!-- Header -->
         <div class="bg-primary text-white px-6 py-8 text-center">
             <h1 class="text-xl font-semibold mb-2">Padrón de Proveedores</h1>
-            <p class="text-sm opacity-90">Gobierno del Estado de Oaxaca</p>
+            <p class="text-sm opacity-90">Secretaría de Administración</p>
+            <p class="text-xs opacity-75 mt-1">Gobierno del Estado de Oaxaca</p>
         </div>
         
         <!-- Content -->
@@ -87,7 +88,8 @@
         <!-- Footer -->
         <div class="bg-gray-50 border-t border-gray-200 px-6 py-6 text-center">
             <h3 class="text-gray-800 font-semibold text-sm mb-2">Padrón de Proveedores</h3>
-            <p class="text-gray-600 text-xs mb-4">Gobierno del Estado de Oaxaca</p>
+            <p class="text-gray-600 text-xs mb-1">Secretaría de Administración</p>
+            <p class="text-gray-500 text-xs mb-4">Gobierno del Estado de Oaxaca</p>
             
             <div class="w-8 h-px bg-gray-300 mx-auto mb-4"></div>
             
