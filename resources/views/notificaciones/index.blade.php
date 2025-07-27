@@ -1,191 +1,137 @@
 @extends('layouts.app')
 
-@section('title', 'Notificaciones')
-
 @section('content')
-<div class="min-h-screen bg-gray-50/50">
-    @if(session('success'))
-        <div class="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
-            {{ session('success') }}
-        </div>
-    @endif
-    
-    @if(session('error'))
-        <div class="fixed top-4 right-4 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg">
-            {{ session('error') }}
-        </div>
-    @endif
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<div class="w-full max-w-none mx-auto py-8">
 
-        <!-- Main Container -->
-        <div class="rounded-2xl shadow-xl overflow-hidden border border-gray-200/70">
-            <!-- Header -->
-            <div class="p-6 border-b border-gray-200/70">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-gradient-to-br from-[#B4325E] via-[#93264B] to-[#7a1d37] rounded-xl p-3 shadow-md">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-800">Centro de Notificaciones</h1>
-                            <p class="text-sm text-gray-500">Gestiona todas tus notificaciones del sistema.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-2 flex-shrink-0">
-                        <form action="{{ route('notificaciones.marcar-todas-leidas') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="px-3 py-2 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                                Marcar todas como leídas
-                            </button>
-                        </form>
-                        <form action="{{ route('notificaciones.eliminar-leidas') }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar todas las notificaciones leídas?')">
-                            @csrf
-                            <button type="submit" class="px-3 py-2 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
-                                Eliminar leídas
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
+    @php
+        $columns = [
+            [
+                'label' => 'Tipo',
+                'field' => 'tipo',
+                'type' => 'badge',
+                'colors' => [
+                    'exito' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
+                    'advertencia' => 'bg-amber-100 text-amber-700 border-amber-200',
+                    'error' => 'bg-red-100 text-red-700 border-red-200',
+                    'Tramite' => 'bg-blue-100 text-blue-700 border-blue-200',
+                    'Cita' => 'bg-purple-100 text-purple-700 border-purple-200',
+                    'informativo' => 'bg-gray-100 text-gray-700 border-gray-200'
+                ]
+            ],
+            [
+                'label' => 'Mensaje',
+                'field' => 'mensaje',
+                'type' => 'text'
+            ],
+            [
+                'label' => 'Estado',
+                'field' => 'leida',
+                'type' => 'badge',
+                'colors' => [
+                    '0' => 'bg-blue-100 text-blue-700 border-blue-200',
+                    '1' => 'bg-gray-100 text-gray-700 border-gray-200'
+                ]
+            ],
+            [
+                'label' => 'Fecha',
+                'field' => 'created_at',
+                'type' => 'datetime'
+            ]
+        ];
 
-            <!-- Filters -->
-            <div class="p-6 bg-gray-50/50 border-b border-gray-200/70">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label for="search-filter" class="text-sm font-medium text-gray-700 mb-1 sr-only">Buscar</label>
-                        <div class="relative">
-                            <input type="text" id="search-filter" class="block w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-lg bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#B4325E]/50 focus:border-[#B4325E] transition-all duration-300 shadow-sm" placeholder="Buscar en notificaciones...">
-                            <svg class="absolute inset-y-0 right-0 w-5 h-5 text-gray-400 mr-3 mt-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="status-filter" class="text-sm font-medium text-gray-700 mb-1 sr-only">Estado</label>
-                        <select id="status-filter" class="block w-full pl-4 pr-10 py-2.5 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#B4325E]/50 focus:border-[#B4325E] transition-all duration-300">
-                            <option value="">Todas</option>
-                            <option value="no_leidas">No leídas</option>
-                            <option value="leidas">Leídas</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="type-filter" class="text-sm font-medium text-gray-700 mb-1 sr-only">Tipo</label>
-                        <select id="type-filter" class="block w-full pl-4 pr-10 py-2.5 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#B4325E]/50 focus:border-[#B4325E] transition-all duration-300">
-                            <option value="">Todos los tipos</option>
-                            <option value="informativo">Informativo</option>
-                            <option value="advertencia">Advertencia</option>
-                            <option value="error">Error</option>
-                            <option value="exito">Éxito</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+        $filters = [
+            [
+                'id' => 'status',
+                'type' => 'select',
+                'placeholder' => 'Estado',
+                'options' => [
+                    'no_leidas' => 'No leídas',
+                    'leidas' => 'Leídas'
+                ]
+            ],
+            [
+                'id' => 'type',
+                'type' => 'select',
+                'placeholder' => 'Tipo',
+                'options' => [
+                    'informativo' => 'Informativo',
+                    'advertencia' => 'Advertencia',
+                    'error' => 'Error',
+                    'exito' => 'Éxito',
+                    'Tramite' => 'Trámite',
+                    'Cita' => 'Cita'
+                ]
+            ]
+        ];
 
-            <!-- Notifications List -->
-            <div class="divide-y divide-gray-200/70">
-                @forelse ($notificaciones as $notificacion)
-                <div class="p-6 flex items-start space-x-4 transition-colors duration-200 {{ $notificacion->leida ? 'bg-gray-50/50' : 'bg-white hover:bg-gray-50' }}">
-                    <!-- Icon -->
-                    <div class="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center 
-                        @switch($notificacion->tipo)
-                            @case('exito') bg-emerald-100 @break
-                            @case('advertencia') bg-amber-100 @break
-                            @case('error') bg-red-100 @break
-                            @case('Tramite') bg-blue-100 @break
-                            @case('Cita') bg-purple-100 @break
-                            @default bg-gray-100
-                        @endswitch">
-                        <svg class="w-5 h-5 
-                            @switch($notificacion->tipo)
-                                @case('exito') text-emerald-600 @break
-                                @case('advertencia') text-amber-600 @break
-                                @case('error') text-red-600 @break
-                                @case('Tramite') text-blue-600 @break
-                                @case('Cita') text-purple-600 @break
-                                @default text-gray-600
-                            @endswitch"
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            @switch($notificacion->tipo)
-                                @case('exito') <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/> @break
-                                @case('advertencia') <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/> @break
-                                @case('error') <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/> @break
-                                @case('Tramite') <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/> @break
-                                @case('Cita') <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/> @break
-                                @default <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            @endswitch
-                        </svg>
+        $actions = [
+            'mark-read' => [
+                'label' => 'Marcar como leída',
+                'color' => 'text-gray-600',
+                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>',
+                'url' => 'notificaciones.marcar-leida',
+                'method' => 'POST',
+                'showIf' => '!leida'
+            ],
+            'delete' => [
+                'label' => 'Eliminar',
+                'color' => 'text-red-600',
+                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>',
+                'url' => 'notificaciones.eliminar',
+                'method' => 'DELETE',
+                'modalTitle' => 'Eliminar Notificación',
+                'modalMessage' => '¿Está seguro de que desea eliminar esta notificación?',
+                'confirmText' => 'Eliminar',
+                'cancelText' => 'Cancelar',
+                'itemType' => 'notificación'
+            ]
+        ];
+    @endphp
+
+    <x-simple-data-table 
+        title="Mis Notificaciones"
+        description="Gestiona todas tus notificaciones personales del sistema"
+        :data="$notificaciones"
+        :columns="$columns"
+        :filters="$filters"
+        :actions="$actions"
+        searchPlaceholder="Buscar en notificaciones..."
+        :showActions="true"
+    />
                     </div>
 
-                    <!-- Content -->
-                    <div class="flex-grow">
-                        <p class="text-sm text-gray-800 {{ !$notificacion->leida ? 'font-semibold' : '' }}">{{ $notificacion->mensaje }}</p>
-                        <p class="text-xs text-gray-500 mt-1">{{ $notificacion->created_at->diffForHumans() }}</p>
-                    </div>
+<!-- Modal de error -->
+<x-error-modal 
+    id="error-modal"
+    title="Error"
+    message="Ha ocurrido un error. Por favor, inténtalo de nuevo."
+    buttonText="OK"
+/>
 
-                    <!-- Actions -->
-                    <div class="flex items-center space-x-2 flex-shrink-0">
-                        @if(!$notificacion->leida)
-                            <form action="{{ route('notificaciones.marcar-leida') }}" method="POST" class="inline">
-                                @csrf
-                                <input type="hidden" name="notificacion_id" value="{{ $notificacion->id }}">
-                                <button type="submit" title="Marcar como leída" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                </button>
-                            </form>
-                        @endif
-                        <form action="{{ route('notificaciones.eliminar') }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta notificación?')">
-                            @csrf
-                            <input type="hidden" name="notificacion_id" value="{{ $notificacion->id }}">
-                            <button type="submit" title="Eliminar" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-full">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </form>
-                        @if(!$notificacion->leida)
-                            <div class="w-2.5 h-2.5 bg-blue-500 rounded-full flex-shrink-0" title="No leída"></div>
-                        @endif
-                    </div>
-                </div>
-                @empty
-                <div class="p-12 text-center">
-                    <div class="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <h3 class="mt-4 text-lg font-semibold text-gray-800">Todo en orden</h3>
-                    <p class="mt-1 text-sm text-gray-500">No tienes notificaciones nuevas.</p>
-                </div>
-                @endforelse
-            </div>
+<!-- Modal de éxito -->
+<x-modal-exito 
+    id="success-modal"
+    title="¡Éxito!"
+    message="La operación se realizó correctamente."
+    acceptText="Aceptar"
+    :redirectUrl="route('notificaciones.index')"
+/>
 
-            <!-- Pagination -->
-            <div class="p-6 bg-white border-t border-gray-200/70">
-                @if($notificaciones->hasPages())
-                    <div class="flex items-center justify-between text-sm text-gray-600">
-                        <p>Mostrando {{ $notificaciones->firstItem() }} a {{ $notificaciones->lastItem() }} de {{ $notificaciones->total() }} resultados</p>
-                        <div class="flex items-center space-x-1">
-                            @if($notificaciones->onFirstPage())
-                                <span class="px-3 py-1 border border-gray-300 rounded-md text-gray-400 cursor-not-allowed">Anterior</span>
-                            @else
-                                <a href="{{ $notificaciones->previousPageUrl() }}" class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50">Anterior</a>
-                            @endif
-                            
-                            @if($notificaciones->hasMorePages())
-                                <a href="{{ $notificaciones->nextPageUrl() }}" class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-50">Siguiente</a>
-                            @else
-                                <span class="px-3 py-1 border border-gray-300 rounded-md text-gray-400 cursor-not-allowed">Siguiente</span>
-                            @endif
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
-
-@push('scripts')
+<!-- Mostrar modal de error si hay error de sesión -->
+@if(session('error'))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Lógica para filtros y acciones de notificaciones
+    showErrorModal('error-modal', 'Error', '{{ session('error') }}');
 });
 </script>
-@endpush
+                            @endif
+                            
+<!-- Mostrar modal de éxito si hay éxito de sesión -->
+@if(session('success'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showSuccessModal('success-modal', '¡Éxito!', '{{ session('success') }}');
+});
+</script>
+@endif
+@endsection

@@ -14,5 +14,6 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         'api/*', // Eximir todas las rutas API de verificación CSRF
         'api/extract-qr-url', // Específicamente eximir esta ruta
+        'api/scrape-sat-data', // Eximir la ruta de scraping SAT
     ];
 }

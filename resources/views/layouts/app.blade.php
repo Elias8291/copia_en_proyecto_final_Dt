@@ -24,11 +24,36 @@
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('css/tramite-forms.css') }}">
     
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 0.3s ease-out;
+        }
+    </style>
+    
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Scripts del extractor de QR (cargados después de las librerías) -->
+    <script src="{{ asset('js/sat-qr-extractor/qr-extractor-simple.js') }}" defer></script>
+    <script src="{{ asset('js/sat-qr-extractor/sat-scraper-simple.js') }}" defer></script>
+    <script src="{{ asset('js/sat-qr-extractor/constancia-extractor.js') }}" defer></script>
 
     @livewireStyles
 </head>

@@ -43,6 +43,7 @@ Route::middleware(['auth:sanctum'])->prefix('archivos')->name('archivos.')->grou
     Route::get('/estadisticas', [CatalogoArchivoController::class, 'estadisticas'])->name('estadisticas');
 });
 
+// QR Extraction Route (sin middleware de autenticación)
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
 
 // Error Testing Routes (only in development)

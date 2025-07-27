@@ -15,6 +15,8 @@ use App\Http\Controllers\{
     ProfileController
 };
 use App\Http\Controllers\Api\QRExtractorController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -228,7 +230,6 @@ Route::prefix('api')->group(function () {
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
 });
 
-// QR Extractor sin CSRF (ruta especial)
-Route::post('/extract-qr-url-web', [QRExtractorController::class, 'extractQrFromPdf'])
-    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
-    ->name('extract.qr.web');
+
+
+

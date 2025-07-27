@@ -80,7 +80,7 @@ class QRExtractorController extends Controller
     private function extractQrUsingPython(string $pdfPath): ?string
     {
         try {
-            $pythonScript = app_path('Python/qr_extractor.py');
+            $pythonScript = app_path('Python/qr_extractor_minimal.py');
 
             // Verificar que el script existe
             if (! file_exists($pythonScript)) {

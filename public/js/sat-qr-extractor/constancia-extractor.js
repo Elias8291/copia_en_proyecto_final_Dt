@@ -85,83 +85,53 @@ class ConstanciaExtractor {
      * @returns {Promise<Object>}
      */
     async extractQRFromPDF(file) {
-        const formData = new FormData();
-        formData.append('pdf', file);
-
         try {
-            const response = await fetch('/api/extract-qr-url', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': this.getCSRFToken()
-                }
-            });
-
-            const data = await response.json();
-
-            if (data.success && data.url) {
-                return {
-                    success: true,
-                    url: data.url
-                };
-            } else {
-                return {
-                    success: false,
-                    error: data.error || 'No se encontró código QR en el documento'
-                };
+            // Verificar si las dependencias están disponibles
+            if (typeof window['pdfjs-dist/build/pdf'] === 'undefined') {
+                throw new Error('PDF.js no está disponible');
             }
-
+            
+            if (typeof jsQR === 'undefined') {
+                throw new Error('jsQR no está disponible');
+            }
+            
+            // Crear extractor simple
+            const qrExtractor = new SimpleQRExtractor();
+            
+            // Extraer QR
+            const result = await qrExtractor.extractQRFromPDF(file);
+            
+            return result;
+            
         } catch (error) {
             return {
                 success: false,
-                error: 'Error al extraer QR: ' + error.message
+                error: 'Error procesando PDF: ' + error.message
             };
         }
     }
 
+
+
     /**
-     * Paso 2: Hace scraping del SAT (usando la API que funciona)
+     * Paso 2: Hace scraping del SAT usando JavaScript
      * @param {string} url 
      * @returns {Promise<Object>}
      */
     async scrapeSATData(url) {
-        // Validar que sea URL del SAT
-        if (!url.includes('siat.sat.gob.mx')) {
-            return {
-                success: false,
-                error: 'La constancia debe ser del SAT oficial'
-            };
-        }
-
         try {
-            const response = await fetch('/api/scrape-sat-data', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': this.getCSRFToken()
-                },
-                body: JSON.stringify({ url: url })
-            });
-
-            const data = await response.json();
-
-            if (data.success && data.sat_data && data.sat_data.success) {
-                return {
-                    success: true,
-                    sat_data: this.normalizeSATData(data.sat_data)
-                };
-            } else {
-                return {
-                    success: false,
-                    error: data.error || 'No se pudieron extraer los datos del SAT'
-                };
-            }
-
+            // Crear scraper simple
+            const satScraper = new SimpleSATScraper();
+            
+            // Scrapear datos del SAT
+            const result = await satScraper.scrapeSATData(url);
+            
+            return result;
+            
         } catch (error) {
             return {
                 success: false,
-                error: 'Error al consultar SAT: ' + error.message
+                error: 'Error consultando SAT: ' + error.message
             };
         }
     }
@@ -175,7 +145,12 @@ class ConstanciaExtractor {
         // Usar los datos del formulario si están disponibles, sino usar los datos raw
         const formData = rawData.form_data || rawData;
         
-        return {
+        // Si no hay form_data, intentar extraer datos de las secciones
+        if (!rawData.form_data && rawData.identificacion) {
+            return this.normalizeFromSections(rawData);
+        }
+        
+        const normalized = {
             rfc: formData.rfc || '',
             nombre: formData.razon_social || formData.nombre || '',
             curp: formData.curp || '',
@@ -190,6 +165,49 @@ class ConstanciaExtractor {
             nombre_vialidad: formData.calle || formData.nombre_vialidad || '',
             numero_exterior: formData.numero_exterior || '',
             numero_interior: formData.numero_interior || ''
+        };
+        
+        return normalized;
+    }
+
+    /**
+     * Normaliza datos desde las secciones del SAT
+     * @param {Object} rawData 
+     * @returns {Object}
+     */
+    normalizeFromSections(rawData) {
+        const identificacion = rawData.identificacion || {};
+        const ubicacion = rawData.ubicacion || {};
+        const caracteristicas = rawData.caracteristicas_fiscales || {};
+        
+        // Construir nombre completo para persona física
+        let nombre = '';
+        if (rawData.tipo_persona === 'fisica') {
+            const nombreParts = [
+                identificacion.nombre || '',
+                identificacion.apellido_paterno || '',
+                identificacion.apellido_materno || ''
+            ].filter(part => part.trim());
+            nombre = nombreParts.join(' ');
+        } else {
+            nombre = identificacion.denominacion_o_razon_social || '';
+        }
+        
+        return {
+            rfc: rawData.rfc || '',
+            nombre: nombre,
+            curp: rawData.curp_validado || identificacion.curp || '',
+            regimen_fiscal: caracteristicas.regimen || '',
+            estatus: caracteristicas.situacion_del_contribuyente || '',
+            entidad_federativa: ubicacion.entidad_federativa || '',
+            municipio: ubicacion.municipio_o_delegacion || '',
+            email: ubicacion.correo_electronico || '',
+            tipo_persona: rawData.tipo_persona || '',
+            cp: ubicacion.cp || '',
+            colonia: ubicacion.colonia || ubicacion.localidad || '',
+            nombre_vialidad: ubicacion.nombre_de_la_vialidad || '',
+            numero_exterior: ubicacion.numero_exterior || '',
+            numero_interior: ubicacion.numero_interior || ''
         };
     }
 

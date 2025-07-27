@@ -51,8 +51,15 @@
     </style>
 @endpush
 
-<!-- Componentes Reutilizables -->
-<script src="{{ asset('js/constancia-extractor.js') }}"></script>
+<!-- Librerías necesarias para el extractor de QR -->
+<script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+<!-- Scripts del extractor de QR -->
+<script src="{{ asset('js/sat-qr-extractor/qr-extractor-simple.js') }}"></script>
+<script src="{{ asset('js/sat-qr-extractor/sat-scraper-simple.js') }}"></script>
+<script src="{{ asset('js/sat-qr-extractor/constancia-extractor.js') }}"></script>
 <script src="{{ asset('js/auth/register-handler.js') }}"></script>
 
 @section('content')
@@ -65,6 +72,9 @@
     
     <!-- Modal de Error -->
     @include('components.modals.general.error')
+    
+    <!-- Modal de Datos del SAT -->
+    @include('components.sat-data-modal')
 
     @php
         $mostrarFormulario = old('sat_rfc') || $errors->any();

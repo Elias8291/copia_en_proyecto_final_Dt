@@ -56,26 +56,21 @@ class RegisterHandler {
      */
     async processFile(file) {
         try {
-            console.log("🚀 Procesando archivo:", file.name);
-
             const result = await this.extractor.extract(file);
 
             if (result.success) {
-                console.log("✅ Datos extraídos:", result.sat_data);
                 return {
                     success: true,
                     sat_data: result.sat_data,
                     qr_url: result.qr_url,
                 };
             } else {
-                console.error("❌ Error:", result.error);
                 return {
                     success: false,
                     error: result.error,
                 };
             }
         } catch (error) {
-            console.error("❌ Error inesperado:", error.message);
             return {
                 success: false,
                 error: "Error interno: " + error.message,
@@ -111,8 +106,8 @@ window.uploadFile = async function (input) {
             // Llenar campos ocultos
             fillHiddenInputs(result.sat_data);
 
-            // Mostrar formulario de registro
-            showRegistrationForm();
+            // Mostrar modal con los datos del SAT
+            showSatDataModal(result.sat_data);
         } else {
             // Mostrar modal de error con título y descripción personalizados
             const titulo = "Error al procesar el archivo";
