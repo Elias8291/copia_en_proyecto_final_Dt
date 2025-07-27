@@ -19,13 +19,13 @@
                 </div>
                 
                 <div class="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-3">
-                    <a href="{{ route('users.index') }}" 
+                <a href="{{ route('users.index') }}" 
                        class="px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                         <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
+                    </svg>
                         Volver
-                    </a>
+                </a>
                 </div>
             </div>
         </div>
@@ -34,9 +34,9 @@
     <!-- Form Compacto -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
         <form action="{{ route('users.update', $user) }}" method="POST" class="space-y-4 p-4">
-            @csrf
-            @method('PUT')
-            
+                    @csrf
+                    @method('PUT')
+                    
             <!-- Información Personal -->
             <div class="border-b border-gray-100 pb-4">
                 <div class="flex items-center mb-3">
@@ -49,11 +49,11 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Nombre -->
+                        <!-- Nombre -->
                     <div class="space-y-1">
                         <label for="nombre" class="block text-base font-medium text-gray-700">
                             Nombre Completo <span class="text-red-500">*</span>
-                        </label>
+                            </label>
                         <div class="relative">
                             <input type="text" 
                                    name="nombre" 
@@ -75,13 +75,13 @@
                                 {{ $message }}
                             </p>
                         @enderror
-                    </div>
+                        </div>
 
                     <!-- Correo -->
                     <div class="space-y-1">
                         <label for="correo" class="block text-base font-medium text-gray-700">
                             Correo Electrónico <span class="text-red-500">*</span>
-                        </label>
+                            </label>
                         <div class="relative">
                             <input type="email" 
                                    name="correo" 
@@ -104,13 +104,13 @@
                             </p>
                         @enderror
                     </div>
-                </div>
+                        </div>
 
-                <!-- RFC -->
+                        <!-- RFC -->
                 <div class="mt-3 space-y-1">
                     <label for="rfc" class="block text-base font-medium text-gray-700">
-                        RFC
-                    </label>
+                                RFC
+                            </label>
                     <div class="relative max-w-xs">
                         <input type="text" 
                                name="rfc" 
@@ -194,7 +194,7 @@
                     <div class="space-y-1">
                         <label for="password_confirmation" class="block text-base font-medium text-gray-700">
                             Confirmar Nueva Contraseña
-                        </label>
+                            </label>
                         <div class="relative">
                             <input type="password" 
                                    name="password_confirmation" 
@@ -297,29 +297,29 @@
                         <span class="text-gray-500 font-medium">Creado:</span>
                         <span class="ml-1 font-semibold text-gray-900">{{ $user->created_at->format('d/m/Y H:i') }}</span>
                     </div>
-                </div>
-            </div>
+                        </div>
+                    </div>
 
-            <!-- Botones -->
+                    <!-- Botones -->
             <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-100">
-                <a href="{{ route('users.index') }}" 
+                        <a href="{{ route('users.index') }}" 
                    class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
-                    Cancelar
-                </a>
-                <button type="submit" 
+                            Cancelar
+                        </a>
+                        <button type="submit" 
                         class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 transform hover:scale-105">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    Actualizar Usuario
-                </button>
+                            Actualizar Usuario
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
-    </div>
-</div>
+        </div>
 
 <script>
 function togglePassword(inputId) {
@@ -376,4 +376,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endsection 
+@endsection
