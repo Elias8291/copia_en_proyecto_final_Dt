@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('actividades_economicas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sector_id')->constrained('sectores');
+            $table->foreignId('sector_id')->nullable()->constrained('sectores');
             $table->string('nombre');
             $table->string('codigo_scian', 10)->nullable();
             $table->text('descripcion')->nullable();

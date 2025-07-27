@@ -66,23 +66,25 @@
                     if ($rfcUsuario) {
                         $tipoPersona = strlen($rfcUsuario) === 12 ? 'Moral' : 'Física';
                     }
-                    $totalSteps = $tipoPersona === 'Moral' ? 6 : 4;
+                    $totalSteps = $tipoPersona === 'Moral' ? 7 : 5;
 
                     $stepNames =
                         $tipoPersona === 'Moral'
                             ? [
                                 1 => 'Datos Generales',
-                                2 => 'Domicilio',
-                                3 => 'Constitutivos',
-                                4 => 'Apoderado',
-                                5 => 'Accionistas',
-                                6 => 'Documentos',
+                                2 => 'Actividades Económicas',
+                                3 => 'Domicilio',
+                                4 => 'Constitutivos',
+                                5 => 'Apoderado',
+                                6 => 'Accionistas',
+                                7 => 'Documentos',
                             ]
                             : [
                                 1 => 'Datos Generales',
-                                2 => 'Domicilio',
-                                3 => 'Documentos',
-                                4 => 'Confirmación',
+                                2 => 'Actividades Económicas',
+                                3 => 'Domicilio',
+                                4 => 'Documentos',
+                                5 => 'Confirmación',
                             ];
                 @endphp
 
@@ -137,19 +139,25 @@
                         ])
                     </div>
 
-
-
                     <div class="section-container step-section" data-step="2" id="step-section-2">
-                        @include('tramites.partials.domicilio', [
+                        @include('tramites.partials.actividades-economicas', [
                             'tipo' => $tipo_tramite,
                             'proveedor' => $proveedor,
-                            'datosSat' => $datosSat,
                             'editable' => true,
                         ])
                     </div>
 
                     @if ($tipoPersona === 'Moral')
                         <div class="section-container step-section" data-step="3" id="step-section-3">
+                            @include('tramites.partials.domicilio', [
+                                'tipo' => $tipo_tramite,
+                                'proveedor' => $proveedor,
+                                'datosSat' => $datosSat,
+                                'editable' => true,
+                            ])
+                        </div>
+
+                        <div class="section-container step-section" data-step="4" id="step-section-4">
                             @include('tramites.partials.constitucion', [
                                 'tipo' => $tipo_tramite,
                                 'proveedor' => $proveedor,
@@ -157,14 +165,14 @@
                             ])
                         </div>
 
-                        <div class="section-container step-section" data-step="4" id="step-section-4">
+                        <div class="section-container step-section" data-step="5" id="step-section-5">
                             @include('tramites.partials.apoderado', [
                                 'tipo' => $tipo_tramite,
                                 'proveedor' => $proveedor,
                             ])
                         </div>
 
-                        <div class="section-container step-section" data-step="5" id="step-section-5">
+                        <div class="section-container step-section" data-step="6" id="step-section-6">
                             @include('tramites.partials.accionistas', [
                                 'tipo' => $tipo_tramite,
                                 'proveedor' => $proveedor,
@@ -172,7 +180,7 @@
                             ])
                         </div>
 
-                        <div class="section-container step-section" data-step="6" id="step-section-6">
+                        <div class="section-container step-section" data-step="7" id="step-section-7">
                             @include('tramites.partials.documentos', [
                                 'tipo' => $tipo_tramite,
                                 'proveedor' => $proveedor,
@@ -182,6 +190,15 @@
                         </div>
                     @else
                         <div class="section-container step-section" data-step="3" id="step-section-3">
+                            @include('tramites.partials.domicilio', [
+                                'tipo' => $tipo_tramite,
+                                'proveedor' => $proveedor,
+                                'datosSat' => $datosSat,
+                                'editable' => true,
+                            ])
+                        </div>
+
+                        <div class="section-container step-section" data-step="4" id="step-section-4">
                             @include('tramites.partials.documentos', [
                                 'tipo' => $tipo_tramite,
                                 'proveedor' => $proveedor,
@@ -192,8 +209,8 @@
                     @endif
 
 
-                    <div class="section-container step-section" data-step="{{ $tipoPersona === 'Moral' ? 6 : 4 }}"
-                        id="step-section-{{ $tipoPersona === 'Moral' ? 6 : 4 }}">
+                    <div class="section-container step-section" data-step="{{ $tipoPersona === 'Moral' ? 7 : 5 }}"
+                        id="step-section-{{ $tipoPersona === 'Moral' ? 7 : 5 }}">
                         <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
 
                             <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
@@ -402,20 +419,6 @@
                             <span class="text-sm sm:text-base">Anterior</span>
                         </button>
 
-
-                        <div class="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                            <button type="button" id="btn-guardar-borrador"
-                                class="w-full sm:w-auto px-6 py-3 border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-50 transition-all duration-200 flex items-center justify-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12">
-                                    </path>
-                                </svg>
-                                <span class="text-sm sm:text-base">Guardar Borrador</span>
-                            </button>
-                        </div>
-
-
                         <button type="button" id="btn-siguiente"
                             class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#9D2449] to-[#B91C1C] text-white rounded-xl hover:from-[#8a203f] hover:to-[#a91b1b] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center">
                             <span class="text-sm sm:text-base" id="btn-siguiente-text">Siguiente</span>
@@ -426,9 +429,8 @@
                             </svg>
                         </button>
 
-
                         <button type="button" id="btn-enviar" style="display: none;"
-                            class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center">
+                            class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#9D2449] to-[#B91C1C] text-white rounded-xl hover:from-[#8a203f] hover:to-[#a91b1b] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>

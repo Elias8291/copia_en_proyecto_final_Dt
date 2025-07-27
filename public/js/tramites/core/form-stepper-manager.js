@@ -5,24 +5,28 @@ class FormStepperManager {
         this.tipoPersona = tipoPersona;
         this.stepConfig = {
             'Física': {
-                steps: [1, 2, 3, 4],
+                steps: [1, 2, 3, 4, 5],
                 names: {
                     1: 'Datos Generales',
-                    2: 'Domicilio',
-                    3: 'Documentos',
-                    4: 'Confirmación'
-                }
+                    2: 'Actividades Económicas',
+                    3: 'Domicilio',
+                    4: 'Documentos',
+                    5: 'Confirmación'
+                },
+                lastStep: 5
             },
             'Moral': {
-                steps: [1, 2, 3, 4, 5, 6],
+                steps: [1, 2, 3, 4, 5, 6, 7],
                 names: {
                     1: 'Datos Generales',
-                    2: 'Domicilio',
-                    3: 'Constitutivos',
-                    4: 'Apoderado',
-                    5: 'Accionistas',
-                    6: 'Documentos'
-                }
+                    2: 'Actividades Económicas',
+                    3: 'Domicilio',
+                    4: 'Constitutivos',
+                    5: 'Apoderado',
+                    6: 'Accionistas',
+                    7: 'Documentos'
+                },
+                lastStep: 7
             }
         };
         this.init();
@@ -91,11 +95,11 @@ class FormStepperManager {
 
     goToNextStep() {
         if (this.validateCurrentStep()) {
-            if (this.currentStep < this.totalSteps) {
+            const config = this.stepConfig[this.tipoPersona];
+            const lastStep = config.lastStep;
+            
+            if (this.currentStep < lastStep) {
                 this.goToStep(this.currentStep + 1);
-            } else {
-                document.getElementById('btn-siguiente').style.display = 'none';
-                document.getElementById('btn-enviar').style.display = 'block';
             }
         }
     }
@@ -176,12 +180,24 @@ class FormStepperManager {
         }
 
         if (btnSiguiente && btnSiguienteText) {
-            if (this.currentStep === this.totalSteps) {
-                btnSiguienteText.textContent = 'Finalizar';
-                btnSiguiente.className = 'w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center';
+            const config = this.stepConfig[this.tipoPersona];
+            const lastStep = config.lastStep;
+            
+            if (this.currentStep === lastStep) {
+                btnSiguiente.style.display = 'none';
+                const btnEnviar = document.getElementById('btn-enviar');
+                if (btnEnviar) {
+                    btnEnviar.style.display = 'flex';
+                }
             } else {
+                btnSiguiente.style.display = 'flex';
                 btnSiguienteText.textContent = 'Siguiente';
                 btnSiguiente.className = 'w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#9D2449] to-[#B91C1C] text-white rounded-xl hover:from-[#8a203f] hover:to-[#a91b1b] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center';
+                
+                const btnEnviar = document.getElementById('btn-enviar');
+                if (btnEnviar) {
+                    btnEnviar.style.display = 'none';
+                }
             }
         }
     }
@@ -190,6 +206,9 @@ class FormStepperManager {
         if (this.validateCurrentStep()) {
             const form = document.getElementById('formulario-tramite');
             if (form) {
+                // Procesar actividades temporales antes del envío
+                await this.procesarActividadesTemporales();
+                
                 const formData = new FormData(form);
                 try {
                     // Agregar el token CSRF si no está presente
@@ -224,10 +243,45 @@ class FormStepperManager {
                         console.error('Respuesta completa:', data);
                         alert('Error desconocido. Revisa la consola para más detalles.');
                     }
-                } catch (err) {
-                    console.error('Error en submitForm:', err);
-                    alert('Error inesperado al enviar el formulario: ' + err.message);
+                } catch (error) {
+                    console.error('Error al enviar formulario:', error);
+                    alert('Error al enviar el formulario. Por favor, intenta de nuevo.');
                 }
+            }
+        }
+    }
+    
+    async procesarActividadesTemporales() {
+        // Verificar si hay actividades temporales
+        if (typeof window.actividadesBuscar !== 'undefined' && window.actividadesBuscar.getActividadesTemporales().length > 0) {
+            try {
+                const actividadesTemporales = window.actividadesBuscar.getActividadesTemporales();
+                const form = document.getElementById('formulario-tramite');
+                
+                if (form) {
+                    // Agregar las actividades temporales al formulario
+                    actividadesTemporales.forEach(actividad => {
+                        // Crear input para la actividad temporal
+                        const inputActividad = document.createElement('input');
+                        inputActividad.type = 'hidden';
+                        inputActividad.name = 'actividades[]';
+                        inputActividad.value = actividad.id;
+                        form.appendChild(inputActividad);
+                        
+                        // Crear input para el nombre de la actividad temporal
+                        const inputNombre = document.createElement('input');
+                        inputNombre.type = 'hidden';
+                        inputNombre.name = `actividad_temp_nombre_${actividad.id}`;
+                        inputNombre.value = actividad.nombre;
+                        form.appendChild(inputNombre);
+                    });
+                }
+                
+                console.log('Actividades temporales agregadas al formulario:', actividadesTemporales.length);
+                
+            } catch (error) {
+                console.error('Error al procesar actividades temporales:', error);
+                throw error;
             }
         }
     }

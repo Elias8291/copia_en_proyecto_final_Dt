@@ -14,30 +14,6 @@
         </div>
     </div>
 
-    <!-- Modo de captura -->
-    <div class="mb-8">
-        <div class="flex items-center space-x-4 p-4 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
-            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm">
-                <i class="fas fa-cog text-sm"></i>
-            </div>
-            <div class="flex-1">
-                <p class="text-sm font-medium text-gray-700 mb-3">Seleccione el método para capturar la dirección:</p>
-                <div class="flex space-x-6">
-                    <label class="flex items-center group cursor-pointer">
-                        <input type="radio" name="modo_captura" value="codigo_postal" id="modo_codigo_postal" 
-                               class="mr-2 text-[#9d2449] focus:ring-[#9d2449] focus:ring-2" checked>
-                        <span class="text-sm text-gray-700 group-hover:text-[#9d2449] transition-colors">Por Código Postal (Automático)</span>
-                    </label>
-                    <label class="flex items-center group cursor-pointer">
-                        <input type="radio" name="modo_captura" value="manual" id="modo_manual" 
-                               class="mr-2 text-[#9d2449] focus:ring-[#9d2449] focus:ring-2">
-                        <span class="text-sm text-gray-700 group-hover:text-[#9d2449] transition-colors">Captura Manual</span>
-                    </label>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Código Postal y Ubicación -->
     <div class="space-y-8">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -67,53 +43,57 @@
             <input type="hidden" id="pais" name="pais" value="MÉXICO">
             <input type="hidden" id="pais_id" name="pais_id" value="1">
 
-            <!-- Estado -->
-            <div class="form-group">
-                <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">
-                    Estado
-                    <span class="text-[#9d2449]">*</span>
-                </label>
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                        <i class="fas fa-map-marked-alt text-gray-500"></i>
-                    </div>
-                    <select id="estado" name="estado_id" 
-                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
-                        <option value="">Seleccione un estado</option>
-                        <!-- Las opciones se cargarán dinámicamente -->
-                        <option value="otro">Otro</option>
-                    </select>
-                    <input type="text" id="estado_otro" name="estado_otro" class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" placeholder="Especifique otro estado">
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400"></i>
-                    </div>
-                </div>
-                <p class="mt-1 text-sm text-gray-500" id="estado-help-text">Se carga automáticamente con código postal</p>
-            </div>
+           <!-- Estado -->
+<div class="form-group">
+    <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">
+        Estado
+        <span class="text-[#9d2449]">*</span>
+    </label>
+    <div class="relative group">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+            <i class="fas fa-map-marked-alt text-gray-500"></i>
+        </div>
+        <select id="estado" name="estado_id" 
+                class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
+            <option value="">Seleccione un estado</option>
+            <!-- Las opciones se cargarán dinámicamente -->
+            <option value="otro">Otro</option>
+        </select>
+        <input type="text" id="estado_otro" name="estado_otro" 
+               class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" 
+               placeholder="Especifique otro estado">
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <i class="fas fa-chevron-down text-gray-400"></i>
+        </div>
+    </div>
+    <p class="mt-1 text-sm text-gray-500" id="estado-help-text">Se carga automáticamente con código postal</p>
+</div>
 
-            <!-- Municipio -->
-            <div class="form-group">
-                <label for="municipio" class="block text-sm font-medium text-gray-700 mb-2">
-                    Municipio/Delegación
-                    <span class="text-[#9d2449]">*</span>
-                </label>
-                <div class="relative group">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                        <i class="fas fa-city text-gray-500"></i>
-                    </div>
-                    <select id="municipio" name="municipio" 
-                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
-                        <option value="">Seleccione un municipio</option>
-                        <option value="otro">Otro</option>
-                    </select>
-                    <input type="text" id="municipio_otro" name="municipio_otro" class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" placeholder="Especifique otro municipio">
-                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <i class="fas fa-chevron-down text-gray-400"></i>
-                    </div>
-                </div>
-                <input type="hidden" id="municipio_id" name="municipio_id">
-                <p class="mt-1 text-sm text-gray-500" id="municipio-help-text">Se carga automáticamente con código postal</p>
-            </div>
+<!-- Municipio -->
+<div class="form-group">
+    <label for="municipio" class="block text-sm font-medium text-gray-700 mb-2">
+        Municipio/Delegación
+        <span class="text-[#9d2449]">*</span>
+    </label>
+    <div class="relative group">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+            <i class="fas fa-city text-gray-500"></i>
+        </div>
+        <select id="municipio" name="municipio" 
+                class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
+            <option value="">Seleccione un municipio</option>
+            <option value="otro">Otro</option>
+        </select>
+        <input type="text" id="municipio_otro" name="municipio_otro" 
+               class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" 
+               placeholder="Especifique otro municipio">
+        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <i class="fas fa-chevron-down text-gray-400"></i>
+        </div>
+    </div>
+    <input type="hidden" id="municipio_id" name="municipio_id">
+    <p class="mt-1 text-sm text-gray-500" id="municipio-help-text">Se carga automáticamente con código postal</p>
+</div>
         </div>
 
         <!-- Asentamiento -->

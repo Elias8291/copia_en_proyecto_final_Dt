@@ -12,59 +12,90 @@ class AsentamientosSeeder extends Seeder
     {
         echo "Cargando asentamientos...\n";
 
-        if (! $data = json_decode(File::get(database_path('json/asentamientos.json')), true)) {
-            return $this->command->error('Error al cargar asentamientos.json');
+        $jsonPath = database_path('json/asentamientos.json');
+        if (!File::exists($jsonPath)) {
+            echo "Error: El archivo asentamientos.json no existe\n";
+            return;
         }
 
         // Verificar que existan localidades en la base de datos
         $localidadesCount = DB::table('localidades')->count();
-
         if ($localidadesCount === 0) {
             echo "Error: No hay localidades en la base de datos\n";
-
             return;
         }
 
-        $insertedCount = 0;
-        $totalAsentamientos = count($data['settlements'] ?? []);
+        // Leer el archivo JSON en chunks para evitar problemas de memoria
+        $handle = fopen($jsonPath, 'r');
+        if (!$handle) {
+            echo "Error: No se pudo abrir el archivo asentamientos.json\n";
+            return;
+        }
+
+        $content = '';
+        while (($line = fgets($handle)) !== false) {
+            $content .= $line;
+        }
+        fclose($handle);
+
+        $data = json_decode($content, true);
+        if (!$data) {
+            echo "Error al decodificar asentamientos.json\n";
+            return;
+        }
+
+        $settlements = $data['settlements'] ?? [];
+        $totalAsentamientos = count($settlements);
         echo "Total de asentamientos a procesar: $totalAsentamientos\n";
 
-        collect($data['settlements'] ?? [])->chunk(500)->each(function ($chunk) use (&$insertedCount) {
-            $asentamientos = $chunk->map(function ($item) {
-                // Verificar que el item tenga los campos necesarios
-                if (! isset($item['name']) || ! isset($item['zip_code']) || ! isset($item['localidad_id']) || ! isset($item['settlement_type_id'])) {
-                    echo 'Advertencia: Registro incompleto - '.json_encode($item)."\n";
+        $insertedCount = 0;
+        $chunkSize = 100; // Reducir el tamaño del chunk
 
-                    return null;
+        // Procesar en chunks más pequeños
+        for ($i = 0; $i < $totalAsentamientos; $i += $chunkSize) {
+            $chunk = array_slice($settlements, $i, $chunkSize);
+            
+            $asentamientos = [];
+            foreach ($chunk as $item) {
+                // Verificar que el item tenga los campos necesarios
+                if (!isset($item['name']) || !isset($item['zip_code']) || !isset($item['localidad_id']) || !isset($item['settlement_type_id'])) {
+                    echo 'Advertencia: Registro incompleto - ' . json_encode($item) . "\n";
+                    continue;
                 }
 
-                return [
+                $asentamientos[] = [
                     'localidad_id' => $item['localidad_id'],
                     'nombre' => $item['name'],
                     'codigo_postal' => (string) $item['zip_code'],
                     'tipo_asentamiento_id' => $this->getTipoAsentamientoId($item['settlement_type_id']),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
-            })->filter()->toArray();
+            }
 
-            if (! empty($asentamientos)) {
+            if (!empty($asentamientos)) {
                 try {
                     DB::table('asentamientos')->insert($asentamientos);
                     $insertedCount += count($asentamientos);
-                    echo "Insertados: $insertedCount asentamientos...\n";
+                    echo "Insertados: $insertedCount de $totalAsentamientos asentamientos...\n";
                 } catch (\Exception $e) {
-                    echo 'Error al insertar lote: '.$e->getMessage()."\n";
+                    echo 'Error al insertar lote: ' . $e->getMessage() . "\n";
                     // Intentar insertar uno por uno para identificar registros problemáticos
                     foreach ($asentamientos as $asentamiento) {
                         try {
                             DB::table('asentamientos')->insert([$asentamiento]);
                             $insertedCount++;
                         } catch (\Exception $e) {
-                            echo 'Error al insertar: '.json_encode($asentamiento).' - '.$e->getMessage()."\n";
+                            echo 'Error al insertar: ' . json_encode($asentamiento) . ' - ' . $e->getMessage() . "\n";
                         }
                     }
                 }
             }
-        });
+
+            // Liberar memoria
+            unset($chunk, $asentamientos);
+            gc_collect_cycles();
+        }
 
         echo "Asentamientos cargados exitosamente: $insertedCount de $totalAsentamientos\n";
     }
@@ -102,3 +133,4 @@ class AsentamientosSeeder extends Seeder
         return $tiposMap[$settlementTypeId] ?? 1; // Default to Colonia (ID 1)
     }
 }
+
