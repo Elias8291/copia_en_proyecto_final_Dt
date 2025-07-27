@@ -680,6 +680,9 @@
         }
     </script>
     
+    <!-- Modal de Carga Global -->
+    @include('components.loading-modal')
+    
     <!-- Script del componente de loading global -->
     <script src="{{ asset('js/components/global-loading.js') }}"></script>
     

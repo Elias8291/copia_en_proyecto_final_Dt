@@ -158,7 +158,7 @@
 
         <!-- Botones de acción -->
         <div class="space-y-1.5 pt-2">
-            <button type="submit" onclick="showLoading({ text: 'Iniciando sesión...' })"
+            <button type="submit" onclick="validateAndSubmit(event)"
                 class="group w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 relative overflow-hidden text-sm">
                 <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 </div>
@@ -212,6 +212,49 @@
         `;
             }
         }
+
+        function validateAndSubmit(event) {
+            event.preventDefault();
+            
+            // Obtener los campos
+            const rfcInput = document.getElementById('rfc');
+            const passwordInput = document.getElementById('password');
+            const form = document.getElementById('loginForm');
+            
+            // Validar que los campos no estén vacíos
+            if (!rfcInput.value.trim()) {
+                rfcInput.focus();
+                rfcInput.classList.add('border-red-500');
+                return false;
+            }
+            
+            if (!passwordInput.value.trim()) {
+                passwordInput.focus();
+                passwordInput.classList.add('border-red-500');
+                return false;
+            }
+            
+            // Remover clases de error si los campos están llenos
+            rfcInput.classList.remove('border-red-500');
+            passwordInput.classList.remove('border-red-500');
+            
+            // Si todo está bien, mostrar loading y enviar formulario
+            showLoading({ text: 'Iniciando sesión...' });
+            
+            // Enviar el formulario después de un pequeño delay para que se vea el loading
+            setTimeout(() => {
+                form.submit();
+            }, 100);
+        }
+
+        // Remover clases de error cuando el usuario empiece a escribir
+        document.getElementById('rfc').addEventListener('input', function() {
+            this.classList.remove('border-red-500');
+        });
+
+        document.getElementById('password').addEventListener('input', function() {
+            this.classList.remove('border-red-500');
+        });
     </script>
 
 @endsection

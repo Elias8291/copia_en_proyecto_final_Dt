@@ -51,12 +51,10 @@
     </style>
 @endpush
 
-<!-- Librerías necesarias para el extractor de QR -->
 <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
 <script src="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
-<!-- Scripts del extractor de QR -->
 <script src="{{ asset('js/sat-qr-extractor/qr-extractor-simple.js') }}"></script>
 <script src="{{ asset('js/sat-qr-extractor/sat-scraper-simple.js') }}"></script>
 <script src="{{ asset('js/sat-qr-extractor/constancia-extractor.js') }}"></script>
@@ -64,16 +62,9 @@
 
 @section('content')
 
-    <!-- Modal de Loading -->
     @include('components.loading-modal')
-
-    <!-- Modal de Registro Exitoso -->
     @include('components.modals.auth.registration-success')
-    
-    <!-- Modal de Error -->
     @include('components.modals.general.error')
-    
-    <!-- Modal de Datos del SAT -->
     @include('components.sat-data-modal')
 
     @php
@@ -82,7 +73,6 @@
 
     <form method="POST" action="{{ route('register') }}" class="space-y-6" enctype="multipart/form-data">
         @csrf
-        <!-- Header con Logo -->
         <div class="text-center mb-3">
             <div class="flex flex-col items-center justify-center mb-2">
                 <div
@@ -105,7 +95,6 @@
             </div>
         </div>
 
-        <!-- Mensajes de Estado -->
         @if (session('error') || $errors->any())
             <div class="flex justify-center mb-3">
                 <div
@@ -147,88 +136,83 @@
             </div>
         @endif
 
-        @if (!$mostrarFormulario)
-            <div id="uploadArea" class="transition-all duration-300 ease-in-out min-h-[80px]">
-                <div class="mt-1">
-                    <label for="document" class="block text-xs font-medium text-gray-700 mb-0.5">
-                        <span class="block md:inline">Constancia de Situación Fiscal</span>
-                        <span class="text-xs text-gray-500 block md:inline md:ml-1">(PDF o Imagen)</span>
-                    </label>
-                    <div class="relative">
-                        <input type="file" id="document" name="document" accept=".pdf,.png,.jpg,.jpeg" required
-                            class="hidden" onchange="uploadFile(this)">
-                        <label for="document"
-                            class="group flex flex-col items-center justify-center w-full h-16 border-2 border-dashed @error('document') border-red-300 bg-red-50/30 @elseif($errors->has('sat_file')) border-red-300 bg-red-50/30 @else border-primary/20 bg-primary-50/30 @enderror hover:border-primary rounded-lg transition-all duration-300 cursor-pointer hover:bg-primary-50">
-                            <div class="flex flex-col md:flex-row items-center space-y-0.5 md:space-y-0 md:space-x-2 px-3">
-                                <div class="transform group-hover:scale-110 transition-transform duration-300">
-                                    @error('document')
-                                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    @elseif($errors->has('sat_file'))
-                                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                    @else
-                                        <svg class="w-4 h-4 text-primary/70 group-hover:text-primary" fill="none"
-                                            stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
-                                    @enderror
-                                </div>
-                                <div class="text-center md:text-left">
-                                    <p
-                                        class="@error('document') text-red-500 @elseif($errors->has('sat_file')) text-red-500 @else text-primary/70 group-hover:text-primary @enderror font-medium text-xs mb-0">
-                                        Haga clic para seleccionar archivo
-                                    </p>
-                                    <p class="text-xs @error('document') text-red-400 @elseif($errors->has('sat_file')) text-red-400 @else text-gray-500 @enderror"
-                                        id="fileName">
-                                        PDF o Imagen con QR (Máximo 5MB)
-                                    </p>
-                                </div>
+        <div id="uploadArea" class="transition-all duration-300 ease-in-out min-h-[80px] {{ $mostrarFormulario ? 'hidden' : '' }}">
+            <div class="mt-1">
+                <label for="document" class="block text-xs font-medium text-gray-700 mb-0.5">
+                    <span class="block md:inline">Constancia de Situación Fiscal</span>
+                    <span class="text-xs text-gray-500 block md:inline md:ml-1">(PDF o Imagen)</span>
+                </label>
+                <div class="relative">
+                    <input type="file" id="document" name="document" accept=".pdf,.png,.jpg,.jpeg" required
+                        class="hidden" onchange="uploadFile(this)">
+                    <label for="document"
+                        class="group flex flex-col items-center justify-center w-full h-16 border-2 border-dashed @error('document') border-red-300 bg-red-50/30 @elseif($errors->has('sat_file')) border-red-300 bg-red-50/30 @else border-primary/20 bg-primary-50/30 @enderror hover:border-primary rounded-lg transition-all duration-300 cursor-pointer hover:bg-primary-50">
+                        <div class="flex flex-col md:flex-row items-center space-y-0.5 md:space-y-0 md:space-x-2 px-3">
+                            <div class="transform group-hover:scale-110 transition-transform duration-300">
+                                @error('document')
+                                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                @elseif($errors->has('sat_file'))
+                                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                @else
+                                    <svg class="w-4 h-4 text-primary/70 group-hover:text-primary" fill="none"
+                                        stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                @enderror
                             </div>
-                        </label>
-                    </div>
-
-                    @error('document')
-                        <div class="mt-1">
-                            <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                            <div class="text-center md:text-left">
+                                <p
+                                    class="@error('document') text-red-500 @elseif($errors->has('sat_file')) text-red-500 @else text-primary/70 group-hover:text-primary @enderror font-medium text-xs mb-0">
+                                    Haga clic para seleccionar archivo
+                                </p>
+                                <p class="text-xs @error('document') text-red-400 @elseif($errors->has('sat_file')) text-red-400 @else text-gray-500 @enderror"
+                                    id="fileName">
+                                    PDF o Imagen con QR (Máximo 5MB)
+                                </p>
+                            </div>
                         </div>
-                    @enderror
-                    @error('sat_file')
-                        <div class="mt-1">
-                            <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
-                        </div>
-                    @enderror
+                    </label>
                 </div>
 
-                <!-- Estado de procesamiento -->
-                <div id="processingStatus" class="hidden mt-3">
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <div class="flex items-center justify-center space-x-2">
-                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                            <span class="text-xs text-primary font-medium">Extrayendo datos fiscales
-                                automáticamente...</span>
-                        </div>
+                @error('document')
+                    <div class="mt-1">
+                        <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
                     </div>
-                </div>
+                @enderror
+                @error('sat_file')
+                    <div class="mt-1">
+                        <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                    </div>
+                @enderror
+            </div>
 
-                <!-- Área de previsualización (oculta) -->
-                <div id="previewArea" class="hidden">
-                    <div class="hidden">
-                        <div id="qrResult"></div>
-                        <canvas id="pdfCanvas"></canvas>
+            <div id="processingStatus" class="hidden mt-3">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div class="flex items-center justify-center space-x-2">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                        <span class="text-xs text-primary font-medium">Extrayendo datos fiscales
+                            automáticamente...</span>
                     </div>
                 </div>
             </div>
-        @endif
 
-        <!-- Formulario de registro (mostrar si hay datos del SAT o errores) -->
+            <div id="previewArea" class="hidden">
+                <div class="hidden">
+                    <div id="qrResult"></div>
+                    <canvas id="pdfCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
         <div id="registrationForm"
             class="space-y-2 transition-all duration-300 ease-in-out {{ $mostrarFormulario ? '' : 'hidden' }}">
             <input type="hidden" id="qr_url" name="qr_url" value="{{ old('qr_url') }}">
@@ -236,6 +220,26 @@
             <input type="hidden" id="sat_nombre" name="sat_nombre" value="{{ old('sat_nombre') }}">
             <input type="hidden" id="sat_tipo_persona" name="sat_tipo_persona" value="{{ old('sat_tipo_persona') }}">
             <input type="hidden" id="sat_email" name="sat_email" value="{{ old('sat_email') }}">
+
+            <div class="mb-3 p-2 bg-gray-50 border border-gray-200 rounded-md">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-3.5 h-3.5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-xs text-gray-600">Los datos fiscales se autocompletaron de su constancia</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end mb-3">
+                <button type="button" onclick="showSatDataFromForm()" 
+                    class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-primary bg-white border border-primary rounded-md hover:bg-primary/5 hover:border-primary-dark transition-all duration-200 shadow-sm hover:shadow-md">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>Ver datos completos</span>
+                </button>
+            </div>
 
             <div>
                 <label for="email" class="block text-xs font-medium text-gray-700 mb-0.5">Correo Electrónico</label>
@@ -261,7 +265,6 @@
                 @enderror
             </div>
 
-            <!-- Contraseñas -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3">
                 <div>
                     <label for="password" class="block text-xs font-medium text-gray-700 mb-0.5">Contraseña</label>
@@ -294,16 +297,6 @@
                         <input type="password" id="password_confirmation" name="password_confirmation" required
                             class="w-full px-2.5 py-1.5 rounded-lg border @error('password_confirmation') border-red-500 bg-red-50/30 @else border-gray-300 @enderror focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm"
                             placeholder="••••••••">
-                        <div class="absolute right-8 top-1/2 -translate-y-1/2">
-                            @error('password_confirmation')
-                                <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            @else
-                                <div id="passwordMatchIcon" class="hidden"></div>
-                            @enderror
-                        </div>
                         <button type="button" onclick="togglePassword('password_confirmation')"
                             class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
@@ -316,17 +309,35 @@
                         </button>
                     </div>
                     @error('password_confirmation')
-                        <div class="mt-1">
-                            <span class="text-xs text-red-500 font-medium">{{ $message }}</span>
+                        <div class="mt-1 flex items-center text-red-500 text-xs font-medium">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{{ $message }}</span>
                         </div>
                     @enderror
                 </div>
             </div>
 
-
         </div>
 
-        <!-- Botones de acción -->
+        <script>
+            if (typeof showSatDataFromForm === 'undefined') {
+                window.showSatDataFromForm = function() {
+                    if (typeof satDataGlobal !== 'undefined' && satDataGlobal) {
+                        if (typeof showSatDataModal === 'function') {
+                            showSatDataModal(satDataGlobal);
+                        } else {
+                            alert("❌ Error: Función showSatDataModal no disponible");
+                        }
+                    } else {
+                        alert("❌ No hay datos del SAT disponibles. Por favor, suba su constancia fiscal primero.");
+                    }
+                };
+            }
+        </script>
+
         <div class="space-y-2 pt-3">
             <button type="button" id="actionButton" onclick="handleActionButton()"
                 class="group w-full bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 relative overflow-hidden text-sm">
@@ -354,7 +365,6 @@
             </a>
         </div>
 
-        <!-- Enlace de recuperación de contraseña -->
         <div class="text-center mt-3 relative z-10">
             <a href="{{ route('password.request') }}"
                 class="text-gray-500 hover:text-primary text-xs font-medium transition-all duration-200 flex items-center justify-center space-x-2 hover:bg-gray-50 py-1.5 px-3 rounded-lg">

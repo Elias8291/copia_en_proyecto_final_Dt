@@ -4,182 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificación de Cuenta</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9d2449',
+                        'primary-dark': '#8a203f',
+                    }
+                }
+            }
         }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            box-shadow: 0 8px 24px rgba(149, 26, 29, 0.1);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #9d2449 0%, #8a203f 100%);
-            color: white;
-            padding: 40px 20px;
-            text-align: center;
-        }
-        .logo {
-            width: 80px;
-            height: 80px;
-            background-color: rgba(255, 255, 255, 0.15);
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-        }
-        .content {
-            padding: 40px 30px;
-        }
-        .welcome-text {
-            font-size: 28px;
-            font-weight: bold;
-            color: #9d2449;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-        .verify-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #9d2449 0%, #8a203f 100%);
-            color: white;
-            padding: 16px 40px;
-            border-radius: 30px;
-            text-decoration: none;
-            font-weight: bold;
-            margin: 25px 0;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(157, 36, 73, 0.2);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 14px;
-        }
-        .verify-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(157, 36, 73, 0.3);
-        }
-        .info-box {
-            background: linear-gradient(135deg, #800000 0%, #5c0000 100%);
-            border-radius: 15px;
-            padding: 30px;
-            color: white;
-            margin: 30px 0;
-            box-shadow: 0 8px 24px rgba(149, 26, 29, 0.15);
-        }
-        .verification-link {
-            word-break: break-all;
-            color: #b87070;
-            background-color: #fff5f5;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: monospace;
-            border: 1px dashed #c98b8b;
-            margin: 20px 0;
-        }
-        .footer {
-            background: linear-gradient(135deg, #800000 0%, #5c0000 100%);
-            color: white;
-            padding: 35px;
-            text-align: center;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-    </style>
+    </script>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">
-                <svg width="40" height="40" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 0L3 7v10c0 5.55 3.84 9.739 9 9.739s9-4.189 9-9.739V7L12 0z"/>
-                </svg>
-            </div>
-            <h1 style="margin: 0; font-size: 32px; font-weight: 600;">Padrón de Proveedores</h1>
-            <p style="margin: 15px 0 0 0; opacity: 0.9; font-size: 18px;">Gobierno del Estado de Oaxaca</p>
+<body class="bg-gray-50 font-sans text-gray-800 m-0 p-5">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
+        <!-- Header -->
+        <div class="bg-primary text-white px-6 py-8 text-center">
+            <h1 class="text-xl font-semibold mb-2">Padrón de Proveedores</h1>
+            <p class="text-sm opacity-90">Gobierno del Estado de Oaxaca</p>
         </div>
-        <div class="content">
-            <div class="welcome-text">¡Bienvenido {{ $user->nombre }}!</div>
-            
-            <p style="font-size: 16px; color: #444;">
-                Gracias por registrarte en el Padrón de Proveedores del Gobierno del Estado de Oaxaca. 
-                Para activar tu cuenta y comenzar a utilizar nuestros servicios, por favor verifica tu dirección de correo electrónico.
-            </p>
+        
+        <!-- Content -->
+        <div class="px-6 py-8">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-semibold text-primary mb-2">¡Bienvenido {{ $user->nombre }}!</h2>
+                <p class="text-gray-600 text-sm leading-relaxed">
+                    Gracias por registrarte. Para activar tu cuenta, verifica tu correo electrónico.
+                </p>
+            </div>
 
-            <div style="text-align: center; margin: 35px 0;">
-                <a href="{{ $verificationUrl }}" class="verify-button">
-                    Verificar mi cuenta
+            <!-- Verify Button -->
+            <div class="text-center mb-8">
+                <a href="{{ $verificationUrl }}" 
+                   class="inline-block bg-primary hover:bg-primary-dark text-white font-medium px-8 py-3 rounded-md transition-colors duration-200 shadow-sm">
+                    Verificar cuenta
                 </a>
             </div>
 
-            <div class="info-box">
-                <h3 style="margin: 0 0 20px 0; font-size: 20px; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.2); padding-bottom: 15px;">
-                    Información Importante
-                </h3>
+            <!-- Info Section -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
+                <h3 class="text-gray-800 font-medium text-center mb-4">Información</h3>
                 
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
-                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                        <p style="margin: 0; font-size: 14px;">Enlace activo por<br><strong>{{ $expirationHours }} horas</strong></p>
+                <div class="grid grid-cols-3 gap-3 mb-4">
+                    <div class="bg-white border border-gray-200 rounded-md p-3 text-center">
+                        <p class="text-xs text-gray-600">Activo por<br><span class="font-semibold text-primary">{{ $expirationHours }}h</span></p>
                     </div>
                     
-                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                        <p style="margin: 0; font-size: 14px;">Un solo clic<br><strong>para verificar</strong></p>
+                    <div class="bg-white border border-gray-200 rounded-md p-3 text-center">
+                        <p class="text-xs text-gray-600">Un clic<br><span class="font-semibold text-primary">verifica</span></p>
                     </div>
                     
-                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                        <p style="margin: 0; font-size: 14px;">Acceso completo<br><strong>a la plataforma</strong></p>
+                    <div class="bg-white border border-gray-200 rounded-md p-3 text-center">
+                        <p class="text-xs text-gray-600">Acceso<br><span class="font-semibold text-primary">completo</span></p>
                     </div>
                 </div>
 
-                <div style="background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 10px; color: #800000; text-align: center; border-left: 5px solid #ff9999;">
-                    <strong style="font-size: 16px; color: #800000;">Recordatorio Importante</strong>
-                    <p style="margin: 10px 0 0 0; color: #666;">
-                        Si no verificas tu cuenta en las próximas {{ $expirationHours }} horas, deberás iniciar el proceso de registro nuevamente.
-                    </p>
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-md">
+                    <div class="text-center">
+                        <p class="text-yellow-800 font-medium text-sm mb-1">Importante</p>
+                        <p class="text-yellow-700 text-xs leading-relaxed">
+                            Verifica en las próximas {{ $expirationHours }} horas o deberás registrarte nuevamente.
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <p style="color: #444;">Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
-            <div class="verification-link">
-                {{ $verificationUrl }}
+            <!-- Manual Link -->
+            <div class="mb-6">
+                <p class="text-gray-700 text-sm mb-2">Si el botón no funciona, copia este enlace:</p>
+                <div class="bg-gray-50 border border-gray-200 rounded-md p-3">
+                    <code class="text-xs text-gray-600 break-all">{{ $verificationUrl }}</code>
+                </div>
             </div>
 
-            <p style="color: #666; font-style: italic;">
-                Si no has solicitado este registro, puedes ignorar este mensaje de forma segura.
+            <p class="text-gray-500 text-xs italic text-center">
+                Si no solicitaste este registro, ignora este mensaje.
             </p>
         </div>
 
-        <div class="footer">
-            <div style="margin-bottom: 20px;">
-                <svg width="40" height="40" fill="rgba(255,255,255,0.9)" viewBox="0 0 24 24" style="margin: 0 auto;">
-                    <path d="M12 0L3 7v10c0 5.55 3.84 9.739 9 9.739s9-4.189 9-9.739V7L12 0z"/>
-                </svg>
-            </div>
-
-            <h2 style="color: white; font-size: 20px; font-weight: 600; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px;">
-                Padrón de Proveedores
-            </h2>
-            <p style="color: white; font-size: 16px; margin: 0 0 5px 0; font-weight: 500;">
-                Gobierno del Estado de Oaxaca
-            </p>
+        <!-- Footer -->
+        <div class="bg-gray-50 border-t border-gray-200 px-6 py-6 text-center">
+            <h3 class="text-gray-800 font-semibold text-sm mb-2">Padrón de Proveedores</h3>
+            <p class="text-gray-600 text-xs mb-4">Gobierno del Estado de Oaxaca</p>
             
-            <div style="width: 60px; height: 2px; background: rgba(255,255,255,0.3); margin: 20px auto;"></div>
+            <div class="w-8 h-px bg-gray-300 mx-auto mb-4"></div>
             
-            <p style="color: rgba(255,255,255,0.8); font-size: 14px; margin: 15px 0;">
-                Este es un correo automático. Por favor, no responda a este mensaje.
-            </p>
-            
-            <p style="color: rgba(255,255,255,0.7); font-size: 12px; margin: 0;">
-                © {{ date('Y') }} Gobierno del Estado de Oaxaca. Todos los derechos reservados.
-            </p>
+            <p class="text-gray-500 text-xs mb-2">Correo automático. No responda a este mensaje.</p>
+            <p class="text-gray-400 text-xs">© {{ date('Y') }} Gobierno del Estado de Oaxaca.</p>
         </div>
     </div>
 </body>
