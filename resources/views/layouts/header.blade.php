@@ -130,7 +130,7 @@
 
                         <!-- Opciones principales -->
                         <div class="py-2">
-                            <a href="#"
+                            <a href="{{ route('profile.index') }}"
                                 class="group flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-primary/5 hover:text-primary transition-all duration-200">
                                 <div
                                     class="flex-shrink-0 w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3 group-hover:bg-primary/20 transition-colors duration-200">

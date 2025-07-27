@@ -7,33 +7,54 @@ use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
-     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
     public function rules(): array
     {
+        $userId = auth()->id();
+        
         return [
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($this->user()->id)],
-            'phone' => ['required', 'string', 'max:20'],
-            'address' => ['required', 'string', 'max:255'],
+            'nombre' => 'required|string|max:255',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email')->ignore($userId)
+            ],
+            'password' => 'nullable|string|min:8|confirmed',
+            'password_confirmation' => 'nullable|string|min:8'
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     */
     public function messages(): array
     {
         return [
-            'name.required' => 'El nombre es obligatorio.',
-            'email.required' => 'El correo electrónico es obligatorio.',
-            'email.email' => 'El correo electrónico debe ser válido.',
-            'email.unique' => 'Este correo electrónico ya está registrado.',
-            'phone.required' => 'El teléfono es obligatorio.',
-            'address.required' => 'La dirección es obligatoria.',
+            'nombre.required' => 'El nombre es obligatorio.',
+            'nombre.string' => 'El nombre debe ser una cadena de texto.',
+            'nombre.max' => 'El nombre no puede tener más de 255 caracteres.',
+            
+            'email.required' => 'El email es obligatorio.',
+            'email.email' => 'El email debe tener un formato válido.',
+            'email.unique' => 'Ya existe un usuario con este email.',
+            
+            'password.string' => 'La contraseña debe ser una cadena de texto.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'La confirmación de contraseña no coincide.',
+            
+            'password_confirmation.string' => 'La confirmación de contraseña debe ser una cadena de texto.',
+            'password_confirmation.min' => 'La confirmación de contraseña debe tener al menos 8 caracteres.'
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'nombre' => 'nombre',
+            'email' => 'email',
+            'password' => 'contraseña',
+            'password_confirmation' => 'confirmación de contraseña'
         ];
     }
 }

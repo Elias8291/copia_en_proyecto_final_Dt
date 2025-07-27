@@ -98,7 +98,7 @@
         :actions="$actions"
         searchPlaceholder="Buscar roles por nombre o descripción..."
     />
-</div>
+                        </div>
 
 <!-- Modal de error -->
 <x-error-modal 
@@ -120,9 +120,9 @@
 <!-- Mostrar modal de error si hay error de sesión -->
 @if(session('error'))
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     showErrorModal('error-modal', 'Error', '{{ session('error') }}');
-});
+    });
 </script>
 @endif
 @endsection

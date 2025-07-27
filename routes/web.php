@@ -72,7 +72,11 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     // Perfil de usuario
-    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('index');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfileController::class, 'update'])->name('update');
+    });
 
     // Notificaciones
     Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');

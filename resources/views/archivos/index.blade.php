@@ -8,7 +8,7 @@
             [
                 'label' => 'Archivo',
                 'field' => 'nombre',
-                'type' => 'text',
+                'type' => 'avatar',
                 'subfield' => 'descripcion',
                 'subfield_label' => 'Descripción'
             ],
