@@ -15,7 +15,7 @@
                     </div>
                     <div>
                         <h1 class="text-xl md:text-2xl font-bold text-gray-800">Crear Usuario</h1>
-                        <p class="text-sm text-gray-500 mt-1">Complete la información requerida</p>
+                        <p class="text-base text-gray-500 mt-1">Complete la información requerida</p>
                     </div>
                 </div>
                 
@@ -45,13 +45,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-base font-semibold text-gray-900 uppercase tracking-wide">Información Personal</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Información Personal</h3>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Nombre -->
                     <div class="space-y-1">
-                        <label for="nombre" class="block text-sm font-medium text-gray-700">
+                        <label for="nombre" class="block text-base font-medium text-gray-700">
                             Nombre Completo <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -79,7 +79,7 @@
 
                     <!-- Correo -->
                     <div class="space-y-1">
-                        <label for="correo" class="block text-sm font-medium text-gray-700">
+                        <label for="correo" class="block text-base font-medium text-gray-700">
                             Correo Electrónico <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -108,7 +108,7 @@
 
                 <!-- RFC -->
                 <div class="mt-3 space-y-1">
-                    <label for="rfc" class="block text-sm font-medium text-gray-700">
+                    <label for="rfc" class="block text-base font-medium text-gray-700">
                         RFC
                     </label>
                     <div class="relative max-w-xs">
@@ -150,13 +150,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-base font-semibold text-gray-900 uppercase tracking-wide">Contraseña</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Contraseña</h3>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Contraseña -->
                     <div class="space-y-1">
-                        <label for="password" class="block text-sm font-medium text-gray-700">
+                        <label for="password" class="block text-base font-medium text-gray-700">
                             Contraseña <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -186,7 +186,7 @@
 
                     <!-- Confirmar Contraseña -->
                     <div class="space-y-1">
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
+                        <label for="password_confirmation" class="block text-base font-medium text-gray-700">
                             Confirmar Contraseña <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
@@ -216,11 +216,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
                     </div>
-                    <h3 class="text-base font-semibold text-gray-900 uppercase tracking-wide">Roles y Permisos</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Roles y Permisos</h3>
                 </div>
                 
                 <div class="space-y-3">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-base font-medium text-gray-700 mb-2">
                         Roles del Usuario
                     </label>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -240,7 +240,7 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <span class="text-sm font-medium text-gray-900">{{ ucfirst($role->name) }}</span>
+                                        <span class="text-base font-medium text-gray-900">{{ ucfirst($role->name) }}</span>
                                         @if($role->name === 'user')
                                             <span class="block text-xs text-gray-400">(Por defecto)</span>
                                         @endif
@@ -257,7 +257,7 @@
                             {{ $message }}
                         </p>
                     @enderror
-                    <p class="text-sm text-gray-400 flex items-center">
+                    <p class="text-base text-gray-400 flex items-center">
                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
