@@ -3,8 +3,26 @@
 @php
     // Obtener documentos según el tipo de persona
     try {
-        $catalogoController = app(\App\Http\Controllers\CatalogoArchivoController::class);
-        $documentosRequeridos = $catalogoController->porTipoPersona($tipoPersona ?? 'Física');
+        $documentos = \App\Models\CatalogoArchivo::where('es_visible', true)
+            ->where(function ($query) use ($tipoPersona) {
+                $query->where('tipo_persona', $tipoPersona ?? 'Física')
+                      ->orWhere('tipo_persona', 'Ambas');
+            })
+            ->orderBy('nombre', 'asc')
+            ->get();
+        
+        $documentosRequeridos = $documentos->map(function ($documento) {
+            return (object) [
+                'id' => $documento->id,
+                'nombre' => $documento->nombre,
+                'descripcion' => $documento->descripcion,
+                'tipo_persona' => $documento->tipo_persona,
+                'tipo_archivo' => $documento->tipo_archivo,
+                'tipo_persona_label' => $documento->tipo_persona === 'Física' ? 'Persona Física' : 
+                                       ($documento->tipo_persona === 'Moral' ? 'Persona Moral' : 'Ambas'),
+                'tipo_archivo_label' => strtoupper($documento->tipo_archivo),
+            ];
+        });
     } catch (\Exception $e) {
         \Log::error('Error cargando documentos: ' . $e->getMessage());
         $documentosRequeridos = collect(); // Colección vacía como fallback

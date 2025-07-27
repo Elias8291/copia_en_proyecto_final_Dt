@@ -33,10 +33,10 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-building text-gray-500"></i>
                         </div>
-                        <input type="text" name="razon_social" {{ $editable ? 'required' : 'readonly' }}
+                        <input type="text" name="razon_social" readonly
                             value="{{ old('razon_social', $datosSat['razon_social'] ?? ($proveedor->razon_social ?? '')) }}"
                             data-validate="required|minLength:3|maxLength:255"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 {{ $editable ? 'bg-white' : 'bg-gray-50' }} border border-gray-200 rounded-lg {{ $editable ? 'focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50' : 'cursor-not-allowed' }} shadow-sm"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
                             aria-label="Razón social de la empresa" placeholder="Ingrese la razón social completa">
                     </div>
                 </div>
@@ -55,25 +55,13 @@
                             // Limpiar RFC de espacios y convertir a mayúsculas
                             $rfcValue = strtoupper(trim($rfcValue));
                         @endphp
-                        <input type="text" name="rfc" required value="{{ $rfcValue }}"
+                        <input type="text" name="rfc" readonly value="{{ $rfcValue }}"
                             data-validate="required|rfc|rfc-persona"
-                            class="validate-rfc block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                            class="validate-rfc block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
                             aria-label="RFC de la empresa" placeholder="Ej: ABC123456789 (12) o ABCD123456789 (13)"
                             maxlength="13" pattern="[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}"
                             style="text-transform: uppercase;">
                     </div>
-                    @if (!empty($rfcValue))
-                        <p class="mt-1 text-sm text-green-600">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            RFC cargado: {{ $rfcValue }} ({{ strlen($rfcValue) }} caracteres) -
-                            {{ strlen($rfcValue) === 12 ? 'Persona Moral' : (strlen($rfcValue) === 13 ? 'Persona Física' : 'Longitud incorrecta') }}
-                        </p>
-                    @else
-                        <p class="mt-1 text-sm text-amber-600">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                            Ejemplos: <strong>ABC123456789</strong> (Moral) o <strong>ABCD123456789</strong> (Física)
-                        </p>
-                    @endif
                 </div>
 
                 <div class="form-group field-container">
@@ -110,10 +98,10 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-address-card text-gray-500"></i>
                             </div>
-                            <input type="text" name="curp" maxlength="18" required
+                            <input type="text" name="curp" maxlength="18" readonly
                                 value="{{ old('curp', $datosSat['curp'] ?? ($proveedor->curp ?? '')) }}"
                                 data-validate="required|curp"
-                                class="validate-curp block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                                class="validate-curp block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
                                 placeholder="Ej: ABCD123456HDFGHI01" aria-label="CURP de la persona física"
                                 style="text-transform: uppercase;">
                         </div>

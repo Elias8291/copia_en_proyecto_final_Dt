@@ -43,6 +43,9 @@ Route::middleware(['auth:sanctum'])->prefix('archivos')->name('archivos.')->grou
     Route::get('/estadisticas', [CatalogoArchivoController::class, 'estadisticas'])->name('estadisticas');
 });
 
+// Documentos por tipo de persona (sin autenticación para el modal)
+Route::get('/documentos/{tipoPersona}', [CatalogoArchivoController::class, 'porTipoPersona']);
+
 // QR Extraction Route (sin middleware de autenticación)
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
 

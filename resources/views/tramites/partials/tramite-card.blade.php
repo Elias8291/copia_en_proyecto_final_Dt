@@ -115,31 +115,50 @@
 </div>
 
 <!-- Modal de Documentos Requeridos -->
-<div id="modalDocumentos" class="fixed left-0 top-0 flex h-full w-full items-center justify-center bg-black bg-opacity-50 py-10 z-50 hidden">
-    <div class="max-h-full w-full max-w-2xl overflow-y-auto sm:rounded-2xl bg-white">
-        <div class="w-full">
-            <div class="m-8 my-10 max-w-[600px] mx-auto">
-                <div class="mb-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <h1 class="text-2xl font-bold text-gray-800">Documentos Requeridos</h1>
-                        <button onclick="cerrarModalDocumentos()" class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
+<div id="modalDocumentos" class="fixed inset-0 z-50 hidden">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+    
+    <!-- Modal -->
+    <div class="relative min-h-screen flex items-center justify-center p-2 sm:p-4">
+        <div class="w-full max-w-4xl bg-white rounded-xl sm:rounded-2xl shadow-2xl transform transition-all mx-2 sm:mx-0 max-h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 sm:p-6 lg:p-8 border-b border-gray-100 bg-white">
+                <div class="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
                     </div>
-                    <p class="text-gray-600 mb-6">Antes de iniciar el trámite, asegúrese de tener los siguientes documentos listos:</p>
-                    
-                    <!-- Lista de Documentos -->
-                    <div id="listaDocumentos" class="space-y-4 mb-6">
-                        <!-- Los documentos se cargarán dinámicamente aquí -->
+                    <div>
+                        <h2 class="text-sm sm:text-base lg:text-lg font-semibold text-gray-800">Documentos Requeridos</h2>
+                        <p class="text-xs text-gray-500">Para continuar con el trámite</p>
                     </div>
                 </div>
-                <div class="space-y-3">
-                    <button onclick="iniciarTramite()" class="p-3 bg-gray-900 rounded-lg text-white w-full font-semibold hover:bg-gray-800 transition-colors">
-                        Continuar con el trámite
+                <button onclick="cerrarModalDocumentos()" class="text-gray-400 hover:text-gray-600 p-1">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Contenido -->
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
+                <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">Asegúrese de tener estos documentos listos:</p>
+                
+                <!-- Lista de Documentos -->
+                <div id="listaDocumentos" class="space-y-2 sm:space-y-3 mb-6">
+                    <!-- Los documentos se cargarán dinámicamente aquí -->
+                </div>
+            </div>
+            
+            <!-- Footer con botones -->
+            <div class="border-t border-gray-100 p-4 sm:p-6 lg:p-8 bg-gray-50/50">
+                <div class="space-y-3 sm:space-y-0 sm:flex sm:gap-3">
+                    <button onclick="iniciarTramite()" class="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm">
+                        Continuar
                     </button>
-                    <button onclick="cerrarModalDocumentos()" class="p-3 bg-white border border-gray-300 rounded-lg w-full font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                    <button onclick="cerrarModalDocumentos()" class="w-full sm:flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 sm:py-3 px-4 rounded-lg transition-colors text-sm">
                         Cancelar
                     </button>
                 </div>
@@ -149,82 +168,139 @@
 </div>
 
 <script>
-let tramiteActual = '';
+// Variables globales para el modal
+window.tramiteModal = {
+    tramiteActual: '',
+    
+    mostrar: function(tipo) {
+        this.tramiteActual = tipo;
+        document.getElementById('modalDocumentos').classList.remove('hidden');
+        this.cargarDocumentos('Física');
+    },
+    
+    cerrar: function() {
+        document.getElementById('modalDocumentos').classList.add('hidden');
+        this.tramiteActual = '';
+    },
+    
+    cargarDocumentos: function(tipoPersona) {
+        const listaDocumentos = document.getElementById('listaDocumentos');
+        listaDocumentos.className = 'space-y-3 mb-6';
+        listaDocumentos.innerHTML = `
+            <div class="text-center py-4 sm:py-6">
+                <div class="animate-spin rounded-full h-5 w-5 sm:h-6 sm:w-6 border-2 border-blue-500 border-t-transparent mx-auto"></div>
+                <p class="mt-2 text-xs sm:text-sm text-gray-600">Cargando documentos...</p>
+            </div>
+        `;
+        
+        // Hacer petición AJAX para obtener documentos desde la API
+        fetch(`/api/documentos/${tipoPersona}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                listaDocumentos.innerHTML = '';
+                
+                if (data.documentos && data.documentos.length > 0) {
+                    // Crear contenedor con grid responsive
+                    listaDocumentos.className = 'grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 mb-6';
+                    
+                    data.documentos.forEach((documento, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'flex items-start space-x-2 sm:space-x-3 p-2.5 sm:p-3 bg-gray-50 rounded-lg border border-gray-100/50';
+                        div.innerHTML = `
+                            <div class="flex-shrink-0 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full mt-1.5"></div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs sm:text-sm font-medium text-gray-900 leading-tight">${documento.nombre}</p>
+                                ${documento.descripcion ? `<p class="text-xs text-gray-500 mt-1 leading-relaxed">${documento.descripcion}</p>` : ''}
+                            </div>
+                        `;
+                        listaDocumentos.appendChild(div);
+                    });
+                } else {
+                    listaDocumentos.className = 'space-y-3 mb-6';
+                    listaDocumentos.innerHTML = `
+                        <div class="text-center py-4 sm:py-6 text-gray-500">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-xs sm:text-sm font-medium">No hay documentos específicos</p>
+                            <p class="text-xs text-gray-400 mt-1">Para este trámite</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando documentos:', error);
+                listaDocumentos.className = 'space-y-3 mb-6';
+                listaDocumentos.innerHTML = `
+                    <div class="text-center py-4 sm:py-6 text-red-500">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-xs sm:text-sm font-medium">Error al cargar documentos</p>
+                        <p class="text-xs text-red-400 mt-1">Intente nuevamente más tarde</p>
+                    </div>
+                `;
+            });
+    },
+    
+    iniciar: function() {
+        if (this.tramiteActual) {
+            window.location.href = `/tramites/constancia/${this.tramiteActual}`;
+        }
+    }
+};
 
+// Funciones globales para usar en onclick
 function mostrarModalDocumentos(tipo) {
-    tramiteActual = tipo;
-    
-    // Mostrar modal
-    document.getElementById('modalDocumentos').classList.remove('hidden');
-    
-    // Cargar documentos según el tipo de persona (por defecto Física)
-    cargarDocumentos('Física');
+    window.tramiteModal.mostrar(tipo);
 }
 
 function cerrarModalDocumentos() {
-    document.getElementById('modalDocumentos').classList.add('hidden');
-    tramiteActual = '';
-}
-
-function cargarDocumentos(tipoPersona) {
-    // Hacer petición AJAX para obtener documentos
-    fetch(`/api/documentos/${tipoPersona}`)
-        .then(response => response.json())
-        .then(data => {
-            const listaDocumentos = document.getElementById('listaDocumentos');
-            listaDocumentos.innerHTML = '';
-            
-            if (data.documentos && data.documentos.length > 0) {
-                data.documentos.forEach(documento => {
-                    const iconClass = getIconClass(documento.tipo_archivo);
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center p-3 bg-gray-50 rounded-lg';
-                    div.innerHTML = `
-                        <i class="${iconClass} text-lg mr-3"></i>
-                        <div class="flex-1">
-                            <h4 class="text-sm font-medium text-gray-900">${documento.nombre}</h4>
-                            <p class="text-xs text-gray-500">${documento.descripcion || 'Documento requerido'}</p>
-                            <div class="flex items-center mt-1">
-                                <span class="text-xs text-gray-600">Formato: ${documento.tipo_archivo_label}</span>
-                            </div>
-                        </div>
-                    `;
-                    listaDocumentos.appendChild(div);
-                });
-            } else {
-                listaDocumentos.innerHTML = `
-                    <div class="text-center py-4 text-gray-500">
-                        <i class="fas fa-info-circle text-2xl mb-2"></i>
-                        <p>No hay documentos específicos requeridos para este trámite.</p>
-                    </div>
-                `;
-            }
-        })
-        .catch(error => {
-            console.error('Error cargando documentos:', error);
-            document.getElementById('listaDocumentos').innerHTML = `
-                <div class="text-center py-4 text-red-500">
-                    <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
-                    <p>Error al cargar los documentos requeridos.</p>
-                </div>
-            `;
-        });
-}
-
-function getIconClass(tipoArchivo) {
-    switch(tipoArchivo.toLowerCase()) {
-        case 'pdf': return 'fas fa-file-pdf text-red-600';
-        case 'png':
-        case 'jpg':
-        case 'jpeg': return 'fas fa-file-image text-blue-600';
-        case 'mp3': return 'fas fa-file-audio text-purple-600';
-        default: return 'fas fa-file text-gray-600';
-    }
+    window.tramiteModal.cerrar();
 }
 
 function iniciarTramite() {
-    if (tramiteActual) {
-        window.location.href = `/tramites/constancia/${tramiteActual}`;
-    }
+    window.tramiteModal.iniciar();
 }
 </script>
+
+<style>
+/* Scrollbar personalizado para el modal */
+.scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+    transition: background 0.2s ease;
+}
+
+.scrollbar-thin:hover::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+}
+
+/* Para Firefox */
+.scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db #f3f4f6;
+}
+
+.scrollbar-thin:hover {
+    scrollbar-color: #9ca3af #f3f4f6;
+}
+</style>

@@ -137,4 +137,40 @@ class CatalogoArchivoController extends Controller
                 ->with('error', 'Error al eliminar el archivo: ' . $e->getMessage());
         }
     }
+
+    public function porTipoPersona($tipoPersona = 'Física')
+    {
+        try {
+            $documentos = CatalogoArchivo::where('es_visible', true)
+                ->where(function ($query) use ($tipoPersona) {
+                    $query->where('tipo_persona', $tipoPersona)
+                          ->orWhere('tipo_persona', 'Ambas');
+                })
+                ->orderBy('nombre', 'asc')
+                ->get()
+                ->map(function ($documento) {
+                    return [
+                        'id' => $documento->id,
+                        'nombre' => $documento->nombre,
+                        'descripcion' => $documento->descripcion,
+                        'tipo_persona' => $documento->tipo_persona,
+                        'tipo_archivo' => $documento->tipo_archivo,
+                        'tipo_persona_label' => $documento->tipo_persona === 'Física' ? 'Persona Física' : 
+                                               ($documento->tipo_persona === 'Moral' ? 'Persona Moral' : 'Ambas'),
+                        'tipo_archivo_label' => strtoupper($documento->tipo_archivo),
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'documentos' => $documentos
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener documentos: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
