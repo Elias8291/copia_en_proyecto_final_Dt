@@ -62,6 +62,9 @@
         </div>
     </div>
 
+    <!-- Componente de Alertas -->
+    <x-alert />
+
 
     @stack('scripts')
 

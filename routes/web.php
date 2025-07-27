@@ -98,11 +98,14 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::get('/test', [UserController::class, 'index'])->name('test'); // Ruta de prueba
         Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}', [UserController::class, 'show'])->name('show');
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{user}', [UserController::class, 'update'])->name('update');
         Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+        Route::post('/{user}/restore', [UserController::class, 'restore'])->name('restore');
+        Route::delete('/{user}/force', [UserController::class, 'forceDelete'])->name('force-delete');
     });
 
     // ============================================================================
