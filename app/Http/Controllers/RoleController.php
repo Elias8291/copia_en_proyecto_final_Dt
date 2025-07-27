@@ -2,128 +2,148 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
+use App\Http\Requests\RoleRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
-    /**
-     * Mostrar lista de roles
-     */
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
+        $query = Role::with('permissions');
 
-        // Validar que sea un número válido y esté en las opciones permitidas
-        $allowedPerPage = [5, 10, 25, 50, 100];
-        if (! in_array($perPage, $allowedPerPage)) {
-            $perPage = 10;
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
         }
 
-        $roles = Role::with('permissions')
-            ->orderBy('name', 'asc')
-            ->paginate($perPage);
+        if ($request->filled('guard_name')) {
+            $query->where('guard_name', $request->guard_name);
+        }
 
-        // Mantener el parámetro per_page en los enlaces de paginación
-        $roles->appends($request->query());
+        $roles = $query->orderBy('name', 'asc')
+            ->paginate(10)
+            ->withQueryString()
+            ->through(function ($role) {
+                $role->permissions_count = $role->permissions->count();
+                return $role;
+            });
 
-        return view('roles.index', compact('roles', 'perPage'));
+        return view('roles.index', compact('roles'));
     }
 
-    /**
-     * Mostrar formulario para crear nuevo rol
-     */
     public function create()
     {
-        $permissions = Permission::orderBy('name', 'asc')->get();
-
+        $permissions = Permission::orderBy('name')->get();
         return view('roles.create', compact('permissions'));
     }
 
-    /**
-     * Almacenar nuevo rol
-     */
-    public function store(Request $request)
+    public function store(RoleRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-            'description' => 'nullable|string|max:500',
-            'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $role = Role::create([
-            'name' => $request->name,
-            'guard_name' => 'web',
-        ]);
+            $role = Role::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'guard_name' => $request->guard_name ?? 'web',
+            ]);
 
-        if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+            if ($request->has('permissions')) {
+                $role->syncPermissions($request->permissions);
+            }
+
+            DB::commit();
+
+            return redirect()->route('roles.index')
+                ->with('success', 'Rol creado exitosamente')
+                ->with('success_title', '¡Rol Creado!')
+                ->with('success_message', 'El rol ha sido creado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('roles.index'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al crear el rol: ' . $e->getMessage());
         }
-
-        return redirect()->route('roles.index')
-            ->with('success', 'Rol creado exitosamente.');
     }
 
-    /**
-     * Mostrar formulario para editar rol
-     */
+    public function show(Role $role)
+    {
+        $role->load('permissions');
+        $role->permissions_count = $role->permissions->count();
+        return view('roles.show', compact('role'));
+    }
+
     public function edit(Role $role)
     {
-        $permissions = Permission::orderBy('name', 'asc')->get();
-        $rolePermissions = $role->permissions->pluck('id')->toArray();
-
-        return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
+        $permissions = Permission::orderBy('name')->get();
+        $role->load('permissions');
+        return view('roles.edit', compact('role', 'permissions'));
     }
 
-    /**
-     * Actualizar rol
-     */
-    public function update(Request $request, Role $role)
+    public function update(RoleRequest $request, Role $role)
     {
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,'.$role->id,
-            'description' => 'nullable|string|max:500',
-            'permissions' => 'array',
-            'permissions.*' => 'exists:permissions,id',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $role->update([
-            'name' => $request->name,
-        ]);
+            $role->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'guard_name' => $request->guard_name ?? 'web',
+            ]);
 
-        $role->syncPermissions($request->permissions ?? []);
+            if ($request->has('permissions')) {
+                $role->syncPermissions($request->permissions);
+            } else {
+                $role->syncPermissions([]);
+            }
 
-        return redirect()->route('roles.index')
-            ->with('success', 'Rol actualizado exitosamente.');
+            DB::commit();
+
+            return redirect()->route('roles.index')
+                ->with('success', 'Rol actualizado exitosamente')
+                ->with('success_title', '¡Rol Actualizado!')
+                ->with('success_message', 'El rol ha sido actualizado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('roles.index'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al actualizar el rol: ' . $e->getMessage());
+        }
     }
 
-    /**
-     * Eliminar rol
-     */
     public function destroy(Role $role)
     {
-        // Verificar que no sea un rol del sistema
-        if (in_array($role->name, ['Super Admin', 'Admin', 'User'])) {
+        try {
+            // Verificar que no se elimine un rol del sistema
+            if (in_array($role->name, ['admin', 'user', 'moderator'])) {
+                return redirect()->route('roles.index')
+                    ->with('error', 'No se puede eliminar un rol del sistema');
+            }
+
+            $role->delete();
+
             return redirect()->route('roles.index')
-                ->with('error', 'No se puede eliminar un rol del sistema.');
-        }
+                ->with('success', 'Rol eliminado exitosamente')
+                ->with('success_title', '¡Rol Eliminado!')
+                ->with('success_message', 'El rol ha sido eliminado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('roles.index'));
 
-        // Verificar que no tenga usuarios asignados
-        if ($role->users()->count() > 0) {
+        } catch (\Exception $e) {
             return redirect()->route('roles.index')
-                ->with('error', 'No se puede eliminar un rol que tiene usuarios asignados.');
+                ->with('error', 'Error al eliminar el rol: ' . $e->getMessage());
         }
-
-        $role->delete();
-
-        return redirect()->route('roles.index')
-            ->with('success', 'Rol eliminado exitosamente.');
     }
 }

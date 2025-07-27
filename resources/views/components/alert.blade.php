@@ -1,6 +1,6 @@
 @if(session('success') || session('error') || session('warning') || session('info'))
     <div class="fixed top-4 right-4 z-50 max-w-sm w-full space-y-2">
-        @if(session('success') && !request()->routeIs('users.*'))
+        @if(session('success') && !request()->routeIs('users.*') && !request()->routeIs('archivos.*') && !request()->routeIs('roles.*'))
             <div class="bg-green-50 border border-green-200 rounded-lg p-3 shadow-lg transform transition-all duration-300 hover:scale-105" id="alert-success">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -22,7 +22,7 @@
             </div>
         @endif
 
-        @if(session('error') && !request()->routeIs('users.*'))
+        @if(session('error') && !request()->routeIs('users.*') && !request()->routeIs('archivos.*') && !request()->routeIs('roles.*'))
             <div class="bg-red-50 border border-red-200 rounded-lg p-3 shadow-lg transform transition-all duration-300 hover:scale-105" id="alert-error">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">

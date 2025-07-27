@@ -36,7 +36,7 @@
                             <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                             </svg>
-                            {{ $actions['create']['label'] ?? 'Nuevo' }}
+                            <span class="hidden lg:inline">{{ $actions['create']['label'] ?? 'Nuevo' }}</span>
                         </a>
                     </div>
                 @endif
