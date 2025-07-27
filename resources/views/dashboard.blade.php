@@ -1,417 +1,455 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header Principal -->
-        <div class="mb-8">
-            <div class="bg-white rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
-                <div class="p-6 border-b border-gray-100">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                        <div class="flex items-center space-x-4">
-                            <div class="bg-gradient-to-br from-[#9d2449] via-[#be185d] to-[#9d2449] rounded-xl p-2.5 shadow-lg">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h1 class="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">Panel de Control</h1>
-                                <p class="text-xs md:text-sm text-gray-500 mt-1">Sistema de Gestión de Proveedores</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Información de tiempo y usuario -->
-                        <div class="flex flex-col lg:flex-row items-center space-y-3 lg:space-y-0 lg:space-x-3">
-                            <!-- Reloj -->
-                            <div class="bg-gradient-to-r from-[#9d2449] to-[#be185d] px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+    .gradient-text {
+        background: linear-gradient(135deg, #9d2449 0%, #be185d 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .card-hover {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-hover:hover {
+        transform: translateY(-4px);
+    }
+
+    .icon-pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    .highlight-action {
+        background: linear-gradient(135deg, rgba(157, 36, 73, 0.02) 0%, rgba(190, 24, 93, 0.02) 100%);
+        border-left: 4px solid transparent !important;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .highlight-action::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(157, 36, 73, 0.03) 0%, rgba(190, 24, 93, 0.03) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .highlight-action:hover::before {
+        opacity: 1;
+    }
+
+    .highlight-action:hover {
+        border-left-color: #9d2449 !important;
+        transform: translateX(2px);
+    }
+
+    .glow-button {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .glow-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .glow-button:hover::before {
+        left: 100%;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .float-animation {
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .shadow-3xl {
+        box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .text-shadow {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+</style>
+@endpush
+
+<div class="min-h-screen py-6 font-sans">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white/95 backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden max-w-6xl mx-auto">
+            <!-- Header Section -->
+            <div class="p-6 border-b border-gray-100/30">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                    <div class="mb-6 lg:mb-0">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="bg-gradient-to-br from-gray-100 to-gray-200 px-4 py-2 rounded-full text-sm font-semibold text-gray-600 flex items-center">
+                                <i class="fas fa-clock mr-2"></i>
                                 <span id="currentTime" class="font-mono"></span>
                             </div>
-                            
-                            <!-- Fecha -->
-                            <div class="text-sm text-gray-600 font-medium flex items-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
+                            <div class="h-6 w-px bg-gray-200"></div>
+                            <div class="text-sm text-gray-500 font-medium flex items-center">
+                                <i class="fas fa-calendar-day mr-2"></i>
                                 <span id="currentDate"></span>
                             </div>
-                            
-                            <!-- Badge de Proveedor -->
                             @if(auth()->user()->hasRole('Proveedor'))
-                            <div class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+                            <div class="h-6 w-px bg-gray-200"></div>
+                            <div class="bg-gradient-to-br from-emerald-100 to-emerald-200 px-4 py-2 rounded-full text-sm font-semibold text-emerald-700 flex items-center">
+                                <i class="fas fa-certificate mr-2"></i>
                                 <span>Proveedor Oficial</span>
                             </div>
+
                             @endif
                         </div>
-                    </div>
-                </div>
-
-                <!-- Saludo personalizado -->
-                <div class="p-6 bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200/70">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+                        <h1 id="greeting" class="text-3xl font-bold gradient-text mb-2">
                             Buenos días, {{ auth()->check() ? auth()->user()->name : 'Invitado' }}
-                            </h2>
+                        </h1>
                         @if(auth()->user()->hasRole('Proveedor'))
-                            <p class="text-gray-600">
-                                <span class="text-yellow-600 font-semibold">¡Proveedor Oficial!</span> - 
+                        <p class="text-gray-600 text-base font-medium">
+                            <span class="text-emerald-600 font-semibold">¡Proveedor Oficial!</span> - 
                             Bienvenido al <span class="text-[#9d2449] font-semibold">Padrón de Proveedores del Estado de Oaxaca</span>
                         </p>
                         @else
-                            <p class="text-gray-600">
+                        <p class="text-gray-600 text-base font-medium">
                             Bienvenido al <span class="text-[#9d2449] font-semibold">Padrón de Proveedores del Estado de Oaxaca</span>
                         </p>
                         @endif
-                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Información del Sistema -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Estado del Sistema -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="bg-gradient-to-br from-green-500 to-green-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-gray-800">Activo</p>
-                        <span class="inline-block px-2 py-1 text-xs font-medium text-green-600 bg-green-50 rounded-full">
-                            Sistema Online
-                        </span>
-                    </div>
-                </div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">Estado del Sistema</h3>
-                <p class="text-sm text-gray-500">Todos los servicios funcionando correctamente</p>
-            </div>
-
-            <!-- Versión del Sistema -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-gray-800">v2.1</p>
-                        <span class="inline-block px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
-                            Actualizada
-                        </span>
-                    </div>
-                </div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">Versión del Sistema</h3>
-                <p class="text-sm text-gray-500">Última actualización: Diciembre 2024</p>
-            </div>
-
-            <!-- Soporte Técnico -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="bg-gradient-to-br from-purple-500 to-purple-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 109.75 9.75A9.75 9.75 0 0012 2.25z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-gray-800">24/7</p>
-                        <span class="inline-block px-2 py-1 text-xs font-medium text-purple-600 bg-purple-50 rounded-full">
-                            Disponible
-                        </span>
-                    </div>
-                </div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">Soporte Técnico</h3>
-                <p class="text-sm text-gray-500">Asistencia disponible las 24 horas</p>
-            </div>
-
-            <!-- Seguridad -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                        </svg>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-2xl font-bold text-gray-800">SSL</p>
-                        <span class="inline-block px-2 py-1 text-xs font-medium text-emerald-600 bg-emerald-50 rounded-full">
-                            Protegido
-                        </span>
-                    </div>
-                </div>
-                <h3 class="text-lg font-bold text-gray-800 mb-1">Seguridad</h3>
-                <p class="text-sm text-gray-500">Conexión encriptada y segura</p>
-                </div>
-            </div>
-
-        <!-- Estadísticas (Solo para administradores) -->
+            <div class="p-6">
                 @can('dashboard.ver-estadisticas')
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <!-- Usuarios -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 group">
+                    <div class="bg-white rounded-2xl p-6 card-hover shadow-lg border border-gray-100/50 relative overflow-hidden group">
+                        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 to-indigo-300"></div>
                         <div class="flex items-center justify-between mb-4">
-                    <div class="bg-gradient-to-br from-blue-500 to-blue-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                        </svg>
+                            <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-users text-white text-lg"></i>
                             </div>
                             <div class="text-right">
                                 <p class="text-3xl font-bold text-gray-800">{{ $totalUsuarios ?? 0 }}</p>
-                        <span class="inline-block px-3 py-1 text-xs font-medium text-blue-600 bg-blue-50 rounded-full">
+                                <span class="inline-block px-3 py-1 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-full mt-1">
                                     Total registrados
                                 </span>
                             </div>
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 mb-1">Usuarios del Sistema</h3>
-                <p class="text-sm text-gray-500 mb-4">Gestión completa de usuarios</p>
-                <a href="{{ route('users.index') }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-semibold transition-colors">
+                        <p class="text-sm text-gray-500">Gestión completa de usuarios</p>
+                        <div class="mt-4 pt-4 border-t border-gray-100/50">
+                            <a href="{{ route('users.index') }}" class="group inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition-colors">
                                 <span>Administrar usuarios</span>
-                    <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
+                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                             </a>
                         </div>
+                    </div>
 
-            <!-- Trámites -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 group">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="bg-gradient-to-br from-amber-500 to-amber-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
+                    <!-- Trámites -->
+                    <div class="bg-white rounded-2xl p-6 card-hover shadow-lg border border-gray-100/50 relative overflow-hidden group">
+                        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 to-amber-300"></div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-gradient-to-br from-amber-500 to-amber-600 w-12 h-12 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-file-alt text-white text-lg"></i>
                             </div>
                             <div class="text-right">
                                 <p class="text-3xl font-bold text-gray-800">{{ $tramitesPendientes ?? 0 }}</p>
-                        <span class="inline-block px-3 py-1 text-xs font-medium text-amber-600 bg-amber-50 rounded-full">
-                            Pendientes
+                                <span class="inline-block px-3 py-1 text-xs font-medium text-amber-600 bg-amber-50 rounded-full mt-1">
+                                    Pendientes de revisión
                                 </span>
                             </div>
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 mb-1">Trámites en Proceso</h3>
-                <p class="text-sm text-gray-500 mb-4">Solicitudes por aprobar</p>
-                <a class="inline-flex items-center text-amber-600 hover:text-amber-800 text-sm font-semibold transition-colors">
+                        <p class="text-sm text-gray-500">Solicitudes por aprobar</p>
+                        <div class="mt-4 pt-4 border-t border-gray-100/50">
+                            <a class="group inline-flex items-center text-amber-600 hover:text-amber-800 text-sm font-semibold transition-colors">
                                 <span>Revisar trámites</span>
-                    <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
+                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                             </a>
                         </div>
+                    </div>
 
-            <!-- Proveedores -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 group">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
+                    <!-- Proveedores -->
+                    <div class="bg-white rounded-2xl p-6 card-hover shadow-lg border border-gray-100/50 relative overflow-hidden group">
+                        <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-300"></div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-building text-white text-lg"></i>
                             </div>
                             <div class="text-right">
-                        <p class="text-3xl font-bold text-gray-800">0</p>
-                        <span class="inline-block px-3 py-1 text-xs font-medium text-emerald-600 bg-emerald-50 rounded-full">
-                            Activos
+                                <p class="text-3xl font-bold text-gray-800"></p>
+                                <span class="inline-block px-3 py-1 text-xs font-medium text-emerald-600 bg-emerald-50 rounded-full mt-1">
+                                    Activos en el padrón
                                 </span>
                             </div>
                         </div>
                         <h3 class="text-lg font-bold text-gray-800 mb-1">Proveedores Registrados</h3>
-                <p class="text-sm text-gray-500 mb-4">Base de datos completa</p>
-                <a class="inline-flex items-center text-emerald-600 hover:text-emerald-800 text-sm font-semibold transition-colors">
+                        <p class="text-sm text-gray-500">Base de datos completa</p>
+                        <div class="mt-4 pt-4 border-t border-gray-100/50">
+                            <a  class="group inline-flex items-center text-emerald-600 hover:text-emerald-800 text-sm font-semibold transition-colors">
                                 <span>Gestionar proveedores</span>
-                    <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
+                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                             </a>
                         </div>
+                    </div>
+
+
                 </div>
                 @endcan
 
-        <!-- Contenido Principal -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Panel de Acciones Rápidas -->
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <!-- Quick Actions Section -->
                     <div class="lg:col-span-1">
-                <div class="bg-white rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
-                    <div class="p-6 border-b border-gray-100">
-                        <div class="flex items-center mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-[#9d2449] to-[#be185d] rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                </svg>
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100/50 overflow-hidden">
+                            <div class="p-6 border-b border-gray-100/50">
+                                <h3 class="text-xl font-bold gradient-text flex items-center">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-[#9d2449] to-[#be185d] rounded-lg flex items-center justify-center mr-3 icon-pulse">
+                                        <i class="fas fa-bolt text-white"></i>
                                     </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">Acciones Rápidas</h3>
-                                <p class="text-sm text-gray-500">Herramientas principales</p>
+                                    Acciones Rápidas
+                                </h3>
+                                <p class="text-gray-500 text-sm mt-2">Herramientas principales del sistema</p>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="p-6 space-y-4">
+                            <div class="divide-y divide-gray-100/50">
                                 <!-- Mis Trámites -->
-                        <a class="group block p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition-all duration-300 border border-transparent hover:border-blue-200">
+                                <a class="group block p-6 hover:bg-gray-50/50 transition-colors">
                                     <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
+                                        <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                                            <i class="fas fa-file-lines text-white text-lg"></i>
                                         </div>
                                         <div class="flex-1">
-                                    <h4 class="text-base font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">Mis Trámites</h4>
-                                    <p class="text-sm text-gray-500">Gestiona tus solicitudes</p>
+                                            <h4 class="text-base font-bold text-gray-800 group-hover:gradient-text transition-colors">Mis Trámites</h4>
+                                            <p class="text-sm text-gray-500 mt-1">Gestiona y da seguimiento a tus solicitudes</p>
+                                            <div class="flex items-center mt-2">
+                                                <span class="text-xs text-blue-600 font-medium">Ver detalles</span>
+                                                <i class="fas fa-chevron-right text-xs text-blue-600 ml-1 group-hover:translate-x-1 transition-transform"></i>
                                             </div>
-                                <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                                        </div>
                                     </div>
                                 </a>
 
-                        <!-- Estado del Proveedor -->
+                                <!-- Estado del Proveedor (Solo para Solicitantes, versión simplificada) -->
                                 @if(!auth()->user()->hasRole('Proveedor'))
                                 @can('mi-estado-proveedor.ver')
-                        <a class="group block p-4 bg-gray-50 rounded-xl hover:bg-emerald-50 transition-all duration-300 border border-transparent hover:border-emerald-200">
+                                <a class="group block p-6 hover:bg-gray-50/50 transition-colors">
                                     <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                    </svg>
+                                        <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+                                            <i class="fas fa-chart-line text-white text-lg"></i>
                                         </div>
                                         <div class="flex-1">
-                                    <h4 class="text-base font-semibold text-gray-800 group-hover:text-emerald-600 transition-colors">Estado del Proveedor</h4>
-                                    <p class="text-sm text-gray-500">Consulta tu estatus</p>
+                                            <h4 class="text-base font-bold text-gray-800 group-hover:gradient-text transition-colors">Estado del Proveedor</h4>
+                                            <p class="text-sm text-gray-500 mt-1">Consulta tu estatus y certificaciones</p>
+                                            <div class="flex items-center mt-2">
+                                                <span class="text-xs text-green-600 font-medium">Verificar estado</span>
+                                                <i class="fas fa-chevron-right text-xs text-green-600 ml-1 group-hover:translate-x-1 transition-transform"></i>
                                             </div>
-                                <svg class="w-5 h-5 text-gray-400 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                                        </div>
                                     </div>
                                 </a>
                                 @endcan
                                 @endif
 
-                        <!-- Documentación -->
-                        <a class="group block p-4 bg-gray-50 rounded-xl hover:bg-purple-50 transition-all duration-300 border border-transparent hover:border-purple-200">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-base font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">Documentación</h4>
-                                    <p class="text-sm text-gray-500">Guías y manuales</p>
-                                </div>
-                                <svg class="w-5 h-5 text-gray-400 group-hover:text-purple-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </a>
 
-                        <!-- Soporte -->
-                        <a class="group block p-4 bg-gray-50 rounded-xl hover:bg-orange-50 transition-all duration-300 border border-transparent hover:border-orange-200">
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-base font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">Soporte Técnico</h4>
-                                    <p class="text-sm text-gray-500">Ayuda y asistencia</p>
-                                </div>
-                                <svg class="w-5 h-5 text-gray-400 group-hover:text-orange-500 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+
+
                             </div>
-                        </a>
-                    </div>
                         </div>
                     </div>
 
-            <!-- Panel Principal con Imagen -->
+                    <!-- Assistant Section with Action Button -->
                     <div class="lg:col-span-2">
-                <div class="bg-white rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
-                    <div class="p-8">
-                        <div class="flex flex-col lg:flex-row items-center gap-8">
-                            <!-- Contenido de texto -->
-                            <div class="flex-1 text-center lg:text-left">
+                        <div class="bg-white rounded-2xl shadow-lg h-full flex flex-col justify-between overflow-hidden relative" style="border: none;">
+                            <div class="absolute inset-0 bg-gradient-to-br from-[#9d2449]/5 to-transparent"></div>
+                            
+
+
+                            <!-- Content Section with Image and Button -->
+                            <div class="flex-1 flex items-center relative z-10 p-6" style="border: none;">
+                                <div class="flex items-center w-full">
+                                    <!-- Left Side - Call to Action -->
+                                    <div class="flex-1 pr-6">
                                         @if(auth()->user()->hasRole('Proveedor'))
-                                <!-- Contenido para Proveedores -->
-                                <div class="space-y-6">
-                                    <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-full text-sm font-semibold text-yellow-700 border border-yellow-200">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
+                                        <!-- PROVEEDOR: Estado y Renovación -->
+                                        <div class="space-y-4 -mt-8">
+                                            <div class="text-center lg:text-left">
+                                                <div class="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-emerald-100 to-green-100 rounded-full text-xs font-semibold text-emerald-700 mb-3">
+                                                    <i class="fas fa-certificate text-emerald-600 mr-1.5 text-xs"></i>
                                                     ¡Proveedor Activo!
                                                 </div>
-                                    
-                                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
+                                                <h4 class="text-2xl lg:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-2">
                                                     ¡Bienvenido, 
-                                        <span class="text-yellow-600">Proveedor Oficial</span>!
-                                    </h2>
-                                    
-                                    <p class="text-lg text-gray-600 mb-6">
+                                                    <span class="bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">Proveedor Oficial</span>!
+                                                </h4>
+                                                <p class="text-gray-600 text-sm leading-relaxed mb-4">
                                                     Gestiona tu estatus en el 
-                                        <span class="font-semibold text-[#9d2449]">Padrón de Proveedores</span>
+                                                    <span class="font-semibold text-emerald-600">Padrón de Proveedores</span>
                                                 </p>
+                                            </div>
                                             
                                             @can('mi-estado-proveedor.ver')
-                                    <div class="flex justify-center lg:justify-start">
-                                        <a class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#be185d] text-white font-semibold rounded-xl hover:from-[#be185d] hover:to-[#9d2449] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                            </svg>
-                                            Mi Estado de Proveedor
+                                            <div class="relative">
+                                                <div class="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-green-500 rounded-2xl blur opacity-20 transition duration-300"></div>
+                                                
+                                                <a 
+                                                   class="glow-button relative group inline-flex items-center justify-center w-full lg:w-auto px-6 py-3.5 bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-500 hover:via-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-102 shadow-xl hover:shadow-2xl">
+                                                    <div class="flex items-center space-x-3">
+                                                        <div class="relative">
+                                                            <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center">
+                                                                <i class="fas fa-chart-line text-white text-sm"></i>
+                                                            </div>
+                                                            <div class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-yellow-400 rounded-full flex items-center justify-center">
+                                                                <i class="fas fa-check text-yellow-800 text-xs"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-left">
+                                                            <div class="text-lg font-bold">Mi Estado de Proveedor</div>
+                                                            <div class="text-xs text-emerald-100 font-medium">Consultar padrón vigente</div>
+                                                        </div>
+                                                        <div class="ml-4">
+                                                            <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center">
+                                                                <i class="fas fa-arrow-right text-white text-sm group-hover:translate-x-0.5 transition-transform duration-300"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </a>
                                             </div>
                                             @endcan
+
+                                            @if(auth()->check() && (auth()->user()->can('tramites-solicitante.renovacion') || auth()->user()->can('tramites-solicitante.actualizacion')))
+                                            <div class="flex justify-center lg:justify-start">
+                                                <a  
+                                                   class="inline-flex items-center px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 font-semibold rounded-lg hover:from-emerald-100 hover:to-green-100 transition-all duration-300 shadow-sm hover:shadow-md text-sm">
+                                                    <i class="fas fa-sync-alt text-emerald-600 mr-2 text-xs"></i>
+                                                    <span>Renovar/Actualizar</span>
+                                                </a>
+                                            </div>
+                                            @endif
+
+
                                         </div>
                                         
                                         @else
-                                <!-- Contenido para Solicitantes -->
-                                <div class="space-y-6">
-                                    <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-full text-sm font-semibold text-yellow-700 border border-yellow-200">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976-2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                        </svg>
+                                        <!-- SOLICITANTE: Iniciar Trámite -->
+                                        <div class="space-y-8 -mt-6">
+                                            <!-- Header Section -->
+                                            <div class="text-center lg:text-left space-y-4">
+                                                <!-- Badge mejorado -->
+                                                <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-amber-50 via-orange-50 to-red-50 rounded-full shadow-sm">
+                                                    <div class="w-5 h-5 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-2">
+                                                        <i class="fas fa-star text-white text-xs"></i>
+                                                    </div>
+                                                    <span class="text-sm font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                                                         ¡Únete al Padrón Oficial!
+                                                    </span>
                                                 </div>
                                                 
-                                    <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
+                                                <!-- Título principal mejorado -->
+                                                <div class="space-y-2">
+                                                    <h4 class="text-3xl lg:text-4xl font-black leading-tight">
+                                                        <span class="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-800 bg-clip-text text-transparent">
                                                             Conviértete en
-                                        <span class="text-[#9d2449]">Proveedor Oficial</span>
-                                    </h2>
-                                    
-                                    <p class="text-lg text-gray-600 mb-6">
+                                                        </span>
+                                                        <br>
+                                                        <span class="bg-gradient-to-r from-[#9d2449] via-[#be185d] to-[#9d2449] bg-clip-text text-transparent">
+                                                            Proveedor Oficial
+                                                        </span>
+                                                    </h4>
+                                                    
+                                                    <!-- Descripción mejorada -->
+                                                    <div class="max-w-md mx-auto lg:mx-0">
+                                                        <p class="text-gray-600 text-base leading-relaxed">
                                                             Forma parte del exclusivo
-                                        <span class="font-semibold text-[#9d2449]">Padrón de Proveedores</span>
+                                                        </p>
+                                                        <p class="font-bold text-lg bg-gradient-to-r from-[#9d2449] to-[#be185d] bg-clip-text text-transparent">
+                                                            Padrón de Proveedores
+                                                        </p>
+                                                        <p class="text-gray-500 text-sm mt-2">
                                                             del Estado de Oaxaca
                                                         </p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             
+                                            <!-- Botón de acción más pequeño y bonito -->
                                             @can('tramites-solicitante.inscripcion')
                                             <div class="flex justify-center lg:justify-start">
-                                        <a class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#be185d] text-white font-semibold rounded-xl hover:from-[#be185d] hover:to-[#9d2449] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                                            </svg>
-                                            Iniciar Mi Trámite
-                                        </a>
+                                                <div class="relative group">
+                                                    <!-- Efecto de resplandor animado -->
+                                                    <div class="absolute -inset-1 bg-gradient-to-r from-[#9d2449] via-pink-500 to-[#be185d] rounded-xl blur opacity-20 group-hover:opacity-40 transition-all duration-500 animate-pulse"></div>
+                                                    
+                                                    <a 
+                                                       class="relative inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] via-[#be185d] to-[#9d2449] text-white font-bold rounded-xl hover:from-[#be185d] hover:via-pink-500 hover:to-[#9d2449] transition-all duration-500 transform hover:scale-110 hover:rotate-1 shadow-lg hover:shadow-xl overflow-hidden">
+                                                        
+                                                        <!-- Efecto shimmer -->
+                                                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                                        
+                                                        <div class="relative flex items-center space-x-3">
+                                                            <!-- Icono con animaciones -->
+                                                            <div class="relative">
+                                                                <div class="w-8 h-8 bg-white/25 rounded-lg flex items-center justify-center backdrop-blur-sm group-hover:rotate-12 transition-transform duration-300">
+                                                                    <i class="fas fa-rocket text-white text-sm group-hover:scale-110 transition-transform duration-300"></i>
+                                                                </div>
+                                                                <!-- Estrella brillante -->
+                                                                <div class="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-sm">
+                                                                    <i class="fas fa-star text-yellow-800 text-xs animate-spin group-hover:animate-pulse"></i>
+                                                                </div>
+                                                                <!-- Partículas brillantes -->
+                                                                <div class="absolute -top-2 -left-2 w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-ping transition-all duration-300"></div>
+                                                                <div class="absolute -bottom-1 -right-2 w-1.5 h-1.5 bg-pink-300 rounded-full opacity-0 group-hover:opacity-100 group-hover:animate-bounce transition-all duration-500 delay-100"></div>
+                                                            </div>
+                                                            
+                                                            <!-- Texto del botón compacto -->
+                                                            <div class="text-left">
+                                                                <div class="text-base font-black tracking-wide group-hover:text-pink-100 transition-colors duration-300">Iniciar Mi Trámite</div>
+                                                                <div class="text-xs text-pink-100 font-medium opacity-90 group-hover:opacity-100 transition-opacity duration-300">¡Tu futuro comienza aquí!</div>
+                                                            </div>
+                                                            
+                                                            <!-- Flecha curiosa -->
+                                                            <div class="ml-2">
+                                                                <div class="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-all duration-300">
+                                                                    <i class="fas fa-arrow-right text-white text-sm group-hover:translate-x-1 group-hover:scale-125 transition-all duration-300"></i>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </a>
+                                                </div>
                                             </div>
                                             @endcan
+
+
                                         </div>
                                         @endif
                                     </div>
 
-                            <!-- Imagen -->
-                            <div class="flex-1 flex justify-center lg:justify-end">
+                                    <!-- Right Side - Assistant Image -->
+                                    <div class="hidden lg:flex flex-1 justify-center items-end">
                                 <img src="{{ asset('images/mujer_bienvenida.png') }}" 
                                      alt="Asistente Virtual" 
-                                     class="w-auto h-64 lg:h-80 object-contain drop-shadow-xl">
+                                     class="w-auto h-[350px] object-contain drop-shadow-xl">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -455,6 +493,17 @@
 
         updateDateTime();
         setInterval(updateDateTime, 60000);
+
+        const cards = document.querySelectorAll('.card-hover');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease-out';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
     });
 </script>
 @endsection
