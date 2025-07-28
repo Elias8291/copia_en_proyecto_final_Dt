@@ -348,24 +348,25 @@ class RevisionController extends Controller
 
             if ($cita) {
                 Log::info('Cita de cotejo agendada automáticamente', [
-                    'tramite_id' => $tramite->id,
                     'cita_id' => $cita->id,
+                    'tramite_id' => $tramite->id,
                     'fecha_cita' => $cita->fecha_cita
                 ]);
+                
+                // Notificar al usuario sobre la cita agendada
+                $this->notificacionService->notificarCitaAgendada($tramite, $cita);
             } else {
                 Log::warning('No se pudo agendar cita automática para cotejo', [
                     'tramite_id' => $tramite->id
                 ]);
             }
         } catch (\Exception $e) {
-            Log::error('Error al agendar cita automática para cotejo', [
+            Log::error('Error al agendar cita de cotejo', [
                 'tramite_id' => $tramite->id,
                 'error' => $e->getMessage()
             ]);
         }
     }
-
-
 
     /**
      * Registra el log del cambio de estado

@@ -87,6 +87,40 @@ class NotificacionService
     }
 
     /**
+     * Notifica cita agendada automáticamente
+     */
+    public function notificarCitaAgendada(Tramite $tramite, $cita): void
+    {
+        try {
+            $usuario = $tramite->proveedor->user;
+            $fechaFormateada = \Carbon\Carbon::parse($cita->fecha_cita)->format('d/m/Y H:i');
+            
+            $titulo = "Cita de cotejo agendada";
+            $mensaje = "Se ha agendado automáticamente una cita de cotejo para su trámite #{$tramite->id} el día {$fechaFormateada}. Por favor, asista con todos los documentos originales.";
+
+            $this->crearNotificacion(
+                $usuario->id,
+                $tramite->id,
+                'Cita',
+                $titulo,
+                $mensaje
+            );
+
+            Log::info('Notificación de cita agendada enviada', [
+                'tramite_id' => $tramite->id,
+                'usuario_id' => $usuario->id,
+                'cita_id' => $cita->id,
+                'fecha_cita' => $cita->fecha_cita
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al notificar cita agendada', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Notifica nueva cita agendada
      */
     public function notificarNuevaCita(int $usuarioId, int $tramiteId, string $fechaCita): void

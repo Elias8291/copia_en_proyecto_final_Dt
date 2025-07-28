@@ -167,7 +167,7 @@ class CitaService
             return false;
         }
 
-        // Verificar que esté en horario laboral
+        // Verificar que esté en horario laboral (9 AM a 2 PM)
         $hora = $fechaHora->hour;
         if ($hora < self::HORA_INICIO || $hora >= self::HORA_FIN) {
             return false;
