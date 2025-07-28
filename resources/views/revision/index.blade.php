@@ -6,9 +6,9 @@
         $columns = [
             [
                 'label' => 'Proveedor',
-                'field' => 'datosGenerales.razon_social',
+                'field' => 'proveedor.user.nombre',
                 'type' => 'avatar',
-                'subfield' => 'datosGenerales.rfc',
+                'subfield' => 'proveedor.rfc',
                 'subfield_label' => 'RFC'
             ],
             [
@@ -44,7 +44,7 @@
             ],
             [
                 'label' => 'Revisor',
-                'field' => 'revisadoPor.name',
+                'field' => 'revisadoPor.nombre',
                 'type' => 'text'
             ]
         ];

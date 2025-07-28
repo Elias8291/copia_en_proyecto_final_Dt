@@ -37,7 +37,7 @@ class RevisionSeccionController extends Controller
                 'comentario' => $revision->comentario,
                 'aprobado' => $revision->aprobado,
                 'estado_texto' => $revision->estado_texto,
-                'user' => $revision->user ? $revision->user->name : null,
+                'user' => $revision->user ? $revision->user->nombre : null,
                 'updated_at' => $revision->updated_at->format('d/m/Y H:i')
             ]
         ]);
@@ -72,7 +72,7 @@ class RevisionSeccionController extends Controller
                 'comentario' => $revision->comentario,
                 'aprobado' => $revision->aprobado,
                 'estado_texto' => $revision->estado_texto,
-                'user' => $revision->user ? $revision->user->name : null,
+                'user' => $revision->user ? $revision->user->nombre : null,
                 'updated_at' => $revision->updated_at->format('d/m/Y H:i')
             ]
         ]);
