@@ -1,5 +1,5 @@
 /**
- * Revision Digital - Gestión de revisiones de trámites
+ * Revision Digital - Gestión de revisiones de trámites - Optimizado
  */
 
 class RevisionDigital {
@@ -20,6 +20,22 @@ class RevisionDigital {
     init() {
         this.cargarEstadosExistentes();
         this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        // Event listeners para botones de aprobar/rechazar
+        this.secciones.forEach(seccion => {
+            const btnAprobar = document.getElementById(`btn_aprobar_${seccion}`);
+            const btnRechazar = document.getElementById(`btn_rechazar_${seccion}`);
+            
+            if (btnAprobar) {
+                btnAprobar.addEventListener('click', () => this.setAprobado(seccion, true));
+            }
+            
+            if (btnRechazar) {
+                btnRechazar.addEventListener('click', () => this.setAprobado(seccion, false));
+            }
+        });
     }
     
     setEstadoVisual(seccion, aprobado) {
@@ -227,17 +243,75 @@ class RevisionDigital {
         return estado;
     }
     
-    validarEnviarACotejo() {
-        const estado = this.obtenerEstadoSecciones();
+    obtenerEstadoDocumentos() {
+        const documentos = document.querySelectorAll('[data-documento-id]');
+        const estado = {
+            documentosPendientes: [],
+            documentosAprobados: [],
+            documentosRechazados: []
+        };
         
-        if (estado.seccionesPendientes.length > 0) {
-            this.mostrarAlertaSeccionesPendientes(estado.seccionesPendientes);
+        documentos.forEach(documento => {
+            const documentoId = documento.getAttribute('data-documento-id');
+            const aprobado = documento.querySelector('input[type="radio"]:checked');
+            
+            if (!aprobado) {
+                estado.documentosPendientes.push(documentoId);
+            } else if (aprobado.value === '1') {
+                estado.documentosAprobados.push(documentoId);
+            } else if (aprobado.value === '0') {
+                estado.documentosRechazados.push(documentoId);
+            }
+        });
+        
+        return estado;
+    }
+    
+    obtenerNombresDocumentosPendientes() {
+        const documentosPendientes = [];
+        const documentos = document.querySelectorAll('[data-documento-id]');
+        
+        documentos.forEach(documento => {
+            const documentoId = documento.getAttribute('data-documento-id');
+            const nombreElement = documento.querySelector('[data-documento-nombre]');
+            const aprobado = documento.querySelector('input[type="radio"]:checked');
+            
+            if (!aprobado && nombreElement) {
+                documentosPendientes.push(nombreElement.getAttribute('data-documento-nombre'));
+            }
+        });
+        
+        return documentosPendientes;
+    }
+    
+    validarEnviarACotejo() {
+        const estadoSecciones = this.obtenerEstadoSecciones();
+        const estadoDocumentos = this.obtenerEstadoDocumentos();
+        
+        // Verificar secciones pendientes
+        if (estadoSecciones.seccionesPendientes.length > 0) {
+            this.mostrarAlertaSeccionesPendientes(estadoSecciones.seccionesPendientes);
             return false;
         }
         
-        if (estado.seccionesRechazadas.length > 0) {
+        // Verificar secciones rechazadas
+        if (estadoSecciones.seccionesRechazadas.length > 0) {
             this.mostrarAlertaError('No se puede enviar a cotejo', 
                 `No se puede enviar a cotejo presencial porque hay secciones rechazadas. Debe aprobar todas las secciones o rechazar el trámite.`);
+            return false;
+        }
+        
+        // Verificar documentos pendientes
+        if (estadoDocumentos.documentosPendientes.length > 0) {
+            const documentosFaltantes = this.obtenerNombresDocumentosPendientes();
+            this.mostrarAlertaDocumentosPendientes(documentosFaltantes);
+            return false;
+        }
+        
+        // Verificar documentos rechazados
+        if (estadoDocumentos.documentosRechazados.length > 0) {
+            this.mostrarAlertaError('Documentos Rechazados', 
+                'No se puede enviar a cotejo presencial porque hay documentos rechazados. Debe aprobar todos los documentos o rechazar el trámite.');
             return false;
         }
         
@@ -298,6 +372,11 @@ class RevisionDigital {
             `Debe revisar todas las secciones antes de continuar. Secciones pendientes: ${seccionesNombres.join(', ')}`);
     }
     
+    mostrarAlertaDocumentosPendientes(documentosFaltantes) {
+        this.mostrarAlertaError('Documentos Pendientes de Aprobación', 
+            `Debe aprobar todos los documentos antes de enviar a cotejo. Documentos pendientes: ${documentosFaltantes.join(', ')}`);
+    }
+    
     mostrarAlertaError(titulo, mensaje) {
         if (window.modalError) {
             window.modalError.show(titulo, mensaje);
@@ -318,11 +397,7 @@ class RevisionDigital {
             this.cargarEstadoSeccion(seccion);
         });
     }
-    
-    setupEventListeners() {
-        // Event listeners se configuran desde la vista principal
-    }
-    
+
     // Métodos estáticos para compatibilidad
     static setEstadoVisual(seccion, aprobado) {
         if (window.revisionDigital) {
@@ -349,6 +424,7 @@ class RevisionDigital {
     }
 }
 
+// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     window.revisionDigital = new RevisionDigital();
 });

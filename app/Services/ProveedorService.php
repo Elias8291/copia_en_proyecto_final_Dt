@@ -71,7 +71,7 @@ class ProveedorService
             return null;
         }
 
-        return [
+        $detalles = [
             'tramite' => $tramite,
             'dias_transcurridos' => $tramite->created_at->diffInDays(now()),
             'estado_color' => $this->getEstadoColor($tramite->estado),
@@ -79,6 +79,23 @@ class ProveedorService
             'siguiente_paso' => $this->getSiguientePaso($tramite->estado),
             'puede_editar' => in_array($tramite->estado, ['Para_Correccion', 'Pendiente'])
         ];
+
+        // Si el estado es Por_Cotejar, incluir información de la cita
+        if ($tramite->estado === 'Por_Cotejar') {
+            $cita = $tramite->cita;
+            if ($cita) {
+                $detalles['cita'] = [
+                    'id' => $cita->id,
+                    'fecha_cita' => $cita->fecha_cita,
+                    'tipo_cita' => $cita->tipo_cita,
+                    'estado' => $cita->estado,
+                    'motivo' => $cita->motivo,
+                    'observaciones' => $cita->observaciones
+                ];
+            }
+        }
+
+        return $detalles;
     }
 
     /**

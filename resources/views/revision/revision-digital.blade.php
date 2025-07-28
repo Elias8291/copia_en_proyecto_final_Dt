@@ -337,7 +337,7 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900">Documentos</h3>
-                            <p class="text-sm text-gray-500">Documentos requeridos</p>
+                            <p class="text-sm text-gray-500">Documentos requeridos - Todos deben estar aprobados</p>
                         </div>
                     </div>
                     
@@ -407,7 +407,7 @@
                                 <input type="hidden" name="nuevo_estado" value="Por_Cotejar">
                                 <input type="hidden" name="observaciones" id="observaciones_por_cotejar">
                                 <input type="hidden" name="comentario_general" id="comentario_general_por_cotejar">
-                                <button type="button" onclick="showConfirmModalWithValidation('Aceptar y Enviar a Cotejo Presencial', '¿Está seguro que desea aceptar y enviar a cotejo presencial este trámite?', 'form_por_cotejar')"
+                                <button type="button" onclick="validarAntesDeEnviarACotejo() && showConfirmModalWithValidation('Aceptar y Enviar a Cotejo Presencial', '¿Está seguro que desea aceptar y enviar a cotejo presencial este trámite?', 'form_por_cotejar')"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg font-semibold shadow-md text-sm hover:from-emerald-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -422,7 +422,7 @@
                                 <input type="hidden" name="nuevo_estado" value="Rechazado">
                                 <input type="hidden" name="observaciones" id="observaciones_rechazar">
                                 <input type="hidden" name="comentario_general" id="comentario_general_rechazar">
-                                <button type="button" onclick="showConfirmModalWithValidation('Rechazar Trámite', '¿Está seguro que desea rechazar este trámite?', 'form_rechazar')"
+                                <button type="button" onclick="validarAntesDeRechazar() && showConfirmModalWithValidation('Rechazar Trámite', '¿Está seguro que desea rechazar este trámite?', 'form_rechazar')"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-lg font-semibold shadow-md text-sm hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-all">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -437,7 +437,7 @@
                                 <input type="hidden" name="nuevo_estado" value="Para_Correccion">
                                 <input type="hidden" name="observaciones" id="observaciones_para_correccion">
                                 <input type="hidden" name="comentario_general" id="comentario_general_para_correccion">
-                                <button type="button" onclick="showConfirmModalWithValidation('Para Corrección', '¿Está seguro que desea solicitar correcciones para este trámite?', 'form_para_correccion')"
+                                <button type="button" onclick="validarAntesDeCorreccion() && showConfirmModalWithValidation('Para Corrección', '¿Está seguro que desea solicitar correcciones para este trámite?', 'form_para_correccion')"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold shadow-md text-sm hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -509,5 +509,29 @@
         window.csrfToken = "{{ csrf_token() }}";
         window.revisionSeccionComentarioRoute = "{{ route('revision.seccion.comentario') }}";
         window.esPersonaMoral = {{ $esPersonaMoral ? 'true' : 'false' }};
+        
+        // Función global para validar antes de enviar a cotejo
+        function validarAntesDeEnviarACotejo() {
+            if (window.revisionDigital) {
+                return window.revisionDigital.validarEnviarACotejo();
+            }
+            return true;
+        }
+        
+        // Función global para validar antes de rechazar
+        function validarAntesDeRechazar() {
+            if (window.revisionDigital) {
+                return window.revisionDigital.validarRechazarTramite();
+            }
+            return true;
+        }
+        
+        // Función global para validar antes de enviar para corrección
+        function validarAntesDeCorreccion() {
+            if (window.revisionDigital) {
+                return window.revisionDigital.validarParaCorreccion();
+            }
+            return true;
+        }
     </script>
 @endpush

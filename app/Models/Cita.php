@@ -13,6 +13,8 @@ class Cita extends Model
 
     protected $fillable = [
         'tramite_id',
+        'id_tramite',
+        'proveedor_id',
         'user_id',
         'fecha_cita',
         'tipo_cita',

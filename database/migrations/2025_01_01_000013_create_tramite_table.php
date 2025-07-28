@@ -21,10 +21,24 @@ return new class extends Migration
 
             $table->timestamps();
         });
+
+        // Crear tabla de notificaciones
+        Schema::create('notificaciones', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('tramite_id')->constrained('tramites')->onDelete('cascade');
+            $table->enum('tipo', ['Sistema', 'Tramite', 'Cita', 'Vencimiento', 'info', 'warning', 'error', 'success'])->default('Sistema');
+            $table->string('titulo');
+            $table->text('mensaje');
+            $table->boolean('leida')->default(false);
+            $table->timestamp('fecha_envio')->useCurrent();
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('notificaciones');
         Schema::dropIfExists('tramites');
     }
 };

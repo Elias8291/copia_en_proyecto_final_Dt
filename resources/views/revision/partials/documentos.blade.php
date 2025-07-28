@@ -3,7 +3,9 @@
 @if(count($documentos) > 0)
     <div class="space-y-3 sm:space-y-4">
         @foreach($documentos as $documento)
-            <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow duration-200 sm:p-4">
+            <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow duration-200 sm:p-4"
+                 data-documento-id="{{ is_array($documento) ? $documento['id'] : $documento->id }}"
+                 data-documento-nombre="{{ is_array($documento) ? ($documento['nombre'] ?? $documento['nombre_original'] ?? 'Documento') : ($documento->catalogoArchivo->nombre ?? $documento->nombre_original ?? 'Documento') }}">
                 <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                     <div class="flex items-start space-x-2 flex-1 sm:space-x-3">
                         <div class="flex-shrink-0">
@@ -122,11 +124,11 @@
                             <div class="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                                 <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-3">
                                     <label class="flex items-center text-xs">
-                                        <input type="radio" name="decision_documento" value="aprobar" class="text-green-600 focus:outline-none focus:ring-green-500 mr-1">
+                                        <input type="radio" name="decision_documento" value="1" class="text-green-600 focus:outline-none focus:ring-green-500 mr-1">
                                         <span class="text-green-700">Aprobar</span>
                                     </label>
                                     <label class="flex items-center text-xs">
-                                        <input type="radio" name="decision_documento" value="rechazar" class="text-red-600 focus:outline-none focus:ring-red-500 mr-1">
+                                        <input type="radio" name="decision_documento" value="0" class="text-red-600 focus:outline-none focus:ring-red-500 mr-1">
                                         <span class="text-red-700">Rechazar</span>
                                     </label>
                                 </div>

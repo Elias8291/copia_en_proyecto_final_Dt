@@ -5,38 +5,15 @@ namespace App\Services;
 use App\Models\Cita;
 use App\Models\Tramite;
 use App\Models\DiaInhabil;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
 class CitaService
 {
-    private const HORA_INICIO = 9; // 9:00 AM
-    private const HORA_FIN = 14; // 2:00 PM
-    private const DURACION_CITA = 30; // 30 minutos por cita
-
-    /**
-     * Verificar disponibilidad
-     */
-    public function verificarDisponibilidad($fechaCita)
-    {
-        return !Cita::where('fecha_cita', $fechaCita)->exists();
-    }
-
-    /**
-     * Cancelar cita
-     */
-    public function cancelarCita($citaId, $motivo = null)
-    {
-        $cita = Cita::findOrFail($citaId);
-        $cita->estado = 'Cancelada';
-        if ($motivo) {
-            $cita->observaciones = $motivo;
-        }
-        $cita->save();
-        return $cita;
-    }
+    private const HORA_INICIO = 9;
+    private const HORA_FIN = 14;
+    private const DURACION_CITA = 15;
 
     /**
      * Agendar cita automática para cotejo
@@ -46,21 +23,18 @@ class CitaService
         try {
             DB::beginTransaction();
 
-            // Obtener el próximo horario disponible
+            $tramite->load('proveedor');
             $fechaCita = $this->obtenerProximoHorarioDisponible();
-
-            if (!$fechaCita) {
-                Log::warning('No se pudo encontrar horario disponible para cita de cotejo', [
-                    'tramite_id' => $tramite->id
-                ]);
+            
+            if (!$fechaCita || !$tramite->proveedor->usuario_id) {
                 DB::rollBack();
                 return null;
             }
 
-            // Crear la cita
             $cita = Cita::create([
                 'tramite_id' => $tramite->id,
-                'user_id' => $tramite->proveedor->user_id,
+                'id_tramite' => $tramite->id,
+                'user_id' => $tramite->proveedor->usuario_id,
                 'fecha_cita' => $fechaCita,
                 'tipo_cita' => 'Cotejo',
                 'estado' => 'Programada',
@@ -68,138 +42,61 @@ class CitaService
                 'observaciones' => 'Cita automática generada al enviar trámite a cotejo'
             ]);
 
-            Log::info('Cita de cotejo agendada automáticamente', [
-                'cita_id' => $cita->id,
-                'tramite_id' => $tramite->id,
-                'fecha_cita' => $fechaCita->format('Y-m-d H:i:s')
-            ]);
-
             DB::commit();
             return $cita;
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al agendar cita de cotejo automática', [
-                'tramite_id' => $tramite->id,
-                'error' => $e->getMessage()
-            ]);
             return null;
         }
     }
 
     /**
-     * Obtener el próximo horario disponible para cita
+     * Cancelar cita
      */
-    private function obtenerProximoHorarioDisponible(): ?Carbon
+    public function cancelarCita($citaId, $motivo = null): Cita
     {
-        $fechaActual = Carbon::now();
-        
-        // Si es después de las 2 PM, empezar desde el siguiente día
-        if ($fechaActual->hour >= self::HORA_FIN) {
-            $fechaActual->addDay();
-        }
-
-        // Buscar el próximo día hábil
-        $diaHabil = DiaInhabil::proximoDiaHabil($fechaActual);
-        
-        // Buscar horario disponible en los próximos 30 días
-        for ($dia = 0; $dia < 30; $dia++) {
-            $fechaBusqueda = $diaHabil->copy()->addDays($dia);
-            
-            // Verificar que sea día hábil
-            if (!DiaInhabil::esHabil($fechaBusqueda)) {
-                continue;
-            }
-
-            // Buscar horario disponible en ese día
-            $horarioDisponible = $this->buscarHorarioEnDia($fechaBusqueda);
-            
-            if ($horarioDisponible) {
-                return $horarioDisponible;
-            }
-        }
-
-        return null;
+        $cita = Cita::findOrFail($citaId);
+        $cita->estado = 'Cancelada';
+        if ($motivo) $cita->observaciones = $motivo;
+        $cita->save();
+        return $cita;
     }
 
     /**
-     * Buscar horario disponible en un día específico
-     */
-    private function buscarHorarioEnDia(Carbon $fecha): ?Carbon
-    {
-        // Obtener todas las citas del día
-        $citasDelDia = Cita::whereDate('fecha_cita', $fecha->format('Y-m-d'))
-            ->where('estado', '!=', 'Cancelada')
-            ->orderBy('fecha_cita')
-            ->get();
-
-        // Horarios disponibles (cada 30 minutos de 9 AM a 2 PM)
-        $horariosDisponibles = [];
-        $horaActual = $fecha->copy()->setTime(self::HORA_INICIO, 0, 0);
-        $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0, 0);
-
-        while ($horaActual < $horaFin) {
-            $horariosDisponibles[] = $horaActual->copy();
-            $horaActual->addMinutes(self::DURACION_CITA);
-        }
-
-        // Filtrar horarios ocupados
-        foreach ($citasDelDia as $cita) {
-            $fechaCita = Carbon::parse($cita->fecha_cita);
-            
-            // Remover horarios que se solapan
-            $horariosDisponibles = array_filter($horariosDisponibles, function($horario) use ($fechaCita) {
-                return $horario->diffInMinutes($fechaCita) >= self::DURACION_CITA;
-            });
-        }
-
-        // Retornar el primer horario disponible
-        return !empty($horariosDisponibles) ? reset($horariosDisponibles) : null;
-    }
-
-    /**
-     * Verificar si una fecha y hora específica está disponible
+     * Verificar disponibilidad
      */
     public function verificarDisponibilidadFechaHora(Carbon $fechaHora): bool
     {
-        // Verificar que sea día hábil
-        if (!DiaInhabil::esHabil($fechaHora)) {
-            return false;
-        }
+        if (!DiaInhabil::esHabil($fechaHora)) return false;
+        if ($fechaHora->hour < self::HORA_INICIO || $fechaHora->hour >= self::HORA_FIN) return false;
+        if ($fechaHora->minute % self::DURACION_CITA !== 0) return false;
 
-        // Verificar que esté en horario laboral (9 AM a 2 PM)
-        $hora = $fechaHora->hour;
-        if ($hora < self::HORA_INICIO || $hora >= self::HORA_FIN) {
-            return false;
-        }
-
-        // Verificar que no haya citas solapadas
-        $citasSolapadas = Cita::whereDate('fecha_cita', $fechaHora->format('Y-m-d'))
+        return !Cita::whereDate('fecha_cita', $fechaHora->format('Y-m-d'))
             ->where('estado', '!=', 'Cancelada')
-            ->where(function($query) use ($fechaHora) {
-                $query->where('fecha_cita', '<=', $fechaHora)
-                      ->where('fecha_cita', '>', $fechaHora->copy()->subMinutes(self::DURACION_CITA));
-            })
+            ->whereTime('fecha_cita', $fechaHora->format('H:i:s'))
             ->exists();
-
-        return !$citasSolapadas;
     }
 
     /**
-     * Obtener horarios disponibles para una fecha específica
+     * Obtener horarios disponibles
      */
     public function obtenerHorariosDisponibles(Carbon $fecha): array
     {
-        if (!DiaInhabil::esHabil($fecha)) {
-            return [];
-        }
+        if (!DiaInhabil::esHabil($fecha)) return [];
+
+        $horariosOcupados = Cita::whereDate('fecha_cita', $fecha->format('Y-m-d'))
+            ->where('estado', '!=', 'Cancelada')
+            ->pluck('fecha_cita')
+            ->map(fn($fecha) => Carbon::parse($fecha)->format('H:i'))
+            ->toArray();
 
         $horarios = [];
         $horaActual = $fecha->copy()->setTime(self::HORA_INICIO, 0, 0);
         $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0, 0);
 
         while ($horaActual < $horaFin) {
-            if ($this->verificarDisponibilidadFechaHora($horaActual)) {
+            if (!in_array($horaActual->format('H:i'), $horariosOcupados)) {
                 $horarios[] = $horaActual->copy();
             }
             $horaActual->addMinutes(self::DURACION_CITA);
@@ -209,7 +106,7 @@ class CitaService
     }
 
     /**
-     * Obtener próximos días hábiles disponibles
+     * Obtener días hábiles
      */
     public function obtenerProximosDiasHabiles(int $cantidad = 10): array
     {
@@ -218,12 +115,62 @@ class CitaService
 
         for ($i = 0; count($dias) < $cantidad; $i++) {
             $fecha = $fechaActual->copy()->addDays($i);
-            
             if (DiaInhabil::esHabil($fecha)) {
                 $dias[] = $fecha->format('Y-m-d');
             }
         }
 
         return $dias;
+    }
+
+    /**
+     * Total de citas por día
+     */
+    public function obtenerTotalCitasPorDia(): int
+    {
+        return (self::HORA_FIN - self::HORA_INICIO) * (60 / self::DURACION_CITA);
+    }
+
+    /**
+     * Obtener próximo horario disponible
+     */
+    private function obtenerProximoHorarioDisponible(): ?Carbon
+    {
+        $fechaActual = Carbon::now();
+        if ($fechaActual->hour >= self::HORA_FIN) $fechaActual->addDay();
+
+        for ($dia = 0; $dia < 30; $dia++) {
+            $fechaBusqueda = $fechaActual->copy()->addDays($dia);
+            if (DiaInhabil::esHabil($fechaBusqueda)) {
+                $horarioDisponible = $this->buscarHorarioEnDia($fechaBusqueda);
+                if ($horarioDisponible) return $horarioDisponible;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Buscar horario en día específico
+     */
+    private function buscarHorarioEnDia(Carbon $fecha): ?Carbon
+    {
+        $citasDelDia = Cita::whereDate('fecha_cita', $fecha->format('Y-m-d'))
+            ->where('estado', '!=', 'Cancelada')
+            ->pluck('fecha_cita')
+            ->map(fn($fecha) => Carbon::parse($fecha)->format('H:i'))
+            ->toArray();
+
+        $horaActual = $fecha->copy()->setTime(self::HORA_INICIO, 0, 0);
+        $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0, 0);
+
+        while ($horaActual < $horaFin) {
+            if (!in_array($horaActual->format('H:i'), $citasDelDia)) {
+                return $horaActual;
+            }
+            $horaActual->addMinutes(self::DURACION_CITA);
+        }
+
+        return null;
     }
 } 

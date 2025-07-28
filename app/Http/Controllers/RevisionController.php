@@ -236,6 +236,50 @@ class RevisionController extends Controller
     }
 
     /**
+     * Actualiza comentario y estado de un documento en una sola operación
+     */
+    public function actualizarDocumentoCompleto(Request $request, $archivoId)
+    {
+        $request->validate([
+            'comentario' => 'nullable|string|max:1000',
+            'aprobado' => 'required|boolean',
+        ]);
+
+        try {
+            $archivo = \App\Models\Archivo::findOrFail($archivoId);
+            
+            // Actualizar ambos campos en una sola operación
+            $archivo->update([
+                'observaciones' => $request->input('comentario'),
+                'aprobado' => $request->input('aprobado'),
+                'cotejado_por' => Auth::id(),
+                'fecha_cotejo' => now()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Documento actualizado correctamente.',
+                'data' => [
+                    'comentario' => $archivo->observaciones,
+                    'aprobado' => $archivo->aprobado,
+                    'fecha_cotejo' => $archivo->fecha_cotejo
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar documento completo', [
+                'archivo_id' => $archivoId,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar el documento: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Obtiene el estado y comentarios de un documento (archivo).
      */
     public function obtenerEstadoDocumento($archivoId)

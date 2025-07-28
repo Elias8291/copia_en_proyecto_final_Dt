@@ -87,6 +87,10 @@ class Tramite extends Model
         return $this->hasMany(Archivo::class);
     }
 
+    public function cita()
+    {
+        return $this->hasOne(Cita::class);
+    }
 
 
     /**

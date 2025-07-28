@@ -64,13 +64,15 @@
                     $estado = $tramite->estado;
                     $paso_actual = $detalles['estado_descripcion'];
                     $historial = [];
+                    $cita = $detalles['cita'] ?? null;
                 @endphp
                 
                 @include('tramites.estado', [
                     'tramite_id' => $tramite_id,
                     'estado' => $estado,
                     'paso_actual' => $paso_actual,
-                    'historial' => $historial
+                    'historial' => $historial,
+                    'cita' => $cita
                 ])
             @endif
 

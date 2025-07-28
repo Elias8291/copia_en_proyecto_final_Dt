@@ -188,6 +188,7 @@ Route::prefix('roles')->name('roles.')->group(function () {
         Route::post('/documento/{archivo}/comentario', [RevisionController::class, 'actualizarComentarioDocumento'])->name('documento.comentario');
         Route::post('/documento/{archivo}/estado', [RevisionController::class, 'actualizarEstadoDocumento'])->name('documento.estado');
         Route::get('/documento/{archivo}/estado', [RevisionController::class, 'obtenerEstadoDocumento'])->name('documento.estado.get');
+        Route::post('/documento/{archivo}/completo', [RevisionController::class, 'actualizarDocumentoCompleto'])->name('documento.completo');
         
         // Rutas de secciones y comentarios
         Route::post('/seccion/comentario', [\App\Http\Controllers\RevisionSeccionController::class, 'store'])->name('seccion.comentario');

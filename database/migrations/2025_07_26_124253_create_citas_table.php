@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('citas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tramite_id')->nullable()->constrained('tramite')->onDelete('cascade');
-            $table->foreignId('proveedor_id')->nullable()->constrained('proveedores')->onDelete('cascade');
+            $table->foreignId('tramite_id')->nullable()->constrained('tramites')->onDelete('cascade');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('id_tramite')->nullable();
             $table->dateTime('fecha_cita');
             $table->enum('tipo_cita', ['Revision', 'Cotejo', 'Entrega', 'Consulta', 'Otro', 'Reunion', 'Administrativa']);
             $table->enum('estado', ['Programada', 'Confirmada', 'Cancelada', 'Reagendada', 'Completada'])->default('Programada');
