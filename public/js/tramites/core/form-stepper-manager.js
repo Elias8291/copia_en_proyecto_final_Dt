@@ -3,32 +3,34 @@ class FormStepperManager {
         this.currentStep = 1;
         this.totalSteps = totalSteps;
         this.tipoPersona = tipoPersona;
-        this.stepConfig = {
-            'Física': {
-                steps: [1, 2, 3, 4, 5],
-                names: {
-                    1: 'Datos Generales',
-                    2: 'Actividades Económicas',
-                    3: 'Domicilio',
-                    4: 'Documentos',
-                    5: 'Confirmación'
-                },
-                lastStep: 5
-            },
-            'Moral': {
-                steps: [1, 2, 3, 4, 5, 6, 7],
-                names: {
-                    1: 'Datos Generales',
-                    2: 'Actividades Económicas',
-                    3: 'Domicilio',
-                    4: 'Constitutivos',
-                    5: 'Apoderado',
-                    6: 'Accionistas',
-                    7: 'Documentos'
-                },
-                lastStep: 7
-            }
-        };
+                            this.stepConfig = {
+                        'Física': {
+                            steps: [1, 2, 3, 4, 5],
+                            names: {
+                                1: 'Datos Generales',
+                                2: 'Actividades Económicas',
+                                3: 'Domicilio',
+                                4: 'Documentos',
+                                5: 'Términos y Condiciones'
+                            },
+                            lastStep: 5
+                        },
+                        'Moral': {
+                            steps: [1, 2, 3, 4, 5, 6],
+                            names: {
+                                1: 'Datos Generales',
+                                2: 'Actividades Económicas',
+                                3: 'Domicilio',
+                                4: 'Constitución',
+                                5: 'Accionistas',
+                                6: 'Documentos'
+                            },
+                            lastStep: 6
+                        }
+                    };
+        
+        
+        
         this.init();
     }
 
@@ -40,13 +42,17 @@ class FormStepperManager {
     }
 
     initializeStepper() {
-        document.querySelectorAll('.step-section').forEach((section, index) => {
-            if (index === 0) {
-                section.style.display = 'block';
-            } else {
-                section.style.display = 'none';
-            }
+        // Ocultar todas las secciones
+        document.querySelectorAll('.step-section').forEach((section) => {
+            section.style.display = 'none';
         });
+        
+        // Mostrar la primera sección
+        const firstSection = document.getElementById('step-section-1');
+        if (firstSection) {
+            firstSection.style.display = 'block';
+        }
+        
         this.updateStepperUI();
     }
 
@@ -75,12 +81,14 @@ class FormStepperManager {
     goToStep(stepNumber) {
         if (stepNumber < 1 || stepNumber > this.totalSteps) return;
 
-        const currentSection = document.getElementById(`step-section-${this.currentStep}`);
-        if (currentSection) {
-            currentSection.style.display = 'none';
-        }
+        // Ocultar todas las secciones
+        document.querySelectorAll('.step-section').forEach(section => {
+            section.style.display = 'none';
+        });
 
+        // Mostrar la nueva sección
         const newSection = document.getElementById(`step-section-${stepNumber}`);
+        
         if (newSection) {
             newSection.style.display = 'block';
             this.currentStep = stepNumber;
@@ -94,13 +102,21 @@ class FormStepperManager {
     }
 
     goToNextStep() {
+        console.log('Intentando ir al siguiente paso. Paso actual:', this.currentStep, 'Total steps:', this.totalSteps, 'Tipo persona:', this.tipoPersona);
+        
         if (this.validateCurrentStep()) {
             const config = this.stepConfig[this.tipoPersona];
             const lastStep = config.lastStep;
             
+            console.log('Configuración:', config, 'Último paso:', lastStep);
+            
             if (this.currentStep < lastStep) {
                 this.goToStep(this.currentStep + 1);
+            } else {
+                console.log('Ya estamos en el último paso');
             }
+        } else {
+            console.log('Validación falló, no se puede avanzar');
         }
     }
 
@@ -112,17 +128,26 @@ class FormStepperManager {
 
     validateCurrentStep() {
         if (window.tramiteValidator) {
-            const currentSection = document.getElementById(`step-section-${this.currentStep}`);
-            if (!currentSection) return true;
+            let currentSection = document.getElementById(`step-section-${this.currentStep}`);
             
-            return window.tramiteValidator.validateTramiteStep(this.currentStep, currentSection);
+            if (!currentSection) {
+                console.log('No se encontró la sección actual');
+                return true;
+            }
+            
+            const isValid = window.tramiteValidator.validateTramiteStep(this.currentStep, currentSection);
+            return isValid;
         }
         
         return true;
     }
 
     updateStepperUI() {
+        console.log('Actualizando UI - Paso actual:', this.currentStep, 'Tipo persona:', this.tipoPersona);
+        
         const config = this.stepConfig[this.tipoPersona];
+        console.log('Configuración usada:', config);
+        
         const progressLine = document.getElementById('progress-line');
         const currentStepText = document.getElementById('current-step-text');
         const currentStepName = document.getElementById('current-step-name');
@@ -183,13 +208,17 @@ class FormStepperManager {
             const config = this.stepConfig[this.tipoPersona];
             const lastStep = config.lastStep;
             
+            console.log('Manejando botones - Paso actual:', this.currentStep, 'Último paso:', lastStep, 'Tipo persona:', this.tipoPersona, 'Config:', config);
+            
             if (this.currentStep === lastStep) {
+                console.log('Mostrando botón enviar en paso:', this.currentStep);
                 btnSiguiente.style.display = 'none';
                 const btnEnviar = document.getElementById('btn-enviar');
                 if (btnEnviar) {
                     btnEnviar.style.display = 'flex';
                 }
             } else {
+                console.log('Mostrando botón siguiente en paso:', this.currentStep, 'de', lastStep);
                 btnSiguiente.style.display = 'flex';
                 btnSiguienteText.textContent = 'Siguiente';
                 btnSiguiente.className = 'w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-[#9D2449] to-[#B91C1C] text-white rounded-xl hover:from-[#8a203f] hover:to-[#a91b1b] transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center';
@@ -332,40 +361,9 @@ class FormStepperManager {
     }
 
     setupTipoPersonaHandler() {
-        const rfcInput = document.querySelector('input[name="rfc"]');
-        const tipoPersonaInput = document.querySelector('input[name="tipo_persona"]');
-
-        const actualizarTipoPersona = () => {
-            if (rfcInput && tipoPersonaInput) {
-                const rfc = rfcInput.value.trim().toUpperCase();
-                let nuevoTipoPersona = 'Física';
-
-                if (rfc.length === 12) {
-                    nuevoTipoPersona = 'Moral';
-                } else if (rfc.length === 13) {
-                    nuevoTipoPersona = 'Física';
-                }
-
-                if (nuevoTipoPersona !== this.tipoPersona) {
-                    this.tipoPersona = nuevoTipoPersona;
-                    this.totalSteps = this.tipoPersona === 'Moral' ? 6 : 4;
-                    this.currentStep = 1;
-
-                    tipoPersonaInput.value = this.tipoPersona;
-                    this.initializeStepper();
-                }
-            }
-        };
-
-        if (rfcInput) {
-            rfcInput.addEventListener('input', function(e) {
-                e.target.value = e.target.value.toUpperCase();
-                actualizarTipoPersona();
-            });
-
-            rfcInput.addEventListener('blur', actualizarTipoPersona);
-            setTimeout(actualizarTipoPersona, 100);
-        }
+        // No cambiar el tipo de persona después de la inicialización
+        // El tipo se establece correctamente en el constructor
+        console.log('setupTipoPersonaHandler: Manteniendo tipo de persona como', this.tipoPersona);
     }
 
     setupFormValidation() {

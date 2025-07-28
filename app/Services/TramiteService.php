@@ -260,35 +260,10 @@ class TramiteService
     private function procesarActividadesConTemporales(Tramite $tramite, TramiteFormularioRequest $request): void
     {
         $actividades = $request->input('actividades', []);
-        $nombresTemporales = [];
         
-        // Recopilar nombres de actividades temporales
-        foreach ($request->all() as $key => $value) {
-            if (strpos($key, 'actividad_temp_nombre_') === 0) {
-                $idTemporal = str_replace('actividad_temp_nombre_', '', $key);
-                $nombresTemporales[$idTemporal] = $value;
-            }
-        }
-        
-        // Procesar actividades temporales si existen
-        if (!empty($nombresTemporales)) {
-            $actividadesService = app(ActividadesService::class);
-            $resultado = $actividadesService->procesarActividadesTemporales($actividades, $nombresTemporales);
-            
-            if ($resultado['success']) {
-                // Usar las actividades procesadas
-                $actividades = $resultado['actividades_creadas'];
-            } else {
-                Log::error('Error al procesar actividades temporales', [
-                    'tramite_id' => $tramite->id,
-                    'errores' => $resultado['errores']
-                ]);
-            }
-        }
-        
-        // Guardar actividades usando el servicio
+        // Solo procesar si hay actividades
         if (!empty($actividades)) {
-            $actividadesService = app(ActividadesService::class);
+            $actividadesService = new ActividadesService($request);
             $actividadesService->guardar($tramite, $request);
         }
     }

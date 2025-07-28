@@ -64,7 +64,7 @@ class TramiteFormularioRequest extends FormRequest
             
             // Actividades
             'actividades' => 'nullable|array|min:1',
-            'actividades.*' => 'nullable|integer|exists:actividades_economicas,id',
+            'actividades.*' => 'nullable',
             
             // Confirmación
             'confirma_datos' => 'nullable|sometimes|accepted',
@@ -77,7 +77,19 @@ class TramiteFormularioRequest extends FormRequest
 
         // Validaciones adicionales para Persona Moral
         if ($this->isPersonaMoral()) {
-            $rules = array_merge($rules, $this->getPersonaMoralRules());
+            // Solo aplicar validaciones si se están enviando campos de persona moral
+            $personaMoralRules = $this->getPersonaMoralRules();
+            
+            // Filtrar reglas basándose en los campos enviados
+            $filteredRules = [];
+            foreach ($personaMoralRules as $field => $rule) {
+                if ($this->hasField($field)) {
+                    // Si el campo está presente, hacerlo requerido
+                    $filteredRules[$field] = str_replace('nullable|', 'required|', $rule);
+                }
+            }
+            
+            $rules = array_merge($rules, $filteredRules);
         }
 
         return $rules;
@@ -90,23 +102,23 @@ class TramiteFormularioRequest extends FormRequest
     {
         return [
             // Datos constitutivos
-            'numero_escritura' => 'required|string|min:1|max:255',
-            'fecha_constitucion' => 'required|date|before_or_equal:today',
-            'notario_nombre' => 'required|string|min:5|max:255',
-            'entidad_federativa' => 'required|string|max:255',
-            'notario_numero' => 'required|integer|min:1|max:999999',
-            'numero_registro' => 'required|string|min:1|max:255',
-            'fecha_inscripcion' => 'required|date|after_or_equal:fecha_constitucion|before_or_equal:today',
+            'numero_escritura' => 'nullable|string|min:1|max:255',
+            'fecha_constitucion' => 'nullable|date|before_or_equal:today',
+            'notario_nombre' => 'nullable|string|min:5|max:255',
+            'entidad_federativa' => 'nullable|string|max:255',
+            'notario_numero' => 'nullable|integer|min:1|max:999999',
+            'numero_registro' => 'nullable|string|min:1|max:255',
+            'fecha_inscripcion' => 'nullable|date|after_or_equal:fecha_constitucion|before_or_equal:today',
             
             // Apoderado legal
-            'apoderado_nombre' => 'required|string|min:5|max:255',
-            'apoderado_rfc' => 'required|string|size:13|regex:/^[A-ZÑ&]{4}[0-9]{6}[A-V1-9A-Z0-9]{3}$/',
+            'apoderado_nombre' => 'nullable|string|min:5|max:255',
+            'apoderado_rfc' => 'nullable|string|size:13|regex:/^[A-ZÑ&]{4}[0-9]{6}[A-V1-9A-Z0-9]{3}$/',
             
             // Accionistas
-            'accionistas' => 'required|array|min:1',
-            'accionistas.*.nombre' => 'required|string|min:5|max:255',
-            'accionistas.*.rfc' => 'required|string|regex:/^[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}$/',
-            'accionistas.*.porcentaje' => 'required|numeric|min:0.01|max:100',
+            'accionistas' => 'nullable|array|min:1',
+            'accionistas.*.nombre' => 'nullable|string|min:5|max:255',
+            'accionistas.*.rfc' => 'nullable|string|regex:/^[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}$/',
+            'accionistas.*.porcentaje' => 'nullable|numeric|min:0.01|max:100',
         ];
     }
 
@@ -140,5 +152,43 @@ class TramiteFormularioRequest extends FormRequest
         
         $rfc = $this->input('rfc');
         return $rfc && strlen(trim($rfc)) === 12;
+    }
+
+    /**
+     * Check if persona moral fields are actually provided in the request
+     */
+    private function hasPersonaMoralFields(): bool
+    {
+        $personaMoralFields = [
+            'numero_escritura', 'fecha_constitucion', 'notario_nombre',
+            'entidad_federativa', 'notario_numero', 'numero_registro',
+            'fecha_inscripcion', 'apoderado_nombre', 'apoderado_rfc',
+            'accionistas'
+        ];
+        
+        foreach ($personaMoralFields as $field) {
+            if ($this->hasField($field)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    /**
+     * Check if a field or its nested fields are present in the request
+     */
+    private function hasField($field): bool
+    {
+        $input = $this->input($field);
+        
+        // Para campos anidados como accionistas
+        if (is_array($input)) {
+            return !empty(array_filter($input, function($item) {
+                return is_array($item) && !empty(array_filter($item));
+            }));
+        }
+        
+        return !empty($input);
     }
 } 

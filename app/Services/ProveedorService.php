@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Proveedor;
 use App\Models\User;
 use App\Models\Tramite;
+use App\Helpers\TiempoHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -238,5 +239,27 @@ class ProveedorService
         $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
 
         return $diasParaVencer <= 7 && $diasParaVencer >= 0;
+    }
+
+    /**
+     * Calcula el tipo de persona basado en el RFC del proveedor
+     * RFC de 13 caracteres = Persona Física
+     * RFC de 12 caracteres = Persona Moral
+     */
+    public function calcularTipoPersonaPorRfc(?Proveedor $proveedor): ?string
+    {
+        if (!$proveedor || !$proveedor->rfc) {
+            return null;
+        }
+
+        return TiempoHelper::calcularTipoPersonaPorRfc($proveedor->rfc);
+    }
+
+    /**
+     * Obtiene el tipo de persona del proveedor, calculándolo si es necesario
+     */
+    public function getTipoPersona(?Proveedor $proveedor): ?string
+    {
+        return TiempoHelper::getTipoPersona($proveedor);
     }
 }

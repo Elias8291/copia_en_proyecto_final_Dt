@@ -26,7 +26,7 @@
                            ($tramite->estado === 'Por_Cotejar' ? 'bg-orange-100 text-orange-800' : 'bg-red-100 text-red-800'))) }}">
                         {{ str_replace('_', ' ', $tramite->estado) }}
                     </span>
-                    <a href="/revision/{{ $tramite->id }}/seleccion-tipo" class="inline-flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded-lg hover:shadow-md transition-all">
+                    <a href="{{ route('revision.revisar', [$tramite->id, 'seleccion-tipo']) }}" class="inline-flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-[#B4325E] to-[#7a1d37] rounded-lg hover:shadow-md transition-all">
                         <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m7 7l-7 7z" />
                         </svg>

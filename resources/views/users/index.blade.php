@@ -13,6 +13,11 @@
                 'subfield_label' => 'Email'
             ],
             [
+                'label' => 'RFC',
+                'field' => 'rfc',
+                'type' => 'text'
+            ],
+            [
                 'label' => 'Rol',
                 'field' => 'rol',
                 'type' => 'badge',
@@ -103,7 +108,7 @@
         :columns="$columns"
         :filters="$filters"
         :actions="$actions"
-        searchPlaceholder="Buscar usuarios por nombre, email o rol..."
+        searchPlaceholder="Buscar usuarios por nombre, email, RFC o rol..."
     />
 </div>
 

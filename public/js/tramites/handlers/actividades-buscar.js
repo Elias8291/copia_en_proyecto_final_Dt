@@ -121,8 +121,8 @@ if (typeof ActividadesBuscar === 'undefined') {
         }
         
         agregarActividadTemporal(nombre) {
-            // Generar un ID temporal negativo para distinguir actividades temporales
-            const tempId = -(Date.now() + Math.random());
+            // Generar un ID temporal negativo simple para distinguir actividades temporales
+            const tempId = -(this.actividadesTemporales.length + 1);
             
             const actividadTemporal = {
                 id: tempId,
@@ -226,7 +226,7 @@ if (typeof ActividadesBuscar === 'undefined') {
                             // Crear input adicional con el nombre de la actividad temporal
                             const inputNombre = document.createElement('input');
                             inputNombre.type = 'hidden';
-                            inputNombre.name = `actividad_temp_nombre_${act.id}`;
+                            inputNombre.name = `actividad_temp_nombre_${Math.abs(act.id)}`;
                             inputNombre.value = act.nombre;
                             fragment.appendChild(inputNombre);
                         }

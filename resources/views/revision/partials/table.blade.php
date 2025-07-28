@@ -126,7 +126,7 @@
                         <td class="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center text-sm font-medium">
                             <div class="flex items-center justify-center">
                                 <!-- Revisar Datos -->
-                                <a href="{{ route('revision.seleccion-tipo', $tramite->id) }}"
+                                <a href="{{ route('revision.revisar', [$tramite->id, 'seleccion-tipo']) }}"
                                     class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#B4325E] hover:text-[#7a1d37] hover:bg-[#B4325E]/10 focus:outline-none focus:ring-2 focus:ring-[#B4325E]/50 focus:ring-offset-2"
                                     title="Iniciar revisión">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,7 +252,7 @@
             <!-- Acciones -->
             <div class="px-3 py-2 bg-gray-50 border-t border-gray-100 flex items-center justify-center">
                 <!-- Revisar Datos -->
-                <a href="{{ route('revision.seleccion-tipo', $tramite->id) }}"
+                                                <a href="{{ route('revision.revisar', [$tramite->id, 'seleccion-tipo']) }}"
                     class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-[#B4325E] bg-[#B4325E]/10 border border-[#B4325E]/20 rounded-lg hover:bg-[#B4325E]/20 hover:border-[#B4325E]/30 focus:outline-none focus:ring-2 focus:ring-[#B4325E]/50 focus:ring-offset-2">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

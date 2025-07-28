@@ -1,5 +1,10 @@
 @props(['tramite', 'proveedor', 'editable' => false])
 
+@php
+    use App\Helpers\TiempoHelper;
+    $tipoPersona = TiempoHelper::getTipoPersona($proveedor);
+@endphp
+
 <div class="space-y-8">
     <!-- Información del Trámite -->
    
@@ -45,14 +50,14 @@
                         <i class="fas fa-user-tag text-gray-500"></i>
                     </div>
                     <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $proveedor->tipo_persona === 'Moral' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
-                            {{ $proveedor->tipo_persona ?? 'N/A' }}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $tipoPersona === 'Moral' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                            {{ $tipoPersona ?? 'N/A' }}
                         </span>
                     </div>
                 </div>
             </div>
 
-            @if($proveedor->tipo_persona === 'Física')
+            @if($tipoPersona === 'Física')
             <div class="form-group field-container">
                 <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
                     CURP

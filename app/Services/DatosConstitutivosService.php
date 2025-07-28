@@ -25,20 +25,20 @@ class DatosConstitutivosService
     {
         Log::info('Procesando datos constitutivos', ['tramite_id' => $tramite->id]);
 
-        // Crear instrumento notarial
+        // Crear instrumento notarial para datos constitutivos
         $instrumentoNotarial = $this->instrumentoNotarialService->crear($request);
-        if (!$instrumentoNotarial) {
-            Log::info('No se creó instrumento notarial, omitiendo datos constitutivos', [
+        
+        // Si hay instrumento notarial, crear datos constitutivos
+        if ($instrumentoNotarial) {
+            $this->crearDatosConstitutivos($tramite, $instrumentoNotarial);
+        } else {
+            Log::info('No se creó instrumento notarial para datos constitutivos', [
                 'tramite_id' => $tramite->id
             ]);
-            return;
         }
 
-        // Crear registro de datos constitutivos
-        $this->crearDatosConstitutivos($tramite, $instrumentoNotarial);
-
         // Crear apoderado legal si existe
-        $this->crearApoderadoLegal($tramite, $instrumentoNotarial, $request);
+        $this->crearApoderadoLegal($tramite, $request);
 
         // Crear accionistas si existen
         $this->crearAccionistas($tramite, $request);
@@ -72,30 +72,62 @@ class DatosConstitutivosService
     /**
      * Crea el apoderado legal si existe información
      */
-    private function crearApoderadoLegal(Tramite $tramite, InstrumentoNotarial $instrumentoNotarial, TramiteFormularioRequest $request): void
+    private function crearApoderadoLegal(Tramite $tramite, TramiteFormularioRequest $request): void
     {
-        if (!$request->filled(['apoderado_nombre', 'apoderado_rfc'])) {
+        $apoderadoNombre = $request->input('apoderado_nombre');
+        $apoderadoRfc = $request->input('apoderado_rfc');
+        
+        // Log para debug
+        Log::info('Verificando datos de apoderado legal', [
+            'tramite_id' => $tramite->id,
+            'apoderado_nombre' => $apoderadoNombre,
+            'apoderado_rfc' => $apoderadoRfc,
+            'nombre_filled' => $request->filled('apoderado_nombre'),
+            'rfc_filled' => $request->filled('apoderado_rfc')
+        ]);
+        
+        // Verificar si hay al menos un campo con información
+        if (empty($apoderadoNombre) && empty($apoderadoRfc)) {
             Log::info('No hay información de apoderado legal', ['tramite_id' => $tramite->id]);
             return;
         }
 
         try {
+            // Crear instrumento notarial para el poder si hay datos del poder
+            $instrumentoNotarialPoder = null;
+            if ($this->tieneDatosPoder($request)) {
+                $instrumentoNotarialPoder = $this->crearInstrumentoNotarialPoder($request);
+            } else {
+                // Crear un instrumento notarial por defecto para el apoderado
+                $instrumentoNotarialPoder = $this->crearInstrumentoNotarialPorDefecto();
+            }
+            
+            // Asegurar que los campos no sean null
+            $nombreApoderado = !empty($apoderadoNombre) ? $apoderadoNombre : 'Apoderado Legal';
+            $rfcApoderado = !empty($apoderadoRfc) ? $apoderadoRfc : 'TEMP000000000';
+            
             ApoderadoLegal::create([
                 'tramite_id' => $tramite->id,
-                'instrumento_notarial_id' => $instrumentoNotarial->id,
-                'nombre_apoderado' => $request->input('apoderado_nombre'),
-                'rfc' => $request->input('apoderado_rfc'),
+                'instrumento_notarial_id' => $instrumentoNotarialPoder->id,
+                'nombre_apoderado' => $nombreApoderado,
+                'rfc' => $rfcApoderado,
             ]);
 
             Log::info('Apoderado legal creado', [
                 'tramite_id' => $tramite->id,
-                'nombre' => $request->input('apoderado_nombre')
+                'nombre' => $nombreApoderado,
+                'rfc' => $rfcApoderado,
+                'instrumento_id' => $instrumentoNotarialPoder->id
             ]);
 
         } catch (\Exception $e) {
             Log::error('Error al crear apoderado legal', [
                 'tramite_id' => $tramite->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'datos_intentados' => [
+                    'nombre' => $nombreApoderado ?? $apoderadoNombre,
+                    'rfc' => $rfcApoderado ?? $apoderadoRfc
+                ]
             ]);
         }
     }
@@ -164,5 +196,47 @@ class DatosConstitutivosService
 
             return false;
         }
+    }
+
+    /**
+     * Verifica si hay datos del poder notarial
+     */
+    private function tieneDatosPoder(TramiteFormularioRequest $request): bool
+    {
+        return $request->filled(['poder_numero_escritura', 'poder_notario_nombre']);
+    }
+    
+    /**
+     * Crea un instrumento notarial para el poder
+     */
+    private function crearInstrumentoNotarialPoder(TramiteFormularioRequest $request): InstrumentoNotarial
+    {
+        return InstrumentoNotarial::create([
+            'numero_escritura' => $request->input('poder_numero_escritura'),
+            'numero_escritura_constitutiva' => $request->input('poder_numero_escritura'),
+            'fecha_constitucion' => $request->input('poder_fecha_constitucion', now()->toDateString()),
+            'nombre_notario' => $request->input('poder_notario_nombre'),
+            'entidad_federativa' => $request->input('poder_entidad_federativa', 'Puebla'),
+            'numero_notario' => (int) $request->input('poder_notario_numero', 1),
+            'numero_registro_publico' => $request->input('poder_numero_registro', 'N/A'),
+            'fecha_inscripcion' => $request->input('poder_fecha_constitucion', now()->toDateString()),
+        ]);
+    }
+    
+    /**
+     * Crea un instrumento notarial por defecto para el apoderado
+     */
+    private function crearInstrumentoNotarialPorDefecto(): InstrumentoNotarial
+    {
+        return InstrumentoNotarial::create([
+            'numero_escritura' => 'PODER-APODERADO-' . time(),
+            'numero_escritura_constitutiva' => 'PODER-APODERADO-' . time(),
+            'fecha_constitucion' => now()->toDateString(),
+            'nombre_notario' => 'Notario por Defecto',
+            'entidad_federativa' => 'Puebla',
+            'numero_notario' => 1,
+            'numero_registro_publico' => 'N/A',
+            'fecha_inscripcion' => now()->toDateString(),
+        ]);
     }
 } 

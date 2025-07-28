@@ -55,10 +55,6 @@
                 enctype="multipart/form-data">
                 @csrf
 
-                <input type="hidden" name="test_campo_1" value="test_value_1">
-                <input type="hidden" name="test_campo_2" value="test_value_2">
-                <input type="hidden" name="tipo_tramite_hidden" value="{{ $tipo_tramite }}">
-
                 @php
                     $rfcUsuario = Auth::user()->rfc ?? ($datosSat['rfc'] ?? '');
                     $tipoPersona = 'Física'; // Default
@@ -67,26 +63,37 @@
                         $tipoPersona = strlen($rfcUsuario) === 12 ? 'Moral' : 'Física';
                     }
                     $totalSteps = $tipoPersona === 'Moral' ? 7 : 5;
+                    
+                    // Debug temporal
+                    error_log("RFC Usuario: " . $rfcUsuario);
+                    error_log("Tipo Persona: " . $tipoPersona);
+                    error_log("Total Steps: " . $totalSteps);
 
-                    $stepNames =
-                        $tipoPersona === 'Moral'
-                            ? [
-                                1 => 'Datos Generales',
-                                2 => 'Actividades Económicas',
-                                3 => 'Domicilio',
-                                4 => 'Constitutivos',
-                                5 => 'Apoderado',
-                                6 => 'Accionistas',
-                                7 => 'Documentos',
-                            ]
-                            : [
-                                1 => 'Datos Generales',
-                                2 => 'Actividades Económicas',
-                                3 => 'Domicilio',
-                                4 => 'Documentos',
-                                5 => 'Confirmación',
-                            ];
+                                    if ($tipoPersona === 'Moral') {
+                    $stepNames = [
+                        1 => 'Datos Generales',
+                        2 => 'Actividades Económicas',
+                        3 => 'Domicilio',
+                        4 => 'Constitución',
+                        5 => 'Apoderado Legal',
+                        6 => 'Accionistas',
+                        7 => 'Documentos',
+                    ];
+                } else {
+                    $stepNames = [
+                        1 => 'Datos Generales',
+                        2 => 'Actividades Económicas',
+                        3 => 'Domicilio',
+                        4 => 'Documentos',
+                        5 => 'Términos y Condiciones',
+                    ];
+                }
                 @endphp
+
+                <input type="hidden" name="test_campo_1" value="test_value_1">
+                <input type="hidden" name="test_campo_2" value="test_value_2">
+                <input type="hidden" name="tipo_tramite_hidden" value="{{ $tipo_tramite }}">
+                <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}">
 
 
                 <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-white/20 p-4 mb-6">
@@ -169,6 +176,7 @@
                             @include('tramites.partials.apoderado', [
                                 'tipo' => $tipo_tramite,
                                 'proveedor' => $proveedor,
+                                'editable' => true,
                             ])
                         </div>
 
@@ -206,29 +214,25 @@
                                 'tipoPersona' => $tipoPersona,
                             ])
                         </div>
-                    @endif
 
+                        <div class="section-container step-section" data-step="5" id="step-section-5">
+                            <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
 
-                    <div class="section-container step-section" data-step="{{ $tipoPersona === 'Moral' ? 7 : 5 }}"
-                        id="step-section-{{ $tipoPersona === 'Moral' ? 7 : 5 }}">
-                        <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-
-                            <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-                                <div class="flex items-center space-x-4">
-                                    <div
-                                        class="h-14 w-14 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h2 class="text-2xl font-bold text-gray-800">Confirmación Final</h2>
-                                        <p class="text-sm text-gray-600 mt-1">Revise cuidadosamente toda la información
-                                            antes de enviar</p>
+                                <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                                    <div class="flex items-center space-x-4">
+                                        <div
+                                            class="h-14 w-14 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 class="text-2xl font-bold text-gray-800">Términos y Condiciones</h2>
+                                            <p class="text-sm text-gray-600 mt-1">Revise y acepte los términos antes de enviar</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
 
                             <div
@@ -387,6 +391,187 @@
                             </div>
                         </div>
                     </div>
+                    @endif
+
+                    @if ($tipoPersona === 'Moral')
+                        <div class="section-container step-section" data-step="7" id="step-section-7">
+                            <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+
+                                <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                                    <div class="flex items-center space-x-4">
+                                        <div
+                                            class="h-14 w-14 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-lg transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 class="text-2xl font-bold text-gray-800">Confirmación Final</h2>
+                                            <p class="text-sm text-gray-600 mt-1">Revise cuidadosamente toda la información
+                                                antes de enviar</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div
+                                    class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-6">
+                                    <div class="flex items-start space-x-4">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="text-lg font-semibold text-blue-900 mb-2">Resumen de su Trámite</h3>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <span class="font-medium text-blue-800">Tipo de trámite:</span>
+                                                    <span class="text-blue-700 ml-2">{{ ucfirst($tipo_tramite) }}</span>
+                                                </div>
+                                                <div>
+                                                    <span class="font-medium text-blue-800">Tipo de persona:</span>
+                                                    <span class="text-blue-700 ml-2">{{ $tipoPersona }}</span>
+                                                </div>
+                                                @if ($proveedor)
+                                                    <div class="md:col-span-2">
+                                                        <span class="font-medium text-blue-800">Empresa:</span>
+                                                        <span class="text-blue-700 ml-2">{{ $proveedor->razon_social }}</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+                                    <div class="flex items-start space-x-3">
+                                        <svg class="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" fill="currentColor"
+                                            viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <h3 class="text-base font-semibold text-amber-800 mb-2">Información Importante</h3>
+                                            <div class="space-y-2 text-sm text-amber-700">
+                                                @if ($tipo_tramite === 'inscripcion')
+                                                    <p>• <strong>Proceso de revisión:</strong> Su solicitud será evaluada por
+                                                        nuestro equipo técnico en un plazo de 5 a 10 días hábiles.</p>
+                                                    <p>• <strong>Documentación:</strong> Asegúrese de que todos los documentos
+                                                        estén legibles y actualizados.</p>
+                                                    <p>• <strong>Notificaciones:</strong> Recibirá actualizaciones del proceso
+                                                        por correo electrónico y SMS.</p>
+                                                    <p>• <strong>Vigencia:</strong> Una vez aprobado, su registro tendrá
+                                                        vigencia de 1 año.</p>
+                                                @elseif($tipo_tramite === 'renovacion')
+                                                    <p>• <strong>Continuidad del servicio:</strong> Su registro actual
+                                                        permanecerá activo durante el proceso de renovación.</p>
+                                                    <p>• <strong>Documentos actualizados:</strong> Verifique que toda la
+                                                        información esté actualizada al año en curso.</p>
+                                                    <p>• <strong>Tiempo de procesamiento:</strong> Las renovaciones se procesan
+                                                        en 3 a 5 días hábiles.</p>
+                                                    <p>• <strong>Nueva vigencia:</strong> Su registro renovado tendrá vigencia
+                                                        por 1 año adicional.</p>
+                                                @else
+                                                    <p>• <strong>Modificaciones:</strong> Los cambios realizados pueden requerir
+                                                        documentación de soporte adicional.</p>
+                                                    <p>• <strong>Revisión administrativa:</strong> Nuestro equipo verificará la
+                                                        información actualizada.</p>
+                                                    <p>• <strong>Tiempo de procesamiento:</strong> Las modificaciones se
+                                                        procesan en 3 a 7 días hábiles.</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-6">
+                                    <h3 class="text-base font-semibold text-gray-800 mb-4">Términos y Condiciones</h3>
+                                    <div class="space-y-3 text-sm text-gray-700">
+                                        <p>Al enviar este formulario, usted acepta y declara que:</p>
+                                        <ul class="list-disc list-inside space-y-2 ml-4">
+                                            <li>Toda la información proporcionada es veraz, completa y actualizada.</li>
+                                            <li>Comprende que proporcionar información falsa puede resultar en la cancelación
+                                                inmediata de su registro.</li>
+                                            <li>Autoriza la verificación de los datos proporcionados con las autoridades
+                                                competentes.</li>
+                                            <li>Se compromete a notificar cualquier cambio en la información registrada dentro
+                                                de los 30 días siguientes.</li>
+                                            <li>Acepta recibir comunicaciones oficiales relacionadas con su trámite por los
+                                                medios proporcionados.</li>
+                                            <li>Ha leído y acepta los términos del aviso de privacidad disponible en nuestro
+                                                sitio web.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+
+                                <div class="space-y-4">
+                                    <label
+                                        class="flex items-start space-x-3 p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                        <input type="checkbox" name="confirma_datos" required
+                                            class="mt-1 h-5 w-5 text-[#9D2449] focus:ring-[#9D2449] border-gray-300 rounded">
+                                        <span class="text-sm text-gray-700 leading-relaxed">
+                                            <strong>Confirmo la veracidad de los datos:</strong> Declaro bajo protesta de decir
+                                            verdad que todos los datos proporcionados en este formulario son correctos,
+                                            completos y actualizados. Entiendo que cualquier información falsa o inexacta puede
+                                            resultar en la cancelación de mi registro y las sanciones legales correspondientes.
+                                        </span>
+                                    </label>
+
+                                    <label
+                                        class="flex items-start space-x-3 p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                        <input type="checkbox" name="acepta_terminos" required
+                                            class="mt-1 h-5 w-5 text-[#9D2449] focus:ring-[#9D2449] border-gray-300 rounded">
+                                        <span class="text-sm text-gray-700 leading-relaxed">
+                                            <strong>Acepto términos y condiciones:</strong> He leído, entendido y acepto todos
+                                            los términos y condiciones mencionados anteriormente, así como el aviso de
+                                            privacidad. Autorizo el tratamiento de mis datos personales conforme a la
+                                            normatividad vigente.
+                                        </span>
+                                    </label>
+
+                                    <label
+                                        class="flex items-start space-x-3 p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                                        <input type="checkbox" name="autoriza_comunicaciones" required
+                                            class="mt-1 h-5 w-5 text-[#9D2449] focus:ring-[#9D2449] border-gray-300 rounded">
+                                        <span class="text-sm text-gray-700 leading-relaxed">
+                                            <strong>Autorizo comunicaciones:</strong> Consiento recibir notificaciones,
+                                            actualizaciones y comunicaciones oficiales relacionadas con mi trámite a través de
+                                            correo electrónico, SMS y otros medios de contacto proporcionados.
+                                        </span>
+                                    </label>
+                                </div>
+
+
+                                <div class="mt-8 p-4 bg-green-50 border border-green-200 rounded-xl">
+                                    <div class="flex items-center space-x-3">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <h4 class="text-sm font-semibold text-green-800">¡Casi terminamos!</h4>
+                                            <p class="text-sm text-green-700 mt-1">
+                                                Una vez que envíe su solicitud, recibirá un número de folio para dar seguimiento
+                                                a su trámite.
+                                                Conserve este número para futuras consultas.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
 
@@ -472,7 +657,31 @@
                 }
 
                 if (typeof FormStepperManager !== 'undefined') {
-                    window.formStepperManager = new FormStepperManager({{ $totalSteps }}, '{{ $tipoPersona }}');
+                    console.log('Inicializando FormStepperManager con:', {
+                        totalSteps: {{ $totalSteps }},
+                        tipoPersona: '{{ $tipoPersona }}'
+                    });
+                    
+                    // Forzar la detección del tipo de persona basado en el RFC
+                    const rfcUsuario = '{{ Auth::user()->rfc ?? ($datosSat['rfc'] ?? '') }}';
+                    let tipoPersonaDetectado = '{{ $tipoPersona }}';
+                    
+                    if (rfcUsuario && rfcUsuario.length === 12) {
+                        tipoPersonaDetectado = 'Moral';
+                    } else if (rfcUsuario && rfcUsuario.length === 13) {
+                        tipoPersonaDetectado = 'Física';
+                    }
+                    
+                    console.log('RFC detectado:', rfcUsuario, 'Tipo persona detectado:', tipoPersonaDetectado);
+                    
+                    // Actualizar el input hidden para que sea consistente
+                    const tipoPersonaInput = document.querySelector('input[name="tipo_persona"]');
+                    if (tipoPersonaInput) {
+                        tipoPersonaInput.value = tipoPersonaDetectado;
+                        console.log('Input hidden actualizado a:', tipoPersonaDetectado);
+                    }
+                    
+                    window.formStepperManager = new FormStepperManager({{ $totalSteps }}, tipoPersonaDetectado);
                 }
             });
         </script>

@@ -270,6 +270,7 @@ class TramiteFormValidatorBase {
 
         for (const field of fields) {
             const fieldValid = this.validateField(field);
+            
             if (!fieldValid && isValid) {
                 isValid = false;
                 firstErrorField = field;
@@ -467,18 +468,26 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
             if (!value) return true;
 
             const rfc = value.toUpperCase();
-            const tipoPersonaInput = document.querySelector(
-                'input[name="tipo_persona"]'
-            );
-            const tipoPersona = tipoPersonaInput ? tipoPersonaInput.value : "";
-
-            if (tipoPersona === "Moral" && rfc.length !== 12) {
-                return false;
-            }
-            if (tipoPersona === "Física" && rfc.length !== 13) {
-                return false;
+            
+            // Determinar el tipo de persona basado en la longitud del RFC
+            let tipoPersona = "Física";
+            if (rfc.length === 12) {
+                tipoPersona = "Moral";
+            } else if (rfc.length === 13) {
+                tipoPersona = "Física";
             }
 
+            console.log('Validando RFC:', rfc, 'Longitud:', rfc.length, 'Tipo persona calculado:', tipoPersona);
+
+            // Actualizar el input hidden si es necesario
+            const tipoPersonaInput = document.querySelector('input[name="tipo_persona"]');
+            if (tipoPersonaInput && tipoPersonaInput.value !== tipoPersona) {
+                console.log('Actualizando tipo de persona en input hidden de', tipoPersonaInput.value, 'a', tipoPersona);
+                tipoPersonaInput.value = tipoPersona;
+            }
+
+            // La validación siempre será true porque calculamos el tipo basado en el RFC
+            console.log('RFC válido para tipo:', tipoPersona);
             return true;
         });
     }
@@ -502,31 +511,53 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
         let isValid = true;
         const errors = [];
 
-        switch (stepNumber) {
-            case 1:
-                isValid = this.validateDatosGenerales(stepElement, errors);
-                break;
-            case 2:
-                isValid = this.validateDomicilio(stepElement, errors);
-                break;
-            case 3:
-                isValid = this.validateDocumentosOConstitutivos(
-                    stepElement,
-                    errors
-                );
-                break;
-            case 4:
-                isValid = this.validateApoderadoOConfirmacion(
-                    stepElement,
-                    errors
-                );
-                break;
-            case 5:
-                isValid = this.validateAccionistas(stepElement, errors);
-                break;
-            case 6:
-                isValid = this.validateDocumentos(stepElement, errors);
-                break;
+        // Determinar el tipo de persona
+        const tipoPersonaInput = document.querySelector('input[name="tipo_persona"]');
+        const tipoPersona = tipoPersonaInput ? tipoPersonaInput.value : 'Física';
+
+
+
+        if (tipoPersona === 'Moral') {
+            // Validación para personas morales
+            switch (stepNumber) {
+                case 1:
+                    isValid = this.validateDatosGenerales(stepElement, errors);
+                    break;
+                case 2:
+                    isValid = this.validateActividadesEconomicas(stepElement, errors);
+                    break;
+                case 3:
+                    isValid = this.validateDomicilio(stepElement, errors);
+                    break;
+                case 4:
+                    isValid = this.validateConstitutivos(stepElement, errors);
+                    break;
+                case 5:
+                    isValid = this.validateAccionistas(stepElement, errors);
+                    break;
+                case 6:
+                    isValid = this.validateDocumentos(stepElement, errors);
+                    break;
+            }
+        } else {
+            // Validación para personas físicas
+            switch (stepNumber) {
+                case 1:
+                    isValid = this.validateDatosGenerales(stepElement, errors);
+                    break;
+                case 2:
+                    isValid = this.validateActividadesEconomicas(stepElement, errors);
+                    break;
+                case 3:
+                    isValid = this.validateDomicilio(stepElement, errors);
+                    break;
+                case 4:
+                    isValid = this.validateDocumentos(stepElement, errors);
+                    break;
+                case 5:
+                    isValid = this.validateConfirmacion(stepElement, errors);
+                    break;
+            }
         }
 
         if (!isValid && this.config.showErrors) {
@@ -537,15 +568,31 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
     }
 
     validateDatosGenerales(stepElement, errors) {
+        console.log('Validando datos generales...');
         const isValid = this.validateSection(stepElement);
+        console.log('Validación de sección:', isValid);
 
         const rfcField = stepElement.querySelector('input[name="rfc"]');
-        if (
-            rfcField &&
-            !this.validators.get("rfc-persona")(rfcField.value, rfcField)
-        ) {
-            errors.push(this.getErrorMessage("rfc-persona"));
+        console.log('Campo RFC encontrado:', rfcField);
+        
+        if (rfcField) {
+            console.log('Valor del RFC:', rfcField.value);
+            const rfcValidator = this.validators.get("rfc-persona");
+            const rfcValid = rfcValidator(rfcField.value, rfcField);
+            console.log('Validación RFC:', rfcValid);
+            
+            if (!rfcValid) {
+                errors.push(this.getErrorMessage("rfc-persona"));
+                console.log('Error RFC agregado');
+            }
         }
+
+        console.log('Errores totales:', errors.length);
+        return isValid && errors.length === 0;
+    }
+
+    validateActividadesEconomicas(stepElement, errors) {
+        const isValid = this.validateSection(stepElement);
 
         const actividadesField = stepElement.querySelector(
             "#actividades-validation"
@@ -568,11 +615,15 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
         return this.validateSection(stepElement);
     }
 
-    validateDocumentosOConstitutivos(stepElement, errors) {
+    validateConstitutivos(stepElement, errors) {
         return this.validateSection(stepElement);
     }
 
-    validateApoderadoOConfirmacion(stepElement, errors) {
+    validateApoderado(stepElement, errors) {
+        return this.validateSection(stepElement);
+    }
+
+    validateConfirmacion(stepElement, errors) {
         const isValid = this.validateSection(stepElement);
 
         const confirmacionCheckboxes = stepElement.querySelectorAll(

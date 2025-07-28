@@ -1,7 +1,19 @@
 @props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => [], 'editable' => true])
 
 @php
-    $tipoPersona = $proveedor->tipo_persona ?? 'Física';
+    // Obtener el RFC para determinar el tipo de persona
+    $rfcValue = old('rfc', $datosSat['rfc'] ?? (Auth::user()->rfc ?? ''));
+    $rfcValue = strtoupper(trim($rfcValue));
+    
+    // Calcular tipo de persona basándose en la longitud del RFC
+    if ($rfcValue && strlen($rfcValue) === 12) {
+        $tipoPersona = 'Moral';
+    } elseif ($rfcValue && strlen($rfcValue) === 13) {
+        $tipoPersona = 'Física';
+    } else {
+        // Si no se puede determinar, usar el valor del proveedor o default
+        $tipoPersona = $proveedor->tipo_persona ?? 'Física';
+    }
 @endphp
 
 <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
@@ -50,11 +62,7 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-id-card text-gray-500"></i>
                         </div>
-                        @php
-                            $rfcValue = old('rfc', $datosSat['rfc'] ?? (Auth::user()->rfc ?? ''));
-                            // Limpiar RFC de espacios y convertir a mayúsculas
-                            $rfcValue = strtoupper(trim($rfcValue));
-                        @endphp
+
                         <input type="text" name="rfc" readonly value="{{ $rfcValue }}"
                             data-validate="required|rfc|rfc-persona"
                             class="validate-rfc block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"

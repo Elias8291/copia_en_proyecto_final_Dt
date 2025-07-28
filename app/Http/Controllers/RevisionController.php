@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tramite;
 use App\Services\NotificacionService;
+use App\Services\ProveedorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -11,10 +12,12 @@ use Illuminate\Support\Facades\Log;
 class RevisionController extends Controller
 {
     protected $notificacionService;
+    protected $proveedorService;
 
-    public function __construct(NotificacionService $notificacionService)
+    public function __construct(NotificacionService $notificacionService, ProveedorService $proveedorService)
     {
         $this->notificacionService = $notificacionService;
+        $this->proveedorService = $proveedorService;
     }
 
     public function index(Request $request)
@@ -117,6 +120,17 @@ class RevisionController extends Controller
                 'actividades',
                 'archivos.catalogoArchivo'
             ]);
+
+            // Calcular el tipo de persona basado en el RFC del proveedor
+            if ($tramite->proveedor) {
+                $tipoPersona = $this->proveedorService->getTipoPersona($tramite->proveedor);
+                
+                // Si el proveedor no tiene tipo_persona asignado, actualizarlo
+                if (!$tramite->proveedor->tipo_persona && $tipoPersona) {
+                    $tramite->proveedor->update(['tipo_persona' => $tipoPersona]);
+                    $tramite->load('proveedor'); // Recargar la relación
+                }
+            }
 
             return view('revision.revision-digital', compact('tramite'));
         } catch (\Exception $e) {

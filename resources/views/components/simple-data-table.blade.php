@@ -243,7 +243,13 @@
                                                             </form>
                                                         @endif
                                                     @else
-                                                        <a href="{{ route($action['url'], $item->id) }}" 
+                                                        @php
+                                                            $routeParams = [$item->id];
+                                                            if (isset($action['params'])) {
+                                                                $routeParams = array_merge($routeParams, $action['params']);
+                                                            }
+                                                        @endphp
+                                                        <a href="{{ route($action['url'], $routeParams) }}" 
                                                        class="p-2 {{ $action['color'] ?? 'text-primary' }} hover:bg-primary/10 rounded-lg transition-all duration-200" 
                                                        title="{{ $action['label'] ?? $actionKey }}">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
