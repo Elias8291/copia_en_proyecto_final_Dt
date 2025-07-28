@@ -3,82 +3,76 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleSeeder extends Seeder
 {
     /**
-     * Ejecuta los seeds de la base de datos.
-     *
-     * @return void
+     * Run the database seeds.
      */
-    public function run()
+    public function run(): void
     {
-        $this->command->info('Creando roles...');
-
-        // === SUPER ADMINISTRADOR ===
-        Role::firstOrCreate([
-            'name' => 'Super Administrador',
-            'guard_name' => 'web',
-        ]);
-
-        // === ADMINISTRADOR ===
-        Role::firstOrCreate([
-            'name' => 'Administrador',
-            'guard_name' => 'web',
-        ]);
-
-        // === REVISOR DE TRÁMITES ===
-        Role::firstOrCreate([
-            'name' => 'Revisor de Trámites',
-            'guard_name' => 'web',
-        ]);
-
-        // === GESTOR DE PROVEEDORES ===
-        Role::firstOrCreate([
-            'name' => 'Gestor de Proveedores',
-            'guard_name' => 'web',
-        ]);
-
-        // === SOLICITANTE ===
-        Role::firstOrCreate([
-            'name' => 'Solicitante',
-            'guard_name' => 'web',
-        ]);
-
-        // === PROVEEDOR ===
-        Role::firstOrCreate([
-            'name' => 'Proveedor',
-            'guard_name' => 'web',
-        ]);
-
-        // === OPERADOR ===
-        Role::firstOrCreate([
-            'name' => 'Operador',
-            'guard_name' => 'web',
-        ]);
-
-        $this->command->info('✅ Roles creados exitosamente');
-    }
-
-    /**
-     * Asigna permisos de manera segura, ignorando los que no existen
-     */
-    private function asignarPermisosSeguro($role, $permisos)
-    {
-        $permisosExistentes = [];
-
-        foreach ($permisos as $permiso) {
-            if (Permission::where('name', $permiso)->where('guard_name', 'web')->exists()) {
-                $permisosExistentes[] = $permiso;
-            } else {
-                $this->command->warn("⚠️  Permiso '{$permiso}' no existe, se omite para el rol '{$role->name}'");
-            }
+        // Limpiar roles existentes de forma segura
+        $this->command->info('🧹 Limpiando roles existentes...');
+        
+        // Eliminar roles de forma segura
+        $roles = Role::all();
+        foreach ($roles as $role) {
+            $role->delete();
         }
 
-        if (! empty($permisosExistentes)) {
-            $role->syncPermissions($permisosExistentes);
+        // ============================================================================
+        // ROLES DEL SISTEMA
+        // ============================================================================
+
+        // 1. Super Administrador
+        $superAdmin = Role::create([
+            'name' => 'Super Administrador',
+            'guard_name' => 'web'
+        ]);
+
+        // 2. Administrador
+        $admin = Role::create([
+            'name' => 'Administrador',
+            'guard_name' => 'web'
+        ]);
+
+        // 3. Revisor
+        $revisor = Role::create([
+            'name' => 'Revisor',
+            'guard_name' => 'web'
+        ]);
+
+        // 4. Recepcionista
+        $recepcionista = Role::create([
+            'name' => 'Recepcionista',
+            'guard_name' => 'web'
+        ]);
+
+        // 5. Proveedor
+        $proveedor = Role::create([
+            'name' => 'Proveedor',
+            'guard_name' => 'web'
+        ]);
+
+        // 6. Solicitante
+        $solicitante = Role::create([
+            'name' => 'Solicitante',
+            'guard_name' => 'web'
+        ]);
+
+        // 7. Consultor
+        $consultor = Role::create([
+            'name' => 'Consultor',
+            'guard_name' => 'web'
+        ]);
+
+        $this->command->info('✅ Roles creados exitosamente: 7 roles');
+        
+        // Mostrar roles creados
+        $roles = Role::all();
+        foreach ($roles as $role) {
+            $this->command->info("   - {$role->name}");
         }
     }
 }
