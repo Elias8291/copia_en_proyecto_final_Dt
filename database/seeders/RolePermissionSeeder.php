@@ -28,45 +28,52 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::where('name', 'Administrador')->first();
         $adminPermissions = [
             // Gestión de trámites
-            'tramites.view', 'tramites.create', 'tramites.edit', 'tramites.delete',
-            'tramites.change_status', 'tramites.review', 'tramites.export',
+            'tramites.ver', 'tramites.crear', 'tramites.editar', 'tramites.eliminar',
+            'tramites.cambiar_estado', 'tramites.revisar', 'tramites.exportar',
+            'tramites.ver_todos', 'tramites.gestionar_todos',
             
             // Gestión de citas
-            'citas.view', 'citas.create', 'citas.edit', 'citas.delete',
-            'citas.cancel', 'citas.manage_all',
+            'citas.ver', 'citas.crear', 'citas.editar', 'citas.eliminar',
+            'citas.cancelar', 'citas.reprogramar', 'citas.confirmar', 'citas.gestionar_todas',
+            'citas.ver_todas', 'citas.exportar',
             
             // Revisión
-            'revision.view', 'revision.approve', 'revision.reject',
-            'revision.comment', 'revision.change_status', 'revision.export',
+            'revision.ver', 'revision.aprobar_documentos', 'revision.rechazar_documentos',
+            'revision.agregar_comentarios', 'revision.cambiar_estado', 'revision.exportar',
+            'revision.ver_todas', 'revision.finalizar_revision',
             
             // Archivos
-            'files.view', 'files.upload', 'files.download', 'files.delete',
-            'files.categorize',
+            'archivos.ver', 'archivos.subir', 'archivos.descargar', 'archivos.eliminar',
+            'archivos.categorizar', 'archivos.ver_todos', 'archivos.gestionar_todos',
             
             // Días inhábiles
-            'dias_inhabiles.view', 'dias_inhabiles.create', 'dias_inhabiles.edit',
-            'dias_inhabiles.delete',
+            'dias_inhabiles.ver', 'dias_inhabiles.crear', 'dias_inhabiles.editar',
+            'dias_inhabiles.eliminar', 'dias_inhabiles.gestionar',
             
             // Notificaciones
-            'notifications.view', 'notifications.create', 'notifications.send',
-            'notifications.manage',
+            'notificaciones.ver', 'notificaciones.crear', 'notificaciones.enviar',
+            'notificaciones.gestionar', 'notificaciones.marcar_leidas', 'notificaciones.eliminar',
             
             // Reportes
-            'reports.view', 'reports.generate', 'reports.export', 'reports.statistics',
+            'reportes.ver', 'reportes.generar', 'reportes.exportar', 'reportes.estadisticas',
+            'reportes.tramites', 'reportes.citas', 'reportes.usuarios',
             
             // Actividades económicas
-            'actividades.view', 'actividades.create', 'actividades.edit',
-            'actividades.delete', 'actividades.search',
+            'actividades.ver', 'actividades.crear', 'actividades.editar',
+            'actividades.eliminar', 'actividades.buscar', 'actividades.importar', 'actividades.exportar',
             
             // Catálogo de archivos
-            'catalogo_archivos.view', 'catalogo_archivos.create',
-            'catalogo_archivos.edit', 'catalogo_archivos.delete',
+            'catalogo_archivos.ver', 'catalogo_archivos.crear',
+            'catalogo_archivos.editar', 'catalogo_archivos.eliminar', 'catalogo_archivos.gestionar',
             
             // Proveedores (solo ver y editar)
-            'providers.view_all', 'providers.edit',
+            'proveedores.ver_todos', 'proveedores.editar', 'proveedores.exportar',
             
             // Sistema (limitado)
-            'system.reports', 'system.export',
+            'sistema.reportes', 'sistema.exportar', 'sistema.estadisticas',
+            
+            // Dashboard
+            'dashboard.ver', 'dashboard.estadisticas', 'dashboard.reportes', 'dashboard.notificaciones',
         ];
         $admin->syncPermissions($adminPermissions);
         $this->command->info('✅ Administrador: ' . count($adminPermissions) . ' permisos asignados');
@@ -77,35 +84,42 @@ class RolePermissionSeeder extends Seeder
         $revisor = Role::where('name', 'Revisor')->first();
         $revisorPermissions = [
             // Ver trámites
-            'tramites.view', 'tramites.change_status', 'tramites.review',
+            'tramites.ver', 'tramites.cambiar_estado', 'tramites.revisar',
+            'tramites.aprobar', 'tramites.rechazar', 'tramites.enviar_cotejo',
             
             // Gestión de citas
-            'citas.view', 'citas.create', 'citas.edit', 'citas.cancel',
+            'citas.ver', 'citas.crear', 'citas.editar', 'citas.cancelar',
+            'citas.reprogramar', 'citas.confirmar',
             
             // Revisión
-            'revision.view', 'revision.approve', 'revision.reject',
-            'revision.comment', 'revision.change_status',
+            'revision.ver', 'revision.aprobar_documentos', 'revision.rechazar_documentos',
+            'revision.agregar_comentarios', 'revision.cambiar_estado', 'revision.ver_todas',
+            'revision.finalizar_revision',
             
             // Archivos
-            'files.view', 'files.download',
+            'archivos.ver', 'archivos.descargar',
             
             // Días inhábiles
-            'dias_inhabiles.view',
+            'dias_inhabiles.ver',
             
             // Notificaciones
-            'notifications.view', 'notifications.create', 'notifications.send',
+            'notificaciones.ver', 'notificaciones.crear', 'notificaciones.enviar',
+            'notificaciones.marcar_leidas',
             
             // Reportes
-            'reports.view', 'reports.generate',
+            'reportes.ver', 'reportes.generar', 'reportes.tramites',
             
             // Actividades económicas
-            'actividades.view', 'actividades.search',
+            'actividades.ver', 'actividades.buscar',
             
             // Catálogo de archivos
-            'catalogo_archivos.view',
+            'catalogo_archivos.ver',
             
             // Proveedores (solo ver)
-            'providers.view_all',
+            'proveedores.ver_todos',
+            
+            // Dashboard
+            'dashboard.ver', 'dashboard.estadisticas',
         ];
         $revisor->syncPermissions($revisorPermissions);
         $this->command->info('✅ Revisor: ' . count($revisorPermissions) . ' permisos asignados');
@@ -116,28 +130,33 @@ class RolePermissionSeeder extends Seeder
         $recepcionista = Role::where('name', 'Recepcionista')->first();
         $recepcionistaPermissions = [
             // Ver trámites
-            'tramites.view',
+            'tramites.ver',
             
             // Gestión de citas
-            'citas.view', 'citas.create', 'citas.edit', 'citas.cancel',
+            'citas.ver', 'citas.crear', 'citas.editar', 'citas.cancelar',
+            'citas.reprogramar', 'citas.confirmar',
             
             // Archivos
-            'files.view', 'files.download',
+            'archivos.ver', 'archivos.descargar',
             
             // Días inhábiles
-            'dias_inhabiles.view',
+            'dias_inhabiles.ver',
             
             // Notificaciones
-            'notifications.view', 'notifications.create', 'notifications.send',
+            'notificaciones.ver', 'notificaciones.crear', 'notificaciones.enviar',
+            'notificaciones.marcar_leidas',
             
             // Actividades económicas
-            'actividades.view', 'actividades.search',
+            'actividades.ver', 'actividades.buscar',
             
             // Catálogo de archivos
-            'catalogo_archivos.view',
+            'catalogo_archivos.ver',
             
             // Proveedores (solo ver)
-            'providers.view_all',
+            'proveedores.ver_todos',
+            
+            // Dashboard
+            'dashboard.ver',
         ];
         $recepcionista->syncPermissions($recepcionistaPermissions);
         $this->command->info('✅ Recepcionista: ' . count($recepcionistaPermissions) . ' permisos asignados');
@@ -148,29 +167,32 @@ class RolePermissionSeeder extends Seeder
         $proveedor = Role::where('name', 'Proveedor')->first();
         $proveedorPermissions = [
             // Gestión de perfil
-            'users.view_own', 'users.edit_own',
-            'providers.view_own', 'providers.edit_own',
+            'usuarios.ver_propio', 'usuarios.editar_propio',
+            'proveedores.ver_propio', 'proveedores.editar_propio',
             
             // Trámites propios
-            'tramites.create', 'tramites.view_own', 'tramites.edit_own',
-            'tramites.delete_own',
+            'tramites.crear', 'tramites.ver_propios', 'tramites.editar_propios',
+            'tramites.eliminar_propios',
             
             // Citas propias
-            'citas.view_own', 'citas.create', 'citas.edit_own',
-            'citas.cancel_own',
+            'citas.ver_propias', 'citas.crear', 'citas.editar_propias',
+            'citas.cancelar_propias',
             
             // Archivos propios
-            'files.view_own', 'files.upload_own', 'files.download',
-            'files.delete_own',
+            'archivos.ver_propios', 'archivos.subir_propios', 'archivos.descargar',
+            'archivos.eliminar_propios',
             
             // Notificaciones propias
-            'notifications.view_own',
+            'notificaciones.ver_propias', 'notificaciones.marcar_leidas',
             
             // Actividades económicas
-            'actividades.view', 'actividades.search',
+            'actividades.ver', 'actividades.buscar',
             
             // Catálogo de archivos
-            'catalogo_archivos.view',
+            'catalogo_archivos.ver',
+            
+            // Dashboard básico
+            'dashboard.ver',
         ];
         $proveedor->syncPermissions($proveedorPermissions);
         $this->command->info('✅ Proveedor: ' . count($proveedorPermissions) . ' permisos asignados');
@@ -181,27 +203,30 @@ class RolePermissionSeeder extends Seeder
         $solicitante = Role::where('name', 'Solicitante')->first();
         $solicitantePermissions = [
             // Gestión básica de perfil
-            'users.view_own', 'users.edit_own',
+            'usuarios.ver_propio', 'usuarios.editar_propio',
             
             // Trámites básicos
-            'tramites.create', 'tramites.view_own', 'tramites.edit_own',
-            'tramites.delete_own',
+            'tramites.crear', 'tramites.ver_propios', 'tramites.editar_propios',
+            'tramites.eliminar_propios',
             
             // Citas básicas
-            'citas.view_own', 'citas.create', 'citas.cancel_own',
+            'citas.ver_propias', 'citas.crear', 'citas.cancelar_propias',
             
             // Archivos básicos
-            'files.view_own', 'files.upload_own', 'files.download',
-            'files.delete_own',
+            'archivos.ver_propios', 'archivos.subir_propios', 'archivos.descargar',
+            'archivos.eliminar_propios',
             
             // Notificaciones propias
-            'notifications.view_own',
+            'notificaciones.ver_propias', 'notificaciones.marcar_leidas',
             
             // Actividades económicas
-            'actividades.view', 'actividades.search',
+            'actividades.ver', 'actividades.buscar',
             
             // Catálogo de archivos
-            'catalogo_archivos.view',
+            'catalogo_archivos.ver',
+            
+            // Dashboard básico
+            'dashboard.ver',
         ];
         $solicitante->syncPermissions($solicitantePermissions);
         $this->command->info('✅ Solicitante: ' . count($solicitantePermissions) . ' permisos asignados');
@@ -212,14 +237,15 @@ class RolePermissionSeeder extends Seeder
         $consultor = Role::where('name', 'Consultor')->first();
         $consultorPermissions = [
             // Solo lectura
-            'tramites.view',
-            'citas.view',
-            'files.view', 'files.download',
-            'reports.view', 'reports.export',
-            'reports.statistics',
-            'providers.view_all',
-            'actividades.view',
-            'catalogo_archivos.view',
+            'tramites.ver',
+            'citas.ver',
+            'archivos.ver', 'archivos.descargar',
+            'reportes.ver', 'reportes.exportar',
+            'reportes.estadisticas', 'reportes.tramites', 'reportes.citas', 'reportes.usuarios',
+            'proveedores.ver_todos',
+            'actividades.ver',
+            'catalogo_archivos.ver',
+            'dashboard.ver', 'dashboard.estadisticas', 'dashboard.reportes',
         ];
         $consultor->syncPermissions($consultorPermissions);
         $this->command->info('✅ Consultor: ' . count($consultorPermissions) . ' permisos asignados');
