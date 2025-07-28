@@ -12,7 +12,7 @@ class CatalogoArchivoFactory extends Factory
             'nombre' => fake()->words(3, true),
             'descripcion' => fake()->sentence(),
             'tipo_persona' => fake()->randomElement(['Física', 'Moral', 'Ambas']),
-            'tipo_archivo' => fake()->randomElement(['png', 'pdf', 'mp3']),
+            'tipo_archivo' => fake()->randomElement(['png', 'pdf', 'mp3', 'mp4']),
             'es_visible' => fake()->boolean(80),
         ];
     }

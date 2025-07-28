@@ -168,6 +168,7 @@ class DocumentosService
             'pdf' => 'pdf',
             'imagen', 'jpg', 'jpeg', 'png' => 'jpg,jpeg,png',
             'audio', 'mp3' => 'mp3',
+            'video', 'mp4' => 'mp4',
             'documento', 'doc', 'docx' => 'doc,docx',
             default => self::DEFAULT_MIMES
         };

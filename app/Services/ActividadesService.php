@@ -200,7 +200,7 @@ class ActividadesService
         if ($resultados->isEmpty()) {
             $resultados->push([
                 'id' => 'nueva_actividad',
-                'nombre' => "Crear nueva actividad: '{$query}'",
+                'nombre' => $query,
                 'es_nueva' => true
             ]);
         }

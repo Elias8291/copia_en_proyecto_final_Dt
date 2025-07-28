@@ -40,6 +40,7 @@ class CatalogoArchivo extends Model
             'png' => 'Imagen PNG',
             'pdf' => 'Documento PDF',
             'mp3' => 'Audio MP3',
+            'mp4' => 'Video MP4',
             default => strtoupper($this->tipo_archivo)
         };
     }

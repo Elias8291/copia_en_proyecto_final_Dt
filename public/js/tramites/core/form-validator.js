@@ -450,16 +450,28 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
         });
 
         this.addValidator("documentos", (value, element) => {
-            const documentosRequeridos = document.querySelectorAll(
-                'input[type="file"][required]'
-            );
+            // Buscar todos los inputs de archivo en la sección de documentos
+            const documentosInputs = document.querySelectorAll('input[type="file"]');
             let allValid = true;
+            let documentosFaltantes = [];
 
-            documentosRequeridos.forEach((doc) => {
+            documentosInputs.forEach((doc) => {
                 if (!doc.files || doc.files.length === 0) {
                     allValid = false;
+                    // Obtener el nombre del documento del label o elemento relacionado
+                    const documentoId = doc.id.replace('file_', '');
+                    const statusElement = document.getElementById(`status_${documentoId}`);
+                    if (statusElement) {
+                        const nombreDocumento = statusElement.closest('.bg-white').querySelector('h4')?.textContent || `Documento ${documentoId}`;
+                        documentosFaltantes.push(nombreDocumento);
+                    }
                 }
             });
+
+            // Guardar información de documentos faltantes para mostrar en el error
+            if (!allValid) {
+                this.documentosFaltantes = documentosFaltantes;
+            }
 
             return allValid;
         });
@@ -649,8 +661,27 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
     validateDocumentos(stepElement, errors) {
         const isValid = this.validateSection(stepElement);
 
-        if (!this.validators.get("documentos")("", null)) {
-            errors.push(this.getErrorMessage("documentos"));
+        const documentosValidator = this.validators.get("documentos");
+        const documentosValid = documentosValidator("", null);
+        
+        if (!documentosValid) {
+            // Remover errores existentes
+            if (window.removeAllDocumentErrors) {
+                window.removeAllDocumentErrors();
+            }
+            
+            // Mostrar errores individuales en cada documento faltante
+            if (window.showDocumentosFaltantesErrors) {
+                window.showDocumentosFaltantesErrors();
+            }
+            
+            // Agregar mensaje general al array de errores
+            errors.push("Debe cargar todos los documentos requeridos");
+        } else {
+            // Remover errores si todos los documentos están completos
+            if (window.removeAllDocumentErrors) {
+                window.removeAllDocumentErrors();
+            }
         }
 
         return isValid && errors.length === 0;
@@ -695,6 +726,77 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
         }, 8000);
 
         container.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    showDocumentosError() {
+        // Buscar la sección de documentos
+        const documentosSection = document.querySelector('.step-section[data-step]');
+        if (!documentosSection) return;
+
+        // Remover errores existentes
+        const existingError = documentosSection.querySelector(".documentos-error-message");
+        if (existingError) {
+            existingError.remove();
+        }
+
+        // Crear mensaje de error
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "documentos-error-message error-message animate-fade-in mt-4";
+        
+        let errorContent = `
+            <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0 mt-0.5">
+                    <div class="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-3 h-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-medium text-red-800">Debe cargar todos los documentos requeridos</p>
+        `;
+
+        if (this.documentosFaltantes && this.documentosFaltantes.length > 0) {
+            errorContent += `
+                    <div class="mt-2">
+                        <p class="text-xs text-red-600 mb-1">Documentos faltantes:</p>
+                        <ul class="text-xs text-red-600 space-y-1">
+            `;
+            this.documentosFaltantes.forEach(doc => {
+                errorContent += `<li class="flex items-center">
+                    <span class="w-1 h-1 bg-red-500 rounded-full mr-2"></span>
+                    ${doc}
+                </li>`;
+            });
+            errorContent += `
+                        </ul>
+                    </div>
+            `;
+        }
+
+        errorContent += `
+                    <p class="text-xs text-red-600 mt-2">Haga clic en "Subir" para cada documento requerido</p>
+                </div>
+            </div>
+        `;
+
+        errorDiv.innerHTML = errorContent;
+
+        // Insertar al inicio de la sección de documentos
+        const documentosContainer = documentosSection.querySelector('.bg-white.rounded-2xl');
+        if (documentosContainer) {
+            documentosContainer.insertBefore(errorDiv, documentosContainer.firstChild);
+        }
+
+        // Auto-remover después de 10 segundos
+        setTimeout(() => {
+            if (errorDiv.parentNode) {
+                errorDiv.remove();
+            }
+        }, 10000);
+
+        // Scroll a la sección de documentos
+        documentosSection.scrollIntoView({ behavior: "smooth", block: "center" });
     }
 }
 

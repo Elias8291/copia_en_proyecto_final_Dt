@@ -77,7 +77,7 @@ class CatalogoArchivoSeeder extends Seeder
                 'nombre' => 'Video del domicilio fiscal',
                 'descripcion' => 'Video que muestra el domicilio fiscal del proveedor, evidenciando su ubicación y características.',
                 'tipo_persona' => 'Ambas',
-                'tipo_archivo' => 'mp3',
+                'tipo_archivo' => 'mp4',
                 'es_visible' => true,
                 'created_at' => now(),
                 'updated_at' => now(),

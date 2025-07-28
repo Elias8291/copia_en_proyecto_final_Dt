@@ -22,7 +22,7 @@ class CatalogoArchivoRequest extends FormRequest
             'nombre' => 'required|string|max:100',
             'descripcion' => 'nullable|string|max:500',
             'tipo_persona' => 'required|in:Física,Moral,Ambas',
-            'tipo_archivo' => 'required|in:png,pdf,mp3',
+            'tipo_archivo' => 'required|in:png,pdf,mp3,mp4',
             'es_visible' => 'boolean'
         ];
     }
@@ -41,7 +41,7 @@ class CatalogoArchivoRequest extends FormRequest
             'tipo_persona.in' => 'El tipo de persona debe ser Física, Moral o Ambas.',
             
             'tipo_archivo.required' => 'El tipo de archivo es obligatorio.',
-            'tipo_archivo.in' => 'El tipo de archivo debe ser png, pdf o mp3.',
+            'tipo_archivo.in' => 'El tipo de archivo debe ser png, pdf, mp3 o mp4.',
             
             'es_visible.boolean' => 'El estado de visibilidad debe ser verdadero o falso.'
         ];

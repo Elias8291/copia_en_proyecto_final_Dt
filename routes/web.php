@@ -139,24 +139,14 @@ Route::middleware('auth')->group(function () {
     // ============================================================================
 
     Route::prefix('archivos')->name('archivos.')->group(function () {
-    Route::get('/', [CatalogoArchivoController::class, 'index'])->name('index');
-    Route::get('/create', [CatalogoArchivoController::class, 'create'])->name('create');
-    Route::post('/', [CatalogoArchivoController::class, 'store'])->name('store');
-    Route::get('/{archivo}', [CatalogoArchivoController::class, 'show'])->name('show');
-    Route::get('/{archivo}/edit', [CatalogoArchivoController::class, 'edit'])->name('edit');
-    Route::put('/{archivo}', [CatalogoArchivoController::class, 'update'])->name('update');
-    Route::delete('/{archivo}', [CatalogoArchivoController::class, 'destroy'])->name('destroy');
-});
-
-Route::prefix('roles')->name('roles.')->group(function () {
-    Route::get('/', [RoleController::class, 'index'])->name('index');
-    Route::get('/create', [RoleController::class, 'create'])->name('create');
-    Route::post('/', [RoleController::class, 'store'])->name('store');
-    Route::get('/{role}', [RoleController::class, 'show'])->name('show');
-    Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
-    Route::put('/{role}', [RoleController::class, 'update'])->name('update');
-    Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
-});
+        Route::get('/', [CatalogoArchivoController::class, 'index'])->name('index');
+        Route::get('/create', [CatalogoArchivoController::class, 'create'])->name('create');
+        Route::post('/', [CatalogoArchivoController::class, 'store'])->name('store');
+        Route::get('/{archivo}', [CatalogoArchivoController::class, 'show'])->name('show');
+        Route::get('/{archivo}/edit', [CatalogoArchivoController::class, 'edit'])->name('edit');
+        Route::put('/{archivo}', [CatalogoArchivoController::class, 'update'])->name('update');
+        Route::delete('/{archivo}', [CatalogoArchivoController::class, 'destroy'])->name('destroy');
+    });
 
     // =========================================================================
     // MÓDULO DE CITAS

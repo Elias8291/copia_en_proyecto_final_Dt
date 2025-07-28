@@ -86,6 +86,7 @@
                                 <option value="pdf" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'pdf' ? 'selected' : '' }}>PDF</option>
                                 <option value="png" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'png' ? 'selected' : '' }}>PNG</option>
                                 <option value="mp3" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp3' ? 'selected' : '' }}>MP3</option>
+                                <option value="mp4" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp4' ? 'selected' : '' }}>MP4</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                 <svg class="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

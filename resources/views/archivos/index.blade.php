@@ -8,9 +8,7 @@
             [
                 'label' => 'Archivo',
                 'field' => 'nombre',
-                'type' => 'avatar',
-                'subfield' => 'descripcion',
-                'subfield_label' => 'Descripción'
+                'type' => 'avatar'
             ],
             [
                 'label' => 'Tipo Persona',
@@ -29,7 +27,8 @@
                 'colors' => [
                     'pdf' => 'bg-red-50 text-red-600 border-red-200',
                     'png' => 'bg-blue-50 text-blue-600 border-blue-200',
-                    'mp3' => 'bg-yellow-50 text-yellow-600 border-yellow-200'
+                    'mp3' => 'bg-yellow-50 text-yellow-600 border-yellow-200',
+                    'mp4' => 'bg-purple-50 text-purple-600 border-purple-200'
                 ]
             ],
             [
@@ -66,7 +65,8 @@
                 'options' => [
                     'pdf' => 'PDF',
                     'png' => 'PNG',
-                    'mp3' => 'MP3'
+                    'mp3' => 'MP3',
+                    'mp4' => 'MP4'
                 ]
             ],
             [

@@ -81,7 +81,7 @@ if (typeof ActividadesBuscar === 'undefined') {
                 if (act.es_nueva) {
                     return `
                         <div class="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-150 actividad-item nueva-actividad" 
-                             data-id="${act.id}" data-nombre="${act.nombre}" data-query="${this.currentQuery}">
+                             data-id="${act.id}" data-nombre="${act.nombre}">
                             <div class="text-sm font-medium text-blue-700 flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -112,7 +112,8 @@ if (typeof ActividadesBuscar === 'undefined') {
                     const nombre = item.dataset.nombre;
                     
                     if (item.classList.contains('nueva-actividad')) {
-                        this.agregarActividadTemporal(item.dataset.query);
+                        // Usar directamente el nombre de la actividad nueva
+                        this.agregarActividadTemporal(nombre);
                     } else {
                         this.addActividad({ id, nombre });
                     }

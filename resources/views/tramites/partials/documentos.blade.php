@@ -54,6 +54,18 @@
             </div>
         </div>
 
+        <!-- Barra de Progreso de Documentos -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700">Progreso de documentos</span>
+                <span class="text-sm font-semibold text-[#9D2449]" id="documentos-progress-text">0/{{ $documentosRequeridos->count() }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-gradient-to-r from-[#9D2449] to-[#B91C1C] h-2.5 rounded-full transition-all duration-500" 
+                     style="width: 0%" id="documentos-progress-bar"></div>
+            </div>
+        </div>
+
         <!-- Lista de Documentos -->
         <div class="space-y-6">
             @if ($documentosRequeridos->count() > 0)
