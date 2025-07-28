@@ -11,9 +11,8 @@ function handleFileUpload(input, documentoId) {
     if (file) {
         // Validar tipo de archivo
         const allowedTypes = getAcceptedFileTypes(input);
-        const fileExtension = file.name.split('.').pop().toLowerCase();
         
-        if (allowedTypes && !allowedTypes.includes(fileExtension)) {
+        if (allowedTypes && !isValidFileType(file, allowedTypes)) {
             // Error: tipo de archivo no válido
             statusElement.className = "px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full";
             statusElement.innerHTML = `
@@ -35,15 +34,15 @@ function handleFileUpload(input, documentoId) {
             return;
         }
         
-        // Validar tamaño del archivo (máximo 10MB)
-        const maxSize = 10 * 1024 * 1024; // 10MB
+        // Validar tamaño del archivo (máximo 50MB)
+        const maxSize = 50 * 1024 * 1024; // 50MB
         if (file.size > maxSize) {
             statusElement.className = "px-3 py-1 bg-red-100 text-red-800 text-xs font-medium rounded-full";
             statusElement.innerHTML = `
                 <i class="fas fa-exclamation-triangle mr-1"></i>
                 Archivo muy grande
             `;
-            filenameElement.textContent = `Error: máximo 10MB`;
+            filenameElement.textContent = `Error: máximo 50MB`;
             filenameElement.classList.remove('hidden');
             filenameElement.className = "hidden text-xs text-red-600 max-w-32 truncate";
             
@@ -104,6 +103,22 @@ function getAcceptedFileTypes(input) {
     return accept.split(',').map(type => {
         return type.trim().replace('.', '').toLowerCase();
     });
+}
+
+// Función para validar si un archivo es del tipo correcto
+function isValidFileType(file, allowedTypes) {
+    if (!allowedTypes || allowedTypes.length === 0) return true;
+    
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    // Para archivos de video, permitir múltiples formatos
+    if (allowedTypes.includes('mp4')) {
+        const videoExtensions = ['mp4', 'avi', 'mov', 'wmv'];
+        return videoExtensions.includes(fileExtension);
+    }
+    
+    // Para otros tipos, validar normalmente
+    return allowedTypes.includes(fileExtension);
 }
 
 // Función para validar que todos los documentos estén completos

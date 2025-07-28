@@ -145,13 +145,13 @@ class DocumentosFormService
             return $errores;
         }
 
-        // Validar tamaño (10MB máximo)
-        if ($archivo->getSize() > 10485760) {
-            $errores[] = "El archivo {$etiqueta} excede el tamaño máximo de 10MB";
+        // Validar tamaño (50MB máximo)
+        if ($archivo->getSize() > 52428800) {
+            $errores[] = "El archivo {$etiqueta} excede el tamaño máximo de 50MB";
         }
 
         // Validar extensión
-        $extensionesPermitidas = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+        $extensionesPermitidas = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'mp3', 'mp4'];
         $extension = strtolower($archivo->getClientOriginalExtension());
         
         if (!in_array($extension, $extensionesPermitidas)) {

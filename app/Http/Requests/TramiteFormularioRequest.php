@@ -137,7 +137,7 @@ class TramiteFormularioRequest extends FormRequest
             'codigo_postal.required' => 'El código postal es obligatorio.',
             'actividades.*.exists' => 'La actividad seleccionada no es válida.',
             'documentos.*.mimes' => 'El tipo de archivo no es válido según el catálogo.',
-            'documentos.*.max' => 'Cada archivo no debe exceder 10MB.',
+            'documentos.*.max' => 'Cada archivo no debe exceder 50MB.',
         ];
     }
 

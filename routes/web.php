@@ -123,6 +123,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [RolesController::class, 'index'])->name('index');
         Route::get('/crear', [RolesController::class, 'create'])->name('create');
         Route::post('/', [RolesController::class, 'store'])->name('store');
+        Route::get('/{role}', [RolesController::class, 'show'])->name('show');
         Route::get('/{role}/editar', [RolesController::class, 'edit'])->name('edit');
         Route::put('/{role}', [RolesController::class, 'update'])->name('update');
         Route::delete('/{role}', [RolesController::class, 'destroy'])->name('destroy');

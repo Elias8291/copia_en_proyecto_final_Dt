@@ -50,6 +50,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'session.expiry' => \App\Http\Middleware\CheckSessionExpiry::class,
         'no.cache' => \App\Http\Middleware\NoCacheHeaders::class,
+        'handle.large.uploads' => \App\Http\Middleware\HandleLargeUploads::class,
 
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

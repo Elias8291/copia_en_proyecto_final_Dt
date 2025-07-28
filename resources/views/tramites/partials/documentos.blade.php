@@ -80,6 +80,7 @@
                                             'pdf' => 'fas fa-file-pdf text-red-600',
                                             'png', 'jpg', 'jpeg' => 'fas fa-file-image text-blue-600',
                                             'mp3' => 'fas fa-file-audio text-purple-600',
+                                            'mp4' => 'fas fa-file-video text-green-600',
                                             default => 'fas fa-file text-gray-600',
                                         };
                                     @endphp
@@ -107,9 +108,19 @@
                                         <i class="fas fa-upload mr-1"></i>
                                         Subir
                                     </label>
+                                    @php
+                                        $acceptTypes = match ($documento->tipo_archivo) {
+                                            'png' => '.png,.jpg,.jpeg',
+                                            'jpg', 'jpeg' => '.jpg,.jpeg,.png',
+                                            'pdf' => '.pdf',
+                                            'mp3' => '.mp3',
+                                            'mp4' => '.mp4,.avi,.mov,.wmv',
+                                            default => '.' . $documento->tipo_archivo
+                                        };
+                                    @endphp
                                     <input type="file" id="file_{{ $documento->id }}"
                                         name="documentos[{{ $documento->id }}]"
-                                        accept=".{{ $documento->tipo_archivo }}" 
+                                        accept="{{ $acceptTypes }}" 
                                         class="hidden"
                                         onchange="handleFileUpload(this, {{ $documento->id }})">
                                 @endif

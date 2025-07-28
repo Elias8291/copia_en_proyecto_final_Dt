@@ -32,7 +32,7 @@ class HandleLargeUploads
         ]);
 
         // Configurar límites dinámicamente para uploads
-        if ($request->hasFile('archivo') || str_contains($request->url(), 'upload-documento')) {
+        if ($request->hasFile('archivo') || $request->hasFile('documentos') || str_contains($request->url(), 'upload-documento') || str_contains($request->url(), 'tramites')) {
             Log::info('🚀 Configurando límites para archivos grandes...');
 
             ini_set('upload_max_filesize', '50M');

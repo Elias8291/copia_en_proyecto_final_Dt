@@ -49,4 +49,28 @@ class CatalogoArchivo extends Model
     {
         return $this->es_visible ? 'Visible' : 'Oculto';
     }
+
+    public function getMimeTypeAttribute()
+    {
+        return match ($this->tipo_archivo) {
+            'png' => 'image/png',
+            'jpg', 'jpeg' => 'image/jpeg',
+            'pdf' => 'application/pdf',
+            'mp3' => 'audio/mpeg',
+            'mp4' => 'video/mp4',
+            default => 'application/octet-stream'
+        };
+    }
+
+    public function getAcceptAttribute()
+    {
+        return match ($this->tipo_archivo) {
+            'png' => '.png,.jpg,.jpeg',
+            'jpg', 'jpeg' => '.jpg,.jpeg,.png',
+            'pdf' => '.pdf',
+            'mp3' => '.mp3',
+            'mp4' => '.mp4,.avi,.mov,.wmv',
+            default => '.' . $this->tipo_archivo
+        };
+    }
 }

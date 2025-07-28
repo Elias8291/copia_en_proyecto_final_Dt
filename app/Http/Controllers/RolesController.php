@@ -46,6 +46,13 @@ class RolesController extends Controller
             ->with('success', 'Rol creado exitosamente.');
     }
 
+    public function show(Role $role)
+    {
+        $role->load('permissions');
+        $role->permissions_count = $role->permissions->count();
+        return view('roles.show', compact('role'));
+    }
+
     public function edit(Role $role)
     {
         $permissions = Permission::all();

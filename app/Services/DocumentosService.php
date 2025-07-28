@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class DocumentosService
 {
-    private const MAX_FILE_SIZE = 10240; // 10MB en KB
+    private const MAX_FILE_SIZE = 51200; // 50MB en KB
     private const DEFAULT_MIMES = 'pdf,jpg,jpeg,png,doc,docx';
 
     /**
@@ -127,26 +127,47 @@ class DocumentosService
      */
     public function getValidationRules(Request $request): array
     {
+        Log::info('DocumentosService::getValidationRules called', [
+            'has_files' => $request->hasFile('documentos'),
+            'files_count' => count($request->allFiles())
+        ]);
+
         if (!$request->hasFile('documentos')) {
+            Log::info('No hay archivos de documentos en la request');
             return [];
         }
 
         $rules = [];
         $documentos = $request->file('documentos', []);
 
+        Log::info('Procesando documentos para validación', [
+            'documentos_keys' => array_keys($documentos),
+            'total_documentos' => count($documentos)
+        ]);
+
         foreach (array_keys($documentos) as $catalogoId) {
             $mimes = $this->obtenerMimesPermitidos($catalogoId);
             $rules["documentos.$catalogoId"] = "nullable|file|mimes:$mimes|max:" . self::MAX_FILE_SIZE;
+            
+            Log::info("Regla generada para documento $catalogoId", [
+                'catalogo_id' => $catalogoId,
+                'mimes' => $mimes,
+                'max_size' => self::MAX_FILE_SIZE,
+                'rule' => $rules["documentos.$catalogoId"]
+            ]);
         }
 
+        Log::info('Reglas de validación generadas', ['rules' => $rules]);
         return $rules;
     }
 
     /**
      * Obtiene los tipos MIME permitidos para un catálogo
      */
-    private function obtenerMimesPermitidos(int $catalogoId): string
+    public function obtenerMimesPermitidos(int $catalogoId): string
     {
+        Log::info("Obteniendo mimes para catálogo $catalogoId");
+        
         $catalogo = CatalogoArchivo::find($catalogoId);
         
         if (!$catalogo) {
@@ -156,19 +177,27 @@ class DocumentosService
             return self::DEFAULT_MIMES;
         }
 
-        return $this->convertirTipoAMimes($catalogo->tipo_archivo);
+        $mimes = $this->convertirTipoAMimes($catalogo->tipo_archivo);
+        
+        Log::info("Mimes obtenidos para catálogo $catalogoId", [
+            'catalogo_id' => $catalogoId,
+            'tipo_archivo' => $catalogo->tipo_archivo,
+            'mimes' => $mimes
+        ]);
+
+        return $mimes;
     }
 
     /**
      * Convierte el tipo de archivo del catálogo a mimes de Laravel
      */
-    private function convertirTipoAMimes(?string $tipo): string
+    public function convertirTipoAMimes(?string $tipo): string
     {
         return match (strtolower($tipo ?? '')) {
             'pdf' => 'pdf',
             'imagen', 'jpg', 'jpeg', 'png' => 'jpg,jpeg,png',
             'audio', 'mp3' => 'mp3',
-            'video', 'mp4' => 'mp4',
+            'video', 'mp4' => 'mp4,avi,mov,wmv',
             'documento', 'doc', 'docx' => 'doc,docx',
             default => self::DEFAULT_MIMES
         };
