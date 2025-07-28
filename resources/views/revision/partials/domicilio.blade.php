@@ -167,6 +167,24 @@
 
             <div>
                 <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
+                    🗺️ Mapa de Ubicación
+                </h4>
+                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-gray-700">Ubicación del domicilio</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-gray-500">Calles cercanas visibles</span>
+                                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="map" class="w-full h-80"></div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
                     Dirección Completa
                 </h4>
                 <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
@@ -189,6 +207,63 @@
                 </div>
             </div>
         </div>
+
+        @push('scripts')
+        <script src="{{ asset('js/modules/domicilio-map.js') }}"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const lat = {{ $direccion->coordenadas->latitud ?? 19.4326 }};
+                const lng = {{ $direccion->coordenadas->longitud ?? -99.1332 }};
+                
+                // Función callback para Google Maps API
+                window.initDomicilioMapCallback = async function() {
+                    // Construir dirección completa más precisa
+                    let direccionCompleta = '';
+                    
+                    @if($direccion->calle)
+                        direccionCompleta += '{{ $direccion->calle }}';
+                        @if($direccion->numero_exterior)
+                            direccionCompleta += ' {{ $direccion->numero_exterior }}';
+                        @endif
+                        @if($direccion->numero_interior)
+                            direccionCompleta += ' Int. {{ $direccion->numero_interior }}';
+                        @endif
+                        @if($direccion->colonia_asentamiento)
+                            direccionCompleta += ', {{ $direccion->colonia_asentamiento }}';
+                        @endif
+                        @if($direccion->municipio)
+                            direccionCompleta += ', {{ $direccion->municipio }}';
+                        @endif
+                        @if($direccion->estado)
+                            direccionCompleta += ', {{ $direccion->estado->nombre }}';
+                        @endif
+                        @if($direccion->codigo_postal)
+                            direccionCompleta += ' {{ $direccion->codigo_postal }}';
+                        @endif
+                    @else
+                        // Si no hay calle, usar solo municipio y estado
+                        @if($direccion->municipio)
+                            direccionCompleta = '{{ $direccion->municipio }}';
+                            @if($direccion->estado)
+                                direccionCompleta += ', {{ $direccion->estado->nombre }}';
+                            @endif
+                        @endif
+                    @endif
+                    
+                    console.log('Dirección para geocoding:', direccionCompleta);
+                    await initDomicilioMap('map', lat, lng, direccionCompleta);
+                };
+                
+                // Cargar Google Maps API
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&callback=initDomicilioMapCallback&loading=async`;
+                script.async = true;
+                script.defer = true;
+                
+                document.head.appendChild(script);
+            });
+        </script>
+        @endpush
 @else
     <div class="text-center py-12">
         <div class="flex flex-col items-center justify-center space-y-4">

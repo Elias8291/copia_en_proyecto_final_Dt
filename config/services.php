@@ -32,7 +32,7 @@ return [
     ],
 
     'google' => [
-        'maps_key' => env('GOOGLE_MAPS_API_KEY'),
+        'maps_api_key' => env('GOOGLE_MAPS_API_KEY', 'AIzaSyCUqfgNQ2Q4AVy8OTNMfogJceDbA0FHZKs'),
     ],
 
 ];
