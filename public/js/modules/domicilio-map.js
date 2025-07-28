@@ -125,6 +125,9 @@ class DomicilioMap {
                     
                     // Agregar información de calles cercanas
                     this.addStreetInfo(location);
+                    
+                    // Cargar calles cercanas
+                    this.loadNearbyStreets(location);
                 } else {
                     console.warn('No se encontró la dirección:', this.options.direccion);
                 }
@@ -215,6 +218,139 @@ class DomicilioMap {
         console.warn = originalWarn;
 
         return this;
+    }
+    
+    async loadNearbyStreets(location) {
+        const callesContainer = document.getElementById('calles-cercanas');
+        if (!callesContainer) return;
+        
+        try {
+            // Mostrar loading
+            callesContainer.innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 animate-spin">
+                        <i class="fas fa-spinner text-blue-500"></i>
+                    </div>
+                    <p class="text-sm">Buscando calles cercanas...</p>
+                </div>
+            `;
+            
+            // Generar puntos cercanos para buscar calles
+            const nearbyPoints = this.generateNearbyPoints(location, 500); // 500 metros
+            const streetNames = new Set();
+            
+            // Buscar calles en puntos cercanos usando Geocoding
+            for (let i = 0; i < nearbyPoints.length && streetNames.size < 10; i++) {
+                try {
+                    const point = nearbyPoints[i];
+                    const geocoder = new google.maps.Geocoder();
+                    const result = await geocoder.geocode({
+                        location: point,
+                        region: 'mx'
+                    });
+                    
+                    if (result.results.length > 0) {
+                        const addressComponents = result.results[0].address_components;
+                        const routeComponent = addressComponents.find(component => 
+                            component.types.includes('route')
+                        );
+                        
+                        if (routeComponent && routeComponent.long_name) {
+                            streetNames.add(routeComponent.long_name);
+                        }
+                    }
+                    
+                    // Pequeña pausa para evitar límites de API
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                } catch (error) {
+                    console.warn('Error al buscar calle en punto:', point, error);
+                }
+            }
+            
+            // Convertir Set a Array y mostrar
+            const streets = Array.from(streetNames).map((name, index) => ({
+                name: name,
+                index: index
+            }));
+            
+            this.displayNearbyStreets(streets, callesContainer);
+            
+        } catch (error) {
+            console.warn('Error al cargar calles cercanas:', error);
+            this.displayNearbyStreets([], callesContainer);
+        }
+    }
+    
+    generateNearbyPoints(center, radius) {
+        const points = [];
+        const lat = center.lat();
+        const lng = center.lng();
+        
+        // Generar puntos en círculo alrededor del centro
+        for (let angle = 0; angle < 360; angle += 45) {
+            for (let distance = 100; distance <= radius; distance += 100) {
+                const rad = angle * Math.PI / 180;
+                const latOffset = (distance / 111320) * Math.cos(rad);
+                const lngOffset = (distance / (111320 * Math.cos(lat * Math.PI / 180))) * Math.sin(rad);
+                
+                points.push({
+                    lat: lat + latOffset,
+                    lng: lng + lngOffset
+                });
+            }
+        }
+        
+        return points;
+    }
+    
+    displayNearbyStreets(streets, container) {
+        if (streets.length === 0) {
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-8">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-map-marker-alt text-gray-400"></i>
+                    </div>
+                    <p class="text-sm">No se encontraron calles cercanas</p>
+                    <p class="text-xs text-gray-400 mt-1">Intenta hacer zoom en el mapa</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Mostrar las calles encontradas
+        const streetsHTML = streets.map((street, index) => {
+            return `
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg mb-2 hover:bg-gray-100 transition-colors">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-xs font-bold text-blue-600">${index + 1}</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">
+                            ${street.name}
+                        </p>
+                        <p class="text-xs text-gray-500">
+                            Calle cercana
+                        </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-road text-blue-400 text-xs"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.innerHTML = `
+            <div class="space-y-2">
+                <div class="flex items-center justify-between mb-3">
+                    <h5 class="text-sm font-semibold text-gray-700">Calles encontradas</h5>
+                    <span class="text-xs text-gray-500">${streets.length} resultados</span>
+                </div>
+                ${streetsHTML}
+            </div>
+        `;
     }
 
     setLocation(lat, lng) {

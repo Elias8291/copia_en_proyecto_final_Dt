@@ -4,7 +4,7 @@
         <div class="space-y-4 sm:space-y-6 lg:space-y-8">
             <div>
                 <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-100 sm:text-base sm:mb-4 sm:pb-3">
-                    Dirección Principal
+                    Información de Domicilio
                 </h4>
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
                     <div class="form-group field-container">
@@ -17,20 +17,6 @@
                             </div>
                             <div class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm">
                                 {{ $direccion->calle ?? 'N/A' }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group field-container">
-                        <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
-                            Entre Calles
-                        </label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-arrows-alt-h text-gray-500"></i>
-                            </div>
-                            <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
-                                {{ $direccion->entre_calles ?? 'N/A' }}
                             </div>
                         </div>
                     </div>
@@ -62,24 +48,17 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <div>
-                <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
-                    Ubicación
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
-                            Código Postal
+                            Entre Calles
                         </label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-mail-bulk text-gray-500"></i>
+                                <i class="fas fa-arrows-alt-h text-gray-500"></i>
                             </div>
-                            <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm font-mono">
-                                {{ $direccion->codigo_postal ?? 'N/A' }}
+                            <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+                                {{ $direccion->entre_calles ?? 'N/A' }}
                             </div>
                         </div>
                     </div>
@@ -94,6 +73,20 @@
                             </div>
                             <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
                                 {{ $direccion->colonia_asentamiento ?? 'N/A' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group field-container">
+                        <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
+                            Código Postal
+                        </label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-mail-bulk text-gray-500"></i>
+                            </div>
+                            <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm font-mono">
+                                {{ $direccion->codigo_postal ?? 'N/A' }}
                             </div>
                         </div>
                     </div>
@@ -169,17 +162,41 @@
                 <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
                     🗺️ Mapa de Ubicación
                 </h4>
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
-                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200">
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-gray-700">Ubicación del domicilio</span>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs text-gray-500">Calles cercanas visibles</span>
-                                <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <!-- Mapa -->
+                    <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
+                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Ubicación del domicilio</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-gray-500">Calles cercanas visibles</span>
+                                    <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="map" class="w-full h-80"></div>
+                    </div>
+                    
+                    <!-- Contenedor de calles cercanas -->
+                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
+                        <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 border-b border-gray-200">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-blue-700">📍 Calles Cercanas</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs text-blue-500">Actualizado</span>
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="calles-cercanas" class="p-4 h-80 overflow-y-auto">
+                            <div class="text-center text-gray-500 py-8">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <i class="fas fa-map-marker-alt text-gray-400"></i>
+                                </div>
+                                <p class="text-sm">Cargando calles cercanas...</p>
                             </div>
                         </div>
                     </div>
-                    <div id="map" class="w-full h-80"></div>
                 </div>
             </div>
 
