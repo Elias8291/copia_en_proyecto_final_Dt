@@ -255,8 +255,6 @@ function guardarAnotacion(seccion, button) {
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Componente comparador de documentos inicializado');
-    
     // Configurar eventos adicionales si es necesario
     const comparadores = document.querySelectorAll('.documento-comparador');
     comparadores.forEach(comparador => {

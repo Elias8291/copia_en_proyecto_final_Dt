@@ -115,7 +115,7 @@ class RevisionController extends Controller
                 'contactos',
                 'accionistas',
                 'direcciones.estado',
-                'actividades',
+                'actividades.sector',
                 'archivos.catalogoArchivo'
             ]);
 

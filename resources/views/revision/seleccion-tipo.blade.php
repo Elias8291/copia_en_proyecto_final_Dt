@@ -48,12 +48,7 @@
                     </div>
                 </div>
             </div>
-
-
-
-            <!-- Opciones de Revisión -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <!-- Revisión Digital -->
                 <div
                     class="bg-white shadow-md rounded-xl overflow-hidden {{ in_array($tramite->estado, ['Pendiente', 'En_Revision']) ? 'ring-2 ring-blue-300' : '' }}">
                     <div class="p-9">
@@ -124,8 +119,6 @@
                         </a>
                     </div>
                 </div>
-
-                <!-- Revisión Presencial -->
                 <div
                     class="bg-white shadow-md rounded-xl overflow-hidden {{ $tramite->estado === 'Por_Cotejar' ? 'ring-2 ring-orange-300' : '' }}">
                     <div class="p-9">
@@ -256,8 +249,6 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
     </div>
 

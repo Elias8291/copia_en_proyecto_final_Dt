@@ -17,10 +17,9 @@
         $esPersonaMoral = $tipoPersona === 'Moral';
     @endphp
     
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen ">
         <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
             
-            <!-- Header -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-6">
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -54,9 +53,8 @@
                 </div>
             </div>
 
-            <!-- Instrucciones de Revisión -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-3 mb-3">
                     <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -66,11 +64,12 @@
                         @if($esPersonaMoral) Para personas morales: verificar constitución y apoderado. @endif
                     </p>
                 </div>
+                
+
             </div>
 
             <div class="space-y-6">
                 
-                <!-- Sección Datos Generales -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 min-h-[600px]">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center space-x-3">
@@ -85,7 +84,6 @@
                             </div>
                         </div>
                         
-                        <!-- Botón para mostrar/ocultar comparador -->
                         <button type="button" 
                                 onclick="toggleComparador('datosGenerales')"
                                 class="hidden md:inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
@@ -105,7 +103,6 @@
                             ])
                         </div>
                         
-                        <!-- Componente comparador de documentos -->
                         <x-documento-comparador 
                             :documentos="$tramite->archivos"
                             seccion="datosGenerales"
@@ -116,7 +113,6 @@
                     @include('revision.partials.revision-panel', ['seccion' => 'datos_generales'])
                 </div>
 
-                <!-- Sección Domicilio -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center space-x-3">
@@ -132,7 +128,6 @@
                             </div>
                         </div>
                         
-                        <!-- Botón para mostrar/ocultar comparador -->
                         <button type="button" 
                                 onclick="toggleComparador('domicilio')"
                                 class="hidden md:inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
@@ -152,7 +147,6 @@
                             ])
                         </div>
                         
-                        <!-- Componente comparador de documentos -->
                         <x-documento-comparador 
                             :documentos="$tramite->archivos"
                             seccion="domicilio"
@@ -163,7 +157,6 @@
                     @include('revision.partials.revision-panel', ['seccion' => 'domicilio'])
                 </div>
 
-                <!-- Sección Actividades -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center space-x-3">
@@ -178,7 +171,6 @@
                             </div>
                         </div>
                         
-                        <!-- Botón para mostrar/ocultar comparador -->
                         <button type="button" 
                                 onclick="toggleComparador('actividades')"
                                 class="hidden md:inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
@@ -198,7 +190,6 @@
                             ])
                         </div>
                         
-                        <!-- Componente comparador de documentos -->
                         <x-documento-comparador 
                             :documentos="$tramite->archivos"
                             seccion="actividades"
@@ -210,7 +201,6 @@
                 </div>
 
                 @if($esPersonaMoral)
-                    <!-- Sección Constitución -->
                     <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center space-x-3">
@@ -225,7 +215,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón para mostrar/ocultar comparador -->
                             <button type="button" 
                                     onclick="toggleComparador('constitucion')"
                                     class="hidden md:inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
@@ -244,7 +233,6 @@
                                 ])
                             </div>
                             
-                            <!-- Componente comparador de documentos -->
                             <x-documento-comparador 
                                 :documentos="$tramite->archivos"
                                 seccion="constitucion"
@@ -255,7 +243,6 @@
                         @include('revision.partials.revision-panel', ['seccion' => 'constitucion'])
                     </div>
 
-                    <!-- Sección Apoderado Legal -->
                     <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center space-x-3">
@@ -270,7 +257,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón para mostrar/ocultar comparador -->
                             <button type="button" 
                                     onclick="toggleComparador('apoderado')"
                                     class="hidden md:inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
@@ -289,7 +275,6 @@
                                 ])
                             </div>
                             
-                            <!-- Componente comparador de documentos -->
                             <x-documento-comparador 
                                 :documentos="$tramite->archivos"
                                 seccion="apoderado"
@@ -300,7 +285,6 @@
                         @include('revision.partials.revision-panel', ['seccion' => 'apoderado'])
                     </div>
 
-                    <!-- Sección Accionistas -->
                     <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center space-x-3">
@@ -315,7 +299,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón para mostrar/ocultar comparador -->
                             <button type="button" 
                                     onclick="toggleComparador('accionistas')"
                                     class="hidden md:inline-flex items-center px-3 py-1 bg-gray-100 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
@@ -334,7 +317,6 @@
                                 ])
                             </div>
                             
-                            <!-- Componente comparador de documentos -->
                             <x-documento-comparador 
                                 :documentos="$tramite->archivos"
                                 seccion="accionistas"
@@ -346,7 +328,6 @@
                     </div>
                 @endif
 
-                <!-- Sección Documentos -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="flex items-center space-x-3 mb-6">
                         <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
@@ -373,7 +354,6 @@
                     @include('revision.partials.revision-panel', ['seccion' => 'documentos'])
                 </div>
 
-                <!-- Comentario General -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="flex items-center space-x-3 mb-6">
                         <div class="w-8 h-8 bg-white border border-gray-300 rounded-lg flex items-center justify-center">
@@ -402,9 +382,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('revision.comentario-general') }}" method="POST" class="bg-white rounded-lg border border-gray-200">
-                        @csrf
-                        <input type="hidden" name="tramite_id" value="{{ $tramite->id }}">
+                    <div class="bg-white rounded-lg border border-gray-200">
                         <div class="p-4">
                             <div class="space-y-2">
                                 <label for="comentario_general" class="block text-sm font-medium text-gray-700">
@@ -412,41 +390,13 @@
                                 </label>
                                 <div class="relative">
                                     <textarea id="comentario_general" name="comentario" rows="4"
-                                        class="block w-full px-3 py-2 pr-20 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:ring-1 focus:ring-[#9D2449] focus:border-[#9D2449] focus:outline-none resize-none"
-                                        placeholder="Escriba un comentario general sobre el trámite...">{{ old('comentario', $tramite->comentarios_revision ?? '') }}</textarea>
-                                    <button type="submit"
-                                        class="absolute bottom-2 right-2 inline-flex items-center px-3 py-1 bg-[#9D2449] text-white rounded text-sm font-medium hover:bg-[#7A1D3A] focus:outline-none transition-colors">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Guardar
-                                    </button>
+                                        class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:ring-1 focus:ring-[#9D2449] focus:border-[#9D2449] focus:outline-none resize-none"
+                                        placeholder="Escriba un comentario general sobre el trámite...">{{ old('comentario', $tramite->comentarios_revision ?? 'Observación de revisión digital: ') }}</textarea>
                                 </div>
                             </div>
-                            @if(session('comentario_success'))
-                                <div class="text-sm text-center font-medium text-emerald-600 mt-2">
-                                    <div class="inline-flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                        {{ session('comentario_success') }}
-                                    </div>
-                                </div>
-                            @endif
-                            @if(session('comentario_error'))
-                                <div class="text-sm text-center font-medium text-red-600 mt-2">
-                                    <div class="inline-flex items-center">
-                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                        {{ session('comentario_error') }}
-                                    </div>
-                                </div>
-                            @endif
                         </div>
-                    </form>
+                    </div>
 
-                    <!-- Acciones de Revisión -->
                     <div class="border-t border-gray-200 pt-6 mt-6">
                         <h4 class="text-base font-semibold text-gray-900 mb-2">Acciones de Revisión</h4>
                         <p class="text-sm text-gray-500 mb-4">Seleccione la acción a realizar con este trámite</p>
@@ -456,7 +406,8 @@
                                 @csrf
                                 <input type="hidden" name="nuevo_estado" value="Por_Cotejar">
                                 <input type="hidden" name="observaciones" id="observaciones_por_cotejar">
-                                <button type="button" onclick="showConfirmModal('Aceptar y Enviar a Cotejo Presencial', '¿Está seguro que desea aceptar y enviar a cotejo presencial este trámite?', 'form_por_cotejar')"
+                                <input type="hidden" name="comentario_general" id="comentario_general_por_cotejar">
+                                <button type="button" onclick="showConfirmModalWithValidation('Aceptar y Enviar a Cotejo Presencial', '¿Está seguro que desea aceptar y enviar a cotejo presencial este trámite?', 'form_por_cotejar')"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-lg font-semibold shadow-md text-sm hover:from-emerald-700 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2 transition-all">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -470,7 +421,8 @@
                                 @csrf
                                 <input type="hidden" name="nuevo_estado" value="Rechazado">
                                 <input type="hidden" name="observaciones" id="observaciones_rechazar">
-                                <button type="button" onclick="showConfirmModal('Rechazar Trámite', '¿Está seguro que desea rechazar este trámite?', 'form_rechazar')"
+                                <input type="hidden" name="comentario_general" id="comentario_general_rechazar">
+                                <button type="button" onclick="showConfirmModalWithValidation('Rechazar Trámite', '¿Está seguro que desea rechazar este trámite?', 'form_rechazar')"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-800 text-white rounded-lg font-semibold shadow-md text-sm hover:from-gray-600 hover:to-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-700 focus:ring-offset-2 transition-all">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -484,7 +436,8 @@
                                 @csrf
                                 <input type="hidden" name="nuevo_estado" value="Para_Correccion">
                                 <input type="hidden" name="observaciones" id="observaciones_para_correccion">
-                                <button type="button" onclick="showConfirmModal('Para Corrección', '¿Está seguro que desea solicitar correcciones para este trámite?', 'form_para_correccion')"
+                                <input type="hidden" name="comentario_general" id="comentario_general_para_correccion">
+                                <button type="button" onclick="showConfirmModalWithValidation('Para Corrección', '¿Está seguro que desea solicitar correcciones para este trámite?', 'form_para_correccion')"
                                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-semibold shadow-md text-sm hover:from-amber-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-all">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -500,12 +453,71 @@
         </div>
     </div>
 
-    <!-- Modales -->
     <x-modal-confirmacion id="modal-confirmacion" title="Confirmar acción" message="¿Está seguro que desea realizar esta acción?" confirm-text="Confirmar" cancel-text="Cancelar" />
     <x-modal-exito id="modal-exito" title="¡Trámite procesado!" message="El trámite ha sido procesado exitosamente." accept-text="Ir al listado" :redirect-url="route('revision.index')" />
     <x-modal-exito id="modal-cita-agendada" title="¡Cita Agendada!" message="Se ha agendado automáticamente una cita para cotejo presencial." accept-text="Ver Cita" :redirect-url="route('citas.index')" />
-    <x-modal-error id="modal-error" title="Error" message="Ha ocurrido un error al procesar su solicitud." button-text="OK" />
     <x-modal-eliminar id="modal-eliminar" title="Confirmar eliminación" message="¿Está seguro que desea eliminar este elemento? Esta acción no se puede deshacer." confirm-text="Eliminar" cancel-text="Cancelar" />
+    
+    <!-- Modal de error personalizado que siempre esté disponible -->
+    <div id="modal-error-custom" class="fixed z-50 inset-0 overflow-y-auto hidden">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                role="dialog" aria-modal="true" aria-labelledby="modal-headline-error-custom">
+                <div>
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                        <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-5">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline-error-custom" data-modal-title>
+                            Error
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500" data-modal-message>
+                                Ha ocurrido un error al procesar su solicitud.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-6">
+                    <button
+                        class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm"
+                        onclick="closeErrorModal('modal-error-custom')">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Funcionalidad para el modal de error personalizado
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('modal-error-custom');
+            if (modal) {
+                // Cerrar con Escape
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                        modal.classList.add('hidden');
+                    }
+                });
+                
+                // Cerrar al hacer clic fuera del modal
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
 @endsection
 
 @push('scripts')
@@ -515,5 +527,265 @@
         window.tramiteId = {{ $tramite->id }};
         window.csrfToken = "{{ csrf_token() }}";
         window.revisionSeccionComentarioRoute = "{{ route('revision.seccion.comentario') }}";
+        window.esPersonaMoral = {{ $esPersonaMoral ? 'true' : 'false' }};
+        
+        // Función para obtener el estado de todas las secciones
+        function obtenerEstadoSecciones() {
+            const seccionesRequeridas = ['datos_generales', 'domicilio', 'actividades', 'documentos'];
+            const seccionesOpcionales = ['constitucion', 'apoderado', 'accionistas'];
+            
+            const esPersonaMoral = {{ $esPersonaMoral ? 'true' : 'false' }};
+            const todasSecciones = esPersonaMoral ? [...seccionesRequeridas, ...seccionesOpcionales] : seccionesRequeridas;
+            
+            const estado = {
+                seccionesPendientes: [],
+                seccionesAprobadas: [],
+                seccionesRechazadas: [],
+                seccionesParaCorreccion: []
+            };
+            
+            todasSecciones.forEach(seccion => {
+                const aprobadoHidden = document.getElementById(`aprobado_${seccion}`);
+                if (!aprobadoHidden || aprobadoHidden.value === '') {
+                    estado.seccionesPendientes.push(seccion);
+                } else if (aprobadoHidden.value === '1') {
+                    estado.seccionesAprobadas.push(seccion);
+                } else if (aprobadoHidden.value === '0') {
+                    estado.seccionesRechazadas.push(seccion);
+                }
+            });
+            
+            return estado;
+        }
+        
+        // Función para verificar si todas las secciones han sido revisadas
+        function verificarSeccionesRevisadas() {
+            const estado = obtenerEstadoSecciones();
+            return {
+                todasRevisadas: estado.seccionesPendientes.length === 0,
+                seccionesPendientes: estado.seccionesPendientes
+            };
+        }
+        
+        // Función para mostrar alerta de secciones pendientes
+        function mostrarAlertaSeccionesPendientes(seccionesPendientes) {
+            const nombresSecciones = {
+                'datos_generales': 'Datos Generales',
+                'domicilio': 'Domicilio',
+                'actividades': 'Actividades',
+                'documentos': 'Documentos',
+                'constitucion': 'Constitución',
+                'apoderado': 'Apoderado Legal',
+                'accionistas': 'Accionistas'
+            };
+            
+            const seccionesNombres = seccionesPendientes.map(seccion => nombresSecciones[seccion] || seccion);
+            
+            // Usar el modal de error personalizado que siempre está disponible
+            const modal = document.getElementById('modal-error-custom');
+            const titleElement = modal.querySelector('[data-modal-title]');
+            const messageElement = modal.querySelector('[data-modal-message]');
+            
+            if (titleElement) titleElement.textContent = 'Secciones Pendientes de Revisión';
+            if (messageElement) messageElement.textContent = `Debe revisar todas las secciones antes de continuar. Secciones pendientes: ${seccionesNombres.join(', ')}`;
+            
+            modal.classList.remove('hidden');
+        }
+        
+        // Función para validar si se puede enviar a cotejo presencial
+        function validarEnviarACotejo() {
+            const estado = obtenerEstadoSecciones();
+            
+            // Solo se puede enviar a cotejo si todas las secciones están aprobadas
+            if (estado.seccionesPendientes.length > 0) {
+                mostrarAlertaSeccionesPendientes(estado.seccionesPendientes);
+                return false;
+            }
+            
+            if (estado.seccionesRechazadas.length > 0) {
+                const nombresSecciones = {
+                    'datos_generales': 'Datos Generales',
+                    'domicilio': 'Domicilio',
+                    'actividades': 'Actividades',
+                    'documentos': 'Documentos',
+                    'constitucion': 'Constitución',
+                    'apoderado': 'Apoderado Legal',
+                    'accionistas': 'Accionistas'
+                };
+                
+                const seccionesRechazadasNombres = estado.seccionesRechazadas.map(seccion => nombresSecciones[seccion] || seccion);
+                
+                const modal = document.getElementById('modal-error-custom');
+                const titleElement = modal.querySelector('[data-modal-title]');
+                const messageElement = modal.querySelector('[data-modal-message]');
+                
+                if (titleElement) titleElement.textContent = 'No se puede enviar a cotejo';
+                if (messageElement) messageElement.textContent = `No se puede enviar a cotejo presencial porque hay secciones rechazadas: ${seccionesRechazadasNombres.join(', ')}. Debe aprobar todas las secciones o rechazar el trámite.`;
+                
+                modal.classList.remove('hidden');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Función para validar si se puede rechazar el trámite
+        function validarRechazarTramite() {
+            const estado = obtenerEstadoSecciones();
+            
+            // Solo se puede rechazar si hay secciones rechazadas
+            if (estado.seccionesRechazadas.length === 0) {
+                const modal = document.getElementById('modal-error-custom');
+                const titleElement = modal.querySelector('[data-modal-title]');
+                const messageElement = modal.querySelector('[data-modal-message]');
+                
+                if (titleElement) titleElement.textContent = 'No se puede rechazar el trámite';
+                if (messageElement) messageElement.textContent = 'No se puede rechazar el trámite porque todas las secciones están aprobadas. Debe enviar a cotejo presencial o solicitar correcciones.';
+                
+                modal.classList.remove('hidden');
+                return false;
+            }
+            
+            // Verificar que se haya agregado un comentario general para rechazar
+            const comentarioGeneral = document.getElementById('comentario_general').value.trim();
+            if (!comentarioGeneral) {
+                const modal = document.getElementById('modal-error-custom');
+                const titleElement = modal.querySelector('[data-modal-title]');
+                const messageElement = modal.querySelector('[data-modal-message]');
+                
+                if (titleElement) titleElement.textContent = 'Comentario requerido';
+                if (messageElement) messageElement.textContent = 'Debe agregar un comentario general explicando por qué rechaza el trámite.';
+                
+                modal.classList.remove('hidden');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Función para validar si se puede enviar para corrección
+        function validarParaCorreccion() {
+            const estado = obtenerEstadoSecciones();
+            
+            // Solo se puede enviar para corrección si hay secciones pendientes o rechazadas
+            if (estado.seccionesPendientes.length === 0 && estado.seccionesRechazadas.length === 0) {
+                const modal = document.getElementById('modal-error-custom');
+                const titleElement = modal.querySelector('[data-modal-title]');
+                const messageElement = modal.querySelector('[data-modal-message]');
+                
+                if (titleElement) titleElement.textContent = 'No se puede enviar para corrección';
+                if (messageElement) messageElement.textContent = 'No se puede enviar para corrección porque todas las secciones están aprobadas. Debe enviar a cotejo presencial.';
+                
+                modal.classList.remove('hidden');
+                return false;
+            }
+            
+            // Verificar que se haya agregado un comentario general para corrección
+            const comentarioGeneral = document.getElementById('comentario_general').value.trim();
+            if (!comentarioGeneral) {
+                const modal = document.getElementById('modal-error-custom');
+                const titleElement = modal.querySelector('[data-modal-title]');
+                const messageElement = modal.querySelector('[data-modal-message]');
+                
+                if (titleElement) titleElement.textContent = 'Comentario requerido';
+                if (messageElement) messageElement.textContent = 'Debe agregar un comentario general explicando qué correcciones necesita el trámite.';
+                
+                modal.classList.remove('hidden');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Función para cerrar modal de error
+        function closeErrorModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+        
+        // Función para capturar el comentario general antes de enviar el formulario
+        function capturarComentarioGeneral(formId) {
+            const comentarioGeneral = document.getElementById('comentario_general').value;
+            const comentarioHidden = document.getElementById('comentario_general_' + formId.replace('form_', ''));
+            if (comentarioHidden) {
+                comentarioHidden.value = comentarioGeneral;
+            }
+        }
+        
+        // Función para proteger el texto preestablecido en el comentario general
+        function protegerTextoPreestablecido() {
+            const textarea = document.getElementById('comentario_general');
+            const textoPreestablecido = 'Observación de revisión digital: ';
+            
+            if (textarea) {
+                // Asegurar que siempre contenga el texto preestablecido
+                if (!textarea.value.includes(textoPreestablecido)) {
+                    textarea.value = textoPreestablecido + textarea.value;
+                }
+                
+                // Evento para prevenir borrar el texto preestablecido
+                textarea.addEventListener('input', function() {
+                    if (!this.value.startsWith(textoPreestablecido)) {
+                        this.value = textoPreestablecido + this.value.substring(textoPreestablecido.length);
+                    }
+                });
+                
+                // Evento para prevenir borrar completamente
+                textarea.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' || e.key === 'Delete') {
+                        const cursorPos = this.selectionStart;
+                        if (cursorPos <= textoPreestablecido.length) {
+                            e.preventDefault();
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Inicializar protección del texto preestablecido
+        document.addEventListener('DOMContentLoaded', function() {
+            protegerTextoPreestablecido();
+        });
+        
+
+        
+        // Función para mostrar modal de confirmación con validación específica por acción
+        function showConfirmModalWithValidation(title, message, formId) {
+            let validacionExitosa = false;
+            
+            // Aplicar validación específica según el formulario
+            if (formId === 'form_por_cotejar') {
+                validacionExitosa = validarEnviarACotejo();
+            } else if (formId === 'form_rechazar') {
+                validacionExitosa = validarRechazarTramite();
+            } else if (formId === 'form_para_correccion') {
+                validacionExitosa = validarParaCorreccion();
+            }
+            
+            // Si la validación falla, no continuar
+            if (!validacionExitosa) {
+                return;
+            }
+            
+            // Capturar el comentario general antes de mostrar el modal
+            capturarComentarioGeneral(formId);
+            
+            // Usar la función global del componente modal-confirmacion
+            if (typeof window.showConfirmModal === 'function') {
+                window.showConfirmModal(title, message, formId);
+            } else {
+                // Fallback si la función global no está disponible
+                const modal = document.getElementById('modal-confirmacion');
+                const titleElement = modal.querySelector('#modal-headline-modal-confirmacion');
+                const messageElement = modal.querySelector('#modal-message-modal-confirmacion');
+                
+                if (titleElement) titleElement.textContent = title;
+                if (messageElement) messageElement.textContent = message;
+                
+                modal.classList.remove('hidden');
+            }
+        }
     </script>
 @endpush

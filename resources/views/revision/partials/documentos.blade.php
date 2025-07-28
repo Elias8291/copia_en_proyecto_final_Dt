@@ -117,7 +117,7 @@
                                     name="comentario" 
                                     rows="3"
                                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9D2449] focus:border-[#9D2449] resize-none"
-                                    placeholder="Comentario sobre este documento...">Observación de revisión presencial: </textarea>
+                                    placeholder="Comentario sobre este documento...">Observación de revisión digital: </textarea>
                             </div>
                             <div class="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                                 <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-3">

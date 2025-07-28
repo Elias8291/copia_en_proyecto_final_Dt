@@ -76,6 +76,8 @@ function setAprobado(seccion, valor) {
         btnRechazar.classList.add('bg-white', 'border-red-300', 'text-red-700', 'hover:bg-red-50');
         btnRechazar.classList.remove('bg-red-600', 'border-red-600', 'text-white', 'hover:bg-red-700');
     }
+    
+
 }
 
 function guardarComentarioSeccion(seccion) {
@@ -115,6 +117,8 @@ function guardarComentarioSeccion(seccion) {
                 }, 3000);
                 setEstadoVisual(seccion, aprobado);
                 setComentarioBox(seccion, comentario, aprobado);
+                
+
             } else {
                 estadoDiv.className = 'text-sm text-center font-medium text-red-600';
                 estadoDiv.innerHTML = `
@@ -146,6 +150,13 @@ function guardarComentarioSeccion(seccion) {
 document.addEventListener('DOMContentLoaded', function() {
     // tramiteId debe estar definido globalmente
     const secciones = ['datos_generales', 'domicilio', 'actividades', 'documentos'];
+    
+    // Verificar si es persona moral para agregar secciones adicionales
+    const esPersonaMoral = window.esPersonaMoral || false;
+    if (esPersonaMoral) {
+        secciones.push('constitucion', 'apoderado', 'accionistas');
+    }
+    
     secciones.forEach(seccion => {
         fetch(`/revision/seccion/${window.tramiteId}/${seccion}`)
             .then(res => res.json())
@@ -170,6 +181,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     setEstadoVisual(seccion, data.data.aprobado);
                 }
+            })
+            .catch(error => {
+                console.error('Error cargando sección', seccion, ':', error);
             });
     });
 }); 

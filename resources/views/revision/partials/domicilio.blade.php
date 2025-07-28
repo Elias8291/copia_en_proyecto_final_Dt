@@ -162,9 +162,8 @@
                 <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
                     🗺️ Mapa de Ubicación
                 </h4>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <!-- Mapa -->
-                    <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
+                <div id="mapa-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4 transition-all duration-300">
+                    <div id="mapa-wrapper" class="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg transition-all duration-300">
                         <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm font-medium text-gray-700">Ubicación del domicilio</span>
@@ -177,8 +176,7 @@
                         <div id="map" class="w-full h-80"></div>
                     </div>
                     
-                    <!-- Contenedor de calles cercanas -->
-                    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg">
+                    <div id="calles-cercanas-container" class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-lg transition-all duration-300">
                         <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-4 py-3 border-b border-gray-200">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm font-medium text-blue-700">📍 Calles Cercanas</span>
@@ -231,10 +229,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const lat = {{ $direccion->coordenadas->latitud ?? 19.4326 }};
                 const lng = {{ $direccion->coordenadas->longitud ?? -99.1332 }};
-                
-                // Función callback para Google Maps API
                 window.initDomicilioMapCallback = async function() {
-                    // Construir dirección completa más precisa
                     let direccionCompleta = '';
                     
                     @if($direccion->calle)
@@ -258,7 +253,6 @@
                             direccionCompleta += ' {{ $direccion->codigo_postal }}';
                         @endif
                     @else
-                        // Si no hay calle, usar solo municipio y estado
                         @if($direccion->municipio)
                             direccionCompleta = '{{ $direccion->municipio }}';
                             @if($direccion->estado)
@@ -267,17 +261,82 @@
                         @endif
                     @endif
                     
-                    console.log('Dirección para geocoding:', direccionCompleta);
                     await initDomicilioMap('map', lat, lng, direccionCompleta);
                 };
                 
-                // Cargar Google Maps API
                 const script = document.createElement('script');
                 script.src = `https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&callback=initDomicilioMapCallback&loading=async`;
                 script.async = true;
                 script.defer = true;
                 
                 document.head.appendChild(script);
+                
+                function toggleCallesCercanas(mostrar) {
+                    const callesContainer = document.getElementById('calles-cercanas-container');
+                    const mapaWrapper = document.getElementById('mapa-wrapper');
+                    const mapaContainer = document.getElementById('mapa-container');
+                    
+                    if (callesContainer && mapaWrapper && mapaContainer) {
+                        if (mostrar) {
+                            // Mostrar calles cercanas y restaurar layout original
+                            callesContainer.style.display = 'block';
+                            callesContainer.style.opacity = '1';
+                            mapaContainer.classList.remove('lg:grid-cols-1');
+                            mapaContainer.classList.add('lg:grid-cols-3');
+                            mapaWrapper.classList.remove('lg:col-span-1');
+                            mapaWrapper.classList.add('lg:col-span-2');
+                            
+                            // Redibujar el mapa después del cambio de tamaño
+                            setTimeout(() => {
+                                if (window.google && window.google.maps) {
+                                    const mapElement = document.getElementById('map');
+                                    if (mapElement && window.domicilioMap) {
+                                        window.google.maps.event.trigger(window.domicilioMap, 'resize');
+                                    }
+                                }
+                            }, 300);
+                        } else {
+                            // Ocultar calles cercanas y expandir mapa
+                            callesContainer.style.opacity = '0';
+                            mapaContainer.classList.remove('lg:grid-cols-3');
+                            mapaContainer.classList.add('lg:grid-cols-1');
+                            mapaWrapper.classList.remove('lg:col-span-2');
+                            mapaWrapper.classList.add('lg:col-span-1');
+                            
+                            setTimeout(() => {
+                                callesContainer.style.display = 'none';
+                                // Redibujar el mapa después del cambio de tamaño
+                                if (window.google && window.google.maps) {
+                                    const mapElement = document.getElementById('map');
+                                    if (mapElement && window.domicilioMap) {
+                                        window.google.maps.event.trigger(window.domicilioMap, 'resize');
+                                    }
+                                }
+                            }, 300);
+                        }
+                    }
+                }
+                
+                // Sobrescribir la función toggleComparador para la sección domicilio
+                // Esperar un poco para asegurar que la función original esté disponible
+                setTimeout(() => {
+                    const originalToggleComparador = window.toggleComparador;
+                    if (originalToggleComparador) {
+                        window.toggleComparador = function(seccion) {
+                            // Llamar a la función original
+                            originalToggleComparador(seccion);
+                            
+                            // Si es la sección domicilio, manejar la visibilidad del card de calles cercanas
+                            if (seccion === 'domicilio') {
+                                const comparador = document.getElementById(`documento-comparador-${seccion}`);
+                                const isVisible = !comparador.classList.contains('hidden');
+                                
+                                // Ocultar calles cercanas cuando se muestra el comparador
+                                toggleCallesCercanas(!isVisible);
+                            }
+                        };
+                    }
+                }, 100);
             });
         </script>
         @endpush

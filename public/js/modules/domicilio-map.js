@@ -103,7 +103,6 @@ class DomicilioMap {
         // Si hay dirección, hacer geocoding
         if (this.options.direccion && this.options.direccion.trim() !== '') {
             try {
-                console.log('Intentando geocodificar:', this.options.direccion);
                 const geocoder = new google.maps.Geocoder();
                 const result = await geocoder.geocode({ 
                     address: this.options.direccion,
@@ -114,8 +113,6 @@ class DomicilioMap {
                     const location = result.results[0].geometry.location;
                     this.options.lat = location.lat();
                     this.options.lng = location.lng();
-                    
-                    console.log('Ubicación encontrada:', location.lat(), location.lng());
                     
                     // Centrar mapa en la ubicación encontrada
                     this.map.setCenter(location);
@@ -134,8 +131,6 @@ class DomicilioMap {
             } catch (error) {
                 console.warn('Error al geocodificar la dirección:', this.options.direccion, error);
             }
-        } else {
-            console.log('No hay dirección para geocodificar, usando coordenadas por defecto');
         }
 
         // Agregar marcador tradicional (más estable)

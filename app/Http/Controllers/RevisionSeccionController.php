@@ -51,7 +51,18 @@ class RevisionSeccionController extends Controller
             ->first();
 
         if (!$revision) {
-            return response()->json(['success' => false, 'message' => 'No encontrado']);
+            // Devolver un registro vacío en lugar de error
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => null,
+                    'comentario' => null,
+                    'aprobado' => null,
+                    'estado_texto' => 'Pendiente',
+                    'user' => null,
+                    'updated_at' => null
+                ]
+            ]);
         }
 
         return response()->json([

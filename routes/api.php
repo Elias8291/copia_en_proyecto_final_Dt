@@ -28,6 +28,9 @@ Route::controller(\App\Http\Controllers\UserController::class)->group(function (
 Route::controller(ActividadesController::class)->group(function () {
     Route::get('/actividades/buscar', 'buscar');
     Route::get('/actividades/por-ids', 'porIds');
+    Route::post('/actividades/validar', 'validar');
+    Route::post('/actividades/rechazar', 'rechazar');
+    Route::get('/actividades/obtener', 'obtener');
 });
 
 // Ubicación Routes

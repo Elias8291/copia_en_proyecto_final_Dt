@@ -17,45 +17,55 @@
     </div>
     <div class="space-y-3 sm:space-y-4">
         @foreach($actividades as $index => $actividad)
-            <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-all duration-200 sm:rounded-xl sm:p-4 lg:p-6">
+            <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-all duration-200 sm:rounded-xl sm:p-4 lg:p-6" 
+                 data-actividad-id="{{ $actividad->id ?? $actividad['id'] ?? '' }}">
                 <div class="flex flex-col space-y-2 sm:flex-row sm:items-start sm:justify-between sm:space-y-0 sm:space-x-3">
                     <div class="flex items-start space-x-2 flex-1 sm:space-x-3 lg:space-x-4">
-                        @if(isset($actividad['es_principal']) && $actividad['es_principal'])
-                            <div class="flex-shrink-0">
-                                <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center shadow-sm border border-gray-200 sm:w-10 sm:h-10 lg:w-12 lg:h-12">
-                                    <i class="fas fa-star text-gray-500 text-sm sm:text-base lg:text-lg"></i>
-                                </div>
-                            </div>
-                        @endif
                         <div class="flex-1 min-w-0">
                             <div class="mb-2 sm:mb-3">
-                                <h4 class="text-sm font-medium text-gray-900 leading-tight sm:text-base">
-                                    {{ $actividad['descripcion'] ?? $actividad['nombre'] ?? 'Actividad sin nombre' }}
+                                <h4 class="text-sm font-medium text-gray-900 leading-tight sm:text-base cursor-pointer hover:text-blue-600 transition-colors"
+                                    onclick="buscarEnGoogle('{{ $actividad->nombre ?? $actividad['nombre'] ?? $actividad['descripcion'] ?? 'Actividad sin nombre' }}')"
+                                    title="Hacer clic para buscar en Google">
+                                    {{ $actividad->nombre ?? $actividad['nombre'] ?? $actividad['descripcion'] ?? 'Actividad sin nombre' }}
+                                    <i class="fas fa-external-link-alt ml-1 text-xs text-gray-400"></i>
                                 </h4>
                             </div>
                             <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
-                                @if(isset($actividad['sector']) || isset($actividad['categoria']))
+                                @if(isset($actividad->sector) || isset($actividad['sector']) || isset($actividad['categoria']))
                                     <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
                                         <i class="fas fa-tag mr-1"></i>
                                         @php
-                                            $sector = $actividad['sector'] ?? $actividad['categoria'] ?? 'Sin categoría';
-                                            if (is_array($sector) && isset($sector['nombre'])) {
-                                                $sector = $sector['nombre'];
-                                            } elseif (is_object($sector) && isset($sector->nombre)) {
-                                                $sector = $sector->nombre;
+                                            $sector = '';
+                                            if (isset($actividad->sector) && $actividad->sector) {
+                                                $sector = $actividad->sector->nombre;
+                                            } elseif (isset($actividad['sector'])) {
+                                                $sector = $actividad['sector'];
+                                                if (is_array($sector) && isset($sector['nombre'])) {
+                                                    $sector = $sector['nombre'];
+                                                } elseif (is_object($sector) && isset($sector->nombre)) {
+                                                    $sector = $sector->nombre;
+                                                }
+                                            } elseif (isset($actividad['categoria'])) {
+                                                $sector = $actividad['categoria'];
+                                                if (is_array($sector) && isset($sector['nombre'])) {
+                                                    $sector = $sector['nombre'];
+                                                } elseif (is_object($sector) && isset($sector->nombre)) {
+                                                    $sector = $sector->nombre;
+                                                }
                                             }
                                         @endphp
                                         {{ $sector }}
                                     </span>
                                 @endif
-                                @if(isset($actividad['estado_validacion']))
+                                @if(isset($actividad->estado_validacion) || isset($actividad['estado_validacion']))
                                     @php
-                                        $estadoClass = match($actividad['estado_validacion']) {
-                                            'Validada' => 'bg-gray-100 text-gray-600',
-                                            'Rechazada' => 'bg-gray-100 text-gray-600',
-                                            default => 'bg-gray-100 text-gray-600',
+                                        $estadoValidacion = $actividad->estado_validacion ?? $actividad['estado_validacion'] ?? 'Pendiente';
+                                        $estadoClass = match($estadoValidacion) {
+                                            'Validada' => 'bg-green-100 text-green-700',
+                                            'Rechazada' => 'bg-red-100 text-red-700',
+                                            default => 'bg-yellow-100 text-yellow-700',
                                         };
-                                        $estadoIcon = match($actividad['estado_validacion']) {
+                                        $estadoIcon = match($estadoValidacion) {
                                             'Validada' => 'fas fa-check-circle text-green-500',
                                             'Rechazada' => 'fas fa-times-circle text-red-500',
                                             default => 'fas fa-clock text-yellow-500',
@@ -63,10 +73,10 @@
                                     @endphp
                                     <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {{ $estadoClass }}">
                                         <i class="{{ $estadoIcon }} mr-1"></i>
-                                        {{ $actividad['estado_validacion'] }}
+                                        {{ $estadoValidacion }}
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-700">
                                         <i class="fas fa-clock text-yellow-500 mr-1"></i>
                                         Pendiente
                                     </span>
@@ -74,16 +84,18 @@
                             </div>
                         </div>
                     </div>
-                    @if($editable && (!isset($actividad['estado_validacion']) || $actividad['estado_validacion'] === 'Pendiente'))
+                    @if($editable && (!isset($actividad->estado_validacion) || $actividad->estado_validacion === 'Pendiente') && (!isset($actividad['estado_validacion']) || $actividad['estado_validacion'] === 'Pendiente'))
                         <div class="flex items-center space-x-2 sm:ml-4">
                             <button type="button" 
-                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                    title="Validar actividad">
+                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                    title="Validar actividad"
+                                    onclick="validarActividad({{ $actividad->id ?? $actividad['id'] ?? '' }})">
                                 <i class="fas fa-check"></i>
                             </button>
                             <button type="button" 
-                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                    title="Rechazar actividad">
+                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                    title="Rechazar actividad"
+                                    onclick="rechazarActividad({{ $actividad->id ?? $actividad['id'] ?? '' }})">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -105,3 +117,7 @@
         </div>
     </div>
 @endif
+
+@push('scripts')
+<script src="{{ asset('js/modules/actividades-validator.js') }}"></script>
+@endpush

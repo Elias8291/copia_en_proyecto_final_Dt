@@ -5,7 +5,5 @@
 // import './bootstrap';
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Application JavaScript loaded successfully');
-    
     // Initialize any global components or functionality here
 });
