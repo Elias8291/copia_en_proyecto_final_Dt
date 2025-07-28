@@ -2,42 +2,40 @@
 
 @if(count($actividades) > 0)
     <div class="mb-3 flex flex-col space-y-1.5 sm:mb-4 sm:flex-row sm:space-x-2 sm:space-y-0 sm:justify-end lg:space-x-3">
-        <div class="flex items-center bg-blue-50 border border-blue-100 rounded px-2 py-1 text-xs font-medium text-blue-800 shadow-sm">
-            <i class="fas fa-list mr-1 text-blue-400 text-xs"></i>
+        <div class="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs font-medium text-gray-700 shadow-sm">
+            <i class="fas fa-list mr-1 text-gray-500 text-xs"></i>
             Total: <span class="ml-1 font-bold">{{ count($actividades) }}</span>
         </div>
-        <div class="flex items-center bg-green-50 border border-green-100 rounded px-2 py-1 text-xs font-medium text-green-800 shadow-sm">
-            <i class="fas fa-check-circle mr-1 text-green-400 text-xs"></i>
+        <div class="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs font-medium text-gray-700 shadow-sm">
+            <i class="fas fa-check-circle mr-1 text-gray-500 text-xs"></i>
             Validadas: <span class="ml-1 font-bold">{{ collect($actividades)->where('estado_validacion', 'Validada')->count() }}</span>
         </div>
-        <div class="flex items-center bg-yellow-50 border border-yellow-100 rounded px-2 py-1 text-xs font-medium text-yellow-800 shadow-sm">
-            <i class="fas fa-clock mr-1 text-yellow-400 text-xs"></i>
+        <div class="flex items-center bg-gray-50 border border-gray-200 rounded px-2 py-1 text-xs font-medium text-gray-700 shadow-sm">
+            <i class="fas fa-clock mr-1 text-gray-500 text-xs"></i>
             Pendientes: <span class="ml-1 font-bold">{{ collect($actividades)->whereNotIn('estado_validacion', ['Validada', 'Rechazada'])->count() }}</span>
         </div>
     </div>
     <div class="space-y-3 sm:space-y-4">
         @foreach($actividades as $index => $actividad)
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-lg border border-gray-200 p-3 hover:shadow-md transition-all duration-200 sm:rounded-xl sm:p-4 lg:p-6">
-                <div class="flex items-start justify-between">
+            <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-all duration-200 sm:rounded-xl sm:p-4 lg:p-6">
+                <div class="flex flex-col space-y-2 sm:flex-row sm:items-start sm:justify-between sm:space-y-0 sm:space-x-3">
                     <div class="flex items-start space-x-2 flex-1 sm:space-x-3 lg:space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm border border-gray-200 sm:w-10 sm:h-10 lg:w-12 lg:h-12">
-                                @if(isset($actividad['es_principal']) && $actividad['es_principal'])
-                                    <i class="fas fa-star text-yellow-500 text-sm sm:text-base lg:text-lg"></i>
-                                @else
-                                    <span class="text-xs font-semibold text-gray-400 sm:text-[10px]">#{{ $index + 1 }}</span>
-                                @endif
+                        @if(isset($actividad['es_principal']) && $actividad['es_principal'])
+                            <div class="flex-shrink-0">
+                                <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center shadow-sm border border-gray-200 sm:w-10 sm:h-10 lg:w-12 lg:h-12">
+                                    <i class="fas fa-star text-gray-500 text-sm sm:text-base lg:text-lg"></i>
+                                </div>
                             </div>
-                        </div>
+                        @endif
                         <div class="flex-1 min-w-0">
                             <div class="mb-2 sm:mb-3">
-                                <h4 class="text-xs font-semibold text-gray-900 leading-tight sm:text-sm">
+                                <h4 class="text-sm font-medium text-gray-900 leading-tight sm:text-base">
                                     {{ $actividad['descripcion'] ?? $actividad['nombre'] ?? 'Actividad sin nombre' }}
                                 </h4>
                             </div>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-x-2 sm:space-y-0">
                                 @if(isset($actividad['sector']) || isset($actividad['categoria']))
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
                                         <i class="fas fa-tag mr-1"></i>
                                         @php
                                             $sector = $actividad['sector'] ?? $actividad['categoria'] ?? 'Sin categoría';
@@ -53,14 +51,14 @@
                                 @if(isset($actividad['estado_validacion']))
                                     @php
                                         $estadoClass = match($actividad['estado_validacion']) {
-                                            'Validada' => 'bg-green-100 text-green-800',
-                                            'Rechazada' => 'bg-red-100 text-red-800',
-                                            default => 'bg-yellow-100 text-yellow-800',
+                                            'Validada' => 'bg-gray-100 text-gray-600',
+                                            'Rechazada' => 'bg-gray-100 text-gray-600',
+                                            default => 'bg-gray-100 text-gray-600',
                                         };
                                         $estadoIcon = match($actividad['estado_validacion']) {
-                                            'Validada' => 'fas fa-check-circle',
-                                            'Rechazada' => 'fas fa-times-circle',
-                                            default => 'fas fa-clock',
+                                            'Validada' => 'fas fa-check-circle text-green-500',
+                                            'Rechazada' => 'fas fa-times-circle text-red-500',
+                                            default => 'fas fa-clock text-yellow-500',
                                         };
                                     @endphp
                                     <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium {{ $estadoClass }}">
@@ -68,8 +66,8 @@
                                         {{ $actividad['estado_validacion'] }}
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        <i class="fas fa-clock mr-1"></i>
+                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                                        <i class="fas fa-clock text-yellow-500 mr-1"></i>
                                         Pendiente
                                     </span>
                                 @endif
@@ -77,14 +75,14 @@
                         </div>
                     </div>
                     @if($editable && (!isset($actividad['estado_validacion']) || $actividad['estado_validacion'] === 'Pendiente'))
-                        <div class="flex items-center space-x-2 ml-4">
+                        <div class="flex items-center space-x-2 sm:ml-4">
                             <button type="button" 
-                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                                     title="Validar actividad">
                                 <i class="fas fa-check"></i>
                             </button>
                             <button type="button" 
-                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-red-700 bg-red-100 rounded-lg hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                    class="inline-flex items-center px-2 py-2 text-xs font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                                     title="Rechazar actividad">
                                 <i class="fas fa-times"></i>
                             </button>
