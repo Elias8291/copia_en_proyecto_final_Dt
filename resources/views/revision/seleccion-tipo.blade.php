@@ -181,7 +181,7 @@
                                                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                 </svg>
                                                 <span
-                                                    class="truncate">{{ $archivo->nombre_original ?? ($archivo->catalogoArchivo->nombre ?? 'Documento') }}</span>
+                                                    class="truncate">{{ $archivo->catalogoArchivo->nombre ?? $archivo->nombre_original ?? 'Documento' }}</span>
                                             </div>
                                             <a href="{{ $archivo->getUrlVisualizacionAttribute() }}" target="_blank"
                                                 class="inline-flex items-center px-2 py-1 text-xs font-medium text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition-colors flex-shrink-0">

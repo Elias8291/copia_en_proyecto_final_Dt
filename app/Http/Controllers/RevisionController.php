@@ -45,9 +45,7 @@ class RevisionController extends Controller
         $tramite->load([
             'proveedor.user',
             'datosGenerales',
-            'archivos' => function ($query) {
-                $query->where('idCatalogoArchivo', 2)->with('catalogoArchivo');
-            }
+            'archivos.catalogoArchivo'
         ]);
 
         return view('revision.seleccion-tipo', compact('tramite'));

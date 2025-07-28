@@ -71,20 +71,32 @@
             <div class="space-y-6">
                 
                 <!-- Sección Datos Generales -->
-                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6 min-h-[600px]">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Datos Generales</h3>
+                                <p class="text-sm text-gray-500">Información personal y de contacto</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Botón para mostrar/ocultar comparador -->
+                        <button type="button" 
+                                onclick="toggleComparador('datosGenerales')"
+                                class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Datos Generales</h3>
-                            <p class="text-sm text-gray-500">Información personal y de contacto</p>
-                        </div>
+                            Comparar
+                        </button>
                     </div>
                     
-                    <div id="datosGeneralesGrid">
+                    <div id="datosGeneralesGrid" class="grid grid-cols-1 gap-4">
                         <div id="datosGeneralesMain" class="transition-all duration-300">
                             @include('revision.partials.datos-generales', [
                                 'tramite' => $tramite,
@@ -92,6 +104,13 @@
                                 'editable' => true,
                             ])
                         </div>
+                        
+                        <!-- Componente comparador de documentos -->
+                        <x-documento-comparador 
+                            :documentos="$tramite->archivos"
+                            seccion="datosGenerales"
+                            :mostrar="false"
+                            :tramiteId="$tramite->id" />
                     </div>
                     
                     @include('revision.partials.revision-panel', ['seccion' => 'datos_generales'])
@@ -99,20 +118,32 @@
 
                 <!-- Sección Domicilio -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Domicilio</h3>
+                                <p class="text-sm text-gray-500">Dirección completa del solicitante</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Botón para mostrar/ocultar comparador -->
+                        <button type="button" 
+                                onclick="toggleComparador('domicilio')"
+                                class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Domicilio</h3>
-                            <p class="text-sm text-gray-500">Dirección completa del solicitante</p>
-                        </div>
+                            Comparar
+                        </button>
                     </div>
                     
-                    <div id="domicilioGrid">
+                    <div id="domicilioGrid" class="grid grid-cols-1 gap-4">
                         <div id="domicilioMain" class="transition-all duration-300">
                             @include('revision.partials.domicilio', [
                                 'tramite' => $tramite,
@@ -120,6 +151,13 @@
                                 'editable' => true,
                             ])
                         </div>
+                        
+                        <!-- Componente comparador de documentos -->
+                        <x-documento-comparador 
+                            :documentos="$tramite->archivos"
+                            seccion="domicilio"
+                            :mostrar="false"
+                            :tramiteId="$tramite->id" />
                     </div>
                     
                     @include('revision.partials.revision-panel', ['seccion' => 'domicilio'])
@@ -127,19 +165,31 @@
 
                 <!-- Sección Actividades -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                    <div class="flex items-center space-x-3 mb-6">
-                        <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6z" />
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2V6z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Actividades</h3>
+                                <p class="text-sm text-gray-500">Actividades económicas y clasificación</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Botón para mostrar/ocultar comparador -->
+                        <button type="button" 
+                                onclick="toggleComparador('actividades')"
+                                class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900">Actividades</h3>
-                            <p class="text-sm text-gray-500">Actividades económicas y clasificación</p>
-                        </div>
+                            Comparar
+                        </button>
                     </div>
                     
-                    <div id="actividadesGrid">
+                    <div id="actividadesGrid" class="grid grid-cols-1 gap-4">
                         <div id="actividadesMain" class="transition-all duration-300">
                             @include('revision.partials.actividades', [
                                 'tramite' => $tramite,
@@ -147,6 +197,13 @@
                                 'editable' => true,
                             ])
                         </div>
+                        
+                        <!-- Componente comparador de documentos -->
+                        <x-documento-comparador 
+                            :documentos="$tramite->archivos"
+                            seccion="actividades"
+                            :mostrar="false"
+                            :tramiteId="$tramite->id" />
                     </div>
                     
                     @include('revision.partials.revision-panel', ['seccion' => 'actividades'])
@@ -155,25 +212,44 @@
                 @if($esPersonaMoral)
                     <!-- Sección Constitución -->
                     <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                        <div class="flex items-center space-x-3 mb-6">
-                            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Constitución</h3>
+                                    <p class="text-sm text-gray-500">Datos de constitución</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Botón para mostrar/ocultar comparador -->
+                            <button type="button" 
+                                    onclick="toggleComparador('constitucion')"
+                                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Constitución</h3>
-                                <p class="text-sm text-gray-500">Datos de constitución</p>
-                            </div>
+                                Comparar
+                            </button>
                         </div>
                         
-                        <div id="constitucionGrid">
+                        <div id="constitucionGrid" class="grid grid-cols-1 gap-4">
                             <div id="constitucionMain" class="transition-all duration-300">
                                 @include('revision.partials.constitucion', [
                                     'tramite' => $tramite,
                                     'editable' => true,
                                 ])
                             </div>
+                            
+                            <!-- Componente comparador de documentos -->
+                            <x-documento-comparador 
+                                :documentos="$tramite->archivos"
+                                seccion="constitucion"
+                                :mostrar="false"
+                                :tramiteId="$tramite->id" />
                         </div>
                         
                         @include('revision.partials.revision-panel', ['seccion' => 'constitucion'])
@@ -181,25 +257,44 @@
 
                     <!-- Sección Apoderado Legal -->
                     <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                        <div class="flex items-center space-x-3 mb-6">
-                            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Apoderado Legal</h3>
+                                    <p class="text-sm text-gray-500">Información del representante legal</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Botón para mostrar/ocultar comparador -->
+                            <button type="button" 
+                                    onclick="toggleComparador('apoderado')"
+                                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Apoderado Legal</h3>
-                                <p class="text-sm text-gray-500">Información del representante legal</p>
-                            </div>
+                                Comparar
+                            </button>
                         </div>
                         
-                        <div id="apoderadoGrid">
+                        <div id="apoderadoGrid" class="grid grid-cols-1 gap-4">
                             <div id="apoderadoMain" class="transition-all duration-300">
                                 @include('revision.partials.apoderado', [
                                     'tramite' => $tramite,
                                     'editable' => true,
                                 ])
                             </div>
+                            
+                            <!-- Componente comparador de documentos -->
+                            <x-documento-comparador 
+                                :documentos="$tramite->archivos"
+                                seccion="apoderado"
+                                :mostrar="false"
+                                :tramiteId="$tramite->id" />
                         </div>
                         
                         @include('revision.partials.revision-panel', ['seccion' => 'apoderado'])
@@ -207,25 +302,44 @@
 
                     <!-- Sección Accionistas -->
                     <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                        <div class="flex items-center space-x-3 mb-6">
-                            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900">Accionistas</h3>
+                                    <p class="text-sm text-gray-500">Información de socios y accionistas</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Botón para mostrar/ocultar comparador -->
+                            <button type="button" 
+                                    onclick="toggleComparador('accionistas')"
+                                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Accionistas</h3>
-                                <p class="text-sm text-gray-500">Información de socios y accionistas</p>
-                            </div>
+                                Comparar
+                            </button>
                         </div>
                         
-                        <div id="accionistasGrid">
+                        <div id="accionistasGrid" class="grid grid-cols-1 gap-4">
                             <div id="accionistasMain" class="transition-all duration-300">
                                 @include('revision.partials.accionistas', [
                                     'tramite' => $tramite,
                                     'editable' => true,
                                 ])
                             </div>
+                            
+                            <!-- Componente comparador de documentos -->
+                            <x-documento-comparador 
+                                :documentos="$tramite->archivos"
+                                seccion="accionistas"
+                                :mostrar="false"
+                                :tramiteId="$tramite->id" />
                         </div>
                         
                         @include('revision.partials.revision-panel', ['seccion' => 'accionistas'])
@@ -396,6 +510,7 @@
 
 @push('scripts')
     <script src="{{ asset('js/revision/revision-digital.js') }}"></script>
+    <script src="{{ asset('js/revision/documento-comparador.js') }}"></script>
     <script>
         window.tramiteId = {{ $tramite->id }};
         window.csrfToken = "{{ csrf_token() }}";

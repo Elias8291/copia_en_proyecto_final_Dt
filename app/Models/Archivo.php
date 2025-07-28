@@ -65,4 +65,42 @@ class Archivo extends Model
     {
         return $this->getUrlVisualizacionAttribute();
     }
+
+    /**
+     * Obtener el tamaño del archivo formateado
+     */
+    public function getTamañoFormateadoAttribute()
+    {
+        $ruta = storage_path('app/public/' . $this->ruta_archivo);
+        
+        if (file_exists($ruta)) {
+            $bytes = filesize($ruta);
+            return $this->formatearTamaño($bytes);
+        }
+        
+        return 'N/A';
+    }
+
+    /**
+     * Obtener la fecha de carga formateada
+     */
+    public function getFechaCargaAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('d/m/Y H:i') : 'N/A';
+    }
+
+    /**
+     * Formatear tamaño de bytes a formato legible
+     */
+    private function formatearTamaño($bytes)
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        
+        $bytes /= pow(1024, $pow);
+        
+        return round($bytes, 2) . ' ' . $units[$pow];
+    }
 } 

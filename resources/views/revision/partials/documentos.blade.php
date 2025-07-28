@@ -8,7 +8,11 @@
                     <div class="flex items-start space-x-2 flex-1 sm:space-x-3">
                         <div class="flex-shrink-0">
                             @php
-                                $extension = pathinfo($documento['nombre_original'] ?? $documento['nombre'] ?? '', PATHINFO_EXTENSION);
+                                // Manejar tanto arrays como objetos Eloquent
+                                $nombreArchivo = is_array($documento) 
+                                    ? ($documento['nombre_original'] ?? $documento['nombre'] ?? '')
+                                    : ($documento->nombre_original ?? '');
+                                $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION);
                                 $iconData = match(strtolower($extension)) {
                                     'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-red-600'],
                                     'png', 'jpg', 'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-blue-600'],
@@ -25,16 +29,11 @@
                         <div class="flex-1 min-w-0">
                             <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-2">
                                 <h4 class="text-xs font-medium text-gray-900 truncate sm:text-sm">
-                                    {{ $documento['nombre_original'] ?? $documento['nombre'] ?? 'Documento' }}
+                                    {{ is_array($documento) ? ($documento['nombre'] ?? $documento['nombre_original'] ?? 'Documento') : ($documento->catalogoArchivo->nombre ?? $documento->nombre_original ?? 'Documento') }}
                                 </h4>
                                 <div class="flex flex-wrap items-center gap-1 sm:gap-2 sm:ml-2">
-                                    @if(isset($documento['catalogo']))
-                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 sm:px-2">
-                                            {{ $documento['catalogo']['nombre'] ?? 'Documento' }}
-                                        </span>
-                                    @endif
-                                    @if(isset($documento['aprobado']))
-                                        @if($documento['aprobado'] === true)
+                                    @if(is_array($documento) ? isset($documento['aprobado']) : isset($documento->aprobado))
+                                        @if((is_array($documento) ? $documento['aprobado'] : $documento->aprobado) === true)
                                             <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 sm:px-2">
                                                 <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -42,7 +41,7 @@
                                                 <span class="hidden sm:inline">Aprobado</span>
                                                 <span class="sm:hidden">OK</span>
                                             </span>
-                                        @elseif($documento['aprobado'] === false)
+                                        @elseif((is_array($documento) ? $documento['aprobado'] : $documento->aprobado) === false)
                                             <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 sm:px-2">
                                                 <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -60,7 +59,7 @@
                                             </span>
                                         @endif
                                     @endif
-                                    @if(isset($documento['fecha_cotejo']) && $documento['fecha_cotejo'])
+                                    @if((is_array($documento) ? isset($documento['fecha_cotejo']) : isset($documento->fecha_cotejo)) && (is_array($documento) ? $documento['fecha_cotejo'] : $documento->fecha_cotejo))
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 sm:px-2">
                                             <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -72,14 +71,14 @@
                                 </div>
                             </div>
                             <div class="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500">
-                                <span>{{ $documento['tamaño_formateado'] ?? $documento['tamaño'] ?? 'N/A' }}</span>
+                                <span>{{ is_array($documento) ? ($documento['tamaño_formateado'] ?? $documento['tamaño'] ?? 'N/A') : $documento->tamaño_formateado }}</span>
                                 <span class="hidden sm:inline">•</span>
-                                <span>{{ $documento['fecha_carga'] ?? $documento['created_at'] ?? 'N/A' }}</span>
+                                <span>{{ is_array($documento) ? ($documento['fecha_carga'] ?? $documento['created_at'] ?? 'N/A') : $documento->fecha_carga }}</span>
                             </div>
-                            @if(isset($documento['observaciones']) && $documento['observaciones'])
+                            @if((is_array($documento) ? isset($documento['observaciones']) : isset($documento->observaciones)) && (is_array($documento) ? $documento['observaciones'] : $documento->observaciones))
                                 <div class="comentario-box mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
                                     <span class="font-medium text-amber-800">Observaciones:</span>
-                                    <span class="comentario-texto text-amber-700">{{ $documento['observaciones'] }}</span>
+                                    <span class="comentario-texto text-amber-700">{{ is_array($documento) ? $documento['observaciones'] : $documento->observaciones }}</span>
                                 </div>
                             @endif
                         </div>
@@ -87,8 +86,8 @@
                     <div class="flex items-center justify-end space-x-1 sm:space-x-2">
                         <a href="{{ route('revision.verDocumento', [
                             'tramite' => is_object($tramite) ? $tramite->id : $tramite['id'],
-                            'archivo' => $documento['id'],
-                            'filename' => basename($documento['ruta_archivo'] ?? 'documento')
+                            'archivo' => is_array($documento) ? $documento['id'] : $documento->id,
+                            'filename' => basename(is_array($documento) ? ($documento['ruta_archivo'] ?? 'documento') : ($documento->ruta_archivo ?? 'documento'))
                         ]) }}" 
                         target="_blank" 
                         class="group inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors" 
@@ -100,7 +99,7 @@
                         </a>
                         @if($editable)
                             <button type="button" 
-                                onclick="toggleDocumentComment({{ $documento['id'] }})"
+                                onclick="toggleDocumentComment({{ is_array($documento) ? $documento['id'] : $documento->id }})"
                                 class="group inline-flex items-center justify-center w-8 h-8 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 transition-colors" 
                                 title="Comentar documento">
                                 <svg class="w-4 h-4 text-gray-600 group-hover:text-[#9D2449] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,8 +110,8 @@
                     </div>
                 </div>
                 @if($editable)
-                    <div id="comment-form-{{ $documento['id'] }}" class="hidden mt-3 pt-3 border-t border-gray-200">
-                        <form class="documento-review-form" data-documento-id="{{ $documento['id'] }}">
+                    <div id="comment-form-{{ is_array($documento) ? $documento['id'] : $documento->id }}" class="hidden mt-3 pt-3 border-t border-gray-200">
+                        <form class="documento-review-form" data-documento-id="{{ is_array($documento) ? $documento['id'] : $documento->id }}">
                             <div class="mb-3">
                                 <textarea 
                                     name="comentario" 
@@ -133,7 +132,7 @@
                                 </div>
                                 <div class="flex items-center justify-end space-x-2">
                                     <button type="button" 
-                                        onclick="toggleDocumentComment({{ $documento['id'] }})"
+                                        onclick="toggleDocumentComment({{ is_array($documento) ? $documento['id'] : $documento->id }})"
                                         class="px-3 py-1 text-xs text-gray-600 hover:text-gray-800 transition-colors">
                                         Cancelar
                                     </button>
