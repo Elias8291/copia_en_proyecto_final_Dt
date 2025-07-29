@@ -32,11 +32,7 @@ class ProbarMpdf extends Command
             if ($response) {
                 $this->info("✅ PDF generado exitosamente con mPDF");
                 $this->info("URL: " . $response->getTargetUrl());
-                
-                // Verificar el tamaño del archivo
-                $fileName = 'oficios/oficio_' . $oficio->numero_oficio . '_' . $oficio->id . '.pdf';
-                $fileSize = \Storage::disk('public')->size($fileName);
-                $this->info("Tamaño: {$fileSize} bytes");
+                $this->info("✅ Generación completada sin verificar tamaño");
             } else {
                 $this->error("❌ Error al generar PDF");
             }

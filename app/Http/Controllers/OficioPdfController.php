@@ -25,9 +25,10 @@ class OficioPdfController extends Controller
     public function generarPdf(Oficio $oficio)
     {
         try {
-            // Verificar si ya existe el PDF guardado
+            // Forzar eliminación del PDF existente si existe
             if ($oficio->url_documento && \Storage::disk('public')->exists($oficio->url_documento)) {
-                return redirect(\Storage::disk('public')->url($oficio->url_documento));
+                \Storage::disk('public')->delete($oficio->url_documento);
+                $oficio->update(['url_documento' => null]);
             }
 
             // Cargar el trámite con sus relaciones
@@ -69,8 +70,8 @@ class OficioPdfController extends Controller
                 'logoLateral' => 'data:image/jpeg;base64,' . base64_encode(file_get_contents(base_path('public/images/logo_lateral2022.jpg')))
             ];
 
-            // Generar PDF
-            $pdf = Pdf::loadView('oficio.documento', $data);
+            // Generar PDF con mPDF
+            $pdf = Pdf::loadView('oficio.documento-mpdf', $data);
             $pdf->setPaper('letter', 'portrait');
 
             // Guardar PDF en storage
@@ -178,6 +179,32 @@ class OficioPdfController extends Controller
                 'error' => $e->getMessage()
             ]);
             return back()->with('error', 'Error al descargar el PDF del oficio: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Forzar regeneración del PDF (eliminar y generar nuevo)
+     */
+    public function forzarRegeneracionPdf(Oficio $oficio)
+    {
+        try {
+            // Eliminar PDF existente si existe
+            if ($oficio->url_documento && \Storage::disk('public')->exists($oficio->url_documento)) {
+                \Storage::disk('public')->delete($oficio->url_documento);
+            }
+            
+            // Limpiar URL del documento
+            $oficio->update(['url_documento' => null]);
+            
+            // Regenerar PDF
+            return $this->generarPdf($oficio);
+            
+        } catch (\Exception $e) {
+            Log::error('Error al forzar regeneración del PDF', [
+                'oficio_id' => $oficio->id,
+                'error' => $e->getMessage()
+            ]);
+            return back()->with('error', 'Error al regenerar el PDF: ' . $e->getMessage());
         }
     }
 

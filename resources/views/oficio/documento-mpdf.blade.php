@@ -23,8 +23,8 @@
         }
         .logo {
             position: absolute;
-            top: 10mm;
-            left: 20mm;
+            top: 8mm;
+            left: 8mm;
             width: 70mm;
             height: auto;
         }
@@ -36,12 +36,12 @@
 
         .logo-lateral {
             position: absolute;
-            top: 0;
-            right: -14mm;
-            width: 65mm;
+            top: -12mm;
+            right: 9mm;
+            width: 36mm;
             height: 100%;
             z-index: 1;
-            opacity: 0.05;
+            opacity: 0.7;
         }
         
         .logo-lateral img {
@@ -62,8 +62,8 @@
         .origen-oficio-asunto-fecha {
             position: absolute;
             top: 38mm;
-            left: 80mm;
-            width: 111mm;
+            left: 32mm;
+            width: 152mm;
             font-size: 8pt;
             text-align: right;
             line-height: 1.2;
@@ -74,12 +74,11 @@
         .destinatario {
             position: absolute;
             top: 60mm;
-            left: 19mm;
+            left: 8mm;
             width: 130mm;
             font-size: 8pt;
             font-weight: bold;
             line-height: 1.2;
-            z-index: 5;
         }
 
         .destinatario-persona-moral {
@@ -93,8 +92,8 @@
         .contenido-principal {
             position: absolute;
             top: 90mm;
-            left: 19mm;
-            width: 172mm;
+            left: 8mm;
+            width: 176mm;
             font-size: 8pt;
             text-align: justify;
             line-height: 1.4;
@@ -129,7 +128,6 @@
             font-size: 5pt;
             font-weight: bold;
             line-height: 1.2;
-            z-index: 5;
         }
 
         .copias {
@@ -138,7 +136,6 @@
             left: 19mm;
             font-size: 5pt;
             line-height: 1.2;
-            z-index: 5;
         }
         
         .qr-code {
@@ -147,7 +144,6 @@
             right: 25mm;
             width: 20mm;
             height: 20mm;
-            z-index: 10;
         }
         
         .qr-code img {
@@ -179,7 +175,7 @@
 <body>
 
     <div class="logo">
-        <img src="{{ base_path('public/images/logo_administracion.png') }}" alt="Logo">
+        <img src="{{ public_path('images/logo_administracion.png') }}" alt="Logo">
     </div>
 
     <div class="lema-constitucional">
@@ -252,13 +248,13 @@
         <div class="signature-space"></div>
     </div>
 
+    <div class="logo-lateral">
+        <img src="{{ base_path('public/images/logo_lateral2022.jpg') }}" alt="Logo Lateral">
+    </div>
+
     <div class="copias">
         C.c.p.- Expediente y Minutario.<br>
         SZS/TEST
-    </div>
-
-    <div class="logo-lateral">
-        <img src="{{ base_path('public/images/membretep.png') }}" alt="Logo Lateral">
     </div>
 
     <div class="footer">

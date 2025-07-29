@@ -224,6 +224,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{oficio}/pdf', [OficioPdfController::class, 'generarPdf'])->name('pdf');
         Route::get('/{oficio}/ver-pdf', [OficioPdfController::class, 'verPdf'])->name('ver-pdf');
         Route::get('/{oficio}/descargar-pdf', [OficioPdfController::class, 'descargarPdf'])->name('descargar-pdf');
+        Route::get('/{oficio}/forzar-regeneracion', [OficioPdfController::class, 'forzarRegeneracionPdf'])->name('forzar-regeneracion');
         Route::get('/tramite/{tramite}/generar-oficio', [OficioPdfController::class, 'generarOficioTramite'])->name('generar.tramite');
     });
 });
