@@ -37,6 +37,18 @@ class RevisionController extends Controller
         return view('revision.index', compact('tramites', 'perPage'));
     }
 
+    public function show(Tramite $tramite)
+    {
+        $tramite->load([
+            'proveedor.user',
+            'datosGenerales',
+            'archivos.catalogoArchivo',
+            'revisionSecciones'
+        ]);
+
+        return view('revision.revision-digital', compact('tramite'));
+    }
+
 
 
 
@@ -460,14 +472,54 @@ class RevisionController extends Controller
 
     public function guardarComentarioGeneral(Request $request)
     {
-        $request->validate([
-            'tramite_id' => 'required|exists:tramites,id',
-            'comentario' => 'nullable|string|max:1000'
-        ]);
+        try {
+            $tramite = Tramite::findOrFail($request->tramite_id);
+            $tramite->update([
+                'comentarios_revision' => $request->comentario
+            ]);
 
-        $tramite = Tramite::findOrFail($request->tramite_id);
-        $tramite->update(['comentarios_revision' => $request->comentario]);
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
 
-        return redirect()->back()->with('comentario_success', 'Comentario guardado correctamente');
+    public function obtenerEstados(Tramite $tramite)
+    {
+        try {
+            $tramite->load(['revisionSecciones', 'archivos']);
+            
+            $seccionesPendientes = [];
+            $seccionesRechazadas = [];
+            $documentosPendientes = [];
+            $documentosRechazados = [];
+            
+            // Obtener estados de secciones
+            foreach ($tramite->revisionSecciones as $revision) {
+                if ($revision->estado === 'Pendiente') {
+                    $seccionesPendientes[] = $revision->seccion;
+                } elseif ($revision->estado === 'Rechazado') {
+                    $seccionesRechazadas[] = $revision->seccion;
+                }
+            }
+            
+            // Obtener estados de documentos
+            foreach ($tramite->archivos as $archivo) {
+                if ($archivo->aprobado === null) {
+                    $documentosPendientes[] = $archivo->catalogoArchivo->nombre ?? 'Documento';
+                } elseif ($archivo->aprobado === false) {
+                    $documentosRechazados[] = $archivo->catalogoArchivo->nombre ?? 'Documento';
+                }
+            }
+            
+            return response()->json([
+                'seccionesPendientes' => $seccionesPendientes,
+                'seccionesRechazadas' => $seccionesRechazadas,
+                'documentosPendientes' => $documentosPendientes,
+                'documentosRechazados' => $documentosRechazados
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 }

@@ -217,7 +217,20 @@
                                                 @if(isset($action['url']))
                                                     @if(isset($action['method']) && $action['method'] === 'DELETE')
                                                         @if(isset($action['modalTitle']) || isset($action['modalMessage']))
-                                                            <form action="{{ route($action['url'], $item->id) }}" method="POST" class="inline" id="delete-form-{{ $item->id }}">
+                                                            @php
+                                                                if (isset($action['params'])) {
+                                                                    $routeParams = $action['params'];
+                                                                    // Reemplazar '$item->id' con el valor real
+                                                                    foreach ($routeParams as $key => $value) {
+                                                                        if ($value === '$item->id') {
+                                                                            $routeParams[$key] = $item->id;
+                                                                        }
+                                                                    }
+                                                                } else {
+                                                                    $routeParams = [$item->id];
+                                                                }
+                                                            @endphp
+                                                            <form action="{{ route($action['url'], $routeParams) }}" method="POST" class="inline" id="delete-form-{{ $item->id }}">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="button" 
@@ -230,7 +243,20 @@
                                                                 </button>
                                                             </form>
                                                         @else
-                                                            <form action="{{ route($action['url'], $item->id) }}" method="POST" class="inline">
+                                                            @php
+                                                                if (isset($action['params'])) {
+                                                                    $routeParams = $action['params'];
+                                                                    // Reemplazar '$item->id' con el valor real
+                                                                    foreach ($routeParams as $key => $value) {
+                                                                        if ($value === '$item->id') {
+                                                                            $routeParams[$key] = $item->id;
+                                                                        }
+                                                                    }
+                                                                } else {
+                                                                    $routeParams = [$item->id];
+                                                                }
+                                                            @endphp
+                                                            <form action="{{ route($action['url'], $routeParams) }}" method="POST" class="inline">
                                                                 @csrf
                                                                 @method('DELETE')
                                                                 <button type="submit" 
@@ -244,9 +270,16 @@
                                                         @endif
                                                     @else
                                                         @php
-                                                            $routeParams = [$item->id];
                                                             if (isset($action['params'])) {
-                                                                $routeParams = array_merge($routeParams, $action['params']);
+                                                                $routeParams = $action['params'];
+                                                                // Reemplazar '$item->id' con el valor real
+                                                                foreach ($routeParams as $key => $value) {
+                                                                    if ($value === '$item->id') {
+                                                                        $routeParams[$key] = $item->id;
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                $routeParams = [$item->id];
                                                             }
                                                         @endphp
                                                         <a href="{{ route($action['url'], $routeParams) }}" 
@@ -374,7 +407,20 @@
                                                         @if(isset($action['url']))
                                                             @if(isset($action['method']) && $action['method'] === 'DELETE')
                                                                 @if(isset($action['modalTitle']) || isset($action['modalMessage']))
-                                                                    <form action="{{ route($action['url'], $item->id) }}" method="POST" class="inline" id="delete-form-mobile-{{ $item->id }}">
+                                                                    @php
+                                                                        if (isset($action['params'])) {
+                                                                            $routeParams = $action['params'];
+                                                                            // Reemplazar '$item->id' con el valor real
+                                                                            foreach ($routeParams as $key => $value) {
+                                                                                if ($value === '$item->id') {
+                                                                                    $routeParams[$key] = $item->id;
+                                                                                }
+                                                                            }
+                                                                        } else {
+                                                                            $routeParams = [$item->id];
+                                                                        }
+                                                                    @endphp
+                                                                    <form action="{{ route($action['url'], $routeParams) }}" method="POST" class="inline" id="delete-form-mobile-{{ $item->id }}">
                                                                         @csrf
                                                                         @method('DELETE')
                                                                         <button type="button" 
@@ -387,7 +433,20 @@
                                                                         </button>
                                                                     </form>
                                                                 @else
-                                                                    <form action="{{ route($action['url'], $item->id) }}" method="POST" class="inline">
+                                                                    @php
+                                                                        if (isset($action['params'])) {
+                                                                            $routeParams = $action['params'];
+                                                                            // Reemplazar '$item->id' con el valor real
+                                                                            foreach ($routeParams as $key => $value) {
+                                                                                if ($value === '$item->id') {
+                                                                                    $routeParams[$key] = $item->id;
+                                                                                }
+                                                                            }
+                                                                        } else {
+                                                                            $routeParams = [$item->id];
+                                                                        }
+                                                                    @endphp
+                                                                    <form action="{{ route($action['url'], $routeParams) }}" method="POST" class="inline">
                                                                         @csrf
                                                                         @method('DELETE')
                                                                         <button type="submit" 
@@ -400,7 +459,13 @@
                                                                     </form>
                                                                 @endif
                                                             @else
-                                                                <a href="{{ route($action['url'], $item->id) }}" 
+                                                                @php
+                                                                    $routeParams = [$item->id];
+                                                                    if (isset($action['params'])) {
+                                                                        $routeParams = array_merge($routeParams, $action['params']);
+                                                                    }
+                                                                @endphp
+                                                                <a href="{{ route($action['url'], $routeParams) }}" 
                                                                class="p-2 {{ $action['color'] ?? 'text-primary' }} hover:bg-primary/10 rounded-lg transition-all duration-200" 
                                                                title="{{ $action['label'] ?? $actionKey }}">
                                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

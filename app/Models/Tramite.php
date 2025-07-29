@@ -89,6 +89,11 @@ class Tramite extends Model
         return $this->hasMany(Archivo::class);
     }
 
+    public function revisionSecciones()
+    {
+        return $this->hasMany(RevisionSeccion::class);
+    }
+
     public function cita()
     {
         return $this->hasOne(Cita::class);

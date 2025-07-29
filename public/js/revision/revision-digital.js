@@ -255,8 +255,21 @@ class RevisionDigital {
             const documentoId = documento.getAttribute('data-documento-id');
             const aprobado = documento.querySelector('input[type="radio"]:checked');
             
+            // Si no hay radio button seleccionado, verificar el estado visual
             if (!aprobado) {
-                estado.documentosPendientes.push(documentoId);
+                const estadoSpan = documento.querySelector('.estado-documento');
+                if (estadoSpan) {
+                    const texto = estadoSpan.textContent.toLowerCase();
+                    if (texto.includes('aprobado') || texto.includes('ok')) {
+                        estado.documentosAprobados.push(documentoId);
+                    } else if (texto.includes('rechazado') || texto.includes('x')) {
+                        estado.documentosRechazados.push(documentoId);
+                    } else {
+                        estado.documentosPendientes.push(documentoId);
+                    }
+                } else {
+                    estado.documentosPendientes.push(documentoId);
+                }
             } else if (aprobado.value === '1') {
                 estado.documentosAprobados.push(documentoId);
             } else if (aprobado.value === '0') {
@@ -276,7 +289,21 @@ class RevisionDigital {
             const nombreElement = documento.querySelector('[data-documento-nombre]');
             const aprobado = documento.querySelector('input[type="radio"]:checked');
             
-            if (!aprobado && nombreElement) {
+            // Si no hay radio button seleccionado, verificar el estado visual
+            let esPendiente = false;
+            if (!aprobado) {
+                const estadoSpan = documento.querySelector('.estado-documento');
+                if (estadoSpan) {
+                    const texto = estadoSpan.textContent.toLowerCase();
+                    if (!texto.includes('aprobado') && !texto.includes('ok') && !texto.includes('rechazado') && !texto.includes('x')) {
+                        esPendiente = true;
+                    }
+                } else {
+                    esPendiente = true;
+                }
+            }
+            
+            if (esPendiente && nombreElement) {
                 documentosPendientes.push(nombreElement.getAttribute('data-documento-nombre'));
             }
         });
@@ -396,6 +423,77 @@ class RevisionDigital {
         this.secciones.forEach(seccion => {
             this.cargarEstadoSeccion(seccion);
         });
+    }
+
+    async obtenerEstadosDesdeBD() {
+        try {
+            console.log('Obteniendo estados desde BD...');
+            const response = await fetch(`/api/revision/${this.tramiteId}/estados`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': this.csrfToken,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Error al obtener estados: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('Estados obtenidos:', data);
+            
+            return data;
+        } catch (error) {
+            console.error('Error en obtenerEstadosDesdeBD:', error);
+            this.mostrarAlertaError('Error', 'No se pudieron obtener los estados desde la base de datos');
+            return null;
+        }
+    }
+    
+    async validarEnviarACotejoBD() {
+        try {
+            const estados = await this.obtenerEstadosDesdeBD();
+            
+            if (!estados) {
+                return false;
+            }
+            
+            // Validación real con datos de estados
+            const seccionesPendientes = estados.seccionesPendientes || [];
+            const seccionesRechazadas = estados.seccionesRechazadas || [];
+            const documentosPendientes = estados.documentosPendientes || [];
+            const documentosRechazados = estados.documentosRechazados || [];
+            
+            if (seccionesPendientes.length > 0) {
+                this.mostrarAlertaSeccionesPendientes(seccionesPendientes);
+                return false;
+            }
+            
+            if (seccionesRechazadas.length > 0) {
+                this.mostrarAlertaError('No se puede enviar a cotejo', 
+                    `No se puede enviar a cotejo presencial porque hay secciones rechazadas. Debe aprobar todas las secciones o rechazar el trámite.`);
+                return false;
+            }
+            
+            if (documentosPendientes.length > 0) {
+                this.mostrarAlertaDocumentosPendientes(documentosPendientes);
+                return false;
+            }
+            
+            if (documentosRechazados.length > 0) {
+                this.mostrarAlertaError('Documentos Rechazados', 
+                    'No se puede enviar a cotejo presencial porque hay documentos rechazados. Debe aprobar todos los documentos o rechazar el trámite.');
+                return false;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error en validarEnviarACotejoBD:', error);
+            this.mostrarAlertaError('Error', 'Error al validar estados');
+            return false;
+        }
     }
 
     // Métodos estáticos para compatibilidad

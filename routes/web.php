@@ -66,7 +66,8 @@ Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
 // RUTAS AUTENTICADAS
 // ============================================================================
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth'])->group(function () {
+    
     // Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -170,13 +171,13 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['auth'])->prefix('revision')->name('revision.')->group(function () {
         Route::get('/', [RevisionController::class, 'index'])->name('index');
 
-        // Ruta principal que maneja todos los tipos de revisión
-        Route::get('/{tramite}/{tipo?}', [RevisionController::class, 'revisarTramite'])
-            ->where('tipo', 'seleccion-tipo|documentos-presencial|revision-digital')
-            ->name('revisar');
-
+        // Rutas específicas primero (más específicas antes que las genéricas)
+        Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
+        Route::post('/{tramite}/cambiar-estado', [RevisionController::class, 'cambiarEstadoTramite'])->name('cambiar-estado');
+        Route::get('/{tramite}/historial-estados', [RevisionController::class, 'historialEstados'])->name('historial-estados');
+        
         // Rutas de documentos y archivos
-        Route::middleware(['auth'])->get('/documentos/{tramite}/{archivo}/{filename}', [RevisionController::class, 'verDocumento'])->name('verDocumento');
+        Route::get('/documentos/{tramite}/{archivo}/{filename}', [RevisionController::class, 'verDocumento'])->name('verDocumento');
         Route::post('/documento/{archivo}/comentario', [RevisionController::class, 'actualizarComentarioDocumento'])->name('documento.comentario');
         Route::post('/documento/{archivo}/estado', [RevisionController::class, 'actualizarEstadoDocumento'])->name('documento.estado');
         Route::get('/documento/{archivo}/estado', [RevisionController::class, 'obtenerEstadoDocumento'])->name('documento.estado.get');
@@ -189,10 +190,13 @@ Route::middleware('auth')->group(function () {
         // Ruta para comentario general
         Route::post('/comentario-general', [RevisionController::class, 'guardarComentarioGeneral'])->name('comentario-general');
 
-        // Rutas de información y estado
-        Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
-        Route::post('/{tramite}/cambiar-estado', [RevisionController::class, 'cambiarEstadoTramite'])->name('cambiar-estado');
-        Route::get('/{tramite}/historial-estados', [RevisionController::class, 'historialEstados'])->name('historial-estados');
+        // Ruta principal que maneja todos los tipos de revisión (debe ir después de las específicas)
+        Route::get('/{tramite}/{tipo}', [RevisionController::class, 'revisarTramite'])
+            ->where('tipo', 'seleccion-tipo|documentos-presencial|revision-digital')
+            ->name('revisar');
+        
+        // Ruta genérica para mostrar trámite (debe ir al final)
+        Route::get('/{tramite}', [RevisionController::class, 'show'])->name('show');
     });
 
     // ============================================================================
@@ -218,4 +222,5 @@ Route::middleware('auth')->group(function () {
 Route::prefix('api')->group(function () {
     Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
+    Route::get('/revision/{tramite}/estados', [RevisionController::class, 'obtenerEstados'])->name('api.revision.estados');
 });

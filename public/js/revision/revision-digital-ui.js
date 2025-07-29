@@ -49,15 +49,27 @@ class RevisionDigitalUI {
         }
     }
     
-    showConfirmModalWithValidation(title, message, formId) {
+    async showConfirmModalWithValidation(title, message, formId) {
         let validacionExitosa = false;
         
         if (formId === 'form_por_cotejar') {
-            validacionExitosa = window.revisionDigital.validarEnviarACotejo();
+            if (window.revisionDigital) {
+                validacionExitosa = await window.revisionDigital.validarEnviarACotejoBD();
+            } else {
+                return;
+            }
         } else if (formId === 'form_rechazar') {
-            validacionExitosa = window.revisionDigital.validarRechazarTramite();
+            if (window.revisionDigital) {
+                validacionExitosa = window.revisionDigital.validarRechazarTramite();
+            } else {
+                return;
+            }
         } else if (formId === 'form_para_correccion') {
-            validacionExitosa = window.revisionDigital.validarParaCorreccion();
+            if (window.revisionDigital) {
+                validacionExitosa = window.revisionDigital.validarParaCorreccion();
+            } else {
+                return;
+            }
         }
         
         if (!validacionExitosa) {
@@ -81,6 +93,11 @@ class RevisionDigitalUI {
     }
 }
 
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    window.revisionDigitalUI = new RevisionDigitalUI();
+});
+
 function protegerTextoPreestablecido() {
     if (window.revisionDigitalUI) {
         window.revisionDigitalUI.setupTextProtection();
@@ -97,8 +114,4 @@ function showConfirmModalWithValidation(title, message, formId) {
     if (window.revisionDigitalUI) {
         window.revisionDigitalUI.showConfirmModalWithValidation(title, message, formId);
     }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    window.revisionDigitalUI = new RevisionDigitalUI();
-}); 
+} 
