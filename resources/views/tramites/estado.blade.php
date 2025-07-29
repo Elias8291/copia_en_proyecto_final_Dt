@@ -3,371 +3,448 @@
 @section('title', 'Estado del Trámite')
 
 @section('content')
-<div class="min-h-screen flex items-start justify-center p-4 sm:p-6 lg:p-8 pt-16">
-    <div class="w-full max-w-7xl bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-        {{-- Header elegante --}}
-        <div class="relative h-12 sm:h-20 lg:h-28 bg-gradient-to-br from-[#9d2449] via-[#8a203f] to-[#7a1d37] overflow-hidden">
+@php
+    $colorCirculo = match($estado ?? 'En_Revision') {
+        'Aprobado' => 'bg-emerald-500',
+        'Rechazado' => 'bg-red-500',
+        'Para_Correccion' => 'bg-amber-500',
+        'Cancelado' => 'bg-gray-500',
+        'Por_Cotejar' => 'bg-purple-500',
+        'En_Revision' => 'bg-blue-500',
+        'Pendiente' => 'bg-slate-400',
+        default => 'bg-yellow-400'
+    };
+    
+    $colorBadge = match($estado ?? 'En_Revision') {
+        'Aprobado' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
+        'Para_Correccion' => 'bg-amber-50 text-amber-700 border-amber-200',
+        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-300',
+        'Por_Cotejar' => 'bg-purple-50 text-purple-700 border-purple-200',
+        'En_Revision' => 'bg-blue-50 text-blue-700 border-blue-200',
+        'Pendiente' => 'bg-slate-100 text-slate-600 border-slate-300',
+        default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
+    };
+@endphp
+<div class="min-h-screen flex items-center justify-center p-4 pt-12">
+    <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl border border-gray-100">
+        {{-- Header con color primario --}}
+        <div class="h-16 bg-gradient-to-r from-[#9d2449] to-[#8a203f] relative">
             <div class="absolute inset-0 bg-black/10"></div>
         </div>
         
-        {{-- Avatar elegante --}}
-        <div class="relative -mt-16 sm:-mt-20 px-6 sm:px-8">
+                {{-- Avatar elegante con color primario --}}
+        <div class="relative -mt-8 px-8">
             <div class="flex justify-center">
-                <div class="relative">
-                    <div class="w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center shadow-xl border-4 border-white">
-                        <svg class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
+                <div class="w-16 h-16 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center shadow-xl border-4 border-white">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+            </div>
+            
+            {{-- Título elegante --}}
+            <div class="text-center mt-4">
+                <h1 class="text-[#9d2449] text-2xl font-bold">Estado del Trámite</h1>
+            </div>
+        </div>
+
+        {{-- Contenido principal --}}
+        <div class="px-8 py-6">
+            
+            {{-- Información elegante con estado --}}
+            <div class="mb-6 text-center">
+                <div class="inline-flex items-center space-x-6 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 rounded-xl px-8 py-4 border border-slate-200 shadow-sm">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-4 h-4 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full shadow-sm"></div>
+                        <span class="text-sm text-slate-600 font-medium">Folio:</span>
+                        <span class="text-sm font-bold text-slate-800">{{ $tramite_id ?? session('tramite_id') }}</span>
                     </div>
-                    <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-black rounded-full flex items-center justify-center shadow-lg">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
+                    <div class="w-px h-5 bg-slate-300"></div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm text-slate-600 font-medium">Tipo:</span>
+                        <span class="text-sm font-semibold text-slate-800">{{ $tramite->tipo_tramite ?? 'Registro' }}</span>
+                    </div>
+                    <div class="w-px h-5 bg-slate-300"></div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm text-slate-600 font-medium">Estado:</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold border-2 {{ $colorBadge }} shadow-sm">
+                            {{ $estado ?? 'En revisión' }}
+                        </span>
                     </div>
                 </div>
             </div>
             
-            {{-- Título abajo del círculo --}}
-            <div class="text-center mt-4">
-                <h1 class="text-black text-xl sm:text-2xl lg:text-3xl font-bold tracking-wide">Estado del Trámite</h1>
 
-        
-        {{-- Contenido principal --}}
-        <div class="px-6 sm:px-8 lg:px-12 py-8 sm:py-12">
-            <div class="text-center mb-6">
-                @php
-                    $colorCirculo = match($estado ?? 'En_Revision') {
-                        'Aprobado' => 'bg-emerald-500',
-                        'Rechazado' => 'bg-red-500',
-                        'Para_Correccion' => 'bg-amber-500',
-                        'Cancelado' => 'bg-gray-500',
-                        'Por_Cotejar' => 'bg-purple-500',
-                        'En_Revision' => 'bg-blue-500',
-                        default => 'bg-yellow-400'
-                    };
-                    
-                    $colorBadge = match($estado ?? 'En_Revision') {
-                        'Aprobado' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
-                        'Para_Correccion' => 'bg-amber-50 text-amber-700 border-amber-200',
-                        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-300',
-                        'Por_Cotejar' => 'bg-purple-50 text-purple-700 border-purple-200',
-                        'En_Revision' => 'bg-blue-50 text-blue-700 border-blue-200',
-                        default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
-                    };
-                @endphp
                 
-                <div class="inline-flex items-center space-x-4 bg-black/5 rounded-full px-4 py-2 mb-4">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-2 h-2 bg-[#9d2449] rounded-full"></div>
-                        <span class="text-xs font-medium text-black/70">Folio</span>
-                        <span class="text-xs font-bold text-black">{{ $tramite_id ?? session('tramite_id') }}</span>
-                    </div>
-                    <div class="w-px h-4 bg-black/20"></div>
-                    <div class="flex items-center space-x-2">
-                        <span class="inline-block w-3 h-3 rounded-full {{ $colorCirculo }} shadow-sm"></span>
-                        <span class="text-xs font-medium text-black/70">Estado:</span>
-                        <span class="px-2 py-1 rounded-full text-xs font-semibold tracking-wide border {{ $colorBadge }} shadow-sm">
-                            {{ $estado ?? 'En revisión' }}
-                        </span>
-                    </div>
-                    @if(($tramite->correcciones_count ?? 0) > 0)
-                        <div class="w-px h-4 bg-black/20"></div>
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                            <span class="text-xs font-medium text-black/70">Correcciones:</span>
-                            <span class="text-xs font-bold text-amber-600">{{ $tramite->correcciones_texto }}</span>
+                {{-- Barra de progreso compacta y elegante --}}
+                <div class="mt-4 mb-4">
+                    <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-4 border border-slate-200 shadow-sm">
+                        <h3 class="text-sm font-bold text-[#9d2449] mb-3 text-center">Progreso del Trámite</h3>
+                        
+                        <div class="relative">
+                            {{-- Barra de progreso --}}
+                            <div class="w-full bg-slate-200 rounded-full h-2 mb-3">
+                                @php
+                                    $progress = match($estado ?? 'En_Revision') {
+                                        'Pendiente' => 20,
+                                        'En_Revision' => 40,
+                                        'Por_Cotejar' => 60,
+                                        'Para_Correccion' => 50,
+                                        'Aprobado' => 100,
+                                        'Rechazado' => 100,
+                                        'Cancelado' => 100,
+                                        default => 30
+                                    };
+                                @endphp
+                                <div class="bg-gradient-to-r from-[#9d2449] to-[#8a203f] h-2 rounded-full transition-all duration-1000 ease-out" style="width: {{ $progress }}%"></div>
+                            </div>
+                            
+                            {{-- Etapas del proceso --}}
+                            <div class="grid grid-cols-4 gap-2">
+                                <div class="text-center">
+                                    <div class="w-6 h-6 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs font-medium text-slate-600">Enviado</p>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <div class="w-6 h-6 {{ $estado === 'En_Revision' || in_array($estado, ['Por_Cotejar', 'Para_Correccion', 'Aprobado', 'Rechazado']) ? 'bg-gradient-to-br from-[#9d2449] to-[#8a203f]' : 'bg-slate-300' }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs font-medium text-slate-600">Revisión</p>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <div class="w-6 h-6 {{ in_array($estado, ['Por_Cotejar', 'Aprobado', 'Rechazado']) ? 'bg-gradient-to-br from-[#9d2449] to-[#8a203f]' : 'bg-slate-300' }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs font-medium text-slate-600">Cotejo</p>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <div class="w-6 h-6 {{ $estado === 'Aprobado' ? 'bg-emerald-500' : ($estado === 'Rechazado' ? 'bg-red-500' : 'bg-slate-300') }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs font-medium text-slate-600">Finalizado</p>
+                                </div>
+                            </div>
                         </div>
-                    @endif
+                    </div>
                 </div>
-                
 
-                
-
-                
-
-
-
+                {{-- Estados específicos --}}
                 @if(($estado ?? '') === 'Para_Correccion')
-                    <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <div class="mt-4 p-5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-yellow-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-[#9d2449] mb-2">Su trámite requiere correcciones</h3>
-                                <p class="text-gray-700 text-sm mb-4">Nuestro equipo administrativo ha revisado su documentación y detectó algunos aspectos que necesitan ser corregidos antes de continuar con el proceso.</p>
+                                <h3 class="text-lg font-bold text-amber-800 mb-2">Se requieren correcciones</h3>
+                                <p class="text-gray-700 text-sm mb-4">Su trámite necesita ajustes antes de continuar con el proceso.</p>
                                 
-                                <div class="bg-black/5 rounded-lg p-4 border border-black/10">
-                                    <h4 class="text-black font-semibold text-sm mb-3 flex items-center">
-                                        <svg class="w-4 h-4 mr-2 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                <div class="bg-white rounded-lg p-4 border border-amber-200">
+                                    <h4 class="text-amber-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
                                         </svg>
-                                        Acciones requeridas:
+                                        Correcciones necesarias:
                                     </h4>
-                                    <ul class="text-gray-700 text-sm space-y-2">
-                                        <li class="flex items-start">
-                                            <span class="w-2 h-2 bg-[#9d2449] rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                            <span>Revise las observaciones específicas realizadas por el equipo</span>
-                                        </li>
-                                        <li class="flex items-start">
-                                            <span class="w-2 h-2 bg-[#9d2449] rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                            <span>Corrija la información o documentación señalada</span>
-                                        </li>
-                                        <li class="flex items-start">
-                                            <span class="w-2 h-2 bg-[#9d2449] rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                            <span>Vuelva a enviar el trámite una vez realizadas las correcciones</span>
-                                        </li>
-                                    </ul>
+                                    <p class="text-gray-700 text-sm">{{ $tramite->correcciones_texto ?? 'Revisar documentación enviada' }}</p>
                                 </div>
                                 
-                                <p class="text-[#9d2449] text-sm mt-4 font-medium flex items-center">
+                                <p class="text-amber-700 text-sm mt-3 font-medium flex items-center justify-center sm:justify-start">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
-                                    Una vez corregido, su trámite será procesado con prioridad.
+                                    Complete las correcciones para continuar.
                                 </p>
-                                
-                                {{-- Botón para hacer correcciones --}}
-                                <div class="mt-6 flex justify-center">
-                                    <a href="{{ route('tramites.corregir', $tramite_id ?? session('tramite_id')) }}" 
-                                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#8a203f] text-white font-semibold rounded-lg shadow-lg hover:from-[#8a203f] hover:to-[#7a1d37] focus:outline-none focus:ring-4 focus:ring-[#9d2449]/30 transition-all duration-300 transform hover:scale-105">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                        Hacer Correcciones
-                                    </a>
-                                </div>
                             </div>
                         </div>
                     </div>
                 @elseif(($estado ?? '') === 'Por_Cotejar')
-                    <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
-                        <div class="flex items-center space-x-4 mb-6">
-                            <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm">
+                    <div class="mt-4 p-5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                             </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-[#9d2449]">Cita Programada - Cotejo Presencial</h3>
-                                <p class="text-gray-700 text-sm">Su documentación será verificada por nuestro equipo especializado.</p>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-purple-800 mb-2">En proceso de cotejo</h3>
+                                <p class="text-gray-700 text-sm mb-4">Su documentación está siendo verificada con las autoridades correspondientes.</p>
+                                
+                                <div class="bg-white rounded-lg p-4 border border-purple-200">
+                                    <h4 class="text-purple-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        Proceso actual:
+                                    </h4>
+                                    <ul class="text-gray-700 text-sm space-y-2">
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Verificación de datos con SAT</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Validación de documentos</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Confirmación de información</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <p class="text-purple-700 text-sm mt-3 font-medium flex items-center justify-center sm:justify-start">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Este proceso puede tomar 1-2 días hábiles.
+                                </p>
                             </div>
                         </div>
-                        
-                        @if(isset($cita))
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                                <div class="bg-white rounded-lg p-4 border border-black/10 shadow-sm">
-                                    <div class="flex items-center space-x-3 mb-3">
-                                        <div class="w-8 h-8 bg-[#9d2449] rounded-lg flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-black/60 font-medium">FECHA</p>
-                                            <p class="text-sm font-bold text-black">{{ \Carbon\Carbon::parse($cita['fecha_cita'])->format('d/m/Y') }}</p>
-                                            <p class="text-xs text-black/60">{{ \Carbon\Carbon::parse($cita['fecha_cita'])->format('H:i') }} hrs</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="bg-white rounded-lg p-4 border border-black/10 shadow-sm">
-                                    <div class="flex items-center space-x-3 mb-3">
-                                        <div class="w-8 h-8 bg-[#9d2449] rounded-lg flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-black/60 font-medium">UBICACIÓN</p>
-                                            <p class="text-sm font-bold text-black">Ciudad Administrativa</p>
-                                            <p class="text-xs text-black/60">Edificio 1, Módulo Proveedores</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="bg-white rounded-lg p-4 border border-black/10 shadow-sm">
-                                    <div class="flex items-center space-x-3 mb-3">
-                                        <div class="w-8 h-8 bg-[#9d2449] rounded-lg flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-black/60 font-medium">DOCUMENTOS</p>
-                                            <p class="text-sm font-bold text-black">Originales</p>
-                                            <p class="text-xs text-black/60">No copias</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="bg-black/5 rounded-lg p-4 border border-black/10">
-                                <div class="flex items-start space-x-3">
-                                    <svg class="w-5 h-5 text-[#9d2449] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                    </svg>
-                                    <div>
-                                        <p class="text-black font-semibold text-sm mb-1">Información importante:</p>
-                                        <p class="text-gray-700 text-sm">Presentarse puntualmente con todos los documentos originales subidos al sistema</p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
                     </div>
                 @elseif(($estado ?? '') === 'Cancelado')
-                    <div class="mt-6 p-6 bg-gradient-to-r from-black/5 to-black/10 border border-black/20 rounded-xl shadow-sm">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 bg-black rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <div class="mt-4 p-5 bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-gray-500 to-slate-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-black mb-2">Trámite cancelado</h3>
-                                <p class="text-gray-700 text-sm mb-4">Su trámite ha sido cancelado. Puede iniciar un nuevo proceso de registro cuando esté listo o consultar los motivos de la cancelación.</p>
-                                <p class="text-black text-sm font-medium flex items-center">
+                                <h3 class="text-lg font-bold text-gray-800 mb-2">Trámite cancelado</h3>
+                                <p class="text-gray-700 text-sm mb-4">El trámite ha sido cancelado por el solicitante o por el sistema.</p>
+                                
+                                <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                    <h4 class="text-gray-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Información adicional:
+                                    </h4>
+                                    <p class="text-gray-700 text-sm">Si considera que esto es un error, contacte al administrador del sistema.</p>
+                                </div>
+                                
+                                <p class="text-gray-700 text-sm mt-3 font-medium flex items-center justify-center sm:justify-start">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
-                                    Para más información, contacte a nuestro equipo de soporte.
+                                    Para iniciar un nuevo trámite, regrese al formulario.
                                 </p>
                             </div>
                         </div>
                     </div>
                 @elseif(($estado ?? '') === 'En_Revision')
-                    <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <div class="mt-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-[#9d2449] mb-2">Trámite en revisión detallada</h3>
-                                <p class="text-gray-700 text-sm mb-4">Su expediente está siendo revisado minuciosamente por nuestro equipo técnico. Estamos verificando que toda la documentación cumpla con los requisitos establecidos.</p>
-                                <p class="text-[#9d2449] text-sm font-medium flex items-center">
+                                <h3 class="text-lg font-bold text-blue-800 mb-2">En revisión técnica</h3>
+                                <p class="text-gray-700 text-sm mb-4">Su documentación está siendo analizada por nuestro equipo especializado.</p>
+                                
+                                <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                    <h4 class="text-blue-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Proceso actual:
+                                    </h4>
+                                    <ul class="text-gray-700 text-sm space-y-2">
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Análisis de documentación</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Verificación de requisitos</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Validación de información</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <p class="text-blue-700 text-sm mt-3 font-medium flex items-center justify-center sm:justify-start">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    Este proceso puede tomar algunos días hábiles para garantizar la calidad de la revisión.
+                                    Tiempo estimado: 2-3 días hábiles.
                                 </p>
                             </div>
                         </div>
                     </div>
                 @elseif(($estado ?? '') === 'Aprobado')
-                    <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <div class="mt-4 p-5 bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-[#9d2449] mb-2">¡Felicidades! Su trámite ha sido aprobado.</h3>
-                                <p class="text-gray-700 text-sm mb-4">Su registro está activo y puede acceder a todos los servicios del padrón.</p>
+                                <h3 class="text-lg font-bold text-emerald-800 mb-2">¡Trámite aprobado!</h3>
+                                <p class="text-gray-700 text-sm mb-4">Su solicitud ha sido procesada exitosamente y aprobada por las autoridades correspondientes.</p>
                                 
-                                @if(isset($oficio) && $oficio)
-                                    <div class="bg-white rounded-lg p-6 border border-[#9d2449]/20 shadow-sm">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center space-x-4">
-                                                <div class="w-12 h-12 bg-gradient-to-br from-[#9d2449]/10 to-[#8a203f]/10 rounded-xl flex items-center justify-center shadow-sm">
-                                                    <svg class="w-6 h-6 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                <div class="bg-white rounded-lg p-4 border border-emerald-200">
+                                    <h4 class="text-emerald-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                                     </svg>
+                                        Próximos pasos:
+                                    </h4>
+                                    <ul class="text-gray-700 text-sm space-y-2">
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-emerald-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Recibirá notificación oficial</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-emerald-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Documentos disponibles en línea</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-2 h-2 bg-emerald-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <span>Proceso completado</span>
+                                        </li>
+                                    </ul>
                                                 </div>
-                                                <div>
-                                                    <h4 class="text-[#9d2449] font-semibold text-base mb-2">Oficio de Aprobación</h4>
-                                                    <div class="space-y-1">
-                                                        <p class="text-gray-600 text-sm">
-                                                            <span class="font-medium">Número:</span> {{ $oficio->numero_oficio }}
-                                                        </p>
-                                                        <p class="text-gray-600 text-sm">
-                                                            <span class="font-medium">Fecha:</span> {{ $oficio->fecha_formateada }}
+                                
+                                <p class="text-emerald-700 text-sm mt-3 font-medium flex items-center justify-center sm:justify-start">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                    ¡Felicitaciones! Su trámite ha sido completado exitosamente.
                                                         </p>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="flex space-x-2">
-                                                <a href="{{ route('oficios.ver-pdf', $oficio->id) }}" 
-                                                   target="_blank"
-                                                   class="inline-flex items-center px-4 py-3 bg-gradient-to-r from-[#9d2449] to-[#8a203f] text-white text-sm font-semibold rounded-lg hover:from-[#8a203f] hover:to-[#7a1c37] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
-                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                                    </svg>
-                                                    Ver PDF
-                                                </a>
-                                                <a href="{{ route('oficios.descargar-pdf', $oficio->id) }}" 
-                                                   class="inline-flex items-center px-4 py-3 bg-gray-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
-                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                    </svg>
-                                                    Descargar
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                        <div class="flex items-center space-x-3">
-                                            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                                            </svg>
-                                            <div>
-                                                <h4 class="text-yellow-800 font-semibold text-sm">Oficio en proceso</h4>
-                                                <p class="text-yellow-700 text-sm">Su oficio de aprobación está siendo generado. Por favor, espere unos momentos y recargue la página.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
+                                @elseif(($estado ?? '') === 'Pendiente')
+                    <div class="mt-4 p-5 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-slate-400 to-gray-500 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-base font-bold text-slate-700 mb-2">¡Trámite enviado correctamente!</h3>
+                                <p class="text-gray-600 text-xs mb-3">Documentación recibida y en procesamiento.</p>
+                                
+                                <div class="bg-white rounded-lg p-3 border border-slate-200">
+                                    <h4 class="text-slate-700 font-semibold text-xs mb-2 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-3 h-3 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Próximos pasos:
+                                    </h4>
+                                    <ul class="text-gray-600 text-xs space-y-1">
+                                        <li class="flex items-start">
+                                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                            <span>Revisión técnica</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                            <span>Notificación por email</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
+                                            <span>3-5 días hábiles</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <p class="text-slate-600 text-xs mt-2 font-medium flex items-center justify-center sm:justify-start">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                    Gracias por su paciencia.
+                                </p>
                             </div>
                         </div>
                     </div>
                 @elseif(($estado ?? '') === 'Rechazado')
-                    <div class="mt-6 p-6 bg-gradient-to-r from-black/5 to-black/10 border border-black/20 rounded-xl shadow-sm">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 bg-black rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <div class="mt-4 p-5 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-black mb-2">Su trámite fue rechazado.</h3>
-                                <p class="text-gray-700 text-sm">Revise las observaciones y corrija la información solicitada.</p>
+                                <h3 class="text-lg font-bold text-red-800 mb-2">Trámite rechazado</h3>
+                                <p class="text-gray-700 text-sm mb-4">Su solicitud no cumple con los requisitos establecidos por las autoridades.</p>
+                                
+                                <div class="bg-white rounded-lg p-4 border border-red-200">
+                                    <h4 class="text-red-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                        </svg>
+                                        Motivo del rechazo:
+                                    </h4>
+                                    <p class="text-gray-700 text-sm">{{ $tramite->correcciones_texto ?? 'No cumple con los requisitos establecidos' }}</p>
+                                </div>
+                                
+                                <p class="text-red-700 text-sm mt-3 font-medium flex items-center justify-center sm:justify-start">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    Puede iniciar un nuevo trámite con la información corregida.
+                                </p>
                             </div>
                         </div>
                     </div>
                 @else
-                    <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
-                        <div class="flex items-start space-x-4">
-                            <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                    <div class="mt-4 p-5 bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                            <div class="w-12 h-12 bg-gradient-to-br from-gray-500 to-slate-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-semibold text-[#9d2449] mb-2">Tiene un trámite pendiente</h3>
-                                <p class="text-gray-700 text-sm mb-4">Su documentación está siendo revisada por nuestro equipo administrativo. Una vez que el trámite haya sido procesado, se le notificará el resultado y se habilitarán automáticamente los trámites que le puedan corresponder según su estado en el padrón.</p>
-                                <p class="text-[#9d2449] text-sm font-medium flex items-center">
+                                <h3 class="text-lg font-bold text-gray-800 mb-2">Estado no definido</h3>
+                                <p class="text-gray-700 text-sm mb-4">El estado de su trámite no está disponible en este momento.</p>
+                                
+                                <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                    <h4 class="text-gray-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Recomendación:
+                                    </h4>
+                                    <p class="text-gray-700 text-sm">Contacte al administrador del sistema para obtener más información sobre el estado de su trámite.</p>
+                                </div>
+                                
+                                <p class="text-gray-700 text-sm mt-3 font-medium flex items-center justify-center sm:justify-start">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
-                                    Recibirá una notificación por correo electrónico cuando la revisión esté completa.
+                                    Para asistencia técnica, contacte al soporte.
                                 </p>
                             </div>
                         </div>
                     </div>
                 @endif
             </div>
-
-
         </div>
     </div>
 </div>

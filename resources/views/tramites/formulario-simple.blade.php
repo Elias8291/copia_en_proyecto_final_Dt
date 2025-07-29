@@ -79,6 +79,7 @@
             @endif
                 <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}">
             <input type="hidden" name="confirma_datos" value="on">
+            <input type="hidden" name="formulario_simple" value="true">
 
 
 

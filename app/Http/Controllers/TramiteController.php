@@ -132,6 +132,14 @@ class TramiteController extends Controller
             $resultado = $this->tramiteService->procesarEnvioFormulario($request, $tipo, $proveedor);
 
             if ($resultado['success']) {
+                // Si viene del formulario simple, redirigir a index
+                if ($request->has('formulario_simple')) {
+                    return redirect()
+                        ->route('tramites.index')
+                        ->with('success', 'Trámite procesado exitosamente. Su trámite ha sido enviado y está en revisión.');
+                }
+
+                // Si viene del formulario normal, redirigir a exito
                 return redirect()
                     ->route('tramites.exito')
                     ->with('success', 'Trámite procesado exitosamente.')
@@ -161,7 +169,7 @@ class TramiteController extends Controller
     {
         $tramiteId = session('tramite_id');
         $mensaje = session('success', 'Su trámite ha sido enviado exitosamente.');
-        
+
         return view('tramites.exito', [
             'tramite_id' => $tramiteId,
             'mensaje' => $mensaje
@@ -184,7 +192,8 @@ class TramiteController extends Controller
 
         // Verificar que el trámite esté en estado Para_Correccion
         if ($tramite->estado !== 'Para_Correccion') {
-            return redirect()->route('tramites.estado')
+            return redirect()
+                ->route('tramites.estado')
                 ->with('error', 'Este trámite no requiere correcciones.');
         }
 
@@ -206,7 +215,8 @@ class TramiteController extends Controller
 
         // Verificar que el trámite esté en estado Para_Correccion
         if ($tramite->estado !== 'Para_Correccion') {
-            return redirect()->route('tramites.estado')
+            return redirect()
+                ->route('tramites.estado')
                 ->with('error', 'Este trámite no requiere correcciones.');
         }
 
@@ -215,7 +225,16 @@ class TramiteController extends Controller
             $resultado = $this->tramiteService->procesarCorreccionTramite($request, $tramite);
 
             if ($resultado['success']) {
-                return redirect()->route('tramites.estado')
+                // Si viene del formulario simple, redirigir a index
+                if ($request->has('formulario_simple')) {
+                    return redirect()
+                        ->route('tramites.index')
+                        ->with('success', 'Correcciones enviadas exitosamente. Su trámite ha sido reenviado para revisión.');
+                }
+
+                // Si viene del formulario normal, redirigir a estado
+                return redirect()
+                    ->route('tramites.estado')
                     ->with('success', $resultado['message'])
                     ->with('tramite_id', $tramite->id);
             } else {
@@ -248,20 +267,23 @@ class TramiteController extends Controller
         try {
             // Buscar el proveedor directamente
             $proveedor = \App\Models\Proveedor::where('usuario_id', auth()->id())->first();
-            
+
             if (!$proveedor) {
-                return redirect()->route('tramites.index')
+                return redirect()
+                    ->route('tramites.index')
                     ->with('error', 'No se encontró información del proveedor.');
             }
 
             // Obtener el trámite más reciente del proveedor con todas las relaciones necesarias
-            $tramite = $proveedor->tramites()
+            $tramite = $proveedor
+                ->tramites()
                 ->with(['proveedor.user', 'datosGenerales', 'oficios', 'cita'])
                 ->orderBy('created_at', 'desc')
                 ->first();
 
             if (!$tramite) {
-                return redirect()->route('tramites.index')
+                return redirect()
+                    ->route('tramites.index')
                     ->with('error', 'No se encontró ningún trámite.');
             }
 
@@ -276,14 +298,14 @@ class TramiteController extends Controller
             if ($tramite->estado === 'Aprobado') {
                 // Intentar obtener el oficio más reciente del trámite
                 $oficio = $tramite->oficios()->orderBy('created_at', 'desc')->first();
-                
+
                 // Si no se encuentra en la relación, intentar búsqueda directa
                 if (!$oficio) {
                     $oficio = \App\Models\Oficio::where('tramite_id', $tramite->id)
                         ->orderBy('created_at', 'desc')
                         ->first();
                 }
-                
+
                 // Log para debugging
                 if (!$oficio) {
                     Log::warning('No se encontró oficio para trámite aprobado', [
@@ -307,15 +329,15 @@ class TramiteController extends Controller
                 'cita' => $cita,
                 'oficio' => $oficio
             ]);
-            
         } catch (\Exception $e) {
             Log::error('Error en método estado()', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
-            return redirect()->route('tramites.index')
+
+            return redirect()
+                ->route('tramites.index')
                 ->with('error', 'Error al cargar el estado del trámite: ' . $e->getMessage());
         }
     }
