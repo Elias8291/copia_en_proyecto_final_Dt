@@ -1,91 +1,80 @@
 @props(['tramite', 'documentos' => [], 'editable' => false])
 
 @if(count($documentos) > 0)
-    <div class="space-y-3 sm:space-y-4">
+    <div class="space-y-4">
         @foreach($documentos as $documento)
-            <div class="bg-white rounded-lg border border-gray-200 p-3 hover:shadow-sm transition-shadow duration-200 sm:p-4"
+            <div class="bg-white border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:border-[#9d2449] hover:shadow-md"
                  data-documento-id="{{ is_array($documento) ? $documento['id'] : $documento->id }}"
                  data-documento-nombre="{{ is_array($documento) ? ($documento['nombre'] ?? $documento['nombre_original'] ?? 'Documento') : ($documento->catalogoArchivo->nombre ?? $documento->nombre_original ?? 'Documento') }}">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-                    <div class="flex items-start space-x-2 flex-1 sm:space-x-3">
-                        <div class="flex-shrink-0">
-                            @php
-                                // Manejar tanto arrays como objetos Eloquent
-                                $nombreArchivo = is_array($documento) 
-                                    ? ($documento['nombre_original'] ?? $documento['nombre'] ?? '')
-                                    : ($documento->nombre_original ?? '');
-                                $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION);
-                                $iconData = match(strtolower($extension)) {
-                                    'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-red-600'],
-                                    'png', 'jpg', 'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-blue-600'],
-                                    'mp3' => ['icon' => 'fas fa-file-audio', 'color' => 'text-purple-600'],
-                                    'doc', 'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-blue-800'],
-                                    'xls', 'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-green-600'],
-                                    default => ['icon' => 'fas fa-file', 'color' => 'text-gray-600'],
-                                };
-                            @endphp
-                            <div class="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center sm:w-10 sm:h-10">
-                                <i class="{{ $iconData['icon'] }} {{ $iconData['color'] }} text-sm sm:text-lg"></i>
-                            </div>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        @php
+                            // Manejar tanto arrays como objetos Eloquent
+                            $nombreArchivo = is_array($documento) 
+                                ? ($documento['nombre_original'] ?? $documento['nombre'] ?? '')
+                                : ($documento->nombre_original ?? '');
+                            $extension = pathinfo($nombreArchivo, PATHINFO_EXTENSION);
+                            $iconData = match(strtolower($extension)) {
+                                'pdf' => ['icon' => 'fas fa-file-pdf', 'color' => 'text-white'],
+                                'png', 'jpg', 'jpeg' => ['icon' => 'fas fa-file-image', 'color' => 'text-white'],
+                                'mp3' => ['icon' => 'fas fa-file-audio', 'color' => 'text-white'],
+                                'doc', 'docx' => ['icon' => 'fas fa-file-word', 'color' => 'text-white'],
+                                'xls', 'xlsx' => ['icon' => 'fas fa-file-excel', 'color' => 'text-white'],
+                                default => ['icon' => 'fas fa-file', 'color' => 'text-white'],
+                            };
+                        @endphp
+                        <div class="w-12 h-12 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-lg flex items-center justify-center shadow-sm mr-4">
+                            <i class="{{ $iconData['icon'] }} {{ $iconData['color'] }} text-lg"></i>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-2">
-                                <h4 class="text-xs font-medium text-gray-900 truncate sm:text-sm">
-                                    {{ is_array($documento) ? ($documento['nombre'] ?? $documento['nombre_original'] ?? 'Documento') : ($documento->catalogoArchivo->nombre ?? $documento->nombre_original ?? 'Documento') }}
-                                </h4>
-                                <div class="flex flex-wrap items-center gap-1 sm:gap-2 sm:ml-2">
-                                    @if(is_array($documento) ? isset($documento['aprobado']) : isset($documento->aprobado))
-                                        @if((is_array($documento) ? $documento['aprobado'] : $documento->aprobado) === true)
-                                            <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 sm:px-2">
-                                                <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                                </svg>
-                                                <span class="hidden sm:inline">Aprobado</span>
-                                                <span class="sm:hidden">OK</span>
-                                            </span>
-                                        @elseif((is_array($documento) ? $documento['aprobado'] : $documento->aprobado) === false)
-                                            <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 sm:px-2">
-                                                <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                                </svg>
-                                                <span class="hidden sm:inline">Rechazado</span>
-                                                <span class="sm:hidden">X</span>
-                                            </span>
-                                        @else
-                                            <span class="estado-documento inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-700 sm:px-2">
-                                                <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/>
-                                                </svg>
-                                                <span class="hidden sm:inline">Pendiente</span>
-                                                <span class="sm:hidden">Pend.</span>
-                                            </span>
-                                        @endif
-                                    @endif
-                                    @if((is_array($documento) ? isset($documento['fecha_cotejo']) : isset($documento->fecha_cotejo)) && (is_array($documento) ? $documento['fecha_cotejo'] : $documento->fecha_cotejo))
-                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 sm:px-2">
-                                            <svg class="w-2.5 h-2.5 mr-0.5 sm:w-3 sm:h-3 sm:mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            </svg>
-                                            <span class="hidden sm:inline">Cotejado</span>
-                                            <span class="sm:hidden">Cotej.</span>
-                                        </span>
-                                    @endif
-                                </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-gray-900 mb-1">
+                                {{ is_array($documento) ? ($documento['nombre'] ?? $documento['nombre_original'] ?? 'Documento') : ($documento->catalogoArchivo->nombre ?? $documento->nombre_original ?? 'Documento') }}
+                            </h4>
+                            <div class="hidden sm:flex items-center space-x-3">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-black/10 text-black">
+                                    {{ strtoupper($extension) }}
+                                </span>
                             </div>
-                            <div class="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500">
+                            <div class="flex flex-col space-y-1 sm:flex-row sm:items-center sm:space-x-4 text-xs text-gray-500 sm:hidden">
                                 <span>{{ is_array($documento) ? ($documento['tamaño_formateado'] ?? $documento['tamaño'] ?? 'N/A') : $documento->tamaño_formateado }}</span>
                                 <span class="hidden sm:inline">•</span>
                                 <span>{{ is_array($documento) ? ($documento['fecha_carga'] ?? $documento['created_at'] ?? 'N/A') : $documento->fecha_carga }}</span>
                             </div>
-                            @if((is_array($documento) ? isset($documento['observaciones']) : isset($documento->observaciones)) && (is_array($documento) ? $documento['observaciones'] : $documento->observaciones))
-                                <div class="comentario-box mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-xs">
-                                    <span class="font-medium text-amber-800">Observaciones:</span>
-                                    <span class="comentario-texto text-amber-700">{{ is_array($documento) ? $documento['observaciones'] : $documento->observaciones }}</span>
-                                </div>
-                            @endif
                         </div>
                     </div>
-                    <div class="flex items-center justify-end space-x-1 sm:space-x-2">
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        @if(is_array($documento) ? isset($documento['aprobado']) : isset($documento->aprobado))
+                            @if((is_array($documento) ? $documento['aprobado'] : $documento->aprobado) === true)
+                                <span class="estado-documento inline-flex items-center px-2 py-1 sm:px-3 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">Aprobado</span>
+                                </span>
+                            @elseif((is_array($documento) ? $documento['aprobado'] : $documento->aprobado) === false)
+                                <span class="estado-documento inline-flex items-center px-2 py-1 sm:px-3 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">Rechazado</span>
+                                </span>
+                            @else
+                                <span class="estado-documento inline-flex items-center px-2 py-1 sm:px-3 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/>
+                                    </svg>
+                                    <span class="hidden sm:inline">Pendiente</span>
+                                </span>
+                            @endif
+                        @endif
+                        @if((is_array($documento) ? isset($documento['fecha_cotejo']) : isset($documento->fecha_cotejo)) && (is_array($documento) ? $documento['fecha_cotejo'] : $documento->fecha_cotejo))
+                            <span class="inline-flex items-center px-2 py-1 sm:px-3 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <span class="hidden sm:inline">Cotejado</span>
+                            </span>
+                        @endif
                         <a href="{{ route('revision.verDocumento', [
                             'tramite' => is_object($tramite) ? $tramite->id : $tramite['id'],
                             'archivo' => is_array($documento) ? $documento['id'] : $documento->id,
@@ -111,6 +100,28 @@
                         @endif
                     </div>
                 </div>
+
+                <!-- Información adicional del documento -->
+                <div class="hidden sm:block mt-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                    <div class="flex items-center text-xs text-gray-700">
+                        <i class="fas fa-info-circle mr-2 text-[#9d2449]"></i>
+                        <span class="flex-1">
+                            {{ is_array($documento) ? ($documento['tamaño_formateado'] ?? $documento['tamaño'] ?? 'N/A') : $documento->tamaño_formateado }} • 
+                            {{ is_array($documento) ? ($documento['fecha_carga'] ?? $documento['created_at'] ?? 'N/A') : $documento->fecha_carga }}
+                        </span>
+                    </div>
+                </div>
+
+                @if((is_array($documento) ? isset($documento['observaciones']) : isset($documento->observaciones)) && (is_array($documento) ? $documento['observaciones'] : $documento->observaciones))
+                    <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div class="flex items-center text-xs text-amber-800">
+                            <i class="fas fa-comment mr-2"></i>
+                            <span class="font-medium">Observaciones:</span>
+                            <span class="ml-2 text-amber-700">{{ is_array($documento) ? $documento['observaciones'] : $documento->observaciones }}</span>
+                        </div>
+                    </div>
+                @endif
+
                 @if($editable)
                     <div id="comment-form-{{ is_array($documento) ? $documento['id'] : $documento->id }}" class="hidden mt-3 pt-3 border-t border-gray-200">
                         <form class="documento-review-form" data-documento-id="{{ is_array($documento) ? $documento['id'] : $documento->id }}">
@@ -151,17 +162,14 @@
         @endforeach
     </div>
 @else
-    <div class="text-center py-8 sm:py-12">
-        <div class="flex flex-col items-center justify-center space-y-2 sm:space-y-3">
-            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center sm:w-12 sm:h-12">
-                <svg class="w-5 h-5 text-gray-400 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
+    <div class="text-center py-8">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-6">
+            <div class="w-16 h-16 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-circle text-white text-xl"></i>
             </div>
-            <div class="text-gray-500">
-                <p class="text-xs font-medium sm:text-sm">No hay documentos adjuntos</p>
-                <p class="text-xs mt-1">Este trámite no tiene documentos cargados.</p>
-            </div>
+            <p class="text-sm text-gray-600">
+                No hay documentos adjuntos para este trámite.
+            </p>
         </div>
     </div>
 @endif

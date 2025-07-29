@@ -78,6 +78,31 @@
 
             <!-- Contenedor de Tarjetas de Trámites -->
             @if (!($globalTramites['tiene_tramite_pendiente'] ?? false))
+                <!-- Botón de Acceso a Formulario Simple -->
+                <div class="mb-6 bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-xl flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-800">Formulario Simple</h3>
+                                <p class="text-sm text-gray-600">Acceda al formulario sin pasos, todo en una sola vista</p>
+                            </div>
+                        </div>
+                        <div class="flex space-x-3">
+                            <a href="{{ route('tramites.formulario', 'inscripcion') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Formulario Original
+                            </a>
+                            <a href="{{ route('tramites.formulario.simple', 'inscripcion') }}" class="px-4 py-2 bg-gradient-to-r from-[#9D2449] to-[#B91C1C] text-white rounded-lg hover:from-[#8a203f] hover:to-[#a91b1b] transition-all duration-200">
+                                Formulario Simple
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             @include('tramites.partials.tramite-card', [
                                 'tipo' => 'inscripcion',

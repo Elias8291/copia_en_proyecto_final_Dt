@@ -1,23 +1,20 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Http\Requests\TramiteFormularioRequest;
 use App\Models\Proveedor;
 use App\Models\Tramite;
-use App\Http\Requests\TramiteFormularioRequest;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-
+use App\Services\Formularios\ActividadesFormService;
 use App\Services\Formularios\DatosGeneralesFormService;
+use App\Services\Formularios\DireccionFormService;
 use App\Services\Formularios\DocumentosFormService;
 use App\Services\Formularios\PersonaMoralFormService;
-use App\Services\Formularios\DireccionFormService;
-use App\Services\Formularios\ActividadesFormService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 class TramiteService
 {
@@ -107,6 +104,44 @@ class TramiteService
             $datosSat[$clave] = $request->input($clave);
         }
 
+        // Validar que el RFC del usuario coincida con el RFC de la constancia
+        $rfcUsuario = Auth::user()->rfc;
+        $rfcConstancia = $datosSat['sat_rfc'] ?? null;
+
+        if ($rfcUsuario && $rfcConstancia) {
+            $rfcUsuarioNormalizado = strtoupper(trim($rfcUsuario));
+            $rfcConstanciaNormalizado = strtoupper(trim($rfcConstancia));
+
+            if ($rfcUsuarioNormalizado !== $rfcConstanciaNormalizado) {
+                Log::warning('RFC del usuario no coincide con RFC de la constancia', [
+                    'usuario_id' => Auth::id(),
+                    'rfc_usuario' => $rfcUsuarioNormalizado,
+                    'rfc_constancia' => $rfcConstanciaNormalizado
+                ]);
+
+                throw new \Exception('El RFC de la constancia fiscal no coincide con su RFC registrado. Verifique que esté cargando la constancia correcta.');
+            }
+
+            Log::info('RFC validado correctamente', [
+                'usuario_id' => Auth::id(),
+                'rfc' => $rfcUsuarioNormalizado
+            ]);
+        } else {
+            Log::warning('No se pudo validar RFC - datos faltantes', [
+                'usuario_id' => Auth::id(),
+                'rfc_usuario' => $rfcUsuario,
+                'rfc_constancia' => $rfcConstancia
+            ]);
+
+            if (!$rfcUsuario) {
+                throw new \Exception('Su cuenta no tiene un RFC registrado. Contacte al administrador.');
+            }
+
+            if (!$rfcConstancia) {
+                throw new \Exception('No se pudo extraer el RFC de la constancia. Verifique que el archivo sea válido.');
+            }
+        }
+
         Session::put($datosSat);
     }
 
@@ -122,27 +157,41 @@ class TramiteService
         ];
     }
 
-    public function procesarEnvioFormulario(TramiteFormularioRequest $request, string $tipo, ?Proveedor $proveedor): array
+    public function procesarEnvioFormulario(Request $request, string $tipo, ?Proveedor $proveedor): array
     {
-        Log::info('Iniciando procesamiento de formulario', [
+        Log::info('=== PRUEBA: Servicio iniciando procesamiento ===', [
             'tipo' => $tipo,
             'usuario_id' => Auth::id(),
-            'files_count' => count($request->allFiles())
+            'files_count' => count($request->allFiles()),
+            'request_data' => $request->all()
         ]);
 
         try {
+            Log::info('=== PRUEBA: Iniciando transacción ===');
             DB::beginTransaction();
 
+            Log::info('=== PRUEBA: Asegurando proveedor ===');
             $proveedor = $this->asegurarProveedor($proveedor, $request);
+            Log::info('=== PRUEBA: Proveedor asegurado ===', ['proveedor_id' => $proveedor->id]);
+
+            Log::info('=== PRUEBA: Creando trámite ===');
             $tramite = $this->crearTramite($tipo, $proveedor);
+            Log::info('=== PRUEBA: Trámite creado ===', ['tramite_id' => $tramite->id]);
             
+            Log::info('=== PRUEBA: Procesando datos del trámite ===');
             $this->procesarDatosTramite($tramite, $request);
 
+            Log::info('=== PRUEBA: Commit de transacción ===');
             DB::commit();
 
+            Log::info('=== PRUEBA: Creando respuesta exitosa ===');
             return $this->crearRespuestaExitosa($tipo, $tramite);
-
         } catch (\Exception $e) {
+            Log::error('=== PRUEBA: Error en servicio ===', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
             DB::rollBack();
             return $this->crearRespuestaError($e, $tipo);
         }
@@ -188,13 +237,15 @@ class TramiteService
     // MÉTODOS PRIVADOS - GESTIÓN DE PROVEEDORES
     // ============================================================================
 
-    private function asegurarProveedor(?Proveedor $proveedor, TramiteFormularioRequest $request): Proveedor
+    private function asegurarProveedor(?Proveedor $proveedor, Request $request): Proveedor
     {
         if ($proveedor) {
+            Log::info('=== PRUEBA: Proveedor existente encontrado ===', ['proveedor_id' => $proveedor->id]);
             return $proveedor;
         }
 
-        $rfc = $this->normalizarRfc($request->input('rfc'));
+        Log::info('=== PRUEBA: Creando nuevo proveedor ===');
+        $rfc = $this->normalizarRfc($request->input('rfc', 'XAXX010101000'));
         
         $proveedorCreado = Proveedor::create([
             'usuario_id' => Auth::id(),
@@ -204,7 +255,7 @@ class TramiteService
             'fecha_alta_padron' => now()->toDateString(),
         ]);
 
-        Log::info('Proveedor creado', ['id' => $proveedorCreado->id, 'rfc' => $rfc]);
+        Log::info('=== PRUEBA: Proveedor creado ===', ['id' => $proveedorCreado->id, 'rfc' => $rfc]);
 
         return $proveedorCreado;
     }
@@ -229,42 +280,71 @@ class TramiteService
         return $tramite;
     }
 
-    private function procesarDatosTramite(Tramite $tramite, TramiteFormularioRequest $request): void
+    private function procesarDatosTramite(Tramite $tramite, Request $request): void
     {
+        Log::info('=== PRUEBA: Procesando datos del trámite ===', ['tramite_id' => $tramite->id]);
+
         // Datos principales usando servicios especializados
         $this->guardarDatosPrincipales($tramite, $request);
         
         // Datos específicos de persona moral si aplica
-        if ($this->esPersonaMoral($request->input('rfc'))) {
+        if ($this->esPersonaMoral($request->input('rfc', 'XAXX010101000'))) {
+            Log::info('=== PRUEBA: Procesando persona moral ===');
             $this->procesarPersonaMoral($tramite, $request);
+        } else {
+            Log::info('=== PRUEBA: Es persona física, saltando datos de persona moral ===');
         }
     }
 
-    private function guardarDatosPrincipales(Tramite $tramite, TramiteFormularioRequest $request): void
+    private function guardarDatosPrincipales(Tramite $tramite, Request $request): void
     {
+        Log::info('=== PRUEBA: Guardando datos principales ===', ['tramite_id' => $tramite->id]);
+
+        try {
+            Log::info('=== PRUEBA: Guardando datos generales ===');
         app(DatosGeneralesService::class)->guardar($tramite, $request);
+
+            Log::info('=== PRUEBA: Guardando dirección ===');
         app(DireccionService::class)->guardar($tramite, $request);
+
+            Log::info('=== PRUEBA: Guardando contacto ===');
         app(ContactoService::class)->guardar($tramite, $request);
         
         // Procesar actividades temporales antes de guardar
+            Log::info('=== PRUEBA: Procesando actividades ===');
         $this->procesarActividadesConTemporales($tramite, $request);
         
+            Log::info('=== PRUEBA: Guardando documentos ===');
         app(DocumentosService::class)->guardar($tramite, $request);
 
-        Log::info('Datos principales guardados', ['tramite_id' => $tramite->id]);
+            Log::info('=== PRUEBA: Datos principales guardados exitosamente ===', ['tramite_id' => $tramite->id]);
+        } catch (\Exception $e) {
+            Log::error('=== PRUEBA: Error guardando datos principales ===', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            throw $e;
+        }
     }
     
     /**
      * Procesa actividades incluyendo las temporales
      */
-    private function procesarActividadesConTemporales(Tramite $tramite, TramiteFormularioRequest $request): void
+    private function procesarActividadesConTemporales(Tramite $tramite, Request $request): void
     {
+        Log::info('=== PRUEBA: Procesando actividades con temporales ===');
         $actividades = $request->input('actividades', []);
+
+        Log::info('=== PRUEBA: Actividades encontradas ===', ['count' => count($actividades)]);
         
         // Solo procesar si hay actividades
         if (!empty($actividades)) {
+            Log::info('=== PRUEBA: Guardando actividades ===');
             $actividadesService = new ActividadesService($request);
             $actividadesService->guardar($tramite, $request);
+        } else {
+            Log::info('=== PRUEBA: No hay actividades para procesar ===');
         }
     }
 
@@ -272,11 +352,21 @@ class TramiteService
     // MÉTODOS PRIVADOS - PERSONA MORAL
     // ============================================================================
 
-    private function procesarPersonaMoral(Tramite $tramite, TramiteFormularioRequest $request): void
+    private function procesarPersonaMoral(Tramite $tramite, Request $request): void
     {
-        Log::info('Procesando datos de persona moral', ['tramite_id' => $tramite->id]);
+        Log::info('=== PRUEBA: Procesando datos de persona moral ===', ['tramite_id' => $tramite->id]);
         
+        try {
         $this->datosConstitutivosService->procesar($tramite, $request);
+            Log::info('=== PRUEBA: Datos de persona moral procesados exitosamente ===');
+        } catch (\Exception $e) {
+            Log::error('=== PRUEBA: Error procesando persona moral ===', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            throw $e;
+        }
     }
 
     // ============================================================================

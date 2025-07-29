@@ -131,6 +131,29 @@
                     </div>
                 </div>
 
+                <!-- RFC Mismatch Error - Mensaje pequeño y elegante -->
+                <div id="rfc-mismatch-error" class="hidden bg-amber-50/80 backdrop-blur-sm border border-amber-200 rounded-xl p-4 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-br from-amber-100 to-amber-200 rounded-xl flex items-center justify-center shadow-lg">
+                                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-amber-800">RFC no coincide</p>
+                                <p id="rfc-error-message" class="text-xs text-amber-700 mt-1"></p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button id="rfc-retry-btn" type="button"
+                                    class="px-3 py-1.5 bg-white border border-amber-300 text-amber-700 rounded-lg hover:bg-amber-50 transition-all duration-200 text-xs font-medium shadow-sm hover:shadow-md">
+                                Intentar Nuevamente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Hidden Form -->
                 <form id="continue-form" method="POST" action="{{ route('tramites.procesarConstancia', $tipo) }}" class="hidden" enctype="multipart/form-data">
                     @csrf
@@ -225,6 +248,63 @@
             let satDataGlobal = null;
             let currentPdfFile = null;
             
+            // Obtener el RFC del usuario desde el servidor
+            const userRfc = '{{ Auth::user()->rfc ?? "" }}';
+            
+            // Funciones de validación de RFC (disponibles globalmente)
+            function validateUserRfc() {
+                if (!userRfc || !satDataGlobal || !satDataGlobal.rfc) {
+                    return false;
+                }
+
+                const userRfcNormalized = userRfc.trim().toUpperCase();
+                const constanciaRfcNormalized = satDataGlobal.rfc.trim().toUpperCase();
+
+                console.log('Validando RFC:', {
+                    userRfc: userRfcNormalized,
+                    constanciaRfc: constanciaRfcNormalized,
+                    coincide: userRfcNormalized === constanciaRfcNormalized
+                });
+
+                return userRfcNormalized === constanciaRfcNormalized;
+            }
+
+            function showRfcMismatchError() {
+                const userRfcNormalized = userRfc.trim().toUpperCase();
+                const constanciaRfcNormalized = satDataGlobal.rfc.trim().toUpperCase();
+                
+                const errorMsg = `El RFC de la constancia fiscal (${constanciaRfcNormalized}) no coincide con su RFC registrado (${userRfcNormalized}). Verifique que esté cargando la constancia correcta.`;
+                
+                // Ocultar el mensaje de éxito si está visible
+                const successResult = document.getElementById('success-result');
+                if (successResult) {
+                    successResult.classList.add('hidden');
+                }
+                
+                // Ocultar el error grande si está visible
+                const errorResult = document.getElementById('error-result');
+                if (errorResult) {
+                    errorResult.classList.add('hidden');
+                }
+                
+                // Mostrar mensaje de error de RFC en formato pequeño
+                const rfcErrorDiv = document.getElementById('rfc-mismatch-error');
+                const rfcErrorMessage = document.getElementById('rfc-error-message');
+                if (rfcErrorDiv && rfcErrorMessage) {
+                    rfcErrorDiv.classList.remove('hidden');
+                    rfcErrorMessage.textContent = errorMsg;
+                }
+            }
+
+            function showError(message) {
+                const errorResult = document.getElementById('error-result');
+                const errorMessage = document.getElementById('error-message');
+                if (errorResult && errorMessage) {
+                    errorResult.classList.remove('hidden');
+                    errorMessage.textContent = message;
+                }
+            }
+            
             document.addEventListener('DOMContentLoaded', function() {
                 const selectFileBtn = document.getElementById('select-file-btn');
                 const pdfInput = document.getElementById('pdf-input');
@@ -236,6 +316,7 @@
                 const errorMessage = document.getElementById('error-message');
                 const continueBtn = document.getElementById('continue-btn');
                 const retryBtn = document.getElementById('retry-btn');
+                const rfcRetryBtn = document.getElementById('rfc-retry-btn');
 
                 selectFileBtn.addEventListener('click', () => pdfInput.click());
 
@@ -249,11 +330,18 @@
 
                 continueBtn.addEventListener('click', () => {
                     if (satDataGlobal && currentPdfFile) {
-                        fillFormAndSubmit();
+                        // Validar RFC antes de continuar
+                        if (validateUserRfc()) {
+                            fillFormAndSubmit();
+                        }
                     }
                 });
 
                 retryBtn.addEventListener('click', () => {
+                    pdfInput.click();
+                });
+
+                rfcRetryBtn.addEventListener('click', () => {
                     pdfInput.click();
                 });
 
@@ -268,7 +356,13 @@
 
                         if (result.success) {
                             satDataGlobal = result.sat_data;
-                            showSuccess();
+                            
+                            // Validar RFC inmediatamente después de extraer los datos
+                            if (validateUserRfc()) {
+                                showSuccess();
+                            } else {
+                                showRfcMismatchError();
+                            }
                         } else {
                             showError(result.error);
                         }
@@ -304,6 +398,12 @@
                 function hideResults() {
                     successResult.classList.add('hidden');
                     errorResult.classList.add('hidden');
+                    
+                    // Ocultar también el error de RFC
+                    const rfcErrorDiv = document.getElementById('rfc-mismatch-error');
+                    if (rfcErrorDiv) {
+                        rfcErrorDiv.classList.add('hidden');
+                    }
                 }
 
                 function fillFormAndSubmit() {
@@ -386,35 +486,46 @@
                 closeSatDataModal();
                 
                 if (satDataGlobal && currentPdfFile) {
-                    const form = document.getElementById('continue-form');
-                    if (form) {
-                        const pdfFileInput = document.getElementById('pdf-file-input');
-                        
-                        // Crear un nuevo FileList con el archivo actual
-                        const dataTransfer = new DataTransfer();
-                        dataTransfer.items.add(currentPdfFile);
-                        pdfFileInput.files = dataTransfer.files;
-                        
-                        const fields = {
-                            'sat-rfc-input': 'rfc',
-                            'sat-nombre-input': 'nombre',
-                            'sat-tipo-persona-input': 'tipo_persona',
-                            'sat-curp-input': 'curp',
-                            'sat-cp-input': 'cp',
-                            'sat-colonia-input': 'colonia',
-                            'sat-nombre-vialidad-input': 'nombre_vialidad',
-                            'sat-numero-exterior-input': 'numero_exterior',
-                            'sat-numero-interior-input': 'numero_interior'
-                        };
+                    // Validar RFC antes de enviar
+                    if (validateUserRfc()) {
+                        const form = document.getElementById('continue-form');
+                        if (form) {
+                            const pdfFileInput = document.getElementById('pdf-file-input');
+                            
+                            // Crear un nuevo FileList con el archivo actual
+                            const dataTransfer = new DataTransfer();
+                            dataTransfer.items.add(currentPdfFile);
+                            pdfFileInput.files = dataTransfer.files;
+                            
+                            const fields = {
+                                'sat-rfc-input': 'rfc',
+                                'sat-nombre-input': 'nombre',
+                                'sat-tipo-persona-input': 'tipo_persona',
+                                'sat-curp-input': 'curp',
+                                'sat-cp-input': 'cp',
+                                'sat-colonia-input': 'colonia',
+                                'sat-nombre-vialidad-input': 'nombre_vialidad',
+                                'sat-numero-exterior-input': 'numero_exterior',
+                                'sat-numero-interior-input': 'numero_interior'
+                            };
 
-                        Object.entries(fields).forEach(([fieldId, dataKey]) => {
-                            const element = document.getElementById(fieldId);
-                            if (element && satDataGlobal[dataKey]) {
-                                element.value = satDataGlobal[dataKey];
-                            }
-                        });
+                            Object.entries(fields).forEach(([fieldId, dataKey]) => {
+                                const element = document.getElementById(fieldId);
+                                if (element && satDataGlobal[dataKey]) {
+                                    element.value = satDataGlobal[dataKey];
+                                }
+                            });
+                            
+                            form.submit();
+                        }
+                    } else {
+                        // Mostrar error de RFC no coincidente
+                        const userRfcNormalized = userRfc.trim().toUpperCase();
+                        const constanciaRfcNormalized = satDataGlobal.rfc.trim().toUpperCase();
                         
-                        form.submit();
+                        const errorMsg = `El RFC de la constancia fiscal (${constanciaRfcNormalized}) no coincide con su RFC registrado (${userRfcNormalized}). Verifique que esté cargando la constancia correcta.`;
+                        
+                        showError(errorMsg);
                     }
                 }
             };

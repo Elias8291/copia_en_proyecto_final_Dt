@@ -33,80 +33,54 @@
     <script src="{{ asset('js/tramites/handlers/documentos-handler.js') }}"></script>
 @endpush
 
-<div class="max-w-7xl mx-auto space-y-8" {{ $attributes }}>
-    <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
-        <!-- Encabezado con icono -->
-        <div class="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-100">
-            <div
-                class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <i class="fas fa-file-upload text-xl"></i>
-            </div>
-            <div>
-                <h2 class="text-xl font-bold text-gray-800">Documentos</h2>
-                <p class="text-sm text-gray-500 mt-1">
-                    @if ($editable)
-                        Documentos requeridos para {{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}
-                    @else
-                        Documentos del trámite registrado
-                        ({{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }})
-                    @endif
-                </p>
-            </div>
-        </div>
+<div class="space-y-8" {{ $attributes }}>
+    <!-- Información del Trámite -->
+   
+    <div>
+        <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
+            Documentos Requeridos
+            <span class="text-xs text-gray-500 font-normal">
+                ({{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }})
+            </span>
+        </h4>
 
-        <!-- Barra de Progreso de Documentos -->
-        <div class="mb-6">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-gray-700">Progreso de documentos</span>
-                <span class="text-sm font-semibold text-[#9D2449]" id="documentos-progress-text">0/{{ $documentosRequeridos->count() }}</span>
-            </div>
-            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="bg-gradient-to-r from-[#9D2449] to-[#B91C1C] h-2.5 rounded-full transition-all duration-500" 
-                     style="width: 0%" id="documentos-progress-bar"></div>
-            </div>
-        </div>
+
 
         <!-- Lista de Documentos -->
-        <div class="space-y-6">
+        <div class="space-y-4">
             @if ($documentosRequeridos->count() > 0)
                 @foreach ($documentosRequeridos as $documento)
-                    <div
-                        class="bg-white border-2 rounded-lg p-6 transition-all duration-300 border-gray-300 hover:border-[#9d2449] hover:shadow-md">
+                    <div class="bg-white border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:border-[#9d2449] hover:shadow-md">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center">
-                                <div class="relative">
+                                <div class="w-12 h-12 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-lg flex items-center justify-center shadow-sm mr-4">
                                     @php
                                         $iconClass = match (strtolower($documento->tipo_archivo)) {
-                                            'pdf' => 'fas fa-file-pdf text-red-600',
-                                            'png', 'jpg', 'jpeg' => 'fas fa-file-image text-blue-600',
-                                            'mp3' => 'fas fa-file-audio text-purple-600',
-                                            'mp4' => 'fas fa-file-video text-green-600',
-                                            default => 'fas fa-file text-gray-600',
+                                            'pdf' => 'fas fa-file-pdf text-white',
+                                            'png', 'jpg', 'jpeg' => 'fas fa-file-image text-white',
+                                            'mp3' => 'fas fa-file-audio text-white',
+                                            'mp4' => 'fas fa-file-video text-white',
+                                            default => 'fas fa-file text-white',
                                         };
                                     @endphp
-                                    <i class="{{ $iconClass }} text-2xl mr-3"></i>
+                                    <i class="{{ $iconClass }} text-lg"></i>
                                 </div>
-                                <div>
-                                    <h4 class="text-sm font-medium text-gray-900">{{ $documento->nombre }}</h4>
-                                    <p class="text-xs text-gray-500">
-                                        {{ $documento->descripcion ?? 'Documento requerido' }}</p>
-                                    <div class="flex items-center mt-1">
-                                        <span class="text-xs text-gray-600">
-                                            Tipo: {{ $documento->tipo_persona_label }}
-                                        </span>
-                                        <span class="mx-2 text-gray-400">•</span>
-                                        <span class="text-xs text-gray-600">
-                                            Formato: {{ $documento->tipo_archivo_label }}
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-semibold text-gray-900 mb-1">{{ $documento->nombre }}</h4>
+                                    <div class="hidden sm:flex items-center space-x-3">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-black/10 text-black">
+                                            {{ $documento->tipo_archivo_label }}
                                         </span>
                                     </div>
+                                    <p class="text-xs text-gray-600 sm:hidden">{{ $documento->descripcion ?? 'Documento requerido' }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 sm:space-x-3">
                                 @if ($editable)
                                     <label for="file_{{ $documento->id }}"
-                                        class="cursor-pointer text-[#9d2449] hover:text-[#7a1d37] text-xs underline">
-                                        <i class="fas fa-upload mr-1"></i>
-                                        Subir
+                                        class="cursor-pointer inline-flex items-center px-2 py-2 sm:px-3 sm:py-2 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-sm">
+                                        <i class="fas fa-upload sm:mr-2"></i>
+                                        <span class="hidden sm:inline">Subir</span>
                                     </label>
                                     @php
                                         $acceptTypes = match ($documento->tipo_archivo) {
@@ -124,35 +98,32 @@
                                         class="hidden"
                                         onchange="handleFileUpload(this, {{ $documento->id }})">
                                 @endif
-                                <span id="status_{{ $documento->id }}" class="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
+                                <span id="status_{{ $documento->id }}" class="inline-flex items-center px-2 py-1 sm:px-3 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
                                     <i class="fas fa-clock mr-1"></i>
-                                    Pendiente
+                                    <span class="hidden sm:inline">Pendiente</span>
                                 </span>
-                                <div id="filename_{{ $documento->id }}" class="hidden text-xs text-green-600 max-w-32 truncate"></div>
+                                <div id="filename_{{ $documento->id }}" class="hidden text-xs text-green-600 max-w-24 truncate"></div>
                             </div>
                         </div>
 
                         <!-- Información adicional del documento -->
-                        <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                            <div class="flex items-center text-sm text-gray-600">
-                                <i class="{{ $iconClass }} mr-2"></i>
-                                <span>{{ $documento->descripcion ?? 'Documento requerido para el trámite' }}</span>
-                                @if ($documento->tipo_persona === 'Ambas')
-                                    <span class="ml-auto text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                        Aplica para ambos tipos
-                                    </span>
-                                @endif
+                        <div class="hidden sm:block mt-4 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+                            <div class="flex items-center text-xs text-gray-700">
+                                <i class="fas fa-info-circle mr-2 text-[#9d2449]"></i>
+                                <span class="flex-1">{{ $documento->descripcion ?? 'Documento requerido para el trámite' }}</span>
                             </div>
                         </div>
                     </div>
                 @endforeach
             @else
                 <div class="text-center py-8">
-                    <div class="bg-gray-50 rounded-lg p-6">
-                        <i class="fas fa-exclamation-circle text-gray-400 text-3xl mb-3"></i>
-                        <p class="text-gray-500">
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-6">
+                        <div class="w-16 h-16 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-circle text-white text-xl"></i>
+                        </div>
+                        <p class="text-sm text-gray-600">
                             No hay documentos requeridos para
-                            {{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}.
+                            <span class="font-medium text-gray-800">{{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}</span>.
                         </p>
                     </div>
                 </div>

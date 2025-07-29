@@ -10,6 +10,7 @@ use App\Models\DatosConstitutivos;
 use App\Models\ApoderadoLegal;
 use App\Models\Accionista;
 use App\Http\Requests\TramiteFormularioRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class DatosConstitutivosService
@@ -21,7 +22,7 @@ class DatosConstitutivosService
     /**
      * Procesa todos los datos constitutivos de persona moral
      */
-    public function procesar(Tramite $tramite, TramiteFormularioRequest $request): void
+    public function procesar(Tramite $tramite, Request $request): void
     {
         Log::info('Procesando datos constitutivos', ['tramite_id' => $tramite->id]);
 
@@ -72,7 +73,7 @@ class DatosConstitutivosService
     /**
      * Crea el apoderado legal si existe información
      */
-    private function crearApoderadoLegal(Tramite $tramite, TramiteFormularioRequest $request): void
+    private function crearApoderadoLegal(Tramite $tramite, Request $request): void
     {
         $apoderadoNombre = $request->input('apoderado_nombre');
         $apoderadoRfc = $request->input('apoderado_rfc');
@@ -135,7 +136,7 @@ class DatosConstitutivosService
     /**
      * Crea los accionistas si existen
      */
-    private function crearAccionistas(Tramite $tramite, TramiteFormularioRequest $request): void
+    private function crearAccionistas(Tramite $tramite, Request $request): void
     {
         $accionistas = $request->input('accionistas', []);
         if (empty($accionistas) || !is_array($accionistas)) {
@@ -201,7 +202,7 @@ class DatosConstitutivosService
     /**
      * Verifica si hay datos del poder notarial
      */
-    private function tieneDatosPoder(TramiteFormularioRequest $request): bool
+    private function tieneDatosPoder(Request $request): bool
     {
         return $request->filled(['poder_numero_escritura', 'poder_notario_nombre']);
     }
@@ -209,7 +210,7 @@ class DatosConstitutivosService
     /**
      * Crea un instrumento notarial para el poder
      */
-    private function crearInstrumentoNotarialPoder(TramiteFormularioRequest $request): InstrumentoNotarial
+    private function crearInstrumentoNotarialPoder(Request $request): InstrumentoNotarial
     {
         return InstrumentoNotarial::create([
             'numero_escritura' => $request->input('poder_numero_escritura'),

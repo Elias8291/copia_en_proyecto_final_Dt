@@ -16,128 +16,118 @@
     }
 @endphp
 
-<div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8" {{ $attributes }}>
-    <!-- Encabezado con icono -->
-    <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-        <div class="flex items-center space-x-4">
-            <div
-                class="h-12 w-12 flex items-center justify-center rounded-xl bg-gradient-to-br from-[#9d2449] to-[#8a203f] text-white shadow-md transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <i class="fas fa-user-tie text-xl"></i>
+<div class="space-y-8" {{ $attributes }}>
+    <!-- Información del Trámite -->
+   
+    <div>
+        <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
+            Información Básica
+        </h4>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
+            <div class="form-group field-container">
+                <label class="block text-xs font-medium text-gray-700 mb-1.5 field-label sm:text-sm sm:mb-2">
+                    Razón Social
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none sm:pl-3">
+                        <i class="fas fa-building text-gray-500 text-xs sm:text-sm"></i>
+                    </div>
+                    <input type="text" name="razon_social" 
+                        value="{{ old('razon_social', $datosSat['razon_social'] ?? ($proveedor->razon_social ?? '')) }}"
+                        data-validate="required|minLength:3|maxLength:255"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('razon_social') ? 'error-field border-red-500 bg-red-50' : '' }}"
+                        aria-label="Razón social de la empresa" placeholder="Ingrese la razón social completa">
+                    @if($errors->has('razon_social'))
+                        <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('razon_social') }}</div>
+                    @endif
+                </div>
             </div>
-            <div>
-                <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
-                <p class="text-sm text-gray-500 mt-1">Información básica y de contacto de la empresa</p>
+
+            <div class="form-group field-container">
+                <label class="block text-xs font-medium text-gray-700 mb-1.5 field-label sm:text-sm sm:mb-2">
+                    RFC
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none sm:pl-3">
+                        <i class="fas fa-id-card text-gray-500 text-xs sm:text-sm"></i>
+                    </div>
+
+                    <input type="text" name="rfc" value="{{ $rfcValue }}"
+                        data-validate="required|rfc|rfc-persona"
+                        class="validate-rfc block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] font-mono sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('rfc') ? 'error-field border-red-500 bg-red-50' : '' }}"
+                        aria-label="RFC de la empresa" placeholder="Ej: ABC123456789 (12) o ABCD123456789 (13)"
+                        maxlength="13" pattern="[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}"
+                        style="text-transform: uppercase;"
+                        data-error="{{ $errors->first('rfc') }}">
+                    @if($errors->has('rfc'))
+                        <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('rfc') }}</div>
+                    @endif
+                </div>
             </div>
-        </div>
-    </div>
 
-    <div class="space-y-8">
-        <div>
-            <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
-                Información Básica</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="form-group field-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
-                        Razón Social
-                        <span class="text-[#9d2449]">*</span>
-                    </label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-building text-gray-500"></i>
-                        </div>
-                        <input type="text" name="razon_social" readonly
-                            value="{{ old('razon_social', $datosSat['razon_social'] ?? ($proveedor->razon_social ?? '')) }}"
-                            data-validate="required|minLength:3|maxLength:255"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
-                            aria-label="Razón social de la empresa" placeholder="Ingrese la razón social completa">
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
+                    Tipo de Persona
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}" required>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user-tag text-gray-500"></i>
+                    </div>
+                    <div class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg shadow-sm">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $tipoPersona === 'Moral' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800' }}">
+                            {{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}
+                        </span>
                     </div>
                 </div>
+                <p class="mt-1 text-sm text-gray-500">Determinado automáticamente por el RFC</p>
+            </div>
 
-                <div class="form-group field-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
-                        RFC
-                        <span class="text-[#9d2449]">*</span>
-                    </label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-id-card text-gray-500"></i>
-                        </div>
-
-                        <input type="text" name="rfc" readonly value="{{ $rfcValue }}"
-                            data-validate="required|rfc|rfc-persona"
-                            class="validate-rfc block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
-                            aria-label="RFC de la empresa" placeholder="Ej: ABC123456789 (12) o ABCD123456789 (13)"
-                            maxlength="13" pattern="[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}"
-                            style="text-transform: uppercase;">
+            @if($tipoPersona === 'Física')
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
+                    CURP
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-address-card text-gray-500"></i>
                     </div>
+                    <input type="text" name="curp" maxlength="18" readonly
+                        value="{{ old('curp', $datosSat['curp'] ?? ($proveedor->curp ?? '')) }}"
+                        data-validate="required|curp"
+                        class="validate-curp block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm font-mono"
+                        placeholder="Ej: ABCD123456HDFGHI01" aria-label="CURP de la persona física"
+                        style="text-transform: uppercase;">
                 </div>
+            </div>
+            @endif
 
-                <div class="form-group field-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
-                        Tipo de Persona
-                        <span class="text-[#9d2449]">*</span>
-                    </label>
-                    <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}" required>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-user-tag text-gray-500"></i>
-                        </div>
-                        <div
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-600 bg-gray-50 border border-gray-200 rounded-lg flex items-center shadow-sm">
-                            <span
-                                data-tipo-persona>{{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}</span>
-                            <svg class="w-4 h-4 ml-auto text-[#9d2449]" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7"></path>
-                            </svg>
-                        </div>
+            <div class="form-group field-container {{ $tipoPersona === 'Física' ? '' : 'md:col-span-2' }}">
+                <label class="block text-sm font-medium text-gray-700 mb-2 field-label">Página Web</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-globe text-gray-500"></i>
                     </div>
-                    <p class="mt-1 text-sm text-gray-500">Determinado automáticamente por el RFC</p>
+                    <input type="url" name="pagina_web"
+                        value="{{ old('pagina_web', $proveedor->pagina_web ?? '') }}" data-validate="url"
+                        placeholder="https://www.ejemplo.com"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                        aria-label="Página web de la empresa">
                 </div>
-
-                @if ($tipoPersona === 'Física')
-                    <div class="form-group field-container">
-                        <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
-                            CURP
-                            <span class="text-[#9d2449]">*</span>
-                        </label>
-                        <div class="relative group">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-address-card text-gray-500"></i>
-                            </div>
-                            <input type="text" name="curp" maxlength="18" readonly
-                                value="{{ old('curp', $datosSat['curp'] ?? ($proveedor->curp ?? '')) }}"
-                                data-validate="required|curp"
-                                class="validate-curp block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm"
-                                placeholder="Ej: ABCD123456HDFGHI01" aria-label="CURP de la persona física"
-                                style="text-transform: uppercase;">
-                        </div>
-                    </div>
-                @endif
-
-                <div class="form-group field-container {{ $tipoPersona === 'Física' ? '' : 'md:col-span-2' }}">
-                    <label class="block text-sm font-medium text-gray-700 mb-2 field-label">Página Web</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-globe text-gray-500"></i>
-                        </div>
-                        <input type="url" name="pagina_web"
-                            value="{{ old('pagina_web', $proveedor->pagina_web ?? '') }}" data-validate="url"
-                            placeholder="https://www.ejemplo.com"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
-                            aria-label="Página web de la empresa">
-                    </div>
-                </div>
+            </div>
 
 
             </div>
         </div>
 
         <div>
-            <h4 class="text-base font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">
+            <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
                 Información de Contacto</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
                 <div class="form-group field-container">
                     <label class="block text-sm font-medium text-gray-700 mb-2 field-label">Cargo</label>
                     <div class="relative group">
@@ -164,8 +154,12 @@
                         <input type="email" name="email_contacto" required
                             value="{{ old('email_contacto', $proveedor->email_contacto ?? '') }}"
                             data-validate="required|email" placeholder="ejemplo@correo.com"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('email_contacto') ? 'error-field border-red-500 bg-red-50' : '' }}"
+                            data-error="{{ $errors->first('email_contacto') }}"
                             aria-label="Correo electrónico de contacto">
+                        @if($errors->has('email_contacto'))
+                            <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('email_contacto') }}</div>
+                        @endif
                     </div>
                 </div>
 

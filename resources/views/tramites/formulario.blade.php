@@ -197,15 +197,6 @@
                             ])
                         </div>
                     @else
-                        <div class="section-container step-section" data-step="3" id="step-section-3">
-                            @include('tramites.partials.domicilio', [
-                                'tipo' => $tipo_tramite,
-                                'proveedor' => $proveedor,
-                                'datosSat' => $datosSat,
-                                'editable' => true,
-                            ])
-                        </div>
-
                         <div class="section-container step-section" data-step="4" id="step-section-4">
                             @include('tramites.partials.documentos', [
                                 'tipo' => $tipo_tramite,

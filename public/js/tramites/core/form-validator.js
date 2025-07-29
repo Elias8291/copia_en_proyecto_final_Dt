@@ -129,16 +129,22 @@ class TramiteFormValidatorBase {
         const rules = this.getFieldRules(element);
 
         for (const rule of rules) {
+            
             const validator = this.validators.get(rule.name);
-            if (validator && !validator(value, element, rule.params)) {
-                const message = this.getErrorMessage(rule.name, rule.params);
-                errors.push(message);
-                break;
+            if (validator) {
+                const ruleValid = validator(value, element, rule.params);
+                
+                if (!ruleValid) {
+                    const message = this.getErrorMessage(rule.name, rule.params);
+                    errors.push(message);
+                    break;
+                }
             }
         }
 
         this.displayFieldErrors(element, errors);
-        return errors.length === 0;
+        const result = errors.length === 0;
+        return result;
     }
 
     getFieldRules(element) {
@@ -262,13 +268,16 @@ class TramiteFormValidatorBase {
     }
 
     validateSection(sectionElement) {
+        
         const fields = sectionElement.querySelectorAll(
             "input, select, textarea"
         );
+        
         let isValid = true;
         let firstErrorField = null;
 
         for (const field of fields) {
+            
             const fieldValid = this.validateField(field);
             
             if (!fieldValid && isValid) {
@@ -489,17 +498,13 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
                 tipoPersona = "Física";
             }
 
-            console.log('Validando RFC:', rfc, 'Longitud:', rfc.length, 'Tipo persona calculado:', tipoPersona);
-
             // Actualizar el input hidden si es necesario
             const tipoPersonaInput = document.querySelector('input[name="tipo_persona"]');
             if (tipoPersonaInput && tipoPersonaInput.value !== tipoPersona) {
-                console.log('Actualizando tipo de persona en input hidden de', tipoPersonaInput.value, 'a', tipoPersona);
                 tipoPersonaInput.value = tipoPersona;
             }
 
             // La validación siempre será true porque calculamos el tipo basado en el RFC
-            console.log('RFC válido para tipo:', tipoPersona);
             return true;
         });
     }
@@ -580,26 +585,19 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
     }
 
     validateDatosGenerales(stepElement, errors) {
-        console.log('Validando datos generales...');
         const isValid = this.validateSection(stepElement);
-        console.log('Validación de sección:', isValid);
 
         const rfcField = stepElement.querySelector('input[name="rfc"]');
-        console.log('Campo RFC encontrado:', rfcField);
         
         if (rfcField) {
-            console.log('Valor del RFC:', rfcField.value);
             const rfcValidator = this.validators.get("rfc-persona");
             const rfcValid = rfcValidator(rfcField.value, rfcField);
-            console.log('Validación RFC:', rfcValid);
             
             if (!rfcValid) {
                 errors.push(this.getErrorMessage("rfc-persona"));
-                console.log('Error RFC agregado');
             }
         }
 
-        console.log('Errores totales:', errors.length);
         return isValid && errors.length === 0;
     }
 
@@ -655,7 +653,22 @@ class TramiteFormValidator extends TramiteFormValidatorBase {
     }
 
     validateAccionistas(stepElement, errors) {
-        return this.validateSection(stepElement);
+        
+        const isValid = this.validateSection(stepElement);
+        
+        // Verificar si hay campos requeridos en la sección
+        const requiredFields = stepElement.querySelectorAll('input[required], select[required], textarea[required]');
+        
+        requiredFields.forEach((field, index) => {
+        });
+        
+        // Verificar campos de accionistas específicamente
+        const accionistaFields = stepElement.querySelectorAll('input[name*="accionistas"]');
+        
+        accionistaFields.forEach((field, index) => {
+        });
+        
+        return isValid && errors.length === 0;
     }
 
     validateDocumentos(stepElement, errors) {

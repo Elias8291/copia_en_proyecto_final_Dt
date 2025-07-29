@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\InstrumentoNotarial;
 use App\Http\Requests\TramiteFormularioRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class InstrumentoNotarialService
@@ -13,7 +14,7 @@ class InstrumentoNotarialService
     /**
      * Crea un instrumento notarial desde el request
      */
-    public function crear(TramiteFormularioRequest $request): ?InstrumentoNotarial
+    public function crear(Request $request): ?InstrumentoNotarial
     {
         if (!$this->tieneInformacionNotarial($request)) {
             Log::info('No hay información notarial para procesar');
@@ -51,7 +52,7 @@ class InstrumentoNotarialService
     /**
      * Verifica si el request contiene información notarial
      */
-    private function tieneInformacionNotarial(TramiteFormularioRequest $request): bool
+    private function tieneInformacionNotarial(Request $request): bool
     {
         return $request->filled(['numero_escritura', 'notario_nombre']);
     }
@@ -59,7 +60,7 @@ class InstrumentoNotarialService
     /**
      * Extrae los datos del request para logging
      */
-    private function extraerDatos(TramiteFormularioRequest $request): array
+    private function extraerDatos(Request $request): array
     {
         return [
             'numero_escritura' => $request->input('numero_escritura'),

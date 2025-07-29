@@ -76,15 +76,15 @@ class DireccionService
     private function extraerDatos(Request $request): array
     {
         return [
-            'calle' => $request->input('calle', 'Calle Default'),
+            'calle' => $request->input('calle') ?: 'Calle Default',
             'entre_calles' => $request->input('entre_calles'),
-            'numero_exterior' => $request->input('numero_exterior', 'S/N'),
+            'numero_exterior' => $request->input('numero_exterior') ?: 'S/N',
             'numero_interior' => $request->input('numero_interior'),
-            'codigo_postal' => $request->input('codigo_postal', '00000'),
+            'codigo_postal' => $request->input('codigo_postal') ?: '00000',
             'asentamiento' => $request->input('asentamiento') 
                 ?? $request->input('asentamiento_select') 
                 ?? 'Asentamiento Default',
-            'municipio' => $request->input('municipio', 'Municipio Default'),
+            'municipio' => $request->input('municipio') ?: 'Municipio Default',
             'estado_id' => $this->procesarEstadoId($request),
             'tipo_asentamiento' => $request->input('tipo_asentamiento'),
         ];

@@ -92,6 +92,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/constancia/{tipo}', [TramiteController::class, 'constancia'])->name('constancia');
         Route::post('/constancia/{tipo}', [TramiteController::class, 'procesarConstancia'])->name('procesarConstancia');
         Route::get('/formulario/{tipo}', [TramiteController::class, 'formulario'])->name('formulario');
+        Route::get('/formulario-simple/{tipo}', [TramiteController::class, 'formularioSimple'])->name('formulario.simple');
         Route::post('/{tipo}', [TramiteController::class, 'store'])->name('store');
         Route::get('/exito', [TramiteController::class, 'exito'])->name('exito');
         Route::get('/estado', function () {

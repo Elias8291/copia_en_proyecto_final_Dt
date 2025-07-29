@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TramiteFormularioRequest;
 use App\Services\ProveedorService;
 use App\Services\TramiteService;
-use App\Http\Requests\TramiteFormularioRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class TramiteController extends Controller
 {
@@ -40,8 +40,9 @@ class TramiteController extends Controller
         $proveedor = $this->proveedorService->getProveedorByUser();
 
         // Validar acceso al trámite
-        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
-            return redirect()->route('tramites.index')
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+            return redirect()
+                ->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
 
@@ -56,15 +57,28 @@ class TramiteController extends Controller
         $proveedor = $this->proveedorService->getProveedorByUser();
 
         // Validar acceso al trámite
-        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
-            return redirect()->route('tramites.index')
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+            return redirect()
+                ->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
 
-        // Procesar y guardar datos SAT en sesión
-        $this->tramiteService->procesarDatosConstancia($request);
+        try {
+            // Procesar y guardar datos SAT en sesión
+            $this->tramiteService->procesarDatosConstancia($request);
 
-        return redirect()->route('tramites.formulario', $tipo);
+            return redirect()->route('tramites.formulario', $tipo);
+        } catch (\Exception $e) {
+            Log::error('Error al procesar constancia', [
+                'usuario_id' => Auth::id(),
+                'tipo_tramite' => $tipo,
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()
+                ->route('tramites.constancia', $tipo)
+                ->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -75,8 +89,9 @@ class TramiteController extends Controller
         $proveedor = $this->proveedorService->getProveedorByUser();
 
         // Validar acceso al trámite
-        if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
-            return redirect()->route('tramites.index')
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+            return redirect()
+                ->route('tramites.index')
                 ->with('error', 'No tiene permisos para acceder a este trámite.');
         }
 
@@ -84,97 +99,86 @@ class TramiteController extends Controller
     }
 
     /**
+     * Muestra el formulario simple sin steps
+     */
+    public function formularioSimple(Request $request, $tipo = 'inscripcion')
+    {
+        $proveedor = $this->proveedorService->getProveedorByUser();
+
+        // Validar acceso al trámite
+        if (!$this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
+            return redirect()
+                ->route('tramites.index')
+                ->with('error', 'No tiene permisos para acceder a este trámite.');
+        }
+
+        return view('tramites.formulario-simple', $this->tramiteService->getDatosFormulario($tipo, $proveedor));
+    }
+
+    /**
      * Procesa el envío del formulario de trámite
      */
-    public function store(TramiteFormularioRequest $request, $tipo)
+    public function store(Request $request, $tipo)
     {
-        Log::info('Procesando trámite', [
+        Log::info('=== PRUEBA: Controlador recibió petición ===', [
             'tipo' => $tipo,
+            'usuario_id' => Auth::id(),
+            'request_data' => $request->all(),
+            'files' => $request->allFiles(),
+            'method' => $request->method(),
+            'url' => $request->url(),
+            'headers' => $request->headers->all(),
+            'content_type' => $request->header('Content-Type'),
+            'timestamp' => now()->toDateTimeString()
+        ]);
+        
+        // Log adicional para verificar que el método se ejecuta
+        Log::info('=== PRUEBA: Método store ejecutándose ===', [
+            'tipo' => $tipo,
+            'usuario_autenticado' => Auth::check(),
             'usuario_id' => Auth::id()
         ]);
 
-        try {
-            $proveedor = $this->proveedorService->getProveedorByUser();
+        // Log simple para verificar que el logging funciona
+        Log::info('PRUEBA SIMPLE - Controlador funcionando');
 
-            if (! $this->tramiteService->validarAccesoTramite($tipo, $proveedor)) {
-                Log::warning('Acceso denegado al trámite', [
-                    'tipo' => $tipo, 
-                    'usuario_id' => Auth::id()
-                ]);
-                
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No tiene permisos para realizar este trámite.'
-                    ], 403);
-                }
-                
-                return redirect()->route('tramites.index')
-                    ->with('error', 'No tiene permisos para realizar este trámite.');
+        try {
+            // Verificar que el usuario esté autenticado
+            if (!Auth::check()) {
+                Log::error('Usuario no autenticado');
+                return redirect()->route('login')->with('error', 'Debe iniciar sesión para continuar.');
             }
 
+            Log::info('=== PRUEBA: Usuario autenticado, llamando al servicio ===');
+
+            $proveedor = $this->proveedorService->getProveedorByUser();
+            Log::info('=== PRUEBA: Proveedor obtenido ===', ['proveedor_id' => $proveedor?->id]);
+
+            // Llamar al servicio sin validaciones
             $resultado = $this->tramiteService->procesarEnvioFormulario($request, $tipo, $proveedor);
 
+            Log::info('=== PRUEBA: Servicio respondió ===', ['resultado' => $resultado]);
+
             if ($resultado['success']) {
-                $this->tramiteService->limpiarDatosSesion();
-                
-                Log::info('Trámite procesado exitosamente', [
+                Log::info('=== PRUEBA: Éxito - Trámite procesado ===', [
                     'tramite_id' => $resultado['tramite_id'] ?? null
                 ]);
 
-                if ($request->ajax() || $request->wantsJson()) {
-                    return response()->json([
-                        'success' => true,
-                        'message' => $resultado['message'],
-                        'tramite_id' => $resultado['tramite_id'],
-                        'redirect' => $resultado['redirect']
-                    ], 200);
-                }
-
-                return redirect($resultado['redirect'])
-                    ->with('success', $resultado['message'])
-                    ->with('tramite_id', $resultado['tramite_id']);
+                return redirect()->route('tramites.exito')
+                    ->with('success', '¡Prueba exitosa! El controlador y servicio funcionan correctamente.')
+                    ->with('tramite_id', $resultado['tramite_id'] ?? 999);
             }
 
-            Log::error('Error en procesamiento del trámite', [
+            Log::error('=== PRUEBA: Error en servicio ===', [
                 'mensaje' => $resultado['message'] ?? 'Error desconocido'
             ]);
 
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $resultado['message'] ?? 'Error al procesar el trámite.'
-                ], 422);
-            }
-
             return back()
                 ->withInput()
-                ->with('error', $resultado['message'] ?? 'Error al procesar el trámite.');
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Manejar errores de validación específicamente
-            Log::warning('Errores de validación en trámite', [
-                'errors' => $e->errors(),
-                'tipo' => $tipo,
-                'usuario_id' => Auth::id()
-            ]);
-
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Por favor corrija los errores en el formulario.',
-                    'errors' => $e->errors(),
-                    'validation_failed' => true
-                ], 422);
-            }
-
-            return back()
-                ->withErrors($e->errors())
-                ->withInput()
-                ->with('error', 'Por favor corrija los errores en el formulario.');
+                ->with('error', 'Error en servicio: ' . ($resultado['message'] ?? 'Error desconocido'));
 
         } catch (\Exception $e) {
-            Log::error('Excepción en procesamiento de trámite', [
+            Log::error('=== PRUEBA: Excepción capturada ===', [
                 'error' => $e->getMessage(),
                 'tipo' => $tipo,
                 'usuario_id' => Auth::id(),
@@ -182,16 +186,9 @@ class TramiteController extends Controller
                 'file' => $e->getFile()
             ]);
 
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error interno del servidor. Por favor, intente nuevamente.'
-                ], 500);
-            }
-
             return back()
                 ->withInput()
-                ->with('error', 'Error interno del servidor. Por favor, intente nuevamente.');
+                ->with('error', 'Excepción capturada: ' . $e->getMessage());
         }
     }
 
@@ -215,7 +212,7 @@ class TramiteController extends Controller
     public function mostrarDatosCompletos($id)
     {
         try {
-            $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int)$id);
+            $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int) $id);
             
             if (!$datosCompletos) {
                 return redirect()->back()->with('error', 'Trámite no encontrado');
@@ -232,7 +229,6 @@ class TramiteController extends Controller
             }
             
             return view('tramites.detalle-completo', compact('datosCompletos'));
-            
         } catch (\Exception $e) {
             Log::error('Error al obtener datos completos del trámite', [
                 'tramite_id' => $id,
@@ -249,7 +245,7 @@ class TramiteController extends Controller
     public function obtenerDatosCompletosTramiteAPI($id)
     {
         try {
-            $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int)$id);
+            $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int) $id);
             
             if (!$datosCompletos) {
                 return response()->json([
@@ -262,12 +258,95 @@ class TramiteController extends Controller
                 'success' => true,
                 'data' => $datosCompletos
             ]);
-            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener los datos del trámite'
             ], 500);
+        }
+    }
+
+    /**
+     * Determina en qué tab están los errores de validación
+     */
+    private function determinarTabConErrores(array $errors): string
+    {
+        // Mapeo de campos a tabs
+        $mapeoTabs = [
+            // Datos Generales
+            'datos' => [
+                'rfc', 'razon_social', 'tipo_persona', 'curp', 'pagina_web',
+                'email_contacto', 'telefono', 'cargo'
+            ],
+            // Actividades
+            'actividades' => [
+                'actividades', 'actividades.*'
+            ],
+            // Domicilio
+            'domicilio' => [
+                'calle', 'numero_exterior', 'numero_interior', 'codigo_postal',
+                'asentamiento', 'municipio', 'estado_id', 'colonia'
+            ],
+            // Constitución (solo persona moral)
+            'constitucion' => [
+                'numero_escritura', 'fecha_constitucion', 'notario_nombre',
+                'entidad_federativa', 'notario_numero', 'numero_registro',
+                'fecha_inscripcion'
+            ],
+            // Apoderado (solo persona moral)
+            'apoderado' => [
+                'apoderado_nombre', 'apoderado_rfc'
+            ],
+            // Accionistas (solo persona moral)
+            'accionistas' => [
+                'accionistas', 'accionistas.*', 'accionista_nombre',
+                'accionista_rfc', 'accionista_porcentaje'
+            ],
+            // Documentos
+            'documentos' => [
+                'documentos', 'documentos.*', 'constancia_fiscal',
+                'identificacion', 'comprobante_domicilio', 'acta_constitutiva',
+                'poder_notarial', 'documentos_adicionales'
+            ]
+        ];
+
+        // Buscar en qué tab están los errores
+        foreach ($mapeoTabs as $tab => $campos) {
+            foreach ($campos as $campo) {
+                if (isset($errors[$campo])) {
+                    return $tab;
+                }
+            }
+        }
+
+        // Si no se encuentra, regresar al primer tab
+        return 'datos';
+    }
+
+    /**
+     * Crea un mensaje de error más específico basado en los errores de validación
+     */
+    private function crearMensajeErrorValidacion(array $errors, string $tabConErrores): string
+    {
+        $mensajesTab = [
+            'datos' => 'Datos Generales',
+            'actividades' => 'Actividades Económicas',
+            'domicilio' => 'Domicilio',
+            'constitucion' => 'Constitución',
+            'apoderado' => 'Apoderado Legal',
+            'accionistas' => 'Accionistas',
+            'documentos' => 'Documentos'
+        ];
+
+        $nombreTab = $mensajesTab[$tabConErrores] ?? 'el formulario';
+        $numErrores = count($errors);
+
+        if ($numErrores === 1) {
+            $campo = array_key_first($errors);
+            $mensaje = $errors[$campo][0] ?? 'Hay un error en el campo.';
+            return "Error en la sección '{$nombreTab}': {$mensaje}";
+        } else {
+            return "Hay {$numErrores} errores en la sección '{$nombreTab}'. Por favor revise los campos marcados.";
         }
     }
 }
