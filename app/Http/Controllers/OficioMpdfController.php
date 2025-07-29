@@ -25,6 +25,12 @@ class OficioMpdfController extends Controller
     public function generarPdf(Oficio $oficio)
     {
         try {
+            // Crear directorio temporal si no existe
+            $tempDir = storage_path('app/tmp');
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
             // Verificar si ya existe el PDF guardado
             if ($oficio->url_documento && \Storage::disk('public')->exists($oficio->url_documento)) {
                 return redirect(\Storage::disk('public')->url($oficio->url_documento));
@@ -64,11 +70,19 @@ class OficioMpdfController extends Controller
                 'fechaInicioTramite' => $tramite->fecha_inicio,
                 'fechaGeneracionDocumento' => $oficio->fecha_oficio,
                 'fechaVigenciaProveedor' => $proveedor ? $proveedor->fecha_vencimiento : null,
-                'tipoTramite' => 'REGISTRO EN EL PADRÓN DE PROVEEDORES'
+                'tipoTramite' => 'REGISTRO EN EL PADRÓN DE PROVEEDORES',
+                'imagePath' => public_path('images/') // Ruta absoluta para imágenes
             ];
 
             // Generar HTML
             $html = view('oficio.documento-mpdf', $data)->render();
+
+            // Debug: Log del HTML generado
+            Log::info('HTML generado para PDF', [
+                'oficio_id' => $oficio->id,
+                'html_length' => strlen($html),
+                'has_images' => strpos($html, 'images/') !== false
+            ]);
 
             // Configurar mPDF
             $mpdf = new Mpdf([
@@ -79,11 +93,19 @@ class OficioMpdfController extends Controller
                 'margin_top' => 0,
                 'margin_bottom' => 0,
                 'margin_header' => 0,
-                'margin_footer' => 0
+                'margin_footer' => 0,
+                'tempDir' => storage_path('app/tmp'),
+                'default_font' => 'arial'
             ]);
 
-            // Configurar directorio de imágenes
+            // Configurar directorio de imágenes y permisos
             $mpdf->SetBasePath(public_path());
+            $mpdf->img_dpi = 96;
+            $mpdf->img_cache_dir = storage_path('app/tmp');
+            
+            // Configuraciones adicionales para imágenes
+            $mpdf->showImageErrors = true;
+            $mpdf->debug = true;
 
             // Escribir HTML
             $mpdf->WriteHTML($html);

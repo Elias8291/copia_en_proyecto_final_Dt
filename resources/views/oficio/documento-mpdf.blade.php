@@ -34,6 +34,21 @@
             height: auto;
         }
 
+        .logo-lateral {
+            position: absolute;
+            top: 0;
+            right: -14mm;
+            width: 65mm;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.05;
+        }
+        
+        .logo-lateral img {
+            width: 100%;
+            height: auto;
+        }
+
         .lema-constitucional {
             position: absolute;
             top: 25mm;
@@ -53,6 +68,7 @@
             text-align: right;
             line-height: 1.2;
             font-weight: bold;
+            z-index: 5;
         }
 
         .destinatario {
@@ -63,6 +79,7 @@
             font-size: 8pt;
             font-weight: bold;
             line-height: 1.2;
+            z-index: 5;
         }
 
         .destinatario-persona-moral {
@@ -81,6 +98,7 @@
             font-size: 8pt;
             text-align: justify;
             line-height: 1.4;
+            z-index: 5;
         }
 
         .contenido-principal-fisica {
@@ -96,6 +114,7 @@
             font-size: 8pt;
             font-weight: bold;
             line-height: 1.5;
+            z-index: 5;
         }
 
         .signature-space {
@@ -110,6 +129,7 @@
             font-size: 5pt;
             font-weight: bold;
             line-height: 1.2;
+            z-index: 5;
         }
 
         .copias {
@@ -118,6 +138,7 @@
             left: 19mm;
             font-size: 5pt;
             line-height: 1.2;
+            z-index: 5;
         }
         
         .qr-code {
@@ -126,6 +147,7 @@
             right: 25mm;
             width: 20mm;
             height: 20mm;
+            z-index: 10;
         }
         
         .qr-code img {
@@ -157,7 +179,7 @@
 <body>
 
     <div class="logo">
-        <img src="{{ public_path('images/logo_administracion.png') }}" alt="Logo">
+        <img src="{{ base_path('public/images/logo_administracion.png') }}" alt="Logo">
     </div>
 
     <div class="lema-constitucional">
@@ -233,6 +255,10 @@
     <div class="copias">
         C.c.p.- Expediente y Minutario.<br>
         SZS/TEST
+    </div>
+
+    <div class="logo-lateral">
+        <img src="{{ base_path('public/images/membretep.png') }}" alt="Logo Lateral">
     </div>
 
     <div class="footer">
