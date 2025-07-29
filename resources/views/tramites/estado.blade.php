@@ -26,7 +26,7 @@
         default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
     };
 @endphp
-<div class="min-h-screen flex items-center justify-center p-4 pt-12">
+<div class="min-h-screen flex items-center justify-center p-2 sm:p-4 pt-8 sm:pt-12">
     <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl border border-gray-100">
         {{-- Header con color primario --}}
         <div class="h-16 bg-gradient-to-r from-[#9d2449] to-[#8a203f] relative">
@@ -34,7 +34,7 @@
         </div>
         
                 {{-- Avatar elegante con color primario --}}
-        <div class="relative -mt-8 px-8">
+        <div class="relative -mt-6 sm:-mt-8 px-4 sm:px-8">
             <div class="flex justify-center">
                 <div class="w-16 h-16 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center shadow-xl border-4 border-white">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,22 +50,22 @@
         </div>
 
         {{-- Contenido principal --}}
-        <div class="px-8 py-6">
+        <div class="px-4 sm:px-8 py-3 sm:py-4">
             
             {{-- Información elegante con estado --}}
-            <div class="mb-6 text-center">
-                <div class="inline-flex items-center space-x-6 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 rounded-xl px-8 py-4 border border-slate-200 shadow-sm">
+            <div class="mb-3 sm:mb-6 text-center">
+                <div class="inline-flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 rounded-xl px-4 sm:px-8 py-3 sm:py-4 border border-slate-200 shadow-sm">
                     <div class="flex items-center space-x-3">
                         <div class="w-4 h-4 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full shadow-sm"></div>
                         <span class="text-sm text-slate-600 font-medium">Folio:</span>
                         <span class="text-sm font-bold text-slate-800">{{ $tramite_id ?? session('tramite_id') }}</span>
                     </div>
-                    <div class="w-px h-5 bg-slate-300"></div>
+                    <div class="hidden sm:block w-px h-5 bg-slate-300"></div>
                     <div class="flex items-center space-x-3">
                         <span class="text-sm text-slate-600 font-medium">Tipo:</span>
                         <span class="text-sm font-semibold text-slate-800">{{ $tramite->tipo_tramite ?? 'Registro' }}</span>
                     </div>
-                    <div class="w-px h-5 bg-slate-300"></div>
+                    <div class="hidden sm:block w-px h-5 bg-slate-300"></div>
                     <div class="flex items-center space-x-3">
                         <span class="text-sm text-slate-600 font-medium">Estado:</span>
                         <span class="px-3 py-1 rounded-full text-xs font-semibold border-2 {{ $colorBadge }} shadow-sm">
@@ -78,13 +78,13 @@
 
                 
                 {{-- Barra de progreso compacta y elegante --}}
-                <div class="mt-4 mb-4">
-                    <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-4 border border-slate-200 shadow-sm">
-                        <h3 class="text-sm font-bold text-[#9d2449] mb-3 text-center">Progreso del Trámite</h3>
+                <div class="mt-2 sm:mt-4 mb-2 sm:mb-4">
+                    <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg p-3 sm:p-4 border border-slate-200 shadow-sm">
+                        <h3 class="text-xs sm:text-sm font-bold text-[#9d2449] mb-2 sm:mb-3 text-center">Progreso del Trámite</h3>
                         
                         <div class="relative">
                             {{-- Barra de progreso --}}
-                            <div class="w-full bg-slate-200 rounded-full h-2 mb-3">
+                            <div class="w-full bg-slate-200 rounded-full h-1.5 sm:h-2 mb-2 sm:mb-3">
                                 @php
                                     $progress = match($estado ?? 'En_Revision') {
                                         'Pendiente' => 20,
@@ -97,14 +97,14 @@
                                         default => 30
                                     };
                                 @endphp
-                                <div class="bg-gradient-to-r from-[#9d2449] to-[#8a203f] h-2 rounded-full transition-all duration-1000 ease-out" style="width: {{ $progress }}%"></div>
+                                <div class="bg-gradient-to-r from-[#9d2449] to-[#8a203f] h-1.5 sm:h-2 rounded-full transition-all duration-1000 ease-out" style="width: {{ $progress }}%"></div>
                             </div>
                             
                             {{-- Etapas del proceso --}}
-                            <div class="grid grid-cols-4 gap-2">
+                            <div class="grid grid-cols-4 gap-1 sm:gap-2">
                                 <div class="text-center">
-                                    <div class="w-6 h-6 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
-                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                     </div>
@@ -112,8 +112,8 @@
                                 </div>
                                 
                                 <div class="text-center">
-                                    <div class="w-6 h-6 {{ $estado === 'En_Revision' || in_array($estado, ['Por_Cotejar', 'Para_Correccion', 'Aprobado', 'Rechazado']) ? 'bg-gradient-to-br from-[#9d2449] to-[#8a203f]' : 'bg-slate-300' }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
-                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="w-5 h-5 sm:w-6 sm:h-6 {{ $estado === 'En_Revision' || in_array($estado, ['Por_Cotejar', 'Para_Correccion', 'Aprobado', 'Rechazado']) ? 'bg-gradient-to-br from-[#9d2449] to-[#8a203f]' : 'bg-slate-300' }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                         </svg>
                                     </div>
@@ -121,8 +121,8 @@
                                 </div>
                                 
                                 <div class="text-center">
-                                    <div class="w-6 h-6 {{ in_array($estado, ['Por_Cotejar', 'Aprobado', 'Rechazado']) ? 'bg-gradient-to-br from-[#9d2449] to-[#8a203f]' : 'bg-slate-300' }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
-                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="w-5 h-5 sm:w-6 sm:h-6 {{ in_array($estado, ['Por_Cotejar', 'Aprobado', 'Rechazado']) ? 'bg-gradient-to-br from-[#9d2449] to-[#8a203f]' : 'bg-slate-300' }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                         </svg>
                                     </div>
@@ -130,8 +130,8 @@
                                 </div>
                                 
                                 <div class="text-center">
-                                    <div class="w-6 h-6 {{ $estado === 'Aprobado' ? 'bg-emerald-500' : ($estado === 'Rechazado' ? 'bg-red-500' : 'bg-slate-300') }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
-                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="w-5 h-5 sm:w-6 sm:h-6 {{ $estado === 'Aprobado' ? 'bg-emerald-500' : ($estado === 'Rechazado' ? 'bg-red-500' : 'bg-slate-300') }} rounded-full flex items-center justify-center mx-auto mb-1 shadow-sm">
+                                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </div>
@@ -338,8 +338,8 @@
                                                 </div>
                                             </div>
                                 @elseif(($estado ?? '') === 'Pendiente')
-                    <div class="mt-4 p-5 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 rounded-lg shadow-sm">
-                        <div class="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
+                    <div class="mt-3 sm:mt-4 p-4 sm:p-5 bg-gradient-to-r from-slate-50 to-gray-50 border border-slate-200 rounded-lg shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-start space-y-3 sm:space-y-0 sm:space-x-4 text-center sm:text-left">
                             <div class="w-12 h-12 bg-gradient-to-br from-slate-400 to-gray-500 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -347,30 +347,11 @@
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-base font-bold text-slate-700 mb-2">¡Trámite enviado correctamente!</h3>
-                                <p class="text-gray-600 text-xs mb-3">Documentación recibida y en procesamiento.</p>
+                                <p class="text-gray-600 text-xs mb-2">Documentación recibida y en procesamiento.</p>
                                 
-                                <div class="bg-white rounded-lg p-3 border border-slate-200">
-                                    <h4 class="text-slate-700 font-semibold text-xs mb-2 flex items-center justify-center sm:justify-start">
-                                        <svg class="w-3 h-3 mr-2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Próximos pasos:
-                                    </h4>
-                                    <ul class="text-gray-600 text-xs space-y-1">
-                                        <li class="flex items-start">
-                                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                                            <span>Revisión técnica</span>
-                                        </li>
-                                        <li class="flex items-start">
-                                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                                            <span>Notificación por email</span>
-                                        </li>
-                                        <li class="flex items-start">
-                                            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mt-1.5 mr-2 flex-shrink-0"></span>
-                                            <span>3-5 días hábiles</span>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <p class="text-gray-600 text-xs mt-2 leading-relaxed">
+                                    <span class="font-medium text-slate-700">Próximos pasos:</span> Revisión técnica • Notificación por email • 3-5 días hábiles
+                                </p>
                                 
                                 <p class="text-slate-600 text-xs mt-2 font-medium flex items-center justify-center sm:justify-start">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
