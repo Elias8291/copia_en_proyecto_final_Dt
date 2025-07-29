@@ -12,7 +12,9 @@ use App\Http\Controllers\{
     RolesController,
     RoleController,
     NotificacionController,
-    ProfileController
+    ProfileController,
+    OficioController,
+    OficioPdfController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -212,6 +214,17 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/eliminar-leidas', [NotificacionController::class, 'eliminarLeidas'])->name('eliminar-leidas');
         Route::post('/eliminar', [NotificacionController::class, 'eliminarNotificacion'])->name('eliminar');
         Route::get('/usuario', [NotificacionController::class, 'getUserNotifications'])->name('usuario');
+    });
+
+    // ============================================================================
+    // MÓDULO DE OFICIOS
+    // ============================================================================
+
+    Route::middleware(['auth'])->prefix('oficios')->name('oficios.')->group(function () {
+        Route::get('/{oficio}/pdf', [OficioPdfController::class, 'generarPdf'])->name('pdf');
+        Route::get('/{oficio}/ver-pdf', [OficioPdfController::class, 'verPdf'])->name('ver-pdf');
+        Route::get('/{oficio}/descargar-pdf', [OficioPdfController::class, 'descargarPdf'])->name('descargar-pdf');
+        Route::get('/tramite/{tramite}/generar-oficio', [OficioPdfController::class, 'generarOficioTramite'])->name('generar.tramite');
     });
 });
 

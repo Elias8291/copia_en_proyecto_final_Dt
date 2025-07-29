@@ -245,34 +245,78 @@ class TramiteController extends Controller
      */
     public function estado()
     {
-        $proveedor = $this->proveedorService->getProveedorByUser();
-        
-        if (!$proveedor) {
+        try {
+            // Buscar el proveedor directamente
+            $proveedor = \App\Models\Proveedor::where('usuario_id', auth()->id())->first();
+            
+            if (!$proveedor) {
+                return redirect()->route('tramites.index')
+                    ->with('error', 'No se encontró información del proveedor.');
+            }
+
+            // Obtener el trámite más reciente del proveedor con todas las relaciones necesarias
+            $tramite = $proveedor->tramites()
+                ->with(['proveedor.user', 'datosGenerales', 'oficios', 'cita'])
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            if (!$tramite) {
+                return redirect()->route('tramites.index')
+                    ->with('error', 'No se encontró ningún trámite.');
+            }
+
+            // Obtener la cita si existe
+            $cita = null;
+            if ($tramite->estado === 'Por_Cotejar') {
+                $cita = $tramite->cita;
+            }
+
+            // Obtener el oficio - mejorar la consulta
+            $oficio = null;
+            if ($tramite->estado === 'Aprobado') {
+                // Intentar obtener el oficio más reciente del trámite
+                $oficio = $tramite->oficios()->orderBy('created_at', 'desc')->first();
+                
+                // Si no se encuentra en la relación, intentar búsqueda directa
+                if (!$oficio) {
+                    $oficio = \App\Models\Oficio::where('tramite_id', $tramite->id)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+                }
+                
+                // Log para debugging
+                if (!$oficio) {
+                    Log::warning('No se encontró oficio para trámite aprobado', [
+                        'tramite_id' => $tramite->id,
+                        'estado' => $tramite->estado,
+                        'proveedor_id' => $tramite->proveedor_id
+                    ]);
+                } else {
+                    Log::info('Oficio encontrado para trámite', [
+                        'tramite_id' => $tramite->id,
+                        'oficio_id' => $oficio->id,
+                        'numero_oficio' => $oficio->numero_oficio
+                    ]);
+                }
+            }
+
+            return view('tramites.estado', [
+                'tramite' => $tramite,
+                'estado' => $tramite->estado,
+                'tramite_id' => $tramite->id,
+                'cita' => $cita,
+                'oficio' => $oficio
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error en método estado()', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return redirect()->route('tramites.index')
-                ->with('error', 'No se encontró información del proveedor.');
+                ->with('error', 'Error al cargar el estado del trámite: ' . $e->getMessage());
         }
-
-        // Obtener el trámite más reciente del proveedor
-        $tramite = $proveedor->tramites()
-            ->orderBy('created_at', 'desc')
-            ->first();
-
-        if (!$tramite) {
-            return redirect()->route('tramites.index')
-                ->with('error', 'No se encontró ningún trámite.');
-        }
-
-        // Obtener la cita si existe
-        $cita = null;
-        if ($tramite->estado === 'Por_Cotejar') {
-            $cita = $tramite->cita;
-        }
-
-        return view('tramites.estado', [
-            'tramite' => $tramite,
-            'estado' => $tramite->estado,
-            'tramite_id' => $tramite->id,
-            'cita' => $cita
-        ]);
     }
 }

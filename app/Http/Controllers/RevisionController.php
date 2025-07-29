@@ -84,7 +84,8 @@ class RevisionController extends Controller
                     'success' => true,
                     'message' => $resultado['message'],
                     'pv_asignado' => $resultado['pv_asignado'],
-                    'fecha_vencimiento' => $resultado['fecha_vencimiento']
+                    'fecha_vencimiento' => $resultado['fecha_vencimiento'],
+                    'numero_oficio' => $resultado['numero_oficio'] ?? null
                 ]);
             } else {
                 return response()->json([
@@ -443,6 +444,11 @@ class RevisionController extends Controller
         if ($nuevoEstado === 'Por_Cotejar') {
             $this->agendarCitaCotejo($tramite);
         }
+
+        // Si el estado es "Aprobado", crear oficio automáticamente
+        if ($nuevoEstado === 'Aprobado') {
+            $this->crearOficioAprobacion($tramite);
+        }
     }
 
     /**
@@ -470,6 +476,41 @@ class RevisionController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Error al agendar cita de cotejo', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Crea automáticamente un oficio de aprobación
+     */
+    private function crearOficioAprobacion(Tramite $tramite): void
+    {
+        try {
+            // Verificar si ya existe un oficio para este trámite
+            $oficioExistente = \App\Models\Oficio::where('tramite_id', $tramite->id)->first();
+            
+            if ($oficioExistente) {
+                Log::info('Oficio ya existe para el trámite', [
+                    'tramite_id' => $tramite->id,
+                    'oficio_id' => $oficioExistente->id
+                ]);
+                return;
+            }
+
+            // Crear nuevo oficio usando el servicio
+            $oficioService = app(\App\Services\OficioService::class);
+            $oficio = $oficioService->crearOficioAprobacion($tramite);
+
+            Log::info('Oficio de aprobación creado automáticamente', [
+                'tramite_id' => $tramite->id,
+                'oficio_id' => $oficio->id,
+                'numero_oficio' => $oficio->numero_oficio
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al crear oficio de aprobación', [
                 'tramite_id' => $tramite->id,
                 'error' => $e->getMessage()
             ]);

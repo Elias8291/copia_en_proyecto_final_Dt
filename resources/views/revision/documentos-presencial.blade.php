@@ -184,6 +184,9 @@
                 if (data.fecha_vencimiento) { 
                     mensaje += `\nFecha de Vencimiento: ${data.fecha_vencimiento}`; 
                 }
+                if (data.numero_oficio) {
+                    mensaje += `\nNúmero de Oficio: ${data.numero_oficio}`;
+                }
                 mensaje += '\n\nSe ha enviado una notificación al usuario.';
                 showNotification(mensaje, 'success');
                 setTimeout(() => { window.location.href = '/revision'; }, 3000);

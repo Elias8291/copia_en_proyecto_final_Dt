@@ -8,6 +8,8 @@ use App\Models\Tramite;
 use App\Helpers\TiempoHelper;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB; // Added DB facade
+use App\Services\OficioService; // Added OficioService
 
 class ProveedorService
 {
@@ -56,6 +58,7 @@ class ProveedorService
 
         return Tramite::where('proveedor_id', $proveedor->id)
             ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado', 'Aprobado'])
+            ->with(['proveedor.user', 'datosGenerales', 'oficios', 'cita'])
             ->latest()
             ->first();
     }
@@ -281,50 +284,98 @@ class ProveedorService
     }
 
     /**
-     * Aprobar un trámite y actualizar el proveedor según el tipo de trámite
+     * Aprobar trámite y crear oficio
      */
     public function aprobarTramite(Tramite $tramite): array
     {
         try {
-            $proveedor = $tramite->proveedor;
-            $tipoTramite = $tramite->tipo_tramite;
-            $resultado = [
-                'success' => false,
-                'message' => '',
-                'pv_asignado' => null,
-                'fecha_vencimiento' => null
-            ];
+            DB::beginTransaction();
 
-            // Actualizar estado del trámite
-            $tramite->update([
-                'estado' => 'Aprobado',
-                'fecha_aprobacion' => now(),
-                'revisado_por' => auth()->id()
-            ]);
+            $resultado = $this->procesarTramite($tramite);
+            
+            if ($resultado['success']) {
+                // Crear oficio de aprobación
+                $oficioService = app(OficioService::class);
+                $oficio = $oficioService->crearOficioAprobacion($tramite);
+                
+                // Generar PDF del oficio
+                $oficioPdfController = app(\App\Http\Controllers\OficioPdfController::class);
+                $pdfResponse = $oficioPdfController->generarPdf($oficio);
+                
+                // Guardar la URL del PDF generado
+                if ($pdfResponse) {
+                    // Crear un archivo temporal y guardar la URL
+                    $pdfPath = 'oficios/oficio_' . $oficio->numero_oficio . '.pdf';
+                    \Storage::put('public/' . $pdfPath, $pdfResponse->getContent());
+                    
+                    $oficio->update([
+                        'url_documento' => $pdfPath
+                    ]);
+                }
 
-            switch ($tipoTramite) {
-                case 'Inscripcion':
-                    $resultado = $this->procesarInscripcion($proveedor);
-                    break;
-                case 'Renovacion':
-                    $resultado = $this->procesarRenovacion($proveedor);
-                    break;
-                case 'Actualizacion':
-                    $resultado = $this->procesarActualizacion($proveedor);
-                    break;
-                default:
-                    $resultado['message'] = 'Tipo de trámite no reconocido';
-                    break;
+                DB::commit();
+
+                return array_merge($resultado, [
+                    'oficio_creado' => true,
+                    'numero_oficio' => $oficio->numero_oficio,
+                    'oficio_id' => $oficio->id
+                ]);
             }
 
+            DB::rollBack();
             return $resultado;
+
         } catch (\Exception $e) {
-            Log::error('Error al aprobar trámite: ' . $e->getMessage());
+            DB::rollBack();
+            Log::error('Error al aprobar trámite', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage()
+            ]);
+
             return [
                 'success' => false,
                 'message' => 'Error al procesar la aprobación: ' . $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Procesar trámite según su tipo
+     */
+    private function procesarTramite(Tramite $tramite): array
+    {
+        $proveedor = $tramite->proveedor;
+        $tipoTramite = $tramite->tipo_tramite;
+        $resultado = [
+            'success' => false,
+            'message' => '',
+            'pv_asignado' => null,
+            'fecha_vencimiento' => null
+        ];
+
+        // Actualizar estado del trámite
+        $tramite->update([
+            'estado' => 'Aprobado',
+            'fecha_aprobacion' => now(),
+            'revisado_por' => auth()->id()
+        ]);
+
+        switch ($tipoTramite) {
+            case 'Inscripcion':
+                $resultado = $this->procesarInscripcion($proveedor);
+                break;
+            case 'Renovacion':
+                $resultado = $this->procesarRenovacion($proveedor);
+                break;
+            case 'Actualizacion':
+                $resultado = $this->procesarActualizacion($proveedor);
+                break;
+            default:
+                $resultado['message'] = 'Tipo de trámite no reconocido';
+                break;
+        }
+
+        return $resultado;
     }
 
     /**

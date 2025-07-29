@@ -65,14 +65,28 @@
                     $paso_actual = $detalles['estado_descripcion'];
                     $historial = [];
                     $cita = $detalles['cita'] ?? null;
+                    
+                    // Obtener el oficio si el trámite está aprobado
+                    $oficio = null;
+                    if ($tramite->estado === 'Aprobado') {
+                        $oficio = $tramite->oficios()->orderBy('created_at', 'desc')->first();
+                        
+                        if (!$oficio) {
+                            $oficio = \App\Models\Oficio::where('tramite_id', $tramite->id)
+                                ->orderBy('created_at', 'desc')
+                                ->first();
+                        }
+                    }
                 @endphp
                 
                 @include('tramites.estado', [
+                    'tramite' => $tramite,
                     'tramite_id' => $tramite_id,
                     'estado' => $estado,
                     'paso_actual' => $paso_actual,
                     'historial' => $historial,
-                    'cita' => $cita
+                    'cita' => $cita,
+                    'oficio' => $oficio
                 ])
             @endif
 

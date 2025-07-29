@@ -9,7 +9,6 @@ class Tramite extends Model
 {
     use HasFactory;
 
-    
     protected $fillable = [
         'proveedor_id',
         'tipo_tramite',
@@ -27,35 +26,35 @@ class Tramite extends Model
         'fecha_finalizacion' => 'datetime',
     ];
 
+    // Relaciones
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class);
     }
 
-    public function procesadoPor()
-    {
-        return $this->belongsTo(User::class, 'procesado_por');
-    }
-
-    public function revisadoPor()
-    {
-        return $this->belongsTo(User::class, 'revisado_por');
-    }
-
-    public function datosProveedor()
-    {
-        return $this->hasOne(DatosProveedor::class);
-    }
-
-    // Nuevas relaciones para el formulario completo
     public function datosGenerales()
     {
         return $this->hasOne(DatosGenerales::class);
     }
 
+    public function datosConstitutivos()
+    {
+        return $this->hasOne(DatosConstitutivos::class);
+    }
+
+    public function direccion()
+    {
+        return $this->hasOne(Direccion::class, 'id_tramite');
+    }
+
     public function direcciones()
     {
         return $this->hasMany(Direccion::class, 'id_tramite');
+    }
+
+    public function datosProveedor()
+    {
+        return $this->hasOne(DatosProveedor::class);
     }
 
     public function contactos()
@@ -74,11 +73,6 @@ class Tramite extends Model
                     ->withPivot('id', 'created_at', 'updated_at');
     }
 
-    public function datosConstitutivos()
-    {
-        return $this->hasOne(DatosConstitutivos::class);
-    }
-
     public function apoderadoLegal()
     {
         return $this->hasOne(ApoderadoLegal::class);
@@ -94,9 +88,24 @@ class Tramite extends Model
         return $this->hasMany(RevisionSeccion::class);
     }
 
+    public function oficios()
+    {
+        return $this->hasMany(Oficio::class);
+    }
+
     public function cita()
     {
         return $this->hasOne(Cita::class);
+    }
+
+    public function revisadoPor()
+    {
+        return $this->belongsTo(User::class, 'revisado_por');
+    }
+
+    public function procesadoPor()
+    {
+        return $this->belongsTo(User::class, 'procesado_por');
     }
 
     /**

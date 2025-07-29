@@ -271,7 +271,62 @@
                             </div>
                             <div class="flex-1">
                                 <h3 class="text-lg font-semibold text-[#9d2449] mb-2">¡Felicidades! Su trámite ha sido aprobado.</h3>
-                                <p class="text-gray-700 text-sm">Su registro está activo y puede acceder a todos los servicios del padrón.</p>
+                                <p class="text-gray-700 text-sm mb-4">Su registro está activo y puede acceder a todos los servicios del padrón.</p>
+                                
+                                @if(isset($oficio) && $oficio)
+                                    <div class="bg-white rounded-lg p-6 border border-[#9d2449]/20 shadow-sm">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center space-x-4">
+                                                <div class="w-12 h-12 bg-gradient-to-br from-[#9d2449]/10 to-[#8a203f]/10 rounded-xl flex items-center justify-center shadow-sm">
+                                                    <svg class="w-6 h-6 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-[#9d2449] font-semibold text-base mb-2">Oficio de Aprobación</h4>
+                                                    <div class="space-y-1">
+                                                        <p class="text-gray-600 text-sm">
+                                                            <span class="font-medium">Número:</span> {{ $oficio->numero_oficio }}
+                                                        </p>
+                                                        <p class="text-gray-600 text-sm">
+                                                            <span class="font-medium">Fecha:</span> {{ $oficio->fecha_formateada }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex space-x-2">
+                                                <a href="{{ route('oficios.ver-pdf', $oficio->id) }}" 
+                                                   target="_blank"
+                                                   class="inline-flex items-center px-4 py-3 bg-gradient-to-r from-[#9d2449] to-[#8a203f] text-white text-sm font-semibold rounded-lg hover:from-[#8a203f] hover:to-[#7a1c37] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                    </svg>
+                                                    Ver PDF
+                                                </a>
+                                                <a href="{{ route('oficios.descargar-pdf', $oficio->id) }}" 
+                                                   class="inline-flex items-center px-4 py-3 bg-gray-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                    </svg>
+                                                    Descargar
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                        <div class="flex items-center space-x-3">
+                                            <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                            </svg>
+                                            <div>
+                                                <h4 class="text-yellow-800 font-semibold text-sm">Oficio en proceso</h4>
+                                                <p class="text-yellow-700 text-sm">Su oficio de aprobación está siendo generado. Por favor, espere unos momentos y recargue la página.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
