@@ -182,7 +182,7 @@
                                class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
                                placeholder="Nombre completo"
                                    {{ !$permitirEdicion ? 'readonly' : '' }} required>
-                        </div>
+                    </div>
                 </div>
 
                                     <!-- Campo RFC -->

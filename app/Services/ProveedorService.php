@@ -279,4 +279,137 @@ class ProveedorService
     {
         return TiempoHelper::getTipoPersona($proveedor);
     }
+
+    /**
+     * Aprobar un trámite y actualizar el proveedor según el tipo de trámite
+     */
+    public function aprobarTramite(Tramite $tramite): array
+    {
+        try {
+            $proveedor = $tramite->proveedor;
+            $tipoTramite = $tramite->tipo_tramite;
+            $resultado = [
+                'success' => false,
+                'message' => '',
+                'pv_asignado' => null,
+                'fecha_vencimiento' => null
+            ];
+
+            // Actualizar estado del trámite
+            $tramite->update([
+                'estado' => 'Aprobado',
+                'fecha_aprobacion' => now(),
+                'revisado_por' => auth()->id()
+            ]);
+
+            switch ($tipoTramite) {
+                case 'Inscripcion':
+                    $resultado = $this->procesarInscripcion($proveedor);
+                    break;
+                case 'Renovacion':
+                    $resultado = $this->procesarRenovacion($proveedor);
+                    break;
+                case 'Actualizacion':
+                    $resultado = $this->procesarActualizacion($proveedor);
+                    break;
+                default:
+                    $resultado['message'] = 'Tipo de trámite no reconocido';
+                    break;
+            }
+
+            return $resultado;
+        } catch (\Exception $e) {
+            Log::error('Error al aprobar trámite: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Error al procesar la aprobación: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Procesar inscripción: asignar nuevo PV y fecha de alta
+     */
+    private function procesarInscripcion(Proveedor $proveedor): array
+    {
+        $nuevoPV = $this->generarNuevoPV();
+        $fechaActual = now();
+        
+        $proveedor->update([
+            'pv_numero' => $nuevoPV,
+            'estado_padron' => 'Activo',
+            'alta_al_padron' => $fechaActual,
+            'fecha_vencimiento_padron' => $fechaActual->addYear(),
+            'fecha_actualizacion' => $fechaActual
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Inscripción aprobada exitosamente',
+            'pv_asignado' => $nuevoPV,
+            'fecha_vencimiento' => $proveedor->fecha_vencimiento_padron->format('Y-m-d')
+        ];
+    }
+
+    /**
+     * Procesar renovación: mantener PV, actualizar fecha de vencimiento
+     */
+    private function procesarRenovacion(Proveedor $proveedor): array
+    {
+        $fechaVencimientoOriginal = $proveedor->fecha_vencimiento_padron;
+        $nuevaFechaVencimiento = $fechaVencimientoOriginal->addYear();
+
+        $proveedor->update([
+            'estado_padron' => 'Activo',
+            'fecha_vencimiento_padron' => $nuevaFechaVencimiento,
+            'fecha_actualizacion' => now()
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Renovación aprobada exitosamente',
+            'pv_asignado' => $proveedor->pv_numero,
+            'fecha_vencimiento' => $nuevaFechaVencimiento->format('Y-m-d')
+        ];
+    }
+
+    /**
+     * Procesar actualización: mantener PV y fecha de vencimiento
+     */
+    private function procesarActualizacion(Proveedor $proveedor): array
+    {
+        $proveedor->update([
+            'estado_padron' => 'Activo',
+            'fecha_actualizacion' => now()
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Actualización aprobada exitosamente',
+            'pv_asignado' => $proveedor->pv_numero,
+            'fecha_vencimiento' => $proveedor->fecha_vencimiento_padron->format('Y-m-d')
+        ];
+    }
+
+    /**
+     * Generar nuevo PV continuando la secuencia del último registrado
+     */
+    private function generarNuevoPV(): string
+    {
+        $ultimoProveedor = Proveedor::whereNotNull('pv_numero')
+            ->where('pv_numero', 'like', 'PV%')
+            ->orderByRaw('CAST(SUBSTRING(pv_numero, 3) AS UNSIGNED) DESC')
+            ->first();
+
+        if (!$ultimoProveedor || !$ultimoProveedor->pv_numero) {
+            return 'PV0001';
+        }
+
+        // Extraer el número del último PV
+        $numeroActual = (int) substr($ultimoProveedor->pv_numero, 2);
+        $nuevoNumero = $numeroActual + 1;
+        
+        // Formatear con ceros a la izquierda (mínimo 4 dígitos)
+        return 'PV' . str_pad($nuevoNumero, 4, '0', STR_PAD_LEFT);
+    }
 }

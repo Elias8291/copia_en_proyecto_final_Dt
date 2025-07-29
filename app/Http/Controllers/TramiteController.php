@@ -161,7 +161,7 @@ class TramiteController extends Controller
     {
         $tramiteId = session('tramite_id');
         $mensaje = session('success', 'Su trámite ha sido enviado exitosamente.');
-
+        
         return view('tramites.exito', [
             'tramite_id' => $tramiteId,
             'mensaje' => $mensaje

@@ -223,4 +223,5 @@ Route::prefix('api')->group(function () {
     Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
     Route::get('/revision/{tramite}/estados', [RevisionController::class, 'obtenerEstados'])->name('api.revision.estados');
+    Route::post('/revision/{tramite}/aprobar', [RevisionController::class, 'aprobarTramite'])->name('api.revision.aprobar');
 });

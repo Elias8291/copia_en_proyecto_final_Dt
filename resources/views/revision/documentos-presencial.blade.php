@@ -102,6 +102,15 @@
 
         <!-- Botones de Acción -->
         <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+            <button type="button" onclick="aprobarTramite({{ $tramite->id }})"
+                class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-green-600 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="hidden sm:inline">Aprobar Trámite</span>
+                <span class="sm:hidden">Aprobar</span>
+            </button>
+            
             <button type="button" onclick="confirmarIdentificacion({{ $tramite->id }})"
                 class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
                 <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,6 +149,58 @@
     window.tramiteId = {{ $tramite->id }};
     window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     window.revisionSeccionComentarioRoute = '/revision/seccion/comentario';
+
+    function aprobarTramite(tramiteId) {
+        if (!confirm('¿Está seguro que desea aprobar este trámite? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        // Mostrar indicador de carga
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = `
+            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Procesando...</span>
+        `;
+        button.disabled = true;
+
+        fetch(`/api/revision/${tramiteId}/aprobar`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': window.csrfToken,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                let mensaje = data.message;
+                if (data.pv_asignado) { 
+                    mensaje += `\nPV Asignado: ${data.pv_asignado}`; 
+                }
+                if (data.fecha_vencimiento) { 
+                    mensaje += `\nFecha de Vencimiento: ${data.fecha_vencimiento}`; 
+                }
+                mensaje += '\n\nSe ha enviado una notificación al usuario.';
+                showNotification(mensaje, 'success');
+                setTimeout(() => { window.location.href = '/revision'; }, 3000);
+            } else {
+                showNotification(data.message || 'Error al aprobar el trámite', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error al procesar la solicitud', 'error');
+        })
+        .finally(() => {
+            // Restaurar el botón
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
 
     function confirmarIdentificacion(tramiteId) {
         alert('Función de confirmar identificación en desarrollo. Por favor, contacte al administrador del sistema.');

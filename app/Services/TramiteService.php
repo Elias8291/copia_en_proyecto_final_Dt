@@ -45,14 +45,14 @@ class TramiteService
     public function validarAccesoTramite(string $tipo, ?Proveedor $proveedor): bool
     {
         $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
-
+        
         // Más permisivo en development
         if (app()->environment('local', 'development')) {
             if (in_array($tipo, ['inscripcion', 'renovacion', 'actualizacion'])) {
                 return true;
             }
         }
-
+        
         return $tramitesDisponibles[$tipo] ?? false;
     }
 
@@ -249,7 +249,7 @@ class TramiteService
         }
 
         $rfc = $this->normalizarRfc($request->input('rfc', 'XAXX010101000'));
-
+        
         $proveedorTemporal = new Proveedor(['rfc' => $rfc]);
         $tipoPersona = $this->proveedorService->getTipoPersona($proveedorTemporal);
 
@@ -279,7 +279,7 @@ class TramiteService
     private function procesarDatosTramite(Tramite $tramite, Request $request): void
     {
         $this->guardarDatosPrincipales($tramite, $request);
-
+        
         if ($this->esPersonaMoral($request->input('rfc', 'XAXX010101000'))) {
             $this->procesarPersonaMoral($tramite, $request);
         }
@@ -294,7 +294,7 @@ class TramiteService
         $this->procesarActividadesConTemporales($tramite, $request);
         app(DocumentosService::class)->guardar($tramite, $request);
     }
-
+    
     // Procesa actividades con temporales
     private function procesarActividadesConTemporales(Tramite $tramite, Request $request): void
     {
@@ -354,7 +354,7 @@ class TramiteService
         if ($request->has('accionistas')) {
             $tramite->accionistas()->delete();
             $this->datosConstitutivosService->procesar($tramite, $request);
-        }
+    }
 
         // Documentos
         if ($request->has('documentos')) {
@@ -377,7 +377,7 @@ class TramiteService
     {
         $proveedorTemporal = new Proveedor(['rfc' => $rfc]);
         $tipoPersona = $this->proveedorService->getTipoPersona($proveedorTemporal);
-        
+
         return $tipoPersona === 'Moral';
     }
 }

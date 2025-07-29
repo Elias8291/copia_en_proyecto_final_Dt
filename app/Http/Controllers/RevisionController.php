@@ -49,6 +49,58 @@ class RevisionController extends Controller
         return view('revision.revision-digital', compact('tramite'));
     }
 
+    /**
+     * Aprobar un trámite
+     */
+    public function aprobarTramite(Tramite $tramite)
+    {
+        try {
+            $proveedorService = app(ProveedorService::class);
+            $resultado = $proveedorService->aprobarTramite($tramite);
+
+            if ($resultado['success']) {
+                // Crear notificación usando el servicio
+                $mensaje = "Su trámite {$tramite->tipo_tramite} ha sido aprobado exitosamente. ";
+                
+                if ($resultado['pv_asignado']) {
+                    $mensaje .= "PV Asignado: {$resultado['pv_asignado']}. ";
+                }
+                
+                if ($resultado['fecha_vencimiento']) {
+                    $mensaje .= "Fecha de vencimiento: {$resultado['fecha_vencimiento']}. ";
+                }
+                
+                $mensaje .= "Su proveedor ha quedado inscrito al padrón.";
+
+                $this->notificacionService->crearNotificacion(
+                    $tramite->proveedor->user->id,
+                    $tramite->id,
+                    'Tramite',
+                    'Trámite Aprobado - Inscrito al Padrón',
+                    $mensaje
+                );
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $resultado['message'],
+                    'pv_asignado' => $resultado['pv_asignado'],
+                    'fecha_vencimiento' => $resultado['fecha_vencimiento']
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => $resultado['message']
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al aprobar trámite: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la aprobación'
+            ], 500);
+        }
+    }
+
 
 
 
