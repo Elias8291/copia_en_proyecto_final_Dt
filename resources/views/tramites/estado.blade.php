@@ -2,31 +2,9 @@
 
 @section('title', 'Estado del Trámite')
 
-@php
-    $colorCirculo = match($estado) {
-        'Aprobado' => 'bg-emerald-500',
-        'Rechazado' => 'bg-red-500',
-        'Para_Correccion' => 'bg-amber-500',
-        'Cancelado' => 'bg-gray-500',
-        'Por_Cotejar' => 'bg-purple-500',
-        'En_Revision' => 'bg-blue-500',
-        default => 'bg-yellow-400'
-    };
-    
-    $colorBadge = match($estado) {
-        'Aprobado' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
-        'Para_Correccion' => 'bg-amber-50 text-amber-700 border-amber-200',
-        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-300',
-        'Por_Cotejar' => 'bg-purple-50 text-purple-700 border-purple-200',
-        'En_Revision' => 'bg-blue-50 text-blue-700 border-blue-200',
-        default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
-    };
-@endphp
-
 @section('content')
 <div class="min-h-screen flex items-start justify-center p-4 sm:p-6 lg:p-8 pt-16">
-    <div class="w-full max-w-7xl bg-white rounded-2xl shadow-2xl border border-gr ay-100 overflow-hidden">
+    <div class="w-full max-w-7xl bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
         {{-- Header elegante --}}
         <div class="relative h-12 sm:h-20 lg:h-28 bg-gradient-to-br from-[#9d2449] via-[#8a203f] to-[#7a1d37] overflow-hidden">
             <div class="absolute inset-0 bg-black/10"></div>
@@ -57,6 +35,28 @@
         {{-- Contenido principal --}}
         <div class="px-6 sm:px-8 lg:px-12 py-8 sm:py-12">
             <div class="text-center mb-6">
+                @php
+                    $colorCirculo = match($estado ?? 'En_Revision') {
+                        'Aprobado' => 'bg-emerald-500',
+                        'Rechazado' => 'bg-red-500',
+                        'Para_Correccion' => 'bg-amber-500',
+                        'Cancelado' => 'bg-gray-500',
+                        'Por_Cotejar' => 'bg-purple-500',
+                        'En_Revision' => 'bg-blue-500',
+                        default => 'bg-yellow-400'
+                    };
+                    
+                    $colorBadge = match($estado ?? 'En_Revision') {
+                        'Aprobado' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
+                        'Para_Correccion' => 'bg-amber-50 text-amber-700 border-amber-200',
+                        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-300',
+                        'Por_Cotejar' => 'bg-purple-50 text-purple-700 border-purple-200',
+                        'En_Revision' => 'bg-blue-50 text-blue-700 border-blue-200',
+                        default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
+                    };
+                @endphp
+                
                 <div class="inline-flex items-center space-x-4 bg-black/5 rounded-full px-4 py-2 mb-4">
                     <div class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-[#9d2449] rounded-full"></div>
@@ -71,30 +71,18 @@
                             {{ $estado ?? 'En revisión' }}
                         </span>
                     </div>
+                    @if(($tramite->correcciones_count ?? 0) > 0)
+                        <div class="w-px h-4 bg-black/20"></div>
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            <span class="text-xs font-medium text-black/70">Correcciones:</span>
+                            <span class="text-xs font-bold text-amber-600">{{ $tramite->correcciones_texto }}</span>
+                        </div>
+                    @endif
                 </div>
                 
-                @php
-                    $colorCirculo = match($estado) {
-                        'Aprobado' => 'bg-emerald-500',
-                        'Rechazado' => 'bg-red-500',
-                        'Para_Correccion' => 'bg-amber-500',
-                        'Cancelado' => 'bg-gray-500',
-                        'Por_Cotejar' => 'bg-purple-500',
-                        'En_Revision' => 'bg-blue-500',
-                        default => 'bg-yellow-400'
-                    };
-                    
-                    $colorBadge = match($estado) {
-                        'Aprobado' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
-                        'Para_Correccion' => 'bg-amber-50 text-amber-700 border-amber-200',
-                        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-300',
-                        'Por_Cotejar' => 'bg-purple-50 text-purple-700 border-purple-200',
-                        'En_Revision' => 'bg-blue-50 text-blue-700 border-blue-200',
-                        default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
-                    };
-                @endphp
-                
 
                 
 
@@ -102,7 +90,7 @@
 
 
 
-                @if($estado === 'Para_Correccion')
+                @if(($estado ?? '') === 'Para_Correccion')
                     <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
                         <div class="flex items-start space-x-4">
                             <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
@@ -143,10 +131,21 @@
                                     </svg>
                                     Una vez corregido, su trámite será procesado con prioridad.
                                 </p>
+                                
+                                {{-- Botón para hacer correcciones --}}
+                                <div class="mt-6 flex justify-center">
+                                    <a href="{{ route('tramites.corregir', $tramite_id ?? session('tramite_id')) }}" 
+                                       class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#8a203f] text-white font-semibold rounded-lg shadow-lg hover:from-[#8a203f] hover:to-[#7a1d37] focus:outline-none focus:ring-4 focus:ring-[#9d2449]/30 transition-all duration-300 transform hover:scale-105">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                        Hacer Correcciones
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                @elseif($estado === 'Por_Cotejar')
+                @elseif(($estado ?? '') === 'Por_Cotejar')
                     <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
                         <div class="flex items-center space-x-4 mb-6">
                             <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm">
@@ -222,7 +221,7 @@
                             </div>
                         @endif
                     </div>
-                @elseif($estado === 'Cancelado')
+                @elseif(($estado ?? '') === 'Cancelado')
                     <div class="mt-6 p-6 bg-gradient-to-r from-black/5 to-black/10 border border-black/20 rounded-xl shadow-sm">
                         <div class="flex items-start space-x-4">
                             <div class="w-12 h-12 bg-black rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
@@ -242,7 +241,7 @@
                             </div>
                         </div>
                     </div>
-                @elseif($estado === 'En_Revision')
+                @elseif(($estado ?? '') === 'En_Revision')
                     <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
                         <div class="flex items-start space-x-4">
                             <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
@@ -262,7 +261,7 @@
                             </div>
                         </div>
                     </div>
-                @elseif($estado === 'Aprobado')
+                @elseif(($estado ?? '') === 'Aprobado')
                     <div class="mt-6 p-6 bg-gradient-to-r from-[#9d2449]/5 to-[#8a203f]/5 border border-[#9d2449]/20 rounded-xl shadow-sm">
                         <div class="flex items-start space-x-4">
                             <div class="w-12 h-12 bg-[#9d2449] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
@@ -276,7 +275,7 @@
                             </div>
                         </div>
                     </div>
-                @elseif($estado === 'Rechazado')
+                @elseif(($estado ?? '') === 'Rechazado')
                     <div class="mt-6 p-6 bg-gradient-to-r from-black/5 to-black/10 border border-black/20 rounded-xl shadow-sm">
                         <div class="flex items-start space-x-4">
                             <div class="w-12 h-12 bg-black rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">

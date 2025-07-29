@@ -46,6 +46,20 @@
                 'label' => 'Revisor',
                 'field' => 'revisadoPor.nombre',
                 'type' => 'text'
+            ],
+            [
+                'label' => 'Correcciones',
+                'field' => 'correcciones_count',
+                'type' => 'badge',
+                'colors' => [
+                    '0' => 'bg-gray-100 text-gray-700 border-gray-200',
+                    '1' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
+                    '2' => 'bg-orange-100 text-orange-700 border-orange-200',
+                    '3' => 'bg-red-100 text-red-700 border-red-200'
+                ],
+                'format' => function($value, $row) {
+                    return $row->correcciones_texto;
+                }
             ]
         ];
 

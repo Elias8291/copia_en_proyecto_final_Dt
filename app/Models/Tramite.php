@@ -19,6 +19,7 @@ class Tramite extends Model
         'fecha_finalizacion',
         'observaciones',
         'revisado_por',
+        'correcciones_count',
     ];
 
     protected $casts = [
@@ -69,7 +70,8 @@ class Tramite extends Model
 
     public function actividades()
     {
-        return $this->belongsToMany(ActividadEconomica::class, 'actividades', 'tramite_id', 'actividad_id');
+        return $this->belongsToMany(ActividadEconomica::class, 'actividades', 'tramite_id', 'actividad_id')
+                    ->withPivot('id', 'created_at', 'updated_at');
     }
 
     public function datosConstitutivos()
@@ -92,6 +94,21 @@ class Tramite extends Model
         return $this->hasOne(Cita::class);
     }
 
+    /**
+     * Obtiene el texto de las correcciones
+     */
+    public function getCorreccionesTextoAttribute(): string
+    {
+        $count = $this->correcciones_count ?? 0;
+        
+        if ($count === 0) {
+            return 'Ninguna corrección';
+        } elseif ($count === 1) {
+            return '1 corrección';
+        } else {
+            return $count . ' correcciones';
+        }
+    }
 
     /**
      * Obtiene el tiempo transcurrido desde la creación del trámite

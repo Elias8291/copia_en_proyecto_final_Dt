@@ -1,22 +1,49 @@
-@props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => [], 'editable' => true])
+@props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => [], 'editable' => true, 'tramite' => null])
 
 @php
+    // Obtener el estado de la sección
+    $revisionSeccion = null;
+    if ($tramite) {
+        $revisionSeccion = \App\Models\RevisionSeccion::where('tramite_id', $tramite->id)
+            ->where('seccion', 'datos_generales')
+            ->first();
+    }
+    
+    $seccionAprobada = $revisionSeccion && $revisionSeccion->aprobado === true;
+    $permitirEdicion = $editable && !$seccionAprobada;
+    
     // Obtener el RFC para determinar el tipo de persona
     $rfcValue = old('rfc', $datosSat['rfc'] ?? (Auth::user()->rfc ?? ''));
     $rfcValue = strtoupper(trim($rfcValue));
     
-    // Calcular tipo de persona basándose en la longitud del RFC
-    if ($rfcValue && strlen($rfcValue) === 12) {
-        $tipoPersona = 'Moral';
-    } elseif ($rfcValue && strlen($rfcValue) === 13) {
-        $tipoPersona = 'Física';
+    // Si es una corrección y tenemos datos del trámite, usar esos datos
+    if ($tramite && $tramite->datosGenerales) {
+        $rfcValue = old('rfc', $tramite->datosGenerales->rfc ?? $rfcValue);
+        $razonSocial = old('razon_social', $tramite->datosGenerales->razon_social ?? '');
+        $curp = old('curp', $tramite->datosGenerales->curp ?? '');
+        $paginaWeb = old('pagina_web', $tramite->datosGenerales->pagina_web ?? '');
+        $telefono = old('telefono', $tramite->datosGenerales->telefono ?? '');
+        $emailContacto = old('email_contacto', $tramite->contactos->first()?->correo_electronico ?? '');
+        $cargo = old('cargo', $tramite->contactos->first()?->cargo ?? '');
     } else {
-        // Si no se puede determinar, usar el valor del proveedor o default
-        $tipoPersona = $proveedor->tipo_persona ?? 'Física';
+        $razonSocial = old('razon_social', $datosSat['razon_social'] ?? '');
+        $curp = old('curp', $datosSat['curp'] ?? '');
+        $paginaWeb = old('pagina_web', '');
+        $telefono = old('telefono', '');
+        $emailContacto = old('email_contacto', '');
+        $cargo = old('cargo', '');
     }
+    
+    // Determinar tipo de persona
+    $tipoPersona = $tipoPersona ?? 'Física';
+    if ($rfcValue) {
+        $tipoPersona = strlen($rfcValue) === 13 ? 'Moral' : 'Física';
+    }
+    
+    $esPersonaMoral = $tipoPersona === 'Moral';
 @endphp
 
-<div class="space-y-8" {{ $attributes }}>
+<div class="space-y-6" {{ $attributes }} data-seccion="datos_generales">
     <!-- Información del Trámite -->
    
     <div>
@@ -34,10 +61,11 @@
                         <i class="fas fa-building text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" name="razon_social" 
-                        value="{{ old('razon_social', $datosSat['razon_social'] ?? ($proveedor->razon_social ?? '')) }}"
+                        value="{{ $razonSocial }}"
                         data-validate="required|minLength:3|maxLength:255"
-                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('razon_social') ? 'error-field border-red-500 bg-red-50' : '' }}"
-                        aria-label="Razón social de la empresa" placeholder="Ingrese la razón social completa">
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('razon_social') ? 'error-field border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        aria-label="Razón social de la empresa" placeholder="Ingrese la razón social completa"
+                        {{ !$permitirEdicion ? 'disabled' : '' }}>
                     @if($errors->has('razon_social'))
                         <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('razon_social') }}</div>
                     @endif
@@ -54,13 +82,14 @@
                         <i class="fas fa-id-card text-gray-500 text-xs sm:text-sm"></i>
                     </div>
 
-                    <input type="text" name="rfc" value="{{ $rfcValue }}"
-                        data-validate="required|rfc|rfc-persona"
-                        class="validate-rfc block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] font-mono sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('rfc') ? 'error-field border-red-500 bg-red-50' : '' }}"
-                        aria-label="RFC de la empresa" placeholder="Ej: ABC123456789 (12) o ABCD123456789 (13)"
-                        maxlength="13" pattern="[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}"
-                        style="text-transform: uppercase;"
-                        data-error="{{ $errors->first('rfc') }}">
+                    <input type="text" 
+                               id="rfc" 
+                               name="rfc" 
+                               value="{{ $rfcValue }}" 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-transparent @error('rfc') border-red-500 @enderror"
+                               placeholder="RFC"
+                               {{ !$permitirEdicion ? 'disabled' : '' }}
+                               required>
                     @if($errors->has('rfc'))
                         <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('rfc') }}</div>
                     @endif
@@ -97,7 +126,7 @@
                         <i class="fas fa-address-card text-gray-500"></i>
                     </div>
                     <input type="text" name="curp" maxlength="18" readonly
-                        value="{{ old('curp', $datosSat['curp'] ?? ($proveedor->curp ?? '')) }}"
+                        value="{{ $curp }}"
                         data-validate="required|curp"
                         class="validate-curp block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm font-mono"
                         placeholder="Ej: ABCD123456HDFGHI01" aria-label="CURP de la persona física"
@@ -113,10 +142,11 @@
                         <i class="fas fa-globe text-gray-500"></i>
                     </div>
                     <input type="url" name="pagina_web"
-                        value="{{ old('pagina_web', $proveedor->pagina_web ?? '') }}" data-validate="url"
+                        value="{{ $paginaWeb }}" data-validate="url"
                         placeholder="https://www.ejemplo.com"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
-                        aria-label="Página web de la empresa">
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        aria-label="Página web de la empresa"
+                        {{ !$permitirEdicion ? 'disabled' : '' }}>
                 </div>
             </div>
 
@@ -134,11 +164,12 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-briefcase text-gray-500"></i>
                         </div>
-                        <input type="text" name="cargo" value="{{ old('cargo', $proveedor->cargo ?? '') }}"
+                        <input type="text" name="cargo" value="{{ $cargo }}"
                             data-validate="minLength:2|maxLength:100"
                             placeholder="Ej: Director General, Representante Legal"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
-                            aria-label="Cargo del representante">
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            aria-label="Cargo del representante"
+                            {{ !$permitirEdicion ? 'disabled' : '' }}>
                     </div>
                 </div>
 
@@ -152,11 +183,12 @@
                             <i class="fas fa-envelope text-gray-500"></i>
                         </div>
                         <input type="email" name="email_contacto" required
-                            value="{{ old('email_contacto', $proveedor->email_contacto ?? '') }}"
+                            value="{{ $emailContacto }}"
                             data-validate="required|email" placeholder="ejemplo@correo.com"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('email_contacto') ? 'error-field border-red-500 bg-red-50' : '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('email_contacto') ? 'error-field border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                             data-error="{{ $errors->first('email_contacto') }}"
-                            aria-label="Correo electrónico de contacto">
+                            aria-label="Correo electrónico de contacto"
+                            {{ !$permitirEdicion ? 'disabled' : '' }}>
                         @if($errors->has('email_contacto'))
                             <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('email_contacto') }}</div>
                         @endif
@@ -173,12 +205,17 @@
                             <i class="fas fa-phone text-gray-500"></i>
                         </div>
                         <input type="tel" name="telefono" required
-                            value="{{ old('telefono', $proveedor->telefono ?? '') }}" data-validate="required|phone"
-                            class="validate-phone block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
-                            placeholder="Ej: 5551234567 (10 dígitos)" aria-label="Número de teléfono" maxlength="10">
+                            value="{{ $telefono }}" data-validate="required|phone"
+                            class="validate-phone block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            placeholder="Ej: 5551234567 (10 dígitos)" aria-label="Número de teléfono" maxlength="10"
+                            {{ !$permitirEdicion ? 'disabled' : '' }}>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@if($tramite)
+    @include('tramites.partials.estado-seccion', ['seccion' => 'datos_generales', 'tramite' => $tramite])
+@endif

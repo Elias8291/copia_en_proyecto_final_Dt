@@ -1,6 +1,28 @@
-@props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true])
+@props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true, 'tramite' => null])
 
-<div class="space-y-8" {{ $attributes }}>
+@php
+    // Si es una corrección y tenemos datos del trámite, obtener los datos del apoderado existente
+    $apoderado = null;
+    $instrumentoNotarial = null;
+    if ($tramite && $tramite->apoderadoLegal) {
+        $apoderado = $tramite->apoderadoLegal;
+        if ($apoderado->instrumentoNotarial) {
+            $instrumentoNotarial = $apoderado->instrumentoNotarial;
+        }
+    }
+    
+    // Valores para los campos
+    $apoderadoNombre = old('apoderado_nombre', $apoderado?->nombre_apoderado ?? '');
+    $apoderadoRfc = old('apoderado_rfc', $apoderado?->rfc ?? '');
+    $poderNumeroEscritura = old('poder_numero_escritura', $instrumentoNotarial?->numero_escritura ?? '');
+    $poderFechaConstitucion = old('poder_fecha_constitucion', $instrumentoNotarial?->fecha_constitucion ? $instrumentoNotarial->fecha_constitucion->format('Y-m-d') : '');
+    $poderNotarioNombre = old('poder_notario_nombre', $instrumentoNotarial?->nombre_notario ?? '');
+    $poderEntidadFederativa = old('poder_entidad_federativa', $instrumentoNotarial?->entidad_federativa ?? '');
+    $poderNotarioNumero = old('poder_notario_numero', $instrumentoNotarial?->numero_notario ?? '');
+    $poderNumeroRegistro = old('poder_numero_registro', $instrumentoNotarial?->numero_registro_publico ?? '');
+@endphp
+
+<div class="space-y-6" {{ $attributes }} data-seccion="apoderado">
     <!-- Información del Trámite -->
    
     <div>
@@ -18,7 +40,7 @@
                         <i class="fas fa-user text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="apoderado_nombre" name="apoderado_nombre" 
-                           value="{{ old('apoderado_nombre') }}"
+                           value="{{ $apoderadoNombre }}"
                            data-validate="required|minLength:3|maxLength:255"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                            placeholder="Nombre completo del apoderado legal"
@@ -36,7 +58,7 @@
                         <i class="fas fa-id-card text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="apoderado_rfc" name="apoderado_rfc" 
-                           value="{{ old('apoderado_rfc') }}"
+                           value="{{ $apoderadoRfc }}"
                            data-validate="required|rfc"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 font-mono"
                            placeholder="RFC del apoderado"
@@ -65,7 +87,7 @@
                         <i class="fas fa-file-contract text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="poder_numero_escritura" name="poder_numero_escritura" 
-                           value="{{ old('poder_numero_escritura') }}"
+                           value="{{ $poderNumeroEscritura }}"
                            data-validate="required|minLength:3|maxLength:255"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                            placeholder="Número de escritura del poder"
@@ -83,7 +105,7 @@
                         <i class="fas fa-calendar-alt text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="date" id="poder_fecha_constitucion" name="poder_fecha_constitucion" 
-                           value="{{ old('poder_fecha_constitucion') }}"
+                           value="{{ $poderFechaConstitucion }}"
                            data-validate="required"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                            aria-label="Fecha de constitución del poder" required>
@@ -100,7 +122,7 @@
                         <i class="fas fa-user-tie text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="poder_notario_nombre" name="poder_notario_nombre" 
-                           value="{{ old('poder_notario_nombre') }}"
+                           value="{{ $poderNotarioNombre }}"
                            data-validate="required|minLength:3|maxLength:255"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                            placeholder="Nombre completo del notario"
@@ -140,7 +162,7 @@
                         <i class="fas fa-hashtag text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="poder_notario_numero" name="poder_notario_numero" 
-                           value="{{ old('poder_notario_numero') }}"
+                           value="{{ $poderNotarioNumero }}"
                            data-validate="required|minLength:1|maxLength:10"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                            placeholder="Ej: 123"
@@ -158,7 +180,7 @@
                         <i class="fas fa-registered text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="poder_numero_registro" name="poder_numero_registro" 
-                           value="{{ old('poder_numero_registro') }}"
+                           value="{{ $poderNumeroRegistro }}"
                            data-validate="required|minLength:3|maxLength:255"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                            placeholder="Ej: REG-2024-001"
@@ -170,28 +192,48 @@
 </div>
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Cargar estados para el select de entidad federativa del poder
-    const poderEntidadFederativaSelect = document.getElementById('poder_entidad_federativa');
-    
-    if (poderEntidadFederativaSelect) {
-        fetch('/api/ubicacion/estados')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.data) {
-                    data.data.forEach(estado => {
-                        const option = document.createElement('option');
-                        option.value = estado.nombre.toUpperCase();
-                        option.textContent = estado.nombre;
-                        poderEntidadFederativaSelect.appendChild(option);
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar estados para el select de entidad federativa del poder
+            const poderEntidadFederativaSelect = document.getElementById('poder_entidad_federativa');
+            const entidadFederativaValue = '{{ $poderEntidadFederativa }}';
+            
+            if (poderEntidadFederativaSelect) {
+                console.log('Valor de entidad federativa a seleccionar:', entidadFederativaValue);
+                
+                fetch('/api/ubicacion/estados')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.data) {
+                            data.data.forEach(estado => {
+                                const option = document.createElement('option');
+                                option.value = estado.nombre.toUpperCase();
+                                option.textContent = estado.nombre;
+                                poderEntidadFederativaSelect.appendChild(option);
+                            });
+                            
+                            // Seleccionar la entidad federativa correcta DESPUÉS de cargar las opciones
+                            if (entidadFederativaValue) {
+                                console.log('Intentando seleccionar:', entidadFederativaValue);
+                                for (let option of poderEntidadFederativaSelect.options) {
+                                    console.log('Opción disponible:', option.value, 'vs', entidadFederativaValue);
+                                    if (option.value === entidadFederativaValue) {
+                                        option.selected = true;
+                                        console.log('¡Seleccionado correctamente!');
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al cargar estados:', error);
                     });
-                }
-            })
-            .catch(error => {
-                console.error('Error al cargar estados:', error);
-            });
-    }
-});
-</script>
+            }
+        });
+    </script>
 @endpush
+
+@if($tramite)
+    @include('tramites.partials.estado-seccion', ['seccion' => 'apoderado', 'tramite' => $tramite])
+@endif

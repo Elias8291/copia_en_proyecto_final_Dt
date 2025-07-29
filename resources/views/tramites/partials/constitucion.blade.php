@@ -1,6 +1,23 @@
-@props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true])
+@props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true, 'tramite' => null])
 
-<div class="space-y-8" {{ $attributes }}>
+@php
+    // Si es una corrección y tenemos datos del trámite, obtener los datos constitutivos existentes
+    $instrumentoNotarial = null;
+    if ($tramite && $tramite->datosConstitutivos && $tramite->datosConstitutivos->instrumentoNotarial) {
+        $instrumentoNotarial = $tramite->datosConstitutivos->instrumentoNotarial;
+    }
+    
+    // Valores para los campos
+    $numeroEscritura = old('numero_escritura', $instrumentoNotarial?->numero_escritura ?? '');
+    $fechaConstitucion = old('fecha_constitucion', $instrumentoNotarial?->fecha_constitucion ? $instrumentoNotarial->fecha_constitucion->format('Y-m-d') : '');
+    $notarioNombre = old('notario_nombre', $instrumentoNotarial?->nombre_notario ?? '');
+    $entidadFederativa = old('entidad_federativa', $instrumentoNotarial?->entidad_federativa ?? '');
+    $notarioNumero = old('notario_numero', $instrumentoNotarial?->numero_notario ?? '');
+    $numeroRegistro = old('numero_registro', $instrumentoNotarial?->numero_registro_publico ?? '');
+    $fechaInscripcion = old('fecha_inscripcion', $instrumentoNotarial?->fecha_inscripcion ? $instrumentoNotarial->fecha_inscripcion->format('Y-m-d') : '');
+@endphp
+
+<div class="space-y-6" {{ $attributes }} data-seccion="constitucion">
     <!-- Información del Trámite -->
    
     <div>
@@ -18,7 +35,7 @@
                         <i class="fas fa-file-contract text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="numero_escritura" name="numero_escritura"
-                        value="{{ old('numero_escritura') }}"
+                        value="{{ $numeroEscritura }}"
                         data-validate="required|minLength:3|maxLength:255"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                         placeholder="Ej: 12345" aria-label="Número de escritura constitutiva" required>
@@ -35,7 +52,7 @@
                         <i class="fas fa-calendar-alt text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="date" id="fecha_constitucion" name="fecha_constitucion"
-                        value="{{ old('fecha_constitucion') }}"
+                        value="{{ $fechaConstitucion }}"
                         data-validate="required"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                         aria-label="Fecha de constitución de la empresa" required>
@@ -51,7 +68,7 @@
                     <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none sm:pl-3">
                         <i class="fas fa-user-tie text-gray-500 text-xs sm:text-sm"></i>
                     </div>
-                    <input type="text" id="notario_nombre" name="notario_nombre" value="{{ old('notario_nombre') }}"
+                    <input type="text" id="notario_nombre" name="notario_nombre" value="{{ $notarioNombre }}"
                         data-validate="required|minLength:3|maxLength:255"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                         placeholder="Nombre completo del notario" aria-label="Nombre del notario" required>
@@ -89,7 +106,7 @@
                     <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none sm:pl-3">
                         <i class="fas fa-hashtag text-gray-500 text-xs sm:text-sm"></i>
                     </div>
-                    <input type="text" id="notario_numero" name="notario_numero" value="{{ old('notario_numero') }}"
+                    <input type="text" id="notario_numero" name="notario_numero" value="{{ $notarioNumero }}"
                         data-validate="required|minLength:1|maxLength:10"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                         placeholder="Ej: 123" aria-label="Número del notario" required>
@@ -106,7 +123,7 @@
                         <i class="fas fa-registered text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="numero_registro" name="numero_registro"
-                        value="{{ old('numero_registro') }}"
+                        value="{{ $numeroRegistro }}"
                         data-validate="required|minLength:3|maxLength:255"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                         placeholder="Ej: REG-2024-001" aria-label="Número de registro" required>
@@ -123,7 +140,7 @@
                         <i class="fas fa-calendar-check text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="date" id="fecha_inscripcion" name="fecha_inscripcion"
-                        value="{{ old('fecha_inscripcion') }}"
+                        value="{{ $fechaInscripcion }}"
                         data-validate="required"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
                         aria-label="Fecha de inscripción" required>
@@ -132,6 +149,10 @@
         </div>
     </div>
 </div>
+
+@if($tramite)
+    @include('tramites.partials.estado-seccion', ['seccion' => 'constitucion', 'tramite' => $tramite])
+@endif
 
 @push('scripts')
     <script>

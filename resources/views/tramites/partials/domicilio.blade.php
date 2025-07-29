@@ -1,6 +1,23 @@
-@props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => [], 'editable' => true])
+@props(['tipo' => 'inscripcion', 'proveedor' => null, 'datosSat' => [], 'editable' => true, 'tramite' => null])
 
-<div class="space-y-8" {{ $attributes }}>
+@php
+    // Si es una corrección y tenemos datos del trámite, obtener la dirección existente
+    $direccion = null;
+    if ($tramite && $tramite->direcciones) {
+        $direccion = $tramite->direcciones->first();
+    }
+    
+    // Valores para los campos
+    $codigoPostal = old('codigo_postal', $direccion?->codigo_postal ?? $datosSat['cp'] ?? '');
+    $estadoId = old('estado_id', $direccion?->estado_id ?? '');
+    $municipio = old('municipio', $direccion?->municipio ?? '');
+    $asentamiento = old('asentamiento', $direccion?->asentamiento ?? $datosSat['colonia'] ?? '');
+    $calle = old('calle', $direccion?->calle ?? $datosSat['nombre_vialidad'] ?? '');
+    $numeroExterior = old('numero_exterior', $direccion?->numero_exterior ?? $datosSat['numero_exterior'] ?? '');
+    $numeroInterior = old('numero_interior', $direccion?->numero_interior ?? $datosSat['numero_interior'] ?? '');
+@endphp
+
+<div class="space-y-6" {{ $attributes }} data-seccion="domicilio">
     <!-- Información del Trámite -->
    
     <div>
@@ -18,7 +35,7 @@
                         <i class="fas fa-mail-bulk text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" id="codigo_postal" name="codigo_postal"
-                           value="{{ old('codigo_postal') }}"
+                           value="{{ $codigoPostal }}"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm font-mono sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm"
                            placeholder="Ej: 01000"
                            pattern="[0-9]{5}"
@@ -126,7 +143,7 @@
                         <i class="fas fa-road text-gray-500"></i>
                     </div>
                     <input type="text" id="calle" name="calle"
-                           value="{{ old('calle') }}"
+                           value="{{ $calle }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: Av. Principal"
                            maxlength="100"
@@ -146,7 +163,7 @@
                         <i class="fas fa-hashtag text-gray-500"></i>
                     </div>
                     <input type="text" id="numero_exterior" name="numero_exterior"
-                           value="{{ old('numero_exterior') }}"
+                           value="{{ $numeroExterior }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: 123 o S/N"
                            maxlength="10"
@@ -163,7 +180,7 @@
                         <i class="fas fa-door-open text-gray-500"></i>
                     </div>
                     <input type="text" id="numero_interior" name="numero_interior"
-                           value="{{ old('numero_interior') }}"
+                           value="{{ $numeroInterior }}"
                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
                            placeholder="Ej: 5A"
                            maxlength="10"
@@ -197,3 +214,7 @@
 
 
 </div>
+
+@if($tramite)
+    @include('tramites.partials.estado-seccion', ['seccion' => 'domicilio', 'tramite' => $tramite])
+@endif

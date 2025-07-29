@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\Auth\{ForgotPasswordController, ResetPasswordController, RegisterController, LoginController};
 use App\Http\Controllers\{
     VerificationController,
@@ -14,15 +14,15 @@ use App\Http\Controllers\{
     NotificacionController,
     ProfileController
 };
-use App\Http\Controllers\Api\QRExtractorController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 /*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
+ * |--------------------------------------------------------------------------
+ * | Web Routes
+ * |--------------------------------------------------------------------------
+ */
 
 // ============================================================================
 // RUTAS PÚBLICAS
@@ -67,7 +67,6 @@ Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
 // ============================================================================
 
 Route::middleware('auth')->group(function () {
-
     // Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -95,9 +94,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/formulario-simple/{tipo}', [TramiteController::class, 'formularioSimple'])->name('formulario.simple');
         Route::post('/{tipo}', [TramiteController::class, 'store'])->name('store');
         Route::get('/exito', [TramiteController::class, 'exito'])->name('exito');
-        Route::get('/estado', function () {
-            return view('tramites.estado');
-        })->name('estado');
+        Route::get('/estado', [TramiteController::class, 'estado'])->name('estado');
+
+        // Rutas para corrección de trámites
+        Route::get('/corregir/{tramite}', [TramiteController::class, 'corregir'])->name('corregir');
+        Route::post('/corregir/{tramite}', [TramiteController::class, 'actualizarCorreccion'])->name('actualizar.correccion');
     });
 
     // ============================================================================
@@ -162,43 +163,40 @@ Route::middleware('auth')->group(function () {
     Route::post('/dias-inhabiles/verificar-fecha', [\App\Http\Controllers\DiaInhabilController::class, 'verificarFechaHabil'])->name('dias-inhabiles.verificar-fecha');
     Route::get('/dias-inhabiles/proximos-dias', [\App\Http\Controllers\DiaInhabilController::class, 'proximosDiasHabiles'])->name('dias-inhabiles.proximos-dias');
 
-
     // ============================================================================
     // MÓDULO DE REVISIÓN DE TRÁMITES
     // ============================================================================
 
     Route::middleware(['auth'])->prefix('revision')->name('revision.')->group(function () {
         Route::get('/', [RevisionController::class, 'index'])->name('index');
-        
+
         // Ruta principal que maneja todos los tipos de revisión
         Route::get('/{tramite}/{tipo?}', [RevisionController::class, 'revisarTramite'])
             ->where('tipo', 'seleccion-tipo|documentos-presencial|revision-digital')
             ->name('revisar');
-        
+
         // Rutas de documentos y archivos
         Route::middleware(['auth'])->get('/documentos/{tramite}/{archivo}/{filename}', [RevisionController::class, 'verDocumento'])->name('verDocumento');
         Route::post('/documento/{archivo}/comentario', [RevisionController::class, 'actualizarComentarioDocumento'])->name('documento.comentario');
         Route::post('/documento/{archivo}/estado', [RevisionController::class, 'actualizarEstadoDocumento'])->name('documento.estado');
         Route::get('/documento/{archivo}/estado', [RevisionController::class, 'obtenerEstadoDocumento'])->name('documento.estado.get');
         Route::post('/documento/{archivo}/completo', [RevisionController::class, 'actualizarDocumentoCompleto'])->name('documento.completo');
-        
+
         // Rutas de secciones y comentarios
         Route::post('/seccion/comentario', [\App\Http\Controllers\RevisionSeccionController::class, 'store'])->name('seccion.comentario');
         Route::get('/seccion/{tramite}/{seccion}', [\App\Http\Controllers\RevisionSeccionController::class, 'show'])->name('seccion.show');
-        
+
         // Ruta para comentario general
         Route::post('/comentario-general', [RevisionController::class, 'guardarComentarioGeneral'])->name('comentario-general');
-        
+
         // Rutas de información y estado
         Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
         Route::post('/{tramite}/cambiar-estado', [RevisionController::class, 'cambiarEstadoTramite'])->name('cambiar-estado');
         Route::get('/{tramite}/historial-estados', [RevisionController::class, 'historialEstados'])->name('historial-estados');
     });
 
-
-
     // ============================================================================
-    // MÓDULO DE NOTIFICACIONES 
+    // MÓDULO DE NOTIFICACIONES
     // ============================================================================
 
     Route::middleware(['auth'])->prefix('notificaciones')->name('notificaciones.')->group(function () {
@@ -211,7 +209,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/eliminar', [NotificacionController::class, 'eliminarNotificacion'])->name('eliminar');
         Route::get('/usuario', [NotificacionController::class, 'getUserNotifications'])->name('usuario');
     });
-    
 });
 
 // ============================================================================
@@ -222,7 +219,3 @@ Route::prefix('api')->group(function () {
     Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
 });
-
-
-
-

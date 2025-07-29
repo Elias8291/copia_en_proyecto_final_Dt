@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TramiteFormularioRequest;
+use App\Models\Tramite;  // Added this import for the new methods
 use App\Services\ProveedorService;
 use App\Services\TramiteService;
 use Illuminate\Http\Request;
@@ -131,7 +132,7 @@ class TramiteController extends Controller
             'content_type' => $request->header('Content-Type'),
             'timestamp' => now()->toDateTimeString()
         ]);
-        
+
         // Log adicional para verificar que el método se ejecuta
         Log::info('=== PRUEBA: Método store ejecutándose ===', [
             'tipo' => $tipo,
@@ -164,7 +165,8 @@ class TramiteController extends Controller
                     'tramite_id' => $resultado['tramite_id'] ?? null
                 ]);
 
-                return redirect()->route('tramites.exito')
+                return redirect()
+                    ->route('tramites.exito')
                     ->with('success', '¡Prueba exitosa! El controlador y servicio funcionan correctamente.')
                     ->with('tramite_id', $resultado['tramite_id'] ?? 999);
             }
@@ -176,7 +178,6 @@ class TramiteController extends Controller
             return back()
                 ->withInput()
                 ->with('error', 'Error en servicio: ' . ($resultado['message'] ?? 'Error desconocido'));
-
         } catch (\Exception $e) {
             Log::error('=== PRUEBA: Excepción capturada ===', [
                 'error' => $e->getMessage(),
@@ -199,7 +200,7 @@ class TramiteController extends Controller
     {
         $tramiteId = session('tramite_id');
         $mensaje = session('success', 'Su trámite ha sido enviado exitosamente.');
-        
+
         return view('tramites.exito', [
             'tramite_id' => $tramiteId,
             'mensaje' => $mensaje
@@ -213,28 +214,28 @@ class TramiteController extends Controller
     {
         try {
             $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int) $id);
-            
+
             if (!$datosCompletos) {
                 return redirect()->back()->with('error', 'Trámite no encontrado');
             }
-            
+
             // Ejemplo de uso de los datos
             $tramite = $datosCompletos['tramite'];
             $resumen = $datosCompletos['resumen'];
             $completitud = $resumen['completitud'];
-            
+
             // Verificar permisos (ejemplo)
             if ($tramite->proveedor_id !== Auth::user()->proveedor?->id) {
                 abort(403, 'No tienes permisos para ver este trámite');
             }
-            
+
             return view('tramites.detalle-completo', compact('datosCompletos'));
         } catch (\Exception $e) {
             Log::error('Error al obtener datos completos del trámite', [
                 'tramite_id' => $id,
                 'error' => $e->getMessage()
             ]);
-            
+
             return redirect()->back()->with('error', 'Error al cargar los datos del trámite');
         }
     }
@@ -246,14 +247,14 @@ class TramiteController extends Controller
     {
         try {
             $datosCompletos = $this->tramiteService->obtenerDatosCompletosTramite((int) $id);
-            
+
             if (!$datosCompletos) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Trámite no encontrado'
                 ], 404);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'data' => $datosCompletos
@@ -348,5 +349,106 @@ class TramiteController extends Controller
         } else {
             return "Hay {$numErrores} errores en la sección '{$nombreTab}'. Por favor revise los campos marcados.";
         }
+    }
+
+    /**
+     * Muestra el formulario de corrección para un trámite en estado Para_Correccion
+     */
+    public function corregir(Tramite $tramite)
+    {
+        // Verificar que el usuario sea el propietario del trámite
+        if ($tramite->proveedor->usuario_id !== Auth::id()) {
+            abort(403, 'No tienes permisos para corregir este trámite.');
+        }
+
+        // Verificar que el trámite esté en estado Para_Correccion
+        if ($tramite->estado !== 'Para_Correccion') {
+            return redirect()->route('tramites.estado')
+                ->with('error', 'Este trámite no requiere correcciones.');
+        }
+
+        // Obtener datos del formulario usando el servicio
+        $datos = $this->tramiteService->getDatosFormularioCorreccion($tramite);
+
+        return view('tramites.formulario-simple', $datos);
+    }
+
+    /**
+     * Procesa la actualización de un trámite con correcciones
+     */
+    public function actualizarCorreccion(Request $request, Tramite $tramite)
+    {
+        // Verificar que el usuario sea el propietario del trámite
+        if ($tramite->proveedor->usuario_id !== Auth::id()) {
+            abort(403, 'No tienes permisos para corregir este trámite.');
+        }
+
+        // Verificar que el trámite esté en estado Para_Correccion
+        if ($tramite->estado !== 'Para_Correccion') {
+            return redirect()->route('tramites.estado')
+                ->with('error', 'Este trámite no requiere correcciones.');
+        }
+
+        try {
+            // Procesar las correcciones usando el servicio
+            $resultado = $this->tramiteService->procesarCorreccionTramite($request, $tramite);
+
+            if ($resultado['success']) {
+                return redirect()->route('tramites.estado')
+                    ->with('success', $resultado['message'])
+                    ->with('tramite_id', $tramite->id);
+            } else {
+                return back()
+                    ->withInput()
+                    ->with('error', $resultado['message']);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error al procesar correcciones del trámite', [
+                'tramite_id' => $tramite->id,
+                'usuario_id' => Auth::id(),
+                'error' => $e->getMessage()
+            ]);
+
+            return back()
+                ->withInput()
+                ->with('error', 'Error al procesar las correcciones: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Muestra el estado del trámite del usuario
+     */
+    public function estado()
+    {
+        $proveedor = $this->proveedorService->getProveedorByUser();
+        
+        if (!$proveedor) {
+            return redirect()->route('tramites.index')
+                ->with('error', 'No se encontró información del proveedor.');
+        }
+
+        // Obtener el trámite más reciente del proveedor
+        $tramite = $proveedor->tramites()
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$tramite) {
+            return redirect()->route('tramites.index')
+                ->with('error', 'No se encontró ningún trámite.');
+        }
+
+        // Obtener la cita si existe
+        $cita = null;
+        if ($tramite->estado === 'Por_Cotejar') {
+            $cita = $tramite->cita;
+        }
+
+        return view('tramites.estado', [
+            'tramite' => $tramite,
+            'estado' => $tramite->estado,
+            'tramite_id' => $tramite->id,
+            'cita' => $cita
+        ]);
     }
 }

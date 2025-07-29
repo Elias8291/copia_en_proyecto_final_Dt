@@ -20,7 +20,7 @@ class TramiteService
 {
     private const RFC_PERSONA_MORAL_LENGTH = 12;
     private const RFC_PERSONA_FISICA_LENGTH = 13;
-    
+
     private const TIPOS_TRAMITE = [
         'inscripcion' => [
             'titulo' => 'Inscripción al Padrón de Proveedores',
@@ -70,7 +70,7 @@ class TramiteService
     public function validarAccesoTramite(string $tipo, ?Proveedor $proveedor): bool
     {
         $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
-        
+
         // Log para debug
         Log::info('Validando acceso a trámite', [
             'tipo' => $tipo,
@@ -78,14 +78,14 @@ class TramiteService
             'tramites_disponibles' => $tramitesDisponibles,
             'resultado' => $tramitesDisponibles[$tipo] ?? false
         ]);
-        
+
         // Para development, ser más permisivo
         if (app()->environment('local', 'development')) {
             if (in_array($tipo, ['inscripcion', 'renovacion', 'actualizacion'])) {
                 return true;
             }
         }
-        
+
         return $tramitesDisponibles[$tipo] ?? false;
     }
 
@@ -157,6 +157,36 @@ class TramiteService
         ];
     }
 
+    /**
+     * Obtiene datos de un trámite existente para correcciones
+     */
+    public function getDatosFormularioCorreccion(Tramite $tramite): array
+    {
+        // Cargar todas las relaciones necesarias
+        $tramite->load([
+            'proveedor',
+            'datosGenerales',
+            'datosConstitutivos.instrumentoNotarial',
+            'apoderadoLegal.instrumentoNotarial',
+            'contactos',
+            'accionistas',
+            'direcciones.estado',
+            'actividades.sector',
+            'archivos.catalogoArchivo'
+        ]);
+
+        return [
+            'tipo_tramite' => $tramite->tipo_tramite,
+            'proveedor' => $tramite->proveedor,
+            'tramite' => $tramite,
+            'tramites' => $this->proveedorService->determinarTramitesDisponibles($tramite->proveedor),
+            'titulo' => 'Corregir Trámite - ' . ucfirst($tramite->tipo_tramite),
+            'descripcion' => 'Realice las correcciones solicitadas y reenvíe el trámite.',
+            'datosSat' => $this->getDatosSatDeSesion(),
+            'es_correccion' => true,
+        ];
+    }
+
     public function procesarEnvioFormulario(Request $request, string $tipo, ?Proveedor $proveedor): array
     {
         Log::info('=== PRUEBA: Servicio iniciando procesamiento ===', [
@@ -177,7 +207,7 @@ class TramiteService
             Log::info('=== PRUEBA: Creando trámite ===');
             $tramite = $this->crearTramite($tipo, $proveedor);
             Log::info('=== PRUEBA: Trámite creado ===', ['tramite_id' => $tramite->id]);
-            
+
             Log::info('=== PRUEBA: Procesando datos del trámite ===');
             $this->procesarDatosTramite($tramite, $request);
 
@@ -246,7 +276,7 @@ class TramiteService
 
         Log::info('=== PRUEBA: Creando nuevo proveedor ===');
         $rfc = $this->normalizarRfc($request->input('rfc', 'XAXX010101000'));
-        
+
         $proveedorCreado = Proveedor::create([
             'usuario_id' => Auth::id(),
             'rfc' => $rfc,
@@ -286,7 +316,7 @@ class TramiteService
 
         // Datos principales usando servicios especializados
         $this->guardarDatosPrincipales($tramite, $request);
-        
+
         // Datos específicos de persona moral si aplica
         if ($this->esPersonaMoral($request->input('rfc', 'XAXX010101000'))) {
             Log::info('=== PRUEBA: Procesando persona moral ===');
@@ -302,20 +332,20 @@ class TramiteService
 
         try {
             Log::info('=== PRUEBA: Guardando datos generales ===');
-        app(DatosGeneralesService::class)->guardar($tramite, $request);
+            app(DatosGeneralesService::class)->guardar($tramite, $request);
 
             Log::info('=== PRUEBA: Guardando dirección ===');
-        app(DireccionService::class)->guardar($tramite, $request);
+            app(DireccionService::class)->guardar($tramite, $request);
 
             Log::info('=== PRUEBA: Guardando contacto ===');
-        app(ContactoService::class)->guardar($tramite, $request);
-        
-        // Procesar actividades temporales antes de guardar
+            app(ContactoService::class)->guardar($tramite, $request);
+
+            // Procesar actividades temporales antes de guardar
             Log::info('=== PRUEBA: Procesando actividades ===');
-        $this->procesarActividadesConTemporales($tramite, $request);
-        
+            $this->procesarActividadesConTemporales($tramite, $request);
+
             Log::info('=== PRUEBA: Guardando documentos ===');
-        app(DocumentosService::class)->guardar($tramite, $request);
+            app(DocumentosService::class)->guardar($tramite, $request);
 
             Log::info('=== PRUEBA: Datos principales guardados exitosamente ===', ['tramite_id' => $tramite->id]);
         } catch (\Exception $e) {
@@ -327,7 +357,7 @@ class TramiteService
             throw $e;
         }
     }
-    
+
     /**
      * Procesa actividades incluyendo las temporales
      */
@@ -337,7 +367,7 @@ class TramiteService
         $actividades = $request->input('actividades', []);
 
         Log::info('=== PRUEBA: Actividades encontradas ===', ['count' => count($actividades)]);
-        
+
         // Solo procesar si hay actividades
         if (!empty($actividades)) {
             Log::info('=== PRUEBA: Guardando actividades ===');
@@ -355,9 +385,9 @@ class TramiteService
     private function procesarPersonaMoral(Tramite $tramite, Request $request): void
     {
         Log::info('=== PRUEBA: Procesando datos de persona moral ===', ['tramite_id' => $tramite->id]);
-        
+
         try {
-        $this->datosConstitutivosService->procesar($tramite, $request);
+            $this->datosConstitutivosService->procesar($tramite, $request);
             Log::info('=== PRUEBA: Datos de persona moral procesados exitosamente ===');
         } catch (\Exception $e) {
             Log::error('=== PRUEBA: Error procesando persona moral ===', [
@@ -508,5 +538,153 @@ class TramiteService
             'total' => $total,
             'porcentaje' => $porcentaje,
         ];
+    }
+
+    /**
+     * Procesa la actualización de un trámite con correcciones
+     */
+    public function procesarCorreccionTramite(Request $request, Tramite $tramite): array
+    {
+        Log::info('=== PROCESANDO CORRECCIÓN DE TRÁMITE ===', [
+            'tramite_id' => $tramite->id,
+            'usuario_id' => Auth::id(),
+            'estado_actual' => $tramite->estado
+        ]);
+
+        try {
+            Log::info('=== Iniciando transacción para corrección ===');
+            DB::beginTransaction();
+
+            // Actualizar el estado del trámite a En_Revision
+            $tramite->update([
+                'estado' => 'En_Revision',
+                'observaciones' => 'Trámite reenviado con correcciones',
+                'correcciones_count' => $tramite->correcciones_count + 1,
+            ]);
+
+            Log::info('=== Estado actualizado a En_Revision ===');
+
+            // Procesar solo los datos que se envían en el formulario
+            $this->procesarDatosTramiteCorreccion($tramite, $request);
+
+            Log::info('=== Commit de transacción para corrección ===');
+            DB::commit();
+
+            Log::info('=== Corrección procesada exitosamente ===');
+            return [
+                'success' => true,
+                'tramite_id' => $tramite->id,
+                'message' => 'Trámite corregido y reenviado exitosamente.'
+            ];
+        } catch (\Exception $e) {
+            Log::error('=== Error procesando corrección ===', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            DB::rollBack();
+            return [
+                'success' => false,
+                'message' => 'Error al procesar las correcciones: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Procesa solo los datos que se envían en el formulario de corrección
+     * sin borrar los datos existentes de secciones aprobadas
+     */
+    private function procesarDatosTramiteCorreccion(Tramite $tramite, Request $request): void
+    {
+        Log::info('=== Procesando datos de corrección ===', ['tramite_id' => $tramite->id]);
+
+        try {
+            // Procesar datos generales solo si se envían
+            if ($request->has('rfc') || $request->has('razon_social') || $request->has('pagina_web') || 
+                $request->has('telefono') || $request->has('email_contacto') || $request->has('cargo')) {
+                Log::info('=== Procesando datos generales ===');
+                // Limpiar datos existentes y crear nuevos
+                $tramite->datosGenerales()->delete();
+                $tramite->contactos()->delete();
+                $this->datosGeneralesFormService->procesar($tramite, $request->all());
+            }
+
+            // Procesar actividades solo si se envían
+            if ($request->has('actividades') || $request->has('buscador_actividad')) {
+                Log::info('=== Procesando actividades ===');
+                // Limpiar actividades existentes y crear nuevas
+                $tramite->actividades()->detach();
+                $this->actividadesFormService->procesar($tramite, $request->all());
+            }
+
+            // Procesar domicilio solo si se envían
+            if ($request->has('codigo_postal') || $request->has('estado_id') || $request->has('municipio') || 
+                $request->has('asentamiento') || $request->has('calle') || $request->has('numero_exterior')) {
+                Log::info('=== Procesando domicilio ===');
+                // Limpiar direcciones existentes y crear nuevas
+                $tramite->direcciones()->delete();
+                $this->direccionFormService->procesar($tramite, $request->all());
+            }
+
+            // Procesar datos constitutivos solo si se envían
+            if ($request->has('numero_escritura') || $request->has('fecha_constitucion') || 
+                $request->has('notario_nombre') || $request->has('entidad_federativa')) {
+                Log::info('=== Procesando datos constitutivos ===');
+                // Limpiar datos constitutivos existentes y crear nuevos
+                $tramite->datosConstitutivos()->delete();
+                $this->personaMoralFormService->procesar($tramite, $request->all());
+            }
+
+            // Procesar apoderado legal solo si se envían
+            if ($request->has('apoderado_nombre') || $request->has('apoderado_rfc') || 
+                $request->has('poder_numero_escritura') || $request->has('poder_fecha_constitucion')) {
+                Log::info('=== Procesando apoderado legal ===');
+                // Limpiar apoderado existente y crear nuevo
+                $tramite->apoderadoLegal()->delete();
+                $this->datosConstitutivosService->procesar($tramite, $request);
+            }
+
+            // Procesar accionistas solo si se envían
+            if ($request->has('accionistas')) {
+                Log::info('=== Procesando accionistas ===');
+                // Limpiar accionistas existentes y crear nuevos
+                $tramite->accionistas()->delete();
+                $this->datosConstitutivosService->procesar($tramite, $request);
+            }
+
+            // Procesar documentos solo si se envían
+            if ($request->has('documentos')) {
+                Log::info('=== Procesando documentos ===');
+                $this->documentosFormService->procesar($tramite, $request->all());
+            }
+
+            Log::info('=== Datos de corrección procesados exitosamente ===');
+        } catch (\Exception $e) {
+            Log::error('=== Error procesando datos de corrección ===', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Limpia los datos anteriores del trámite antes de procesar correcciones
+     */
+    private function limpiarDatosTramite(Tramite $tramite): void
+    {
+        Log::info('=== Limpiando datos anteriores del trámite ===', ['tramite_id' => $tramite->id]);
+
+        // Eliminar datos relacionados
+        $tramite->datosGenerales()->delete();
+        $tramite->datosConstitutivos()->delete();
+        $tramite->apoderadoLegal()->delete();
+        $tramite->contactos()->delete();
+        $tramite->accionistas()->delete();
+        $tramite->direcciones()->delete();
+        $tramite->actividades()->detach();
+
+        Log::info('=== Datos anteriores eliminados ===');
     }
 }
