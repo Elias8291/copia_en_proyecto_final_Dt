@@ -67,7 +67,7 @@ class TramiteController extends Controller
             // Procesar y guardar datos SAT en sesión
             $this->tramiteService->procesarDatosConstancia($request);
 
-            return redirect()->route('tramites.formulario', $tipo);
+            return redirect()->route('tramites.formulario.simple', $tipo);
         } catch (\Exception $e) {
             Log::error('Error al procesar constancia', [
                 'usuario_id' => Auth::id(),

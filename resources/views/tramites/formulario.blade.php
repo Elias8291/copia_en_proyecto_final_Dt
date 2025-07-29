@@ -60,7 +60,7 @@
                     $tipoPersona = 'Física'; // Default
 
                     if ($rfcUsuario) {
-                        $tipoPersona = strlen($rfcUsuario) === 12 ? 'Moral' : 'Física';
+                        $tipoPersona = strlen($rfcUsuario) === 13 ? 'Física' : 'Moral';
                     }
                     $totalSteps = $tipoPersona === 'Moral' ? 7 : 5;
                     

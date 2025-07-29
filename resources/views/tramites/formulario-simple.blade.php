@@ -108,24 +108,10 @@
                                 'tramite' => $tramite ?? null,
                             ])
                         </div>
-
-                        <!-- Separador visual -->
-                        <div class="my-8 border-t-2 border-gray-200">
-                            <div class="flex items-center justify-center -mt-3">
-                                <div class="bg-white px-4">
-                                    <span class="text-sm font-medium text-gray-500 bg-white px-2">
-                                        <i class="fas fa-arrow-down mr-2"></i>
-                                        <i class="fas fa-arrow-down ml-2"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                <!-- Separador -->
                 <div class="border-t-2 border-gray-200 my-8"></div>
 
-                <!-- Sección 2: Actividades Económicas -->
                 <div id="actividades" class="form-section bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
                         <div class="flex items-center space-x-2 sm:space-x-3">
@@ -149,24 +135,8 @@
                                 'tramite' => $tramite ?? null,
                             ])
                         </div>
-
-                        <!-- Separador visual -->
-                        <div class="my-8 border-t-2 border-gray-200">
-                            <div class="flex items-center justify-center -mt-3">
-                                <div class="bg-white px-4">
-                                    <span class="text-sm font-medium text-gray-500 bg-white px-2">
-                                        <i class="fas fa-arrow-down mr-2"></i>
-                                        <i class="fas fa-arrow-down ml-2"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
-
-                    <!-- Separador -->
                     <div class="border-t-2 border-gray-200 my-8"></div>
-
-                    <!-- Sección 3: Domicilio -->
                     <div id="domicilio" class="form-section bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
                             <div class="flex items-center space-x-2 sm:space-x-3">
@@ -193,24 +163,11 @@
                             ])
                         </div>
 
-                        <!-- Separador visual -->
-                        <div class="my-8 border-t-2 border-gray-200">
-                            <div class="flex items-center justify-center -mt-3">
-                                <div class="bg-white px-4">
-                                    <span class="text-sm font-medium text-gray-500 bg-white px-2">
-                                        <i class="fas fa-arrow-down mr-2"></i>
-                                        <i class="fas fa-arrow-down ml-2"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- Separador -->
                     <div class="border-t-2 border-gray-200 my-8"></div>
 
                     @if($esPersonaMoral)
-                        <!-- Sección 4: Constitución (Solo Persona Moral) -->
                         <div id="constitucion" class="form-section bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
                                 <div class="flex items-center space-x-2 sm:space-x-3">
@@ -235,20 +192,7 @@
                                 ])
                             </div>
                         </div>
-
-                        <!-- Separador visual -->
-                        <div class="my-8 border-t-2 border-gray-200">
-                            <div class="flex items-center justify-center -mt-3">
-                                <div class="bg-white px-4">
-                                    <span class="text-sm font-medium text-gray-500 bg-white px-2">
-                                        <i class="fas fa-arrow-down mr-2"></i>
-                                        <i class="fas fa-arrow-down ml-2"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sección 5: Apoderado Legal (Solo Persona Moral) -->
+                        <div class="border-t-2 border-gray-200 my-8"></div>
                         <div id="apoderado" class="form-section bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
                                 <div class="flex items-center space-x-2 sm:space-x-3">
@@ -273,20 +217,7 @@
                                 ])
                             </div>
                         </div>
-
-                        <!-- Separador visual -->
-                        <div class="my-8 border-t-2 border-gray-200">
-                            <div class="flex items-center justify-center -mt-3">
-                                <div class="bg-white px-4">
-                                    <span class="text-sm font-medium text-gray-500 bg-white px-2">
-                                        <i class="fas fa-arrow-down mr-2"></i>
-                                        <i class="fas fa-arrow-down ml-2"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sección 6: Accionistas (Solo Persona Moral) -->
+                        <div class="border-t-2 border-gray-200 my-8"></div>
                         <div id="accionistas" class="form-section bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
                             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
                                 <div class="flex items-center space-x-2 sm:space-x-3">
@@ -312,20 +243,7 @@
                             </div>
                         </div>
                     @endif
-
-                <!-- Separador visual -->
-                <div class="my-8 border-t-2 border-gray-200">
-                    <div class="flex items-center justify-center -mt-3">
-                        <div class="bg-white px-4">
-                            <span class="text-sm font-medium text-gray-500 bg-white px-2">
-                                <i class="fas fa-arrow-down mr-2"></i>
-                                <i class="fas fa-arrow-down ml-2"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                    <!-- Sección Final: Documentos -->
+                    <div class="border-t-2 border-gray-200 my-8"></div>
                 <div id="documentos" class="form-section bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
                         <div class="flex items-center space-x-2 sm:space-x-3">
@@ -353,8 +271,6 @@
                         
 
                     </div>
-
-                    <!-- Botón de Envío -->
                     <div class="mt-8 flex justify-center">
                             <button type="submit" 
                                 class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-[#9d2449] to-[#8a203f] text-white text-lg font-semibold rounded-lg shadow-lg hover:from-[#8a203f] hover:to-[#7a1d37] focus:outline-none focus:ring-4 focus:ring-[#9d2449]/30 transition-all duration-300 transform hover:scale-105">

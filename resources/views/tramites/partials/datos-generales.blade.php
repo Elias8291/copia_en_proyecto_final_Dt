@@ -37,7 +37,7 @@
     // Determinar tipo de persona
     $tipoPersona = $tipoPersona ?? 'Física';
     if ($rfcValue) {
-        $tipoPersona = strlen($rfcValue) === 13 ? 'Moral' : 'Física';
+        $tipoPersona = strlen($rfcValue) === 13 ? 'Física' : 'Moral';
     }
     
     $esPersonaMoral = $tipoPersona === 'Moral';
@@ -86,8 +86,10 @@
                                id="rfc" 
                                name="rfc" 
                                value="{{ $rfcValue }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-transparent @error('rfc') border-red-500 @enderror"
-                               placeholder="RFC"
+                               data-validate="required|rfc"
+                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('rfc') ? 'error-field border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                               placeholder="Ej: XAXX010101000"
+                               aria-label="RFC de la empresa"
                                {{ !$permitirEdicion ? 'disabled' : '' }}
                                required>
                     @if($errors->has('rfc'))
