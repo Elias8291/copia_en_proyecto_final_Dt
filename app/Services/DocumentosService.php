@@ -16,6 +16,91 @@ class DocumentosService
     private const DEFAULT_MIMES = 'pdf,jpg,jpeg,png,doc,docx';
 
     /**
+     * Obtiene los archivos del catálogo con ID 2 asociados a un trámite
+     */
+    public function obtenerArchivosCatalogo2(Tramite $tramite)
+    {
+        return $tramite->archivos()
+            ->where('idCatalogoArchivo', 2)
+            ->with('catalogoArchivo')
+            ->get();
+    }
+
+    /**
+     * Obtiene el catálogo con ID 2
+     */
+    public function obtenerCatalogo2()
+    {
+        return CatalogoArchivo::find(2);
+    }
+
+    /**
+     * Obtiene información completa del catálogo 2 y sus archivos asociados a un trámite
+     */
+    public function obtenerInformacionCatalogo2(Tramite $tramite)
+    {
+        $catalogo = $this->obtenerCatalogo2();
+        $archivos = $this->obtenerArchivosCatalogo2($tramite);
+
+        return [
+            'catalogo' => $catalogo,
+            'archivos' => $archivos,
+            'total_archivos' => $archivos->count(),
+            'tramite_id' => $tramite->id
+        ];
+    }
+
+    /**
+     * Método estático para obtener archivos del catálogo 2
+     * Uso: DocumentosService::getCatalogo2Archivos($tramite)
+     */
+    public static function getCatalogo2Archivos(Tramite $tramite)
+    {
+        $service = app(self::class);
+        return $service->obtenerArchivosCatalogo2($tramite);
+    }
+
+    /**
+     * Método estático para obtener información del catálogo 2
+     * Uso: DocumentosService::getCatalogo2Info($tramite)
+     */
+    public static function getCatalogo2Info(Tramite $tramite)
+    {
+        $service = app(self::class);
+        return $service->obtenerInformacionCatalogo2($tramite);
+    }
+
+    /**
+     * Método estático para obtener solo el catálogo 2
+     * Uso: DocumentosService::getCatalogo2()
+     */
+    public static function getCatalogo2()
+    {
+        $service = app(self::class);
+        return $service->obtenerCatalogo2();
+    }
+
+    /**
+     * Método estático para verificar si tiene archivos del catálogo 2
+     * Uso: DocumentosService::hasCatalogo2($tramite)
+     */
+    public static function hasCatalogo2(Tramite $tramite): bool
+    {
+        $archivos = self::getCatalogo2Archivos($tramite);
+        return $archivos->count() > 0;
+    }
+
+    /**
+     * Método estático para obtener el conteo del catálogo 2
+     * Uso: DocumentosService::getCatalogo2Count($tramite)
+     */
+    public static function getCatalogo2Count(Tramite $tramite): int
+    {
+        $archivos = self::getCatalogo2Archivos($tramite);
+        return $archivos->count();
+    }
+
+    /**
      * Guarda los documentos enviados en el formulario
      */
     public function guardar(Tramite $tramite, Request $request): void

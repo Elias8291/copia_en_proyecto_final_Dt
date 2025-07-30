@@ -42,11 +42,7 @@
                 'field' => 'created_at',
                 'type' => 'date'
             ],
-            [
-                'label' => 'Revisor',
-                'field' => 'revisadoPor.nombre',
-                'type' => 'text'
-            ],
+
             [
                 'label' => 'Correcciones',
                 'field' => 'correcciones_count',

@@ -184,12 +184,21 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/documento/{archivo}/estado', [RevisionController::class, 'obtenerEstadoDocumento'])->name('documento.estado.get');
         Route::post('/documento/{archivo}/completo', [RevisionController::class, 'actualizarDocumentoCompleto'])->name('documento.completo');
 
+        // Ruta para obtener archivos del catálogo 2
+        Route::get('/{tramite}/archivos-catalogo-2', [RevisionController::class, 'obtenerArchivosCatalogo2'])->name('archivos-catalogo-2');
+
         // Rutas de secciones y comentarios
         Route::post('/seccion/comentario', [\App\Http\Controllers\RevisionSeccionController::class, 'store'])->name('seccion.comentario');
         Route::get('/seccion/{tramite}/{seccion}', [\App\Http\Controllers\RevisionSeccionController::class, 'show'])->name('seccion.show');
 
         // Ruta para comentario general
         Route::post('/comentario-general', [RevisionController::class, 'guardarComentarioGeneral'])->name('comentario-general');
+
+        // Ruta para selección de tipo de revisión
+        Route::get('/{tramite}/seleccion-tipo', [RevisionController::class, 'seleccionTipo'])->name('seleccion-tipo');
+
+        // Ruta para cotejo domiciliario
+        Route::get('/{tramite}/cotejo-domiciliario', [RevisionController::class, 'cotejoDomiciliario'])->name('cotejo-domiciliario');
 
         // Ruta principal que maneja todos los tipos de revisión (debe ir después de las específicas)
         Route::get('/{tramite}/{tipo}', [RevisionController::class, 'revisarTramite'])

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tramite;
 use App\Services\NotificacionService;
 use App\Services\ProveedorService;
+use App\Services\DocumentosService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -13,11 +14,16 @@ class RevisionController extends Controller
 {
     protected $notificacionService;
     protected $proveedorService;
+    protected $documentosService;
 
-    public function __construct(NotificacionService $notificacionService, ProveedorService $proveedorService)
-    {
+    public function __construct(
+        NotificacionService $notificacionService, 
+        ProveedorService $proveedorService,
+        DocumentosService $documentosService
+    ) {
         $this->notificacionService = $notificacionService;
         $this->proveedorService = $proveedorService;
+        $this->documentosService = $documentosService;
     }
 
     public function index(Request $request)
@@ -613,6 +619,47 @@ class RevisionController extends Controller
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Muestra la vista de cotejo domiciliario con mapa
+     */
+    public function cotejoDomiciliario(Tramite $tramite)
+    {
+        $tramite->load([
+            'proveedor.user',
+            'datosGenerales',
+            'direccion.coordenadas',
+            'archivos.catalogoArchivo'
+        ]);
+
+        return view('revision.cotejo-domiciliario', compact('tramite'));
+    }
+
+    /**
+     * Obtiene los archivos del catálogo 2 asociados a un trámite
+     */
+    public function obtenerArchivosCatalogo2(Tramite $tramite)
+    {
+        try {
+            $archivos = $this->documentosService->obtenerArchivosCatalogo2($tramite);
+            $catalogo = $this->documentosService->obtenerCatalogo2();
+            $informacion = $this->documentosService->obtenerInformacionCatalogo2($tramite);
+
+            return response()->json([
+                'success' => true,
+                'data' => $informacion,
+                'archivos' => $archivos,
+                'catalogo' => $catalogo,
+                'total' => $archivos->count()
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error obteniendo archivos del catálogo 2: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener los archivos del catálogo 2'
+            ], 500);
         }
     }
 }
