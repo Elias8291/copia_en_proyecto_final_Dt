@@ -35,6 +35,16 @@ class DireccionService
         $datos = $this->extraerDatos($request);
 
         try {
+            // Crear coordenadas si se proporcionan
+            $coordenadasId = null;
+            if ($datos['latitud'] && $datos['longitud']) {
+                $coordenadas = \App\Models\Coordenada::create([
+                    'latitud' => $datos['latitud'],
+                    'longitud' => $datos['longitud'],
+                ]);
+                $coordenadasId = $coordenadas->id;
+            }
+
             Direccion::create([
                 'id_tramite' => $tramite->id,
                 'calle' => $datos['calle'],
@@ -46,11 +56,13 @@ class DireccionService
                 'municipio' => $datos['municipio'],
                 'id_estado' => $datos['estado_id'],
                 'tipo_asentamiento' => $datos['tipo_asentamiento'],
+                'coordenadas_id' => $coordenadasId,
             ]);
 
             Log::info('Dirección guardada exitosamente', [
                 'tramite_id' => $tramite->id,
-                'codigo_postal' => $datos['codigo_postal']
+                'codigo_postal' => $datos['codigo_postal'],
+                'coordenadas_id' => $coordenadasId
             ]);
 
         } catch (\Exception $e) {
@@ -87,6 +99,8 @@ class DireccionService
             'municipio' => $request->input('municipio') ?: 'Municipio Default',
             'estado_id' => $this->procesarEstadoId($request),
             'tipo_asentamiento' => $request->input('tipo_asentamiento'),
+            'latitud' => $request->input('latitud'),
+            'longitud' => $request->input('longitud'),
         ];
     }
 

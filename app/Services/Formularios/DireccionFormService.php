@@ -87,6 +87,8 @@ class DireccionFormService
             'asentamiento' => 'nullable|string|max:255',
             'municipio' => 'nullable|string|max:255',
             'estado_id' => 'nullable|integer|min:1',
+            'latitud' => 'nullable|numeric|between:-90,90',
+            'longitud' => 'nullable|numeric|between:-180,180',
         ];
     }
 
@@ -115,6 +117,11 @@ class DireccionFormService
             'asentamiento.max' => 'El asentamiento no puede exceder 255 caracteres.',
             'municipio.max' => 'El municipio no puede exceder 255 caracteres.',
             'estado_id.min' => 'El estado seleccionado no es válido.',
+            
+            'latitud.numeric' => 'La latitud debe ser un número válido.',
+            'latitud.between' => 'La latitud debe estar entre -90 y 90 grados.',
+            'longitud.numeric' => 'La longitud debe ser un número válido.',
+            'longitud.between' => 'La longitud debe estar entre -180 y 180 grados.',
         ];
     }
 
@@ -132,6 +139,8 @@ class DireccionFormService
             'asentamiento' => 'asentamiento',
             'municipio' => 'municipio',
             'estado_id' => 'estado',
+            'latitud' => 'latitud',
+            'longitud' => 'longitud',
         ];
     }
 

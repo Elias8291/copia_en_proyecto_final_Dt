@@ -57,11 +57,8 @@ class Direccion extends Model
         return $this->belongsTo(Estado::class, 'id_estado');
     }
 
-    // Commented out temporarily - Coordenada model doesn't exist
-    /*
     public function coordenadas()
     {
-        return $this->belongsTo(Coordenada::class);
+        return $this->belongsTo(Coordenada::class, 'coordenadas_id');
     }
-    */
 }

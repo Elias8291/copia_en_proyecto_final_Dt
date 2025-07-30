@@ -83,35 +83,38 @@
     <p class="mt-1 text-sm text-gray-500" id="estado-help-text">Se carga automáticamente con código postal</p>
 </div>
 
-<!-- Municipio -->
-<div class="form-group">
-    <label for="municipio" class="block text-sm font-medium text-gray-700 mb-2">
-        Municipio/Delegación
-        <span class="text-[#9d2449]">*</span>
-    </label>
-    <div class="relative group">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-            <i class="fas fa-city text-gray-500"></i>
-        </div>
-        <select id="municipio" name="municipio" 
-                class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
-            <option value="">Seleccione un municipio</option>
-            <option value="otro">Otro</option>
-        </select>
-        <input type="text" id="municipio_otro" name="municipio_otro" 
-               class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" 
-               placeholder="Especifique otro municipio">
-        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <i class="fas fa-chevron-down text-gray-400"></i>
-        </div>
-    </div>
-    <input type="hidden" id="municipio_id" name="municipio_id">
-    <p class="mt-1 text-sm text-gray-500" id="municipio-help-text">Se carga automáticamente con código postal</p>
-</div>
+
         </div>
 
-        <!-- Asentamiento -->
+        <!-- Municipio y Asentamiento en la misma fila -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Municipio -->
+            <div class="form-group">
+                <label for="municipio" class="block text-sm font-medium text-gray-700 mb-2">
+                    Municipio/Delegación
+                    <span class="text-[#9d2449]">*</span>
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                        <i class="fas fa-city text-gray-500"></i>
+                    </div>
+                    <select id="municipio" name="municipio" 
+                            class="block w-full pl-10 pr-10 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all appearance-none shadow-sm">
+                        <option value="">Seleccione un municipio</option>
+                        <option value="otro">Otro</option>
+                    </select>
+                    <input type="text" id="municipio_otro" name="municipio_otro" 
+                           class="mt-2 hidden block w-full pl-3 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all shadow-sm" 
+                           placeholder="Especifique otro municipio">
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400"></i>
+                    </div>
+                </div>
+                <input type="hidden" id="municipio_id" name="municipio_id">
+                <p class="mt-1 text-sm text-gray-500" id="municipio-help-text">Se carga automáticamente con código postal</p>
+            </div>
+
+            <!-- Asentamiento -->
             <div class="form-group">
                 <label for="asentamiento" class="block text-sm font-medium text-gray-700 mb-2">
                     Asentamiento/Colonia
@@ -239,8 +242,8 @@
         </div>
 
         <!-- Hidden inputs for latitude and longitude -->
-        <input type="hidden" id="latitud" name="latitud">
-        <input type="hidden" id="longitud" name="longitud">
+        <input type="hidden" id="latitud" name="latitud" value="{{ old('latitud', $direccion?->coordenadas?->latitud ?? '') }}">
+        <input type="hidden" id="longitud" name="longitud" value="{{ old('longitud', $direccion?->coordenadas?->longitud ?? '') }}">
 
     </div>
 
@@ -254,4 +257,5 @@
 
 @push('scripts')
 <script src="{{ asset('js/tramites/handlers/codigo-postal-handler.js') }}"></script>
+<script src="{{ asset('js/tramites/handlers/mapa-coordenadas.js') }}"></script>
 @endpush

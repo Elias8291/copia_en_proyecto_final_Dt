@@ -1,4 +1,4 @@
-// Script de prueba para el envío de documentos
+// Script de prueba para el envío de documentos (Simplificado)
 console.log('Test Documentos: Script de prueba cargado');
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -26,20 +26,17 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Test Documentos: Formulario no encontrado');
     }
     
-    // Verificar que los inputs de archivo tengan los atributos correctos
-    documentoInputs.forEach((input, index) => {
-        console.log(`Test Documentos: Input ${index + 1}:`, {
-            name: input.name,
-            accept: input.accept,
-            multiple: input.multiple,
-            required: input.required
-        });
-    });
-    
-    // Verificar que el handler de documentos esté cargado
-    if (typeof handleFileUpload === 'function') {
-        console.log('Test Documentos: Función handleFileUpload disponible');
+    // Verificar que el handler simplificado esté cargado
+    if (typeof handleFileUploadSimple === 'function') {
+        console.log('Test Documentos: Función handleFileUploadSimple disponible');
     } else {
-        console.error('Test Documentos: Función handleFileUpload no disponible');
+        console.error('Test Documentos: Función handleFileUploadSimple no disponible');
+    }
+    
+    // Verificar que no haya conflictos con el handler anterior
+    if (typeof handleFileUpload === 'function') {
+        console.warn('Test Documentos: Función handleFileUpload aún disponible (posible conflicto)');
+    } else {
+        console.log('Test Documentos: No hay conflictos con handler anterior');
     }
 }); 
