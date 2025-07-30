@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
+@include('components.alert')
+@include('components.modal-exito')
+@include('components.modal-confirmacion')
+@include('components.loading-modal')
 <div class="min-h-screen py-4 sm:py-6">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
@@ -100,43 +104,78 @@
             ])
         </div>
 
+        <!-- Comentario General -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="w-8 h-8 bg-white border border-gray-300 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Comentario General</h3>
+                    <p class="text-sm text-gray-500">Observaciones generales del trámite</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg border border-gray-200">
+                <div class="p-4">
+                    <div class="space-y-2">
+                        <label for="comentario_general" class="block text-sm font-medium text-gray-700">
+                            Comentario General del Trámite
+                        </label>
+                        <div class="relative">
+                            <textarea id="comentario_general" name="comentario" rows="4"
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-400 focus:ring-1 focus:ring-[#9D2449] focus:border-[#9D2449] focus:outline-none resize-none"
+                                placeholder="Escriba un comentario general sobre el trámite...">{{ old('comentario', $tramite->comentarios_revision ?? 'Observación de revisión presencial: ') }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Botones de Acción -->
         <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
-            <button type="button" onclick="aprobarTramite({{ $tramite->id }})"
-                class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-green-600 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="hidden sm:inline">Aprobar Trámite</span>
-                <span class="sm:hidden">Aprobar</span>
-            </button>
+            <form id="form-aprobar-tramite" action="{{ route('api.revision.aprobar', $tramite->id) }}" method="POST" class="inline">
+                @csrf
+                <input type="hidden" name="comentario_general" id="comentario_general_aprobar">
+                <button type="button" onclick="confirmarAprobacion()"
+                    class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-emerald-600 to-green-600 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="hidden sm:inline">Aprobar Trámite</span>
+                    <span class="sm:hidden">Aprobar</span>
+                </button>
+            </form>
             
-            <button type="button" onclick="confirmarIdentificacion({{ $tramite->id }})"
-                class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="hidden sm:inline">Confirmar Identificación</span>
-                <span class="sm:hidden">Confirmar</span>
-            </button>
+            <form id="form-cancelar-tramite" action="{{ route('revision.cambiar-estado', $tramite) }}" method="POST" class="inline">
+                @csrf
+                <input type="hidden" name="nuevo_estado" value="Cancelado">
+                <input type="hidden" name="observaciones" id="observaciones_cancelar">
+                <input type="hidden" name="comentario_general" id="comentario_general_cancelar">
+                <button type="button" onclick="confirmarCancelacion()"
+                    class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span class="hidden sm:inline">Cancelar Trámite</span>
+                    <span class="sm:hidden">Cancelar</span>
+                </button>
+            </form>
             
-            <button type="button" onclick="cancelarRevision({{ $tramite->id }})"
-                class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-red-600 to-red-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span class="hidden sm:inline">Cancelar Revisión</span>
-                <span class="sm:hidden">Cancelar</span>
-            </button>
-            
-            <button type="button" onclick="regendarCita({{ $tramite->id }})"
-                class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
-                <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span class="hidden sm:inline">Regendar Cita</span>
-                <span class="sm:hidden">Regendar</span>
-            </button>
+            <form id="form-regendar-cita" action="{{ route('api.revision.agendar-cita', $tramite->id) }}" method="POST" class="inline">
+                @csrf
+                <input type="hidden" name="comentario_general" id="comentario_general_regendar">
+                <button type="button" onclick="confirmarRegendarCita()"
+                    class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
+                    <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="hidden sm:inline">Agendar Cita Automática</span>
+                    <span class="sm:hidden">Agendar</span>
+                </button>
+            </form>
         </div>
     </div>
 </div>
@@ -150,72 +189,82 @@
     window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     window.revisionSeccionComentarioRoute = '/revision/seccion/comentario';
 
-    function aprobarTramite(tramiteId) {
-        if (!confirm('¿Está seguro que desea aprobar este trámite? Esta acción no se puede deshacer.')) {
-            return;
-        }
-
-        // Mostrar indicador de carga
-        const button = event.target.closest('button');
-        const originalText = button.innerHTML;
-        button.innerHTML = `
-            <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Procesando...</span>
-        `;
-        button.disabled = true;
-
-        fetch(`/api/revision/${tramiteId}/aprobar`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': window.csrfToken,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
+    function confirmarAprobacion() {
+        // Capturar comentario general
+        const comentarioGeneral = document.getElementById('comentario_general').value;
+        document.getElementById('comentario_general_aprobar').value = comentarioGeneral;
+        
+        showConfirmModal(
+            'Confirmar Aprobación',
+            '¿Está seguro que desea aprobar este trámite? Esta acción no se puede deshacer.',
+            null,
+            function() {
+                // Mostrar modal de carga cuando se confirma (sin progreso)
+                showLoading(
+                    'Aprobando Trámite',
+                    'Procesando la aprobación del trámite. Por favor espere...',
+                    0
+                );
+                
+                // Enviar el formulario después de un pequeño delay para que se vea el modal
+                setTimeout(() => {
+                    document.getElementById('form-aprobar-tramite').submit();
+                }, 100);
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                let mensaje = data.message;
-                if (data.pv_asignado) { 
-                    mensaje += `\nPV Asignado: ${data.pv_asignado}`; 
-                }
-                if (data.fecha_vencimiento) { 
-                    mensaje += `\nFecha de Vencimiento: ${data.fecha_vencimiento}`; 
-                }
-                if (data.numero_oficio) {
-                    mensaje += `\nNúmero de Oficio: ${data.numero_oficio}`;
-                }
-                mensaje += '\n\nSe ha enviado una notificación al usuario.';
-                showNotification(mensaje, 'success');
-                setTimeout(() => { window.location.href = '/revision'; }, 3000);
-            } else {
-                showNotification(data.message || 'Error al aprobar el trámite', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Error al procesar la solicitud', 'error');
-        })
-        .finally(() => {
-            // Restaurar el botón
-            button.innerHTML = originalText;
-            button.disabled = false;
-        });
+        );
     }
 
-    function confirmarIdentificacion(tramiteId) {
-        alert('Función de confirmar identificación en desarrollo. Por favor, contacte al administrador del sistema.');
+    function confirmarCancelacion() {
+        // Capturar comentario general
+        const comentarioGeneral = document.getElementById('comentario_general').value;
+        document.getElementById('comentario_general_cancelar').value = comentarioGeneral;
+        
+        showConfirmModal(
+            'Confirmar Cancelación',
+            '¿Está seguro que desea cancelar este trámite? Esta acción no se puede deshacer.',
+            null,
+            function() {
+                // Mostrar modal de carga cuando se confirma (sin progreso)
+                showLoading(
+                    'Cancelando Trámite',
+                    'Procesando la cancelación del trámite. Por favor espere...',
+                    0
+                );
+                
+                // Enviar el formulario después de un pequeño delay para que se vea el modal
+                setTimeout(() => {
+                    document.getElementById('form-cancelar-tramite').submit();
+                }, 100);
+            }
+        );
     }
-    
-    function cancelarRevision(tramiteId) {
-        alert('Función de cancelar revisión en desarrollo. Por favor, contacte al administrador del sistema.');
+
+    function confirmarRegendarCita() {
+        // Capturar comentario general
+        const comentarioGeneral = document.getElementById('comentario_general').value;
+        document.getElementById('comentario_general_regendar').value = comentarioGeneral;
+        
+        showConfirmModal(
+            'Confirmar Agenda de Cita Automática',
+            '¿Está seguro que desea agendar una cita automática para este trámite? Se asignará el próximo horario disponible.',
+            null,
+            function() {
+                // Mostrar modal de carga cuando se confirma
+                showLoading(
+                    'Agendando Cita Automática',
+                    'Procesando la agenda de cita automática. Por favor espere...',
+                    0
+                );
+                
+                // Enviar el formulario después de un pequeño delay
+                setTimeout(() => {
+                    document.getElementById('form-regendar-cita').submit();
+                }, 100);
+            }
+        );
     }
-    
-    function regendarCita(tramiteId) {
-        alert('Función de regendar cita en desarrollo. Por favor, contacte al administrador del sistema.');
-    }
+
+
 
     // Función para mostrar notificaciones
     function showNotification(message, type = 'success') {

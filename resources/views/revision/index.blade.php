@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
+@include('components.modal-exito')
+@include('components.loading-modal')
 <div class="container mx-auto px-4 py-8">
     @php
         $columns = [

@@ -246,4 +246,5 @@ Route::prefix('api')->group(function () {
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
     Route::get('/revision/{tramite}/estados', [RevisionController::class, 'obtenerEstados'])->name('api.revision.estados');
     Route::post('/revision/{tramite}/aprobar', [RevisionController::class, 'aprobarTramite'])->name('api.revision.aprobar');
+    Route::post('/revision/{tramite}/agendar-cita', [RevisionController::class, 'agendarCitaAutomatica'])->name('api.revision.agendar-cita');
 });

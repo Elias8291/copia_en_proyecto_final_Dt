@@ -457,6 +457,7 @@
     <x-modal-exito id="modal-exito" title="¡Trámite procesado!" message="El trámite ha sido procesado exitosamente." accept-text="Ir al listado" :redirect-url="route('revision.index')" />
     <x-modal-exito id="modal-cita-agendada" title="¡Cita Agendada!" message="Se ha agendado automáticamente una cita para cotejo presencial." accept-text="Ver Cita" :redirect-url="route('citas.index')" />
     <x-modal-eliminar id="modal-eliminar" title="Confirmar eliminación" message="¿Está seguro que desea eliminar este elemento? Esta acción no se puede deshacer." confirm-text="Eliminar" cancel-text="Cancelar" />
+    @include('components.loading-modal')
     
     <!-- Modal de error personalizado que siempre esté disponible -->
     <div id="modal-error-custom" class="fixed z-50 inset-0 overflow-y-auto hidden">

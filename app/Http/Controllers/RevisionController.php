@@ -86,25 +86,131 @@ class RevisionController extends Controller
                     $mensaje
                 );
 
-                return response()->json([
-                    'success' => true,
-                    'message' => $resultado['message'],
-                    'pv_asignado' => $resultado['pv_asignado'],
-                    'fecha_vencimiento' => $resultado['fecha_vencimiento'],
-                    'numero_oficio' => $resultado['numero_oficio'] ?? null
-                ]);
+                // Si es una petición AJAX, devolver JSON
+                if (request()->ajax() || request()->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $resultado['message'],
+                        'pv_asignado' => $resultado['pv_asignado'],
+                        'fecha_vencimiento' => $resultado['fecha_vencimiento'],
+                        'numero_oficio' => $resultado['numero_oficio'] ?? null
+                    ]);
+                }
+
+                // Si es una petición web normal, redirigir con modal de éxito
+                $mensajeExito = $resultado['message'];
+                if ($resultado['pv_asignado']) {
+                    $mensajeExito .= "\nPV Asignado: {$resultado['pv_asignado']}";
+                }
+                if ($resultado['fecha_vencimiento']) {
+                    $mensajeExito .= "\nFecha de vencimiento: {$resultado['fecha_vencimiento']}";
+                }
+                if (isset($resultado['numero_oficio'])) {
+                    $mensajeExito .= "\nNúmero de Oficio: {$resultado['numero_oficio']}";
+                }
+                $mensajeExito .= "\n\nSe ha enviado una notificación al usuario.";
+
+                return redirect()->route('revision.index')
+                    ->with('success', $mensajeExito)
+                    ->with('success_title', 'Trámite Aprobado')
+                    ->with('success_message', $mensajeExito)
+                    ->with('success_redirect', route('revision.index'))
+                    ->with('success_accept_text', 'Aceptar');
             } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => $resultado['message']
-                ], 400);
+                // Si es una petición AJAX, devolver JSON de error
+                if (request()->ajax() || request()->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $resultado['message']
+                    ], 400);
+                }
+
+                // Si es una petición web normal, redirigir con mensaje de error
+                return redirect()->back()
+                    ->with('error', $resultado['message']);
             }
         } catch (\Exception $e) {
             Log::error('Error al aprobar trámite: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error al procesar la aprobación'
-            ], 500);
+            
+            // Si es una petición AJAX, devolver JSON de error
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al procesar la aprobación'
+                ], 500);
+            }
+
+            // Si es una petición web normal, redirigir con mensaje de error
+            return redirect()->back()
+                ->with('error', 'Error al procesar la aprobación: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Agendar cita automática para un trámite
+     */
+    public function agendarCitaAutomatica(Tramite $tramite)
+    {
+        try {
+            $citaService = app(CitaService::class);
+            $cita = $citaService->agendarCitaCotejo($tramite);
+
+            if ($cita) {
+                // Crear notificación
+                $mensaje = "Se ha agendado una cita automática para el trámite #{$tramite->id} el día {$cita->fecha_cita->format('d/m/Y')} a las {$cita->fecha_cita->format('H:i')}.";
+
+                $this->notificacionService->crearNotificacion(
+                    $tramite->proveedor->user->id,
+                    $tramite->id,
+                    'Cita',
+                    'Cita Agendada Automáticamente',
+                    $mensaje
+                );
+
+                // Si es una petición AJAX, devolver JSON
+                if (request()->ajax() || request()->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Cita agendada exitosamente',
+                        'cita' => [
+                            'id' => $cita->id,
+                            'fecha' => $cita->fecha_cita->format('d/m/Y'),
+                            'hora' => $cita->fecha_cita->format('H:i'),
+                            'tipo' => $cita->tipo_cita
+                        ]
+                    ]);
+                }
+
+                // Si es una petición web normal, redirigir con mensaje de éxito
+                return redirect()->back()
+                    ->with('success', "Cita agendada exitosamente para el día {$cita->fecha_cita->format('d/m/Y')} a las {$cita->fecha_cita->format('H:i')}.");
+            } else {
+                // Si es una petición AJAX, devolver JSON de error
+                if (request()->ajax() || request()->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se pudo agendar la cita. No hay horarios disponibles.'
+                    ], 400);
+                }
+
+                // Si es una petición web normal, redirigir con mensaje de error
+                return redirect()->back()
+                    ->with('error', 'No se pudo agendar la cita. No hay horarios disponibles.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al agendar cita automática: ' . $e->getMessage());
+            
+            // Si es una petición AJAX, devolver JSON de error
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al agendar la cita'
+                ], 500);
+            }
+
+            // Si es una petición web normal, redirigir con mensaje de error
+            return redirect()->back()
+                ->with('error', 'Error al agendar la cita: ' . $e->getMessage());
         }
     }
 

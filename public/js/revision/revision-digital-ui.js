@@ -79,7 +79,29 @@ class RevisionDigitalUI {
         this.capturarComentarioGeneral(formId);
         
         if (typeof window.showConfirmModal === 'function') {
-            window.showConfirmModal(title, message, formId);
+            window.showConfirmModal(title, message, formId, function() {
+                // Mostrar modal de carga cuando se confirma
+                let loadingTitle = 'Procesando Trámite';
+                let loadingMessage = 'Procesando la solicitud. Por favor espere...';
+                
+                if (formId === 'form_por_cotejar') {
+                    loadingTitle = 'Enviando a Cotejo Presencial';
+                    loadingMessage = 'Procesando el envío a cotejo presencial. Por favor espere...';
+                } else if (formId === 'form_rechazar') {
+                    loadingTitle = 'Rechazando Trámite';
+                    loadingMessage = 'Procesando el rechazo del trámite. Por favor espere...';
+                } else if (formId === 'form_para_correccion') {
+                    loadingTitle = 'Enviando para Corrección';
+                    loadingMessage = 'Procesando el envío para corrección. Por favor espere...';
+                }
+                
+                showLoading(loadingTitle, loadingMessage, 0);
+                
+                // Enviar el formulario después de un pequeño delay
+                setTimeout(() => {
+                    document.getElementById(formId).submit();
+                }, 100);
+            });
         } else {
             const modal = document.getElementById('modal-confirmacion');
             const titleElement = modal.querySelector('#modal-headline-modal-confirmacion');
