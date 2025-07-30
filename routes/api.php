@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\ActividadesController;
-use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\CatalogoArchivoController;
 use App\Http\Controllers\UbicacionController;
@@ -52,11 +51,6 @@ Route::get('/documentos/{tipoPersona}', [CatalogoArchivoController::class, 'porT
 // QR Extraction Route (sin middleware de autenticación)
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
 
-// Error Testing Routes (only in development)
-if (app()->environment(['local', 'development'])) {
-    Route::get('/test-error', [ErrorController::class, 'apiTest']);
-    Route::post('/test-error', [ErrorController::class, 'apiTest']);
-}
 
-// API Error handling routes (fallback)
-Route::fallback([ErrorController::class, 'notFound']);
+
+

@@ -61,14 +61,13 @@
                         <i class="fas fa-building text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" name="razon_social" 
-                        value="{{ $razonSocial }}"
+                        value="{{ getOldValue($errors, 'razon_social', $razonSocial) }}"
                         data-validate="required|minLength:3|maxLength:255"
-                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('razon_social') ? 'error-field border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ getInputErrorClass($errors, 'razon_social') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                         aria-label="Razón social de la empresa" placeholder="Ingrese la razón social completa"
-                        {{ !$permitirEdicion ? 'disabled' : '' }}>
-                    @if($errors->has('razon_social'))
-                        <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('razon_social') }}</div>
-                    @endif
+                        {{ !$permitirEdicion ? 'disabled' : '' }}
+                        required>
+                    {!! showFieldError($errors, 'razon_social') !!}
                 </div>
             </div>
 
@@ -85,16 +84,14 @@
                     <input type="text" 
                                id="rfc" 
                                name="rfc" 
-                               value="{{ $rfcValue }}" 
+                               value="{{ getOldValue($errors, 'rfc', $rfcValue) }}" 
                                data-validate="required|rfc"
-                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('rfc') ? 'error-field border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ getInputErrorClass($errors, 'rfc') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                                placeholder="Ej: XAXX010101000"
                                aria-label="RFC de la empresa"
                                {{ !$permitirEdicion ? 'disabled' : '' }}
                                required>
-                    @if($errors->has('rfc'))
-                        <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('rfc') }}</div>
-                    @endif
+                    {!! showFieldError($errors, 'rfc') !!}
                 </div>
             </div>
 
@@ -144,11 +141,12 @@
                         <i class="fas fa-globe text-gray-500"></i>
                     </div>
                     <input type="url" name="pagina_web"
-                        value="{{ $paginaWeb }}" data-validate="url"
+                        value="{{ getOldValue($errors, 'pagina_web', $paginaWeb) }}" data-validate="url"
                         placeholder="https://www.ejemplo.com"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'pagina_web') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                         aria-label="Página web de la empresa"
                         {{ !$permitirEdicion ? 'disabled' : '' }}>
+                    {!! showFieldError($errors, 'pagina_web') !!}
                 </div>
             </div>
 
@@ -166,12 +164,13 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-briefcase text-gray-500"></i>
                         </div>
-                        <input type="text" name="cargo" value="{{ $cargo }}"
+                        <input type="text" name="cargo" value="{{ getOldValue($errors, 'cargo', $cargo) }}"
                             data-validate="minLength:2|maxLength:100"
                             placeholder="Ej: Director General, Representante Legal"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'cargo') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                             aria-label="Cargo del representante"
                             {{ !$permitirEdicion ? 'disabled' : '' }}>
+                        {!! showFieldError($errors, 'cargo') !!}
                     </div>
                 </div>
 
@@ -185,15 +184,12 @@
                             <i class="fas fa-envelope text-gray-500"></i>
                         </div>
                         <input type="email" name="email_contacto" required
-                            value="{{ $emailContacto }}"
+                            value="{{ getOldValue($errors, 'email_contacto', $emailContacto) }}"
                             data-validate="required|email" placeholder="ejemplo@correo.com"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('email_contacto') ? 'error-field border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
-                            data-error="{{ $errors->first('email_contacto') }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'email_contacto') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                             aria-label="Correo electrónico de contacto"
                             {{ !$permitirEdicion ? 'disabled' : '' }}>
-                        @if($errors->has('email_contacto'))
-                            <div class="error-message text-red-500 text-sm mt-1">{{ $errors->first('email_contacto') }}</div>
-                        @endif
+                        {!! showFieldError($errors, 'email_contacto') !!}
                     </div>
                 </div>
 
@@ -207,10 +203,11 @@
                             <i class="fas fa-phone text-gray-500"></i>
                         </div>
                         <input type="tel" name="telefono" required
-                            value="{{ $telefono }}" data-validate="required|phone"
-                            class="validate-phone block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            value="{{ getOldValue($errors, 'telefono', $telefono) }}" data-validate="required|phone"
+                            class="validate-phone block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'telefono') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                             placeholder="Ej: 5551234567 (10 dígitos)" aria-label="Número de teléfono" maxlength="10"
                             {{ !$permitirEdicion ? 'disabled' : '' }}>
+                        {!! showFieldError($errors, 'telefono') !!}
                     </div>
                 </div>
             </div>

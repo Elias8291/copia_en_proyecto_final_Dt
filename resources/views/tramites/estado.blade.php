@@ -3,29 +3,29 @@
 @section('title', 'Estado del Trámite')
 
 @section('content')
-@php
-    $colorCirculo = match($estado ?? 'En_Revision') {
-        'Aprobado' => 'bg-emerald-500',
-        'Rechazado' => 'bg-red-500',
-        'Para_Correccion' => 'bg-amber-500',
-        'Cancelado' => 'bg-gray-500',
-        'Por_Cotejar' => 'bg-purple-500',
-        'En_Revision' => 'bg-blue-500',
+                @php
+                    $colorCirculo = match($estado ?? 'En_Revision') {
+                        'Aprobado' => 'bg-emerald-500',
+                        'Rechazado' => 'bg-red-500',
+                        'Para_Correccion' => 'bg-amber-500',
+                        'Cancelado' => 'bg-gray-500',
+                        'Por_Cotejar' => 'bg-purple-500',
+                        'En_Revision' => 'bg-blue-500',
         'Pendiente' => 'bg-slate-400',
-        default => 'bg-yellow-400'
-    };
-    
-    $colorBadge = match($estado ?? 'En_Revision') {
-        'Aprobado' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
-        'Para_Correccion' => 'bg-amber-50 text-amber-700 border-amber-200',
-        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-300',
-        'Por_Cotejar' => 'bg-purple-50 text-purple-700 border-purple-200',
-        'En_Revision' => 'bg-blue-50 text-blue-700 border-blue-200',
+                        default => 'bg-yellow-400'
+                    };
+                    
+                    $colorBadge = match($estado ?? 'En_Revision') {
+                        'Aprobado' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
+                        'Para_Correccion' => 'bg-amber-50 text-amber-700 border-amber-200',
+                        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-300',
+                        'Por_Cotejar' => 'bg-purple-50 text-purple-700 border-purple-200',
+                        'En_Revision' => 'bg-blue-50 text-blue-700 border-blue-200',
         'Pendiente' => 'bg-slate-100 text-slate-600 border-slate-300',
-        default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
-    };
-@endphp
+                        default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
+                    };
+                @endphp
 <div class="min-h-screen flex items-center justify-center p-2 sm:p-4 pt-8 sm:pt-12">
     <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl border border-gray-100">
         {{-- Header con color primario --}}
@@ -72,9 +72,9 @@
                             {{ $estado ?? 'En revisión' }}
                         </span>
                     </div>
+                        </div>
                 </div>
-            </div>
-            
+                
 
                 
                 {{-- Barra de progreso compacta y elegante --}}
@@ -343,8 +343,8 @@
                             <div class="w-12 h-12 bg-gradient-to-br from-slate-400 to-gray-500 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 mx-auto sm:mx-0">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
+                                                    </svg>
+                                            </div>
                             <div class="flex-1">
                                 <h3 class="text-base font-bold text-slate-700 mb-2">¡Trámite enviado correctamente!</h3>
                                 <p class="text-gray-600 text-xs mb-2">Documentación recibida y en procesamiento.</p>
@@ -356,7 +356,7 @@
                                 <p class="text-slate-600 text-xs mt-2 font-medium flex items-center justify-center sm:justify-start">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                    </svg>
+                                            </svg>
                                     Gracias por su paciencia.
                                 </p>
                             </div>

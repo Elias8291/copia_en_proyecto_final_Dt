@@ -3,7 +3,7 @@ function handleFileUpload(input, documentoId) {
     const file = input.files[0];
     const statusElement = document.getElementById(`status_${documentoId}`);
     const filenameElement = document.getElementById(`filename_${documentoId}`);
-    const documentContainer = input.closest('.bg-white.border-2');
+    const documentContainer = input.closest('.bg-white.border');
     
     // Remover mensaje de error existente
     removeDocumentError(documentoId);
@@ -133,7 +133,7 @@ function validateDocumentosCompletos() {
         }
     });
     
-    // Actualizar barra de progreso
+    // Actualizar barra de progreso (si existe)
     const progressBar = document.getElementById('documentos-progress-bar');
     const progressText = document.getElementById('documentos-progress-text');
     
@@ -162,7 +162,7 @@ function validateDocumentosCompletos() {
 
 // Función para mostrar error individual en un documento
 function showDocumentError(documentoId, mensaje) {
-    const documentContainer = document.querySelector(`#file_${documentoId}`).closest('.bg-white.border-2');
+    const documentContainer = document.querySelector(`#file_${documentoId}`).closest('.bg-white.border');
     if (!documentContainer) return;
     
     // Remover error existente
@@ -212,7 +212,7 @@ function showDocumentosFaltantesErrors() {
     
     documentosInputs.forEach(input => {
         const documentoId = input.id.replace('file_', '');
-        const documentContainer = input.closest('.bg-white.border-2');
+        const documentContainer = input.closest('.bg-white.border');
         const documentTitle = documentContainer.querySelector('h4')?.textContent || `Documento ${documentoId}`;
         
         if (!input.files || input.files.length === 0) {
@@ -229,7 +229,7 @@ function removeAllDocumentErrors() {
     });
     
     // Resetear bordes de contenedores
-    const documentContainers = document.querySelectorAll('.bg-white.border-2');
+    const documentContainers = document.querySelectorAll('.bg-white.border');
     documentContainers.forEach(container => {
         container.classList.remove('border-red-300');
         container.classList.add('border-gray-300');
@@ -264,19 +264,16 @@ function showDocumentosCompletosMessage() {
     `;
     
     // Insertar en la sección de documentos
-    const documentosSection = document.querySelector('.step-section[data-step]');
+    const documentosSection = document.querySelector('[data-seccion="documentos"]');
     if (documentosSection) {
-        const documentosContainer = documentosSection.querySelector('.bg-white.rounded-2xl');
-        if (documentosContainer) {
-            documentosContainer.appendChild(messageDiv);
-            
-            // Auto-remover después de 5 segundos
-            setTimeout(() => {
-                if (messageDiv.parentNode) {
-                    messageDiv.remove();
-                }
-            }, 5000);
-        }
+        documentosSection.appendChild(messageDiv);
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
+        }, 5000);
     }
 }
 
@@ -320,7 +317,7 @@ function validateDocumentosBeforeNext() {
     documentosInputs.forEach(input => {
         if (!input.files || input.files.length === 0) {
             const documentoId = input.id.replace('file_', '');
-            const documentContainer = input.closest('.bg-white.border-2');
+            const documentContainer = input.closest('.bg-white.border');
             const documentTitle = documentContainer.querySelector('h4')?.textContent || `Documento ${documentoId}`;
             documentosFaltantes.push(documentTitle);
         }
@@ -331,7 +328,7 @@ function validateDocumentosBeforeNext() {
         showDocumentosFaltantesErrors();
         
         // Scroll a la primera sección de documentos
-        const documentosSection = document.querySelector('.step-section[data-step]');
+        const documentosSection = document.querySelector('[data-seccion="documentos"]');
         if (documentosSection) {
             documentosSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
@@ -357,4 +354,15 @@ window.initDocumentosValidation = initDocumentosValidation;
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     initDocumentosValidation();
+    
+    // Inicialización específica para formulario simple
+    const formSimple = document.querySelector('#tramite-form');
+    if (formSimple) {
+        console.log('Formulario simple detectado, inicializando validación de documentos...');
+        
+        // Validar documentos al cargar
+        setTimeout(() => {
+            validateDocumentosCompletos();
+        }, 500);
+    }
 }); 

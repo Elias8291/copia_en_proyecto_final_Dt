@@ -118,7 +118,82 @@ class PersonaMoralFormService
     }
 
     /**
-     * Valida los datos de persona moral
+     * Obtiene las reglas de validación para persona moral
+     */
+    public function getValidationRules(): array
+    {
+        return [
+            'fecha_constitucion' => 'required|date|before_or_equal:today',
+            'capital_social' => 'required|numeric|min:0',
+            'apoderado_nombre' => 'required|string|max:255',
+            'apoderado_rfc' => 'required|string|min:10|max:13',
+            'apoderado_curp' => 'nullable|string|size:18',
+            'apoderado_cargo' => 'required|string|max:100',
+            'accionistas' => 'required|array|min:1',
+            'accionistas.*.nombre' => 'required|string|max:255',
+            'accionistas.*.rfc' => 'required|string|min:10|max:13',
+            'accionistas.*.porcentaje' => 'required|numeric|min:0|max:100',
+        ];
+    }
+
+    /**
+     * Obtiene los mensajes de error personalizados para persona moral
+     */
+    public function getValidationMessages(): array
+    {
+        return [
+            'fecha_constitucion.required' => 'La fecha de constitución es obligatoria.',
+            'fecha_constitucion.date' => 'La fecha de constitución debe ser una fecha válida.',
+            'fecha_constitucion.before_or_equal' => 'La fecha de constitución no puede ser posterior a hoy.',
+            
+            'capital_social.required' => 'El capital social es obligatorio.',
+            'capital_social.numeric' => 'El capital social debe ser un número.',
+            'capital_social.min' => 'El capital social debe ser mayor o igual a 0.',
+            
+            'apoderado_nombre.required' => 'El nombre del apoderado es obligatorio.',
+            'apoderado_nombre.max' => 'El nombre del apoderado no puede exceder 255 caracteres.',
+            
+            'apoderado_rfc.required' => 'El RFC del apoderado es obligatorio.',
+            'apoderado_rfc.min' => 'El RFC del apoderado debe tener al menos 10 caracteres.',
+            'apoderado_rfc.max' => 'El RFC del apoderado no puede exceder 13 caracteres.',
+            
+            'apoderado_curp.size' => 'El CURP del apoderado debe tener exactamente 18 caracteres.',
+            
+            'apoderado_cargo.required' => 'El cargo del apoderado es obligatorio.',
+            'apoderado_cargo.max' => 'El cargo del apoderado no puede exceder 100 caracteres.',
+            
+            'accionistas.required' => 'Debe agregar al menos un accionista.',
+            'accionistas.min' => 'Debe agregar al menos un accionista.',
+            'accionistas.*.nombre.required' => 'El nombre del accionista es obligatorio.',
+            'accionistas.*.nombre.max' => 'El nombre del accionista no puede exceder 255 caracteres.',
+            'accionistas.*.rfc.required' => 'El RFC del accionista es obligatorio.',
+            'accionistas.*.rfc.min' => 'El RFC del accionista debe tener al menos 10 caracteres.',
+            'accionistas.*.rfc.max' => 'El RFC del accionista no puede exceder 13 caracteres.',
+            'accionistas.*.porcentaje.required' => 'El porcentaje del accionista es obligatorio.',
+            'accionistas.*.porcentaje.numeric' => 'El porcentaje debe ser un número.',
+            'accionistas.*.porcentaje.min' => 'El porcentaje debe ser mayor o igual a 0.',
+            'accionistas.*.porcentaje.max' => 'El porcentaje no puede exceder 100.',
+        ];
+    }
+
+    /**
+     * Obtiene los nombres de atributos para persona moral
+     */
+    public function getValidationAttributes(): array
+    {
+        return [
+            'fecha_constitucion' => 'fecha de constitución',
+            'capital_social' => 'capital social',
+            'apoderado_nombre' => 'nombre del apoderado',
+            'apoderado_rfc' => 'RFC del apoderado',
+            'apoderado_curp' => 'CURP del apoderado',
+            'apoderado_cargo' => 'cargo del apoderado',
+            'accionistas' => 'accionistas',
+        ];
+    }
+
+    /**
+     * Valida los datos de persona moral (método legacy)
      */
     public function validar(array $datos): array
     {

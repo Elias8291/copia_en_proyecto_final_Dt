@@ -91,6 +91,19 @@
                 ({{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }})
             </span>
         </h4>
+        
+        @if($errors->has('documentos'))
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-start space-x-2">
+                    <svg class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-red-800">{{ $errors->first('documentos') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
 
 
 
@@ -139,8 +152,16 @@
                                            id="file_{{ $documento->id }}" 
                                            name="documentos[{{ $documento->id }}]" 
                                            accept="{{ $documento->tipo_archivo }}" 
-                                           class="hidden"
-                                           onchange="handleFileUpload({{ $documento->id }}, this)">
+                                           class="hidden {{ $errors->has('documentos.' . $documento->id) ? 'field-error' : '' }}"
+                                           onchange="handleFileUpload(this, {{ $documento->id }})">
+                                    @if($errors->has('documentos.' . $documento->id))
+                                        <div class="field-error-message mt-1">
+                                            <svg class="w-3 h-3 text-red-500 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span class="text-xs text-red-600">{{ $errors->first('documentos.' . $documento->id) }}</span>
+                                        </div>
+                                    @endif
                                 @elseif($documentoAprobado)
                                     <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
                                         <i class="fas fa-lock mr-1"></i>

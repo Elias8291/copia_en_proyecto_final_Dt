@@ -74,7 +74,67 @@ class DireccionFormService
     }
 
     /**
-     * Valida los datos de dirección
+     * Obtiene las reglas de validación para dirección
+     */
+    public function getValidationRules(): array
+    {
+        return [
+            'cp' => 'required|string|size:5',
+            'colonia' => 'required|string|max:255',
+            'nombre_vialidad' => 'required|string|max:255',
+            'numero_exterior' => 'required|string|max:20',
+            'numero_interior' => 'nullable|string|max:20',
+            'municipio' => 'required|string|max:255',
+            'estado' => 'required|string|max:255',
+        ];
+    }
+
+    /**
+     * Obtiene los mensajes de error personalizados para dirección
+     */
+    public function getValidationMessages(): array
+    {
+        return [
+            'cp.required' => 'El código postal es obligatorio.',
+            'cp.size' => 'El código postal debe tener exactamente 5 dígitos.',
+            
+            'colonia.required' => 'La colonia es obligatoria.',
+            'colonia.max' => 'La colonia no puede exceder 255 caracteres.',
+            
+            'nombre_vialidad.required' => 'El nombre de la vialidad es obligatorio.',
+            'nombre_vialidad.max' => 'El nombre de la vialidad no puede exceder 255 caracteres.',
+            
+            'numero_exterior.required' => 'El número exterior es obligatorio.',
+            'numero_exterior.max' => 'El número exterior no puede exceder 20 caracteres.',
+            
+            'numero_interior.max' => 'El número interior no puede exceder 20 caracteres.',
+            
+            'municipio.required' => 'El municipio es obligatorio.',
+            'municipio.max' => 'El municipio no puede exceder 255 caracteres.',
+            
+            'estado.required' => 'El estado es obligatorio.',
+            'estado.max' => 'El estado no puede exceder 255 caracteres.',
+        ];
+    }
+
+    /**
+     * Obtiene los nombres de atributos para dirección
+     */
+    public function getValidationAttributes(): array
+    {
+        return [
+            'cp' => 'código postal',
+            'colonia' => 'colonia',
+            'nombre_vialidad' => 'nombre de la vialidad',
+            'numero_exterior' => 'número exterior',
+            'numero_interior' => 'número interior',
+            'municipio' => 'municipio',
+            'estado' => 'estado',
+        ];
+    }
+
+    /**
+     * Valida los datos de dirección (método legacy)
      */
     public function validar(array $datos): array
     {

@@ -41,7 +41,41 @@ class ActividadesFormService
     }
 
     /**
-     * Valida las actividades económicas
+     * Obtiene las reglas de validación para actividades
+     */
+    public function getValidationRules(): array
+    {
+        return [
+            'actividades' => 'required|array|min:1',
+            'actividades.*' => 'required|integer|exists:actividades_economicas,id',
+        ];
+    }
+
+    /**
+     * Obtiene los mensajes de error personalizados para actividades
+     */
+    public function getValidationMessages(): array
+    {
+        return [
+            'actividades.required' => 'Debe seleccionar al menos una actividad económica.',
+            'actividades.min' => 'Debe seleccionar al menos una actividad económica.',
+            'actividades.*.required' => 'Debe seleccionar una actividad económica válida.',
+            'actividades.*.exists' => 'La actividad económica seleccionada no es válida.',
+        ];
+    }
+
+    /**
+     * Obtiene los nombres de atributos para actividades
+     */
+    public function getValidationAttributes(): array
+    {
+        return [
+            'actividades' => 'actividades económicas',
+        ];
+    }
+
+    /**
+     * Valida las actividades económicas (método legacy)
      */
     public function validar(array $datos): array
     {

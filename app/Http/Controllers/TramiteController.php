@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TramiteFormRequest;
 use App\Models\Tramite;
 use App\Services\ProveedorService;
 use App\Services\TramiteService;
@@ -118,7 +119,7 @@ class TramiteController extends Controller
     /**
      * Procesa el envío del formulario de trámite
      */
-    public function store(Request $request, $tipo)
+    public function store(TramiteFormRequest $request, $tipo)
     {
         try {
             // Verificar que el usuario esté autenticado
@@ -206,7 +207,7 @@ class TramiteController extends Controller
     /**
      * Procesa la actualización de un trámite con correcciones
      */
-    public function actualizarCorreccion(Request $request, Tramite $tramite)
+    public function actualizarCorreccion(TramiteFormRequest $request, Tramite $tramite)
     {
         // Verificar que el usuario sea el propietario del trámite
         if ($tramite->proveedor->usuario_id !== Auth::id()) {

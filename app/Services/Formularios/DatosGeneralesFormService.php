@@ -1,12 +1,10 @@
-<?php
-
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace App\Services\Formularios;
 
-use App\Models\Tramite;
-use App\Models\DatosGenerales;
 use App\Models\Contacto;
+use App\Models\DatosGenerales;
+use App\Models\Tramite;
 
 class DatosGeneralesFormService
 {
@@ -69,7 +67,62 @@ class DatosGeneralesFormService
     }
 
     /**
-     * Valida los datos generales
+     * Obtiene las reglas de validación para datos generales
+     */
+    public function getValidationRules(): array
+    {
+        return [
+            'razon_social' => 'required|string|min:3|max:255',
+            'rfc' => 'required|string|min:10|max:13',
+            'curp' => 'nullable|string|size:18',
+            'pagina_web' => 'nullable|url|max:255',
+            'telefono' => 'nullable|string|max:20',
+            'email_contacto' => 'required|email|max:255',
+            'cargo' => 'nullable|string|max:100',
+        ];
+    }
+
+    /**
+     * Obtiene los mensajes de error personalizados para datos generales
+     */
+    public function getValidationMessages(): array
+    {
+        return [
+            'razon_social.required' => 'La razón social es obligatoria.',
+            'razon_social.min' => 'La razón social debe tener al menos 3 caracteres.',
+            'razon_social.max' => 'La razón social no puede exceder 255 caracteres.',
+            'rfc.required' => 'El RFC es obligatorio.',
+            'rfc.min' => 'El RFC debe tener al menos 10 caracteres.',
+            'rfc.max' => 'El RFC no puede exceder 13 caracteres.',
+            'curp.size' => 'El CURP debe tener exactamente 18 caracteres.',
+            'pagina_web.url' => 'La página web debe ser una URL válida.',
+            'pagina_web.max' => 'La página web no puede exceder 255 caracteres.',
+            'telefono.max' => 'El teléfono no puede exceder 20 caracteres.',
+            'email_contacto.required' => 'El email de contacto es obligatorio.',
+            'email_contacto.email' => 'El email de contacto debe ser una dirección válida.',
+            'email_contacto.max' => 'El email no puede exceder 255 caracteres.',
+            'cargo.max' => 'El cargo no puede exceder 100 caracteres.',
+        ];
+    }
+
+    /**
+     * Obtiene los nombres de atributos para datos generales
+     */
+    public function getValidationAttributes(): array
+    {
+        return [
+            'razon_social' => 'razón social',
+            'rfc' => 'RFC',
+            'curp' => 'CURP',
+            'pagina_web' => 'página web',
+            'telefono' => 'teléfono',
+            'email_contacto' => 'email de contacto',
+            'cargo' => 'cargo',
+        ];
+    }
+
+    /**
+     * Valida los datos generales (método legacy)
      */
     public function validar(array $datos): array
     {

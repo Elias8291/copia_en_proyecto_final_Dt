@@ -109,7 +109,42 @@ class DocumentosFormService
     }
 
     /**
-     * Valida los documentos adjuntos
+     * Obtiene las reglas de validación para documentos
+     */
+    public function getValidationRules(): array
+    {
+        return [
+            'documentos' => 'required|array',
+            'documentos.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200', // 50MB
+        ];
+    }
+
+    /**
+     * Obtiene los mensajes de error personalizados para documentos
+     */
+    public function getValidationMessages(): array
+    {
+        return [
+            'documentos.required' => 'Debe subir todos los documentos requeridos.',
+            'documentos.*.required' => 'Debe subir todos los documentos requeridos.',
+            'documentos.*.file' => 'El archivo debe ser válido.',
+            'documentos.*.mimes' => 'Solo se permiten archivos PDF, JPG, JPEG o PNG.',
+            'documentos.*.max' => 'El archivo no puede exceder 50MB.',
+        ];
+    }
+
+    /**
+     * Obtiene los nombres de atributos para documentos
+     */
+    public function getValidationAttributes(): array
+    {
+        return [
+            'documentos' => 'documentos',
+        ];
+    }
+
+    /**
+     * Valida los documentos adjuntos (método legacy)
      */
     public function validar(array $archivos): array
     {

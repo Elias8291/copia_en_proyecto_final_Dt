@@ -77,9 +77,35 @@
             @if($es_correccion ?? false)
                 @method('POST')
             @endif
-                <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}">
+            <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}">
             <input type="hidden" name="confirma_datos" value="on">
             <input type="hidden" name="formulario_simple" value="true">
+
+            <!-- Errores Generales del Formulario -->
+            @if ($errors->any())
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-red-800 mb-2">
+                                Se encontraron {{ $errors->count() }} error(es) en el formulario:
+                            </h3>
+                            <ul class="text-sm text-red-700 space-y-1">
+                                @foreach ($errors->all() as $error)
+                                    <li class="flex items-start">
+                                        <span class="w-1.5 h-1.5 bg-red-400 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                        {{ $error }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
 
 
@@ -287,6 +313,31 @@
     </div>
 </div>
 
+@php
+    // Helper function para mostrar errores de campos
+    function showFieldError($errors, $field) {
+        if ($errors->has($field)) {
+            return '<div class="field-error-message mt-1">
+                        <svg class="w-3 h-3 text-red-500 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-xs text-red-600">' . $errors->first($field) . '</span>
+                    </div>';
+        }
+        return '';
+    }
+    
+    // Helper function para agregar clases de error a inputs
+    function getInputErrorClass($errors, $field) {
+        return $errors->has($field) ? 'field-error border-red-500 bg-red-50' : '';
+    }
+    
+    // Helper function para obtener el valor old o el valor por defecto
+    function getOldValue($errors, $field, $default = '') {
+        return old($field, $default);
+    }
+@endphp
+
 @push('styles')
 <style>
     /* Estilos personalizados para mejorar la experiencia */
@@ -370,12 +421,54 @@
 @push('scripts')
 <script src="{{ asset('js/tramites/handlers/actividades-buscar.js') }}"></script>
 <script src="{{ asset('js/tramites/handlers/codigo-postal-handler.js') }}"></script>
+<script src="{{ asset('js/tramites/handlers/documentos-handler.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar el buscador de actividades
     if (typeof ActividadesBuscar !== 'undefined') {
         window.actividadesBuscar = new ActividadesBuscar();
     }
+    
+    // Verificar que el handler de documentos esté cargado
+    if (typeof handleFileUpload !== 'undefined') {
+        console.log('Documentos handler cargado correctamente');
+    } else {
+        console.error('Documentos handler no encontrado');
+    }
+    
+    // Manejo de errores de Laravel - Solo efectos visuales
+    @if ($errors->any())
+        // Si hay errores, hacer scroll a la primera sección con errores
+        setTimeout(() => {
+            const firstErrorField = document.querySelector('.field-error');
+            if (firstErrorField) {
+                const section = firstErrorField.closest('.form-section');
+                if (section) {
+                    section.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                    
+                    // Agregar efecto visual al campo con error
+                    firstErrorField.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        firstErrorField.classList.remove('animate-pulse');
+                    }, 2000);
+                }
+            }
+        }, 500);
+        
+        // Agregar tooltips a campos con errores
+        const errorFields = document.querySelectorAll('.field-error');
+        errorFields.forEach(field => {
+            const errorMessage = field.querySelector('.field-error-message span');
+            if (errorMessage) {
+                field.title = errorMessage.textContent;
+            }
+        });
+    @endif
+    
+
 });
 </script>
 @endpush
