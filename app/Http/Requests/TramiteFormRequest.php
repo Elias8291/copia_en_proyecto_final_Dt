@@ -104,21 +104,31 @@ class TramiteFormRequest extends FormRequest
         $documentos = $this->input('documentos', []);
         $documentosRequeridos = $this->getDocumentosRequeridos();
 
-        $documentosFaltantes = [];
+        // Filtrar solo los documentos que realmente se enviaron
+        $documentosEnviados = array_filter($documentos, function($archivo) {
+            return $archivo && (is_array($archivo) ? !empty($archivo) : $archivo->isValid());
+        });
 
-        foreach ($documentosRequeridos as $documentoId) {
-            if (!isset($documentos[$documentoId]) || !$documentos[$documentoId]) {
-                $documentosFaltantes[] = $documentoId;
+        // Si no se envió ningún documento, no validar
+        if (empty($documentosEnviados)) {
+            return;
+        }
+
+        // Verificar que los documentos enviados sean válidos
+        $documentosInvalidos = [];
+        foreach ($documentosEnviados as $documentoId => $archivo) {
+            if (!$archivo || (is_array($archivo) ? empty($archivo) : !$archivo->isValid())) {
+                $documentosInvalidos[] = $documentoId;
             }
         }
 
-        if (!empty($documentosFaltantes)) {
-            // Obtener nombres de documentos faltantes
-            $nombresDocumentos = \App\Models\CatalogoArchivo::whereIn('id', $documentosFaltantes)
+        if (!empty($documentosInvalidos)) {
+            // Obtener nombres de documentos inválidos
+            $nombresDocumentos = \App\Models\CatalogoArchivo::whereIn('id', $documentosInvalidos)
                 ->pluck('nombre')
                 ->toArray();
 
-            $validator->errors()->add('documentos', 'Debe subir todos los documentos requeridos: ' . implode(', ', $nombresDocumentos));
+            $validator->errors()->add('documentos', 'Los siguientes documentos tienen errores: ' . implode(', ', $nombresDocumentos));
         }
     }
 

@@ -62,7 +62,7 @@ class DocumentosFormService
     {
         return [
             'documentos' => 'sometimes|array',
-            'documentos.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
+            'documentos.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx,mp3,mp4,avi,mov,wmv|max:51200', // 50MB max
         ];
     }
 
@@ -74,8 +74,8 @@ class DocumentosFormService
         return [
             'documentos.array' => 'Los documentos deben ser enviados correctamente.',
             'documentos.*.file' => 'El archivo debe ser válido.',
-            'documentos.*.mimes' => 'El archivo debe ser de tipo: pdf, jpg, jpeg, png, doc, docx.',
-            'documentos.*.max' => 'El archivo no puede exceder 10MB.',
+            'documentos.*.mimes' => 'El archivo debe ser de tipo: pdf, jpg, jpeg, png, doc, docx, mp3, mp4, avi, mov, wmv.',
+            'documentos.*.max' => 'El archivo no puede exceder 50MB.',
         ];
     }
 

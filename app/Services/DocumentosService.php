@@ -29,11 +29,21 @@ class DocumentosService
 
         Log::info('Procesando documentos', [
             'tramite_id' => $tramite->id,
-            'total_documentos' => count($documentos)
+            'total_documentos' => count($documentos),
+            'documentos_keys' => array_keys($documentos)
         ]);
 
         foreach ($documentos as $catalogoId => $archivos) {
-            $this->procesarDocumentosPorCatalogo($tramite, (int) $catalogoId, $archivos);
+            try {
+                $this->procesarDocumentosPorCatalogo($tramite, (int) $catalogoId, $archivos);
+            } catch (\Exception $e) {
+                Log::error('Error procesando documento', [
+                    'tramite_id' => $tramite->id,
+                    'catalogo_id' => $catalogoId,
+                    'error' => $e->getMessage()
+                ]);
+                // Continuar con el siguiente documento en lugar de fallar todo
+            }
         }
     }
 
@@ -89,9 +99,26 @@ class DocumentosService
      */
     private function esArchivoValido(mixed $archivo): bool
     {
-        return $archivo && 
-               method_exists($archivo, 'isValid') && 
-               $archivo->isValid();
+        if (!$archivo) {
+            return false;
+        }
+
+        // Si es un array (múltiples archivos)
+        if (is_array($archivo)) {
+            return !empty($archivo) && $this->esArchivoValido($archivo[0]);
+        }
+
+        // Si es un archivo individual
+        if (method_exists($archivo, 'isValid')) {
+            return $archivo->isValid();
+        }
+
+        // Si es un string (ruta de archivo)
+        if (is_string($archivo)) {
+            return !empty($archivo);
+        }
+
+        return false;
     }
 
     /**

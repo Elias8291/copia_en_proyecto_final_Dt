@@ -311,6 +311,7 @@
 <script src="{{ asset('js/tramites/handlers/actividades-buscar.js') }}"></script>
 <script src="{{ asset('js/test-actividades.js') }}"></script>
 <script src="{{ asset('js/test-codigo-postal.js') }}"></script>
+<script src="{{ asset('js/test-documentos.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar el buscador de actividades

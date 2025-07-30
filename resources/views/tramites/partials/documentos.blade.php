@@ -37,8 +37,9 @@
 @endphp
 
 @push('scripts')
-    <script src="{{ asset('js/tramites/handlers/documentos-handler.js') }}"></script>
+    <script src="{{ asset('js/tramites/handlers/documentos-simple.js') }}"></script>
     <script>
+        // Función simple para expandir/contraer comentarios
         function toggleComentario(documentoId) {
             const documentoContainer = document.querySelector(`[data-documento-id="${documentoId}"]`);
             if (!documentoContainer) return;
@@ -67,17 +68,6 @@
                 }
             }
         }
-        
-        // Inicializar tooltips para los botones de expandir
-        document.addEventListener('DOMContentLoaded', function() {
-            const expandButtons = document.querySelectorAll('[onclick*="toggleComentario"]');
-            expandButtons.forEach(button => {
-                const icon = button.querySelector('i');
-                if (icon && icon.classList.contains('fa-chevron-down')) {
-                    button.title = 'Expandir comentario';
-                }
-            });
-        });
     </script>
 @endpush
 
@@ -150,8 +140,7 @@
                                            id="file_{{ $documento->id }}" 
                                            name="documentos[{{ $documento->id }}]" 
                                            accept="{{ $documento->tipo_archivo }}" 
-                                           class="hidden {{ $errors->has('documentos.' . $documento->id) ? 'border-red-500 bg-red-50' : '' }}"
-                                           onchange="handleFileUpload(this, {{ $documento->id }})">
+                                           class="hidden {{ $errors->has('documentos.' . $documento->id) ? 'border-red-500 bg-red-50' : '' }}">
                                     @if($errors->has('documentos.' . $documento->id))
                                         <div class="mt-2 flex items-center text-red-600">
                                             <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
