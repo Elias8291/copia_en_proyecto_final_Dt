@@ -2,6 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Services\Formularios\DatosGeneralesFormService;
+use App\Services\Formularios\DireccionFormService;
+use App\Services\Formularios\DatosConstitutivosFormService;
+use App\Services\Formularios\ApoderadoLegalFormService;
+use App\Services\Formularios\AccionistasFormService;
+use App\Services\Formularios\ActividadesEconomicasFormService;
+use App\Services\Formularios\DocumentosFormService;
 use App\Services\DocumentosService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -27,14 +34,14 @@ class TramiteFormularioRequest extends FormRequest
                 'required', 'string', 'min:10', 'max:13',
                 function ($attribute, $value, $fail) {
                     $value = strtoupper(trim($value));
-                    
+
                     if (strlen($value) === 12) {
                         // Persona Moral: 3 letras + 6 números + 3 caracteres alfanuméricos
                         if (!preg_match('/^[A-ZÑ&]{3}[0-9]{6}[A-V1-9A-Z0-9]{3}$/', $value)) {
                             $fail('El RFC de persona moral no tiene un formato válido.');
                         }
                     } elseif (strlen($value) === 13) {
-                        // Persona Física: 4 letras + 6 números + 3 caracteres alfanuméricos  
+                        // Persona Física: 4 letras + 6 números + 3 caracteres alfanuméricos
                         if (!preg_match('/^[A-ZÑ&]{4}[0-9]{6}[A-V1-9A-Z0-9]{3}$/', $value)) {
                             $fail('El RFC de persona física no tiene un formato válido.');
                         }
@@ -47,39 +54,44 @@ class TramiteFormularioRequest extends FormRequest
             'tipo_persona' => 'nullable|in:Física,Moral',
             'curp' => 'nullable|string|size:18|regex:/^[A-Z]{4}[0-9]{6}[A-Z0-9]{8}$/',
             'pagina_web' => 'nullable|url|max:255',
-            
-            // Contacto
-            'cargo' => 'nullable|string|max:255',
-            'email_contacto' => 'required|email|max:255',
-            'telefono' => 'required|string|min:10|max:15',
-            
-            // Domicilio
-            'calle' => 'required|string|min:5|max:255',
-            'numero_exterior' => 'required|string|max:20',
-            'numero_interior' => 'nullable|string|max:20',
-            'codigo_postal' => 'required|string|size:5|regex:/^[0-9]{5}$/',
-            'asentamiento' => 'nullable|string|max:255',
-            'municipio' => 'nullable|string|max:255',
-            'estado_id' => 'nullable|integer|min:1',
-            
             // Actividades
             'actividades' => 'nullable|array|min:1',
             'actividades.*' => 'nullable',
-            
             // Confirmación
             'confirma_datos' => 'nullable|sometimes|accepted',
         ];
+
+                // Obtener validaciones de los servicios de formularios
+        $datosGeneralesService = app(DatosGeneralesFormService::class);
+        $direccionService = app(DireccionFormService::class);
+        $datosConstitutivosService = app(DatosConstitutivosFormService::class);
+        $apoderadoLegalService = app(ApoderadoLegalFormService::class);
+        $accionistasService = app(AccionistasFormService::class);
+        
+        $rules = array_merge($rules, $datosGeneralesService->getValidationRules());
+        $rules = array_merge($rules, $direccionService->getValidationRules());
+        
+        // Agregar validaciones de persona moral si es necesario
+        if ($this->isPersonaMoral()) {
+            $rules = array_merge($rules, $datosConstitutivosService->getValidationRules());
+            $rules = array_merge($rules, $apoderadoLegalService->getValidationRules());
+            $rules = array_merge($rules, $accionistasService->getValidationRules());
+        }
 
         // Validación dinámica de documentos usando DocumentosService
         $documentosService = app(DocumentosService::class);
         $documentosRules = $documentosService->getValidationRules($this);
         $rules = array_merge($rules, $documentosRules);
 
+        // Agregar validaciones del nuevo DocumentosFormService
+        $documentosFormService = app(DocumentosFormService::class);
+        $rules = array_merge($rules, $documentosFormService->getValidationRules());
+
         // Validaciones adicionales para Persona Moral
         if ($this->isPersonaMoral()) {
             // Solo aplicar validaciones si se están enviando campos de persona moral
             $personaMoralRules = $this->getPersonaMoralRules();
-            
+
             // Filtrar reglas basándose en los campos enviados
             $filteredRules = [];
             foreach ($personaMoralRules as $field => $rule) {
@@ -88,7 +100,7 @@ class TramiteFormularioRequest extends FormRequest
                     $filteredRules[$field] = str_replace('nullable|', 'required|', $rule);
                 }
             }
-            
+
             $rules = array_merge($rules, $filteredRules);
         }
 
@@ -109,11 +121,9 @@ class TramiteFormularioRequest extends FormRequest
             'notario_numero' => 'nullable|integer|min:1|max:999999',
             'numero_registro' => 'nullable|string|min:1|max:255',
             'fecha_inscripcion' => 'nullable|date|after_or_equal:fecha_constitucion|before_or_equal:today',
-            
             // Apoderado legal
             'apoderado_nombre' => 'nullable|string|min:5|max:255',
             'apoderado_rfc' => 'nullable|string|size:13|regex:/^[A-ZÑ&]{4}[0-9]{6}[A-V1-9A-Z0-9]{3}$/',
-            
             // Accionistas
             'accionistas' => 'nullable|array|min:1',
             'accionistas.*.nombre' => 'nullable|string|min:5|max:255',
@@ -127,18 +137,35 @@ class TramiteFormularioRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
+        $messages = [
             'rfc.required' => 'El RFC es obligatorio.',
             'razon_social.required' => 'La razón social es obligatoria.',
             'curp.regex' => 'La CURP no tiene un formato válido.',
-            'email_contacto.required' => 'El correo electrónico es obligatorio.',
-            'telefono.required' => 'El teléfono es obligatorio.',
-            'calle.required' => 'La calle es obligatoria.',
-            'codigo_postal.required' => 'El código postal es obligatorio.',
             'actividades.*.exists' => 'La actividad seleccionada no es válida.',
             'documentos.*.mimes' => 'El tipo de archivo no es válido según el catálogo.',
             'documentos.*.max' => 'Cada archivo no debe exceder 50MB.',
         ];
+
+        // Obtener mensajes de los servicios de formularios
+        $datosGeneralesService = app(DatosGeneralesFormService::class);
+        $direccionService = app(DireccionFormService::class);
+        $datosConstitutivosService = app(DatosConstitutivosFormService::class);
+        $apoderadoLegalService = app(ApoderadoLegalFormService::class);
+        $accionistasService = app(AccionistasFormService::class);
+        $documentosFormService = app(DocumentosFormService::class);
+        
+        $messages = array_merge($messages, $datosGeneralesService->getValidationMessages());
+        $messages = array_merge($messages, $direccionService->getValidationMessages());
+        $messages = array_merge($messages, $documentosFormService->getValidationMessages());
+        
+        // Agregar mensajes de persona moral si es necesario
+        if ($this->isPersonaMoral()) {
+            $messages = array_merge($messages, $datosConstitutivosService->getValidationMessages());
+            $messages = array_merge($messages, $apoderadoLegalService->getValidationMessages());
+            $messages = array_merge($messages, $accionistasService->getValidationMessages());
+        }
+
+        return $messages;
     }
 
     /**
@@ -147,9 +174,11 @@ class TramiteFormularioRequest extends FormRequest
     private function isPersonaMoral(): bool
     {
         $tipoPersona = $this->input('tipo_persona');
-        if ($tipoPersona === 'Moral') return true;
-        if ($tipoPersona === 'Física') return false;
-        
+        if ($tipoPersona === 'Moral')
+            return true;
+        if ($tipoPersona === 'Física')
+            return false;
+
         $rfc = $this->input('rfc');
         return $rfc && strlen(trim($rfc)) === 12;
     }
@@ -165,13 +194,13 @@ class TramiteFormularioRequest extends FormRequest
             'fecha_inscripcion', 'apoderado_nombre', 'apoderado_rfc',
             'accionistas'
         ];
-        
+
         foreach ($personaMoralFields as $field) {
             if ($this->hasField($field)) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -181,14 +210,14 @@ class TramiteFormularioRequest extends FormRequest
     private function hasField($field): bool
     {
         $input = $this->input($field);
-        
+
         // Para campos anidados como accionistas
         if (is_array($input)) {
-            return !empty(array_filter($input, function($item) {
+            return !empty(array_filter($input, function ($item) {
                 return is_array($item) && !empty(array_filter($item));
             }));
         }
-        
+
         return !empty($input);
     }
-} 
+}

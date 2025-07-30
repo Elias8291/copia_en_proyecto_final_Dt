@@ -61,13 +61,19 @@
                         <i class="fas fa-building text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <input type="text" name="razon_social" 
-                        value="{{ getOldValue($errors, 'razon_social', $razonSocial) }}"
-                        data-validate="required|minLength:3|maxLength:255"
-                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ getInputErrorClass($errors, 'razon_social') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        value="{{ old('razon_social', $razonSocial) }}"
+                        data-validate="minLength:3|maxLength:255"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('razon_social') ? 'border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                         aria-label="Razón social de la empresa" placeholder="Ingrese la razón social completa"
-                        {{ !$permitirEdicion ? 'disabled' : '' }}
-                        required>
-                    {!! showFieldError($errors, 'razon_social') !!}
+                        {{ !$permitirEdicion ? 'disabled' : '' }}>
+                    @error('razon_social')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
             </div>
 
@@ -84,14 +90,20 @@
                     <input type="text" 
                                id="rfc" 
                                name="rfc" 
-                               value="{{ getOldValue($errors, 'rfc', $rfcValue) }}" 
-                               data-validate="required|rfc"
-                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ getInputErrorClass($errors, 'rfc') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                               value="{{ old('rfc', $rfcValue) }}" 
+                               data-validate="rfc"
+                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('rfc') ? 'border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                                placeholder="Ej: XAXX010101000"
                                aria-label="RFC de la empresa"
-                               {{ !$permitirEdicion ? 'disabled' : '' }}
-                               required>
-                    {!! showFieldError($errors, 'rfc') !!}
+                               {{ !$permitirEdicion ? 'disabled' : '' }}>
+                    @error('rfc')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
             </div>
 
@@ -100,7 +112,7 @@
                     Tipo de Persona
                     <span class="text-[#9d2449]">*</span>
                 </label>
-                <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}" required>
+                <input type="hidden" name="tipo_persona" value="{{ $tipoPersona }}">
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-user-tag text-gray-500"></i>
@@ -126,7 +138,7 @@
                     </div>
                     <input type="text" name="curp" maxlength="18" readonly
                         value="{{ $curp }}"
-                        data-validate="required|curp"
+                        data-validate="curp"
                         class="validate-curp block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed shadow-sm font-mono"
                         placeholder="Ej: ABCD123456HDFGHI01" aria-label="CURP de la persona física"
                         style="text-transform: uppercase;">
@@ -141,12 +153,19 @@
                         <i class="fas fa-globe text-gray-500"></i>
                     </div>
                     <input type="url" name="pagina_web"
-                        value="{{ getOldValue($errors, 'pagina_web', $paginaWeb) }}" data-validate="url"
+                        value="{{ old('pagina_web', $paginaWeb) }}" data-validate="url"
                         placeholder="https://www.ejemplo.com"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'pagina_web') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('pagina_web') ? 'border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                         aria-label="Página web de la empresa"
                         {{ !$permitirEdicion ? 'disabled' : '' }}>
-                    {!! showFieldError($errors, 'pagina_web') !!}
+                    @error('pagina_web')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
             </div>
 
@@ -159,18 +178,28 @@
                 Información de Contacto</h4>
             <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
                 <div class="form-group field-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2 field-label">Cargo</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2 field-label">
+                        Cargo
+                        <span class="text-[#9d2449]">*</span>
+                    </label>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-briefcase text-gray-500"></i>
                         </div>
-                        <input type="text" name="cargo" value="{{ getOldValue($errors, 'cargo', $cargo) }}"
+                        <input type="text" name="cargo" value="{{ old('cargo', $cargo) }}"
                             data-validate="minLength:2|maxLength:100"
                             placeholder="Ej: Director General, Representante Legal"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'cargo') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('cargo') ? 'border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                             aria-label="Cargo del representante"
                             {{ !$permitirEdicion ? 'disabled' : '' }}>
-                        {!! showFieldError($errors, 'cargo') !!}
+                                            @error('cargo')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                     </div>
                 </div>
 
@@ -183,13 +212,20 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-envelope text-gray-500"></i>
                         </div>
-                        <input type="email" name="email_contacto" required
-                            value="{{ getOldValue($errors, 'email_contacto', $emailContacto) }}"
-                            data-validate="required|email" placeholder="ejemplo@correo.com"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'email_contacto') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        <input type="email" name="email_contacto"
+                            value="{{ old('email_contacto', $emailContacto) }}"
+                            data-validate="email" placeholder="ejemplo@correo.com"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('email_contacto') ? 'border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                             aria-label="Correo electrónico de contacto"
                             {{ !$permitirEdicion ? 'disabled' : '' }}>
-                        {!! showFieldError($errors, 'email_contacto') !!}
+                        @error('email_contacto')
+                            <div class="mt-2 flex items-center text-red-600">
+                                <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-sm font-medium">{{ $message }}</span>
+                            </div>
+                        @enderror
                     </div>
                 </div>
 
@@ -202,12 +238,19 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-phone text-gray-500"></i>
                         </div>
-                        <input type="tel" name="telefono" required
-                            value="{{ getOldValue($errors, 'telefono', $telefono) }}" data-validate="required|phone"
-                            class="validate-phone block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ getInputErrorClass($errors, 'telefono') }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
+                        <input type="tel" name="telefono"
+                            value="{{ old('telefono', $telefono) }}" data-validate="phone"
+                            class="validate-phone block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('telefono') ? 'border-red-500 bg-red-50' : '' }} {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                             placeholder="Ej: 5551234567 (10 dígitos)" aria-label="Número de teléfono" maxlength="10"
                             {{ !$permitirEdicion ? 'disabled' : '' }}>
-                        {!! showFieldError($errors, 'telefono') !!}
+                                            @error('telefono')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                     </div>
                 </div>
             </div>

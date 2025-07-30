@@ -36,6 +36,16 @@
 
     <!-- Container para los cards de accionistas -->
     <div id="accionistas-container" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        @error('accionistas')
+            <div class="col-span-full">
+                <div class="text-red-600 text-sm flex items-center bg-red-50 border border-red-200 rounded-lg p-3">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    {{ $message }}
+                </div>
+            </div>
+        @enderror
         
         @if(!empty($accionistasExistentes))
             @foreach($accionistasExistentes as $index => $accionista)
@@ -79,10 +89,18 @@
                                 <input type="text" 
                                        name="accionistas[{{ $index }}][nombre]"
                                        value="{{ $accionista['nombre_completo'] ?? '' }}"
-                                       data-validate="required|minLength:3|maxLength:255"
-                                       class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
+                                       data-validate="minLength:3|maxLength:255"
+                                       class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 {{ $errors->has('accionistas.'.$index.'.nombre') ? 'border-red-500 bg-red-50' : '' }}"
                                        placeholder="Nombre completo"
-                                       {{ !$permitirEdicion ? 'readonly' : '' }} required>
+                                       {{ !$permitirEdicion ? 'readonly' : '' }}>
+                                @error('accionistas.'.$index.'.nombre')
+                                    <div class="text-red-600 text-sm mt-1 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                         </div>
 
@@ -101,13 +119,21 @@
                                 <input type="text" 
                                        name="accionistas[{{ $index }}][rfc]"
                                        value="{{ $accionista['rfc'] ?? '' }}"
-                                       data-validate="required|rfc"
-                                       class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 font-mono"
+                                       data-validate="rfc"
+                                       class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 font-mono {{ $errors->has('accionistas.'.$index.'.rfc') ? 'border-red-500 bg-red-50' : '' }}"
                                        placeholder="AAAA######AAA"
                                        maxlength="13"
                                        pattern="[A-Z]{4}[0-9]{6}[A-Z0-9]{3}"
                                        style="text-transform: uppercase;"
-                                       {{ !$permitirEdicion ? 'readonly' : '' }} required>
+                                       {{ !$permitirEdicion ? 'readonly' : '' }}>
+                                @error('accionistas.'.$index.'.rfc')
+                                    <div class="text-red-600 text-sm mt-1 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                         </div>
 
@@ -126,13 +152,21 @@
                                 <input type="number" 
                                        name="accionistas[{{ $index }}][porcentaje]"
                                        value="{{ $accionista['porcentaje_participacion'] ?? '' }}"
-                                       data-validate="required|min:0|max:100"
-                                       class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
+                                       data-validate="min:0|max:100"
+                                       class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 {{ $errors->has('accionistas.'.$index.'.porcentaje') ? 'border-red-500 bg-red-50' : '' }}"
                                        placeholder="0.00"
                                        step="0.01"
                                        min="0"
                                        max="100"
-                                       {{ !$permitirEdicion ? 'readonly' : '' }} required>
+                                       {{ !$permitirEdicion ? 'readonly' : '' }}>
+                                @error('accionistas.'.$index.'.porcentaje')
+                                    <div class="text-red-600 text-sm mt-1 flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -178,10 +212,18 @@
                         </div>
                         <input type="text" 
                                name="accionistas[0][nombre]"
-                               data-validate="required|minLength:3|maxLength:255"
-                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
+                               data-validate="minLength:3|maxLength:255"
+                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 {{ $errors->has('accionistas.0.nombre') ? 'border-red-500 bg-red-50' : '' }}"
                                placeholder="Nombre completo"
-                                   {{ !$permitirEdicion ? 'readonly' : '' }} required>
+                                   {{ !$permitirEdicion ? 'readonly' : '' }}>
+                        @error('accionistas.0.nombre')
+                            <div class="text-red-600 text-sm mt-1 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                {{ $message }}
+                            </div>
+                        @enderror
                     </div>
                 </div>
 
@@ -199,13 +241,21 @@
                             </div>
                             <input type="text" 
                                    name="accionistas[0][rfc]"
-                                   data-validate="required|rfc"
-                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 font-mono"
+                                   data-validate="rfc"
+                               class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 font-mono {{ $errors->has('accionistas.0.rfc') ? 'border-red-500 bg-red-50' : '' }}"
                                    placeholder="AAAA######AAA"
                                    maxlength="13"
                                    pattern="[A-Z]{4}[0-9]{6}[A-Z0-9]{3}"
                                    style="text-transform: uppercase;"
-                                   {{ !$permitirEdicion ? 'readonly' : '' }} required>
+                                   {{ !$permitirEdicion ? 'readonly' : '' }}>
+                            @error('accionistas.0.rfc')
+                                <div class="text-red-600 text-sm mt-1 flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {{ $message }}
+                                </div>
+                            @enderror
                         </div>
                     </div>
 
@@ -223,13 +273,21 @@
                         </div>
                         <input type="number" 
                                name="accionistas[0][porcentaje]"
-                               data-validate="required|min:0|max:100"
-                                   class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
+                               data-validate="min:0|max:100"
+                                   class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 {{ $errors->has('accionistas.0.porcentaje') ? 'border-red-500 bg-red-50' : '' }}"
                                placeholder="0.00"
                                    step="0.01"
                                min="0"
                                max="100"
-                                   {{ !$permitirEdicion ? 'readonly' : '' }} required>
+                                   {{ !$permitirEdicion ? 'readonly' : '' }}>
+                        @error('accionistas.0.porcentaje')
+                            <div class="text-red-600 text-sm mt-1 flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                {{ $message }}
+                            </div>
+                        @enderror
                         </div>
                     </div>
                 </div>
@@ -303,9 +361,15 @@ function agregarAccionista() {
                     </div>
                     <input type="text" 
                            name="accionistas[${nuevoIndex}][nombre]"
-                           data-validate="required|minLength:3|maxLength:255"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
-                           placeholder="Nombre completo" required>
+                                                   data-validate="minLength:3|maxLength:255"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
+                        placeholder="Nombre completo">
+                    <div class="error-message text-red-600 text-sm mt-1 flex items-center hidden">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="error-text"></span>
+                    </div>
                 </div>
             </div>
 
@@ -322,12 +386,18 @@ function agregarAccionista() {
                     </div>
                     <input type="text" 
                            name="accionistas[${nuevoIndex}][rfc]"
-                           data-validate="required|rfc"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 font-mono"
-                           placeholder="AAAA######AAA"
-                           maxlength="13"
-                           pattern="[A-Z]{4}[0-9]{6}[A-Z0-9]{3}"
-                           style="text-transform: uppercase;" required>
+                                                   data-validate="rfc"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50 font-mono"
+                        placeholder="AAAA######AAA"
+                        maxlength="13"
+                        pattern="[A-Z]{4}[0-9]{6}[A-Z0-9]{3}"
+                        style="text-transform: uppercase;">
+                    <div class="error-message text-red-600 text-sm mt-1 flex items-center hidden">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="error-text"></span>
+                    </div>
                 </div>
             </div>
 
@@ -344,14 +414,20 @@ function agregarAccionista() {
                     </div>
                     <input type="number" 
                            name="accionistas[${nuevoIndex}][porcentaje]"
-                           data-validate="required|min:0|max:100"
+                           data-validate="min:0|max:100"
                            class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all hover:border-[#9d2449]/50"
                            placeholder="0.00"
                            min="0"
                            max="100"
-                           step="0.01" required>
+                           step="0.01">
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <span class="text-gray-500 text-xs font-medium">%</span>
+                    </div>
+                    <div class="error-message text-red-600 text-sm mt-1 flex items-center hidden">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="error-text"></span>
                     </div>
                 </div>
             </div>
@@ -400,6 +476,65 @@ function actualizarNumeracion() {
     // Actualizar el contador global
     contadorAccionistas = cards.length;
 }
+
+// Función para mostrar errores de validación
+function mostrarError(campo, mensaje) {
+    const input = campo;
+    const errorDiv = input.parentNode.querySelector('.error-message');
+    
+    if (errorDiv) {
+        const errorText = errorDiv.querySelector('.error-text');
+        if (errorText) {
+            errorText.textContent = mensaje;
+        }
+        errorDiv.classList.remove('hidden');
+        input.classList.add('border-red-500', 'bg-red-50');
+    }
+}
+
+// Función para limpiar errores de validación
+function limpiarError(campo) {
+    const input = campo;
+    const errorDiv = input.parentNode.querySelector('.error-message');
+    
+    if (errorDiv) {
+        errorDiv.classList.add('hidden');
+        input.classList.remove('border-red-500', 'bg-red-50');
+    }
+}
+
+// Validación en tiempo real
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('accionistas-container');
+    if (container) {
+        container.addEventListener('input', function(e) {
+            const input = e.target;
+            const name = input.name;
+            
+            // Limpiar error previo
+            limpiarError(input);
+            
+            // Validar según el tipo de campo
+            if (name.includes('[nombre]')) {
+                if (input.value.length < 3) {
+                    mostrarError(input, 'El nombre debe tener al menos 3 caracteres');
+                } else if (input.value.length > 255) {
+                    mostrarError(input, 'El nombre no puede exceder 255 caracteres');
+                }
+            } else if (name.includes('[rfc]')) {
+                const rfcPattern = /^[A-ZÑ&]{3,4}[0-9]{6}[A-V1-9A-Z0-9]{3}$/;
+                if (input.value && !rfcPattern.test(input.value.toUpperCase())) {
+                    mostrarError(input, 'El RFC debe tener un formato válido');
+                }
+            } else if (name.includes('[porcentaje]')) {
+                const valor = parseFloat(input.value);
+                if (valor < 0 || valor > 100) {
+                    mostrarError(input, 'El porcentaje debe estar entre 0 y 100');
+                }
+            }
+        });
+    }
+});
 </script>
 @endpush
 

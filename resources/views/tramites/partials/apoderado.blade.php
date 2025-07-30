@@ -41,10 +41,18 @@
                     </div>
                     <input type="text" id="apoderado_nombre" name="apoderado_nombre" 
                            value="{{ $apoderadoNombre }}"
-                           data-validate="required|minLength:3|maxLength:255"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
+                           data-validate="minLength:3|maxLength:255"
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 {{ $errors->has('apoderado_nombre') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Nombre completo del apoderado legal"
-                           aria-label="Nombre completo del apoderado" required>
+                           aria-label="Nombre completo del apoderado">
+                                   @error('apoderado_nombre')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                 </div>
             </div>
 
@@ -59,13 +67,21 @@
                     </div>
                     <input type="text" id="apoderado_rfc" name="apoderado_rfc" 
                            value="{{ $apoderadoRfc }}"
-                           data-validate="required|rfc"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 font-mono"
+                           data-validate="rfc"
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 font-mono {{ $errors->has('apoderado_rfc') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="RFC del apoderado"
                            maxlength="13"
                            pattern="[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}"
-                           aria-label="RFC del apoderado" required
+                           aria-label="RFC del apoderado"
                            style="text-transform: uppercase;">
+                                   @error('apoderado_rfc')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                 </div>
             </div>
         </div>
@@ -88,10 +104,18 @@
                     </div>
                     <input type="text" id="poder_numero_escritura" name="poder_numero_escritura" 
                            value="{{ $poderNumeroEscritura }}"
-                           data-validate="required|minLength:3|maxLength:255"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
+                           data-validate="minLength:3|maxLength:255"
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 {{ $errors->has('poder_numero_escritura') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Número de escritura del poder"
-                           aria-label="Número de escritura del poder" required>
+                           aria-label="Número de escritura del poder">
+                                   @error('poder_numero_escritura')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                 </div>
             </div>
 
@@ -106,9 +130,16 @@
                     </div>
                     <input type="date" id="poder_fecha_constitucion" name="poder_fecha_constitucion" 
                            value="{{ $poderFechaConstitucion }}"
-                           data-validate="required"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
-                           aria-label="Fecha de constitución del poder" required>
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 {{ $errors->has('poder_fecha_constitucion') ? 'border-red-500 bg-red-50' : '' }}"
+                           aria-label="Fecha de constitución del poder">
+                                   @error('poder_fecha_constitucion')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                 </div>
             </div>
 
@@ -123,10 +154,18 @@
                     </div>
                     <input type="text" id="poder_notario_nombre" name="poder_notario_nombre" 
                            value="{{ $poderNotarioNombre }}"
-                           data-validate="required|minLength:3|maxLength:255"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
+                           data-validate="minLength:3|maxLength:255"
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 {{ $errors->has('poder_notario_nombre') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Nombre completo del notario"
-                           aria-label="Nombre del notario" required>
+                           aria-label="Nombre del notario">
+                                   @error('poder_notario_nombre')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                 </div>
             </div>
 
@@ -140,12 +179,19 @@
                         <i class="fas fa-map-marked-alt text-gray-500 text-xs sm:text-sm"></i>
                     </div>
                     <select id="poder_entidad_federativa" name="poder_entidad_federativa" 
-                            data-validate="required"
-                            class="block w-full pl-8 pr-10 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-10 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 appearance-none"
-                            aria-label="Entidad federativa del notario" required>
+                            class="block w-full pl-8 pr-10 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-10 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 appearance-none {{ $errors->has('poder_entidad_federativa') ? 'border-red-500 bg-red-50' : '' }}"
+                            aria-label="Entidad federativa del notario">
                         <option value="">Seleccione la entidad federativa</option>
                         <!-- Estados se cargarán dinámicamente -->
                     </select>
+                                   @error('poder_entidad_federativa')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <i class="fas fa-chevron-down text-gray-400"></i>
                     </div>
@@ -163,10 +209,18 @@
                     </div>
                     <input type="text" id="poder_notario_numero" name="poder_notario_numero" 
                            value="{{ $poderNotarioNumero }}"
-                           data-validate="required|minLength:1|maxLength:10"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
+                           data-validate="minLength:1|maxLength:10"
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 {{ $errors->has('poder_notario_numero') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Ej: 123"
-                           aria-label="Número del notario" required>
+                           aria-label="Número del notario">
+                                   @error('poder_notario_numero')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                 </div>
             </div>
 
@@ -181,10 +235,18 @@
                     </div>
                     <input type="text" id="poder_numero_registro" name="poder_numero_registro" 
                            value="{{ $poderNumeroRegistro }}"
-                           data-validate="required|minLength:3|maxLength:255"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50"
+                           data-validate="minLength:3|maxLength:255"
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 {{ $errors->has('poder_numero_registro') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Ej: REG-2024-001"
-                           aria-label="Número de registro" required>
+                           aria-label="Número de registro">
+                                   @error('poder_numero_registro')
+                   <div class="mt-2 flex items-center text-red-600">
+                       <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                           <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                       </svg>
+                       <span class="text-sm font-medium">{{ $message }}</span>
+                   </div>
+               @enderror
                 </div>
             </div>
         </div>

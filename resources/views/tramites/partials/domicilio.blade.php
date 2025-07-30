@@ -36,12 +36,19 @@
                     </div>
                     <input type="text" id="codigo_postal" name="codigo_postal"
                            value="{{ $codigoPostal }}"
-                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm font-mono sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm"
+                           class="block w-full pl-8 pr-3 py-2 text-xs text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm font-mono sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm {{ $errors->has('codigo_postal') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Ej: 01000"
                            pattern="[0-9]{5}"
                            maxlength="5"
-                           aria-label="Código postal"
-                           required>
+                           aria-label="Código postal">
+                    @error('codigo_postal')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
                 <p class="mt-1 text-sm text-gray-500" id="cp-help-text">5 dígitos - Se cargarán los datos automáticamente</p>
             </div>
@@ -144,11 +151,18 @@
                     </div>
                     <input type="text" id="calle" name="calle"
                            value="{{ $calle }}"
-                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('calle') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Ej: Av. Principal"
                            maxlength="100"
-                           aria-label="Nombre de la calle"
-                           required>
+                           aria-label="Nombre de la calle">
+                    @error('calle')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
             </div>
             
@@ -164,11 +178,18 @@
                     </div>
                     <input type="text" id="numero_exterior" name="numero_exterior"
                            value="{{ $numeroExterior }}"
-                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('numero_exterior') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Ej: 123 o S/N"
                            maxlength="10"
-                           aria-label="Número exterior"
-                           required>
+                           aria-label="Número exterior">
+                    @error('numero_exterior')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
             </div>
             
@@ -190,17 +211,29 @@
             
             <!-- Entre Calles -->
             <div class="form-group md:col-span-2">
-                <label for="entre_calles" class="block text-sm font-medium text-gray-700 mb-2">Entre Calles</label>
+                <label for="entre_calles" class="block text-sm font-medium text-gray-700 mb-2">
+                    Entre Calles
+                    <span class="text-[#9d2449]">*</span>
+                </label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                         <i class="fas fa-arrows-alt-h text-gray-500"></i>
                     </div>
                     <input type="text" id="entre_calles" name="entre_calles"
                            value="{{ old('entre_calles') }}"
-                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm"
+                           data-validate="minLength:3|maxLength:200"
+                           class="block w-full pl-10 pr-4 py-2.5 text-gray-700 bg-white border border-gray-200 rounded-lg focus:border-[#9d2449] focus:ring-2 focus:ring-[#9d2449]/20 transition-all group-hover:border-[#9d2449]/50 shadow-sm {{ $errors->has('entre_calles') ? 'border-red-500 bg-red-50' : '' }}"
                            placeholder="Ej: Entre Calle Independencia y Calle Morelos"
                            maxlength="200"
                            aria-label="Entre calles">
+                    @error('entre_calles')
+                        <div class="mt-2 flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium">{{ $message }}</span>
+                        </div>
+                    @enderror
                 </div>
             </div>
         </div>

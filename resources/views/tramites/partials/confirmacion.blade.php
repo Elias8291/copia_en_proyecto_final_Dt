@@ -42,7 +42,7 @@
 
     <div class="space-y-4">
         <label class="flex items-start space-x-3">
-            <input type="checkbox" name="confirma_datos" required
+                            <input type="checkbox" name="confirma_datos"
                 class="mt-1 h-4 w-4 text-[#9D2449] focus:ring-[#9D2449] border-slate-300 rounded">
             <span class="text-sm text-slate-700">
                 Confirmo que los datos proporcionados son correctos y veraces.

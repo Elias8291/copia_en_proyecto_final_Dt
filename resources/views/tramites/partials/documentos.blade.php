@@ -93,14 +93,12 @@
         </h4>
         
         @if($errors->has('documentos'))
-            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <div class="flex items-start space-x-2">
-                    <svg class="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <div class="mb-4 flex items-center justify-center">
+                <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-50 to-pink-50 rounded-full shadow-sm">
+                    <svg class="w-4 h-4 mr-2 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                     </svg>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-red-800">{{ $errors->first('documentos') }}</p>
-                    </div>
+                    <span class="text-sm font-medium text-red-700">{{ $errors->first('documentos') }}</span>
                 </div>
             </div>
         @endif
@@ -108,7 +106,7 @@
 
 
         <!-- Lista de Documentos -->
-        <div class="space-y-3 sm:space-y-4">
+        <div class="space-y-3 sm:space-y-4 {{ $errors->has('documentos') ? 'border border-red-200 bg-red-50 rounded-lg p-4' : '' }}">
             @if ($documentosRequeridos->count() > 0)
                 @foreach ($documentosRequeridos as $documento)
                     <div class="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 lg:p-6 transition-all duration-300 hover:border-[#9d2449] hover:shadow-md"
@@ -144,7 +142,7 @@
                                     $permitirSubida = !$documentoAprobado;
                                 @endphp
                                 @if ($editable && $permitirSubida)
-                                    <label for="file_{{ $documento->id }}" class="cursor-pointer inline-flex items-center px-2 py-1.5 sm:px-3 sm:py-2 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-sm">
+                                    <label for="file_{{ $documento->id }}" class="cursor-pointer inline-flex items-center px-2 py-1.5 sm:px-3 sm:py-2 {{ $errors->has('documentos.' . $documento->id) ? 'bg-red-500 hover:bg-red-600' : 'bg-black hover:bg-gray-800' }} text-white text-xs font-medium rounded-lg transition-all duration-200 shadow-sm">
                                         <i class="fas fa-upload mr-1 sm:mr-2"></i>
                                         <span class="hidden xs:inline">{{ $documentoExistente ? 'Cambiar' : 'Subir' }}</span>
                                     </label>
@@ -152,14 +150,14 @@
                                            id="file_{{ $documento->id }}" 
                                            name="documentos[{{ $documento->id }}]" 
                                            accept="{{ $documento->tipo_archivo }}" 
-                                           class="hidden {{ $errors->has('documentos.' . $documento->id) ? 'field-error' : '' }}"
+                                           class="hidden {{ $errors->has('documentos.' . $documento->id) ? 'border-red-500 bg-red-50' : '' }}"
                                            onchange="handleFileUpload(this, {{ $documento->id }})">
                                     @if($errors->has('documentos.' . $documento->id))
-                                        <div class="field-error-message mt-1">
-                                            <svg class="w-3 h-3 text-red-500 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <div class="mt-2 flex items-center text-red-600">
+                                            <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                                             </svg>
-                                            <span class="text-xs text-red-600">{{ $errors->first('documentos.' . $documento->id) }}</span>
+                                            <span class="text-sm font-medium">{{ $errors->first('documentos.' . $documento->id) }}</span>
                                         </div>
                                     @endif
                                 @elseif($documentoAprobado)

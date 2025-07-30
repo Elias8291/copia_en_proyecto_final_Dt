@@ -83,7 +83,19 @@
 
                 <!-- Campo hidden para validación de actividades -->
                 <input type="hidden" name="actividades_validation" id="actividades-validation"
-                    data-validate="actividades" required class="validate-actividades">
+                    data-validate="actividades" class="validate-actividades">
+                
+                <!-- Mensaje de error para actividades -->
+                @error('actividades')
+                    <div class="mt-3 flex items-center justify-center">
+                        <div class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-50 to-pink-50 rounded-full shadow-sm">
+                            <svg class="w-4 h-4 mr-2 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-sm font-medium text-red-700">{{ $message }}</span>
+                        </div>
+                    </div>
+                @enderror
 
                 <!-- Campos hidden para actividades (se llenan via JavaScript) -->
                 <div id="actividades-hidden-inputs">

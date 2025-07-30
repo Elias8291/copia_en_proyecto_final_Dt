@@ -6,105 +6,52 @@ namespace App\Services\Formularios;
 
 use App\Models\Tramite;
 use App\Models\Archivo;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Log;
+use App\Models\CatalogoArchivo;
 
 class DocumentosFormService
 {
     /**
-     * Procesa y guarda los documentos adjuntos
+     * Procesa y guarda los documentos del formulario
      */
-    public function procesar(Tramite $tramite, array $archivos): void
+    public function procesar(Tramite $tramite, array $datos): void
     {
-        if (!empty($archivos)) {
-            $this->guardarDocumentos($tramite, $archivos);
+        if (!empty($datos['documentos'])) {
+            $this->guardarDocumentos($tramite, $datos['documentos']);
         }
     }
 
     /**
-     * Guarda los documentos adjuntos
+     * Guarda los documentos
      */
-    private function guardarDocumentos(Tramite $tramite, array $archivos): void
+    private function guardarDocumentos(Tramite $tramite, array $documentos): void
     {
-        foreach ($archivos as $campo => $archivo) {
-            if (is_array($archivo)) {
-                foreach ($archivo as $index => $archivoIndividual) {
-                    $this->procesarArchivo($tramite, $campo, $archivoIndividual, $index);
+        foreach ($documentos as $catalogoId => $archivo) {
+            if ($archivo && $archivo->isValid()) {
+                $catalogoArchivo = CatalogoArchivo::find($catalogoId);
+                if ($catalogoArchivo) {
+                    $this->guardarDocumento($tramite, $archivo, $catalogoArchivo);
                 }
-            } else {
-                $this->procesarArchivo($tramite, $campo, $archivo);
             }
         }
     }
 
     /**
-     * Procesa un archivo individual
+     * Guarda un documento individual
      */
-    private function procesarArchivo(Tramite $tramite, string $campo, $archivo, ?int $index = null): void
+    private function guardarDocumento(Tramite $tramite, $archivo, CatalogoArchivo $catalogoArchivo): void
     {
-        if (!$this->esArchivoValido($archivo)) {
-            return;
-        }
+        $nombreArchivo = time() . '_' . $archivo->getClientOriginalName();
+        $ruta = $archivo->storeAs('documentos/' . $tramite->id, $nombreArchivo, 'public');
 
-        try {
-            $catalogoId = $this->extraerCatalogoId($campo);
-            $rutaArchivo = $this->almacenarArchivo($tramite, $archivo, $catalogoId, $index);
-            
-            $this->crearRegistroArchivo($tramite, $archivo, $rutaArchivo, $catalogoId);
-            
-        } catch (\Exception $e) {
-            Log::warning('Error al procesar archivo', [
-                'tramite_id' => $tramite->id,
-                'campo' => $campo,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Verifica si el archivo es válido
-     */
-    private function esArchivoValido($archivo): bool
-    {
-        return $archivo instanceof UploadedFile && $archivo->isValid();
-    }
-
-    /**
-     * Extrae el ID del catálogo del nombre del campo
-     */
-    private function extraerCatalogoId(string $campo): ?int
-    {
-        if (preg_match('/documentos\[(\d+)\]/', $campo, $matches)) {
-            return (int) $matches[1];
-        }
-        return null;
-    }
-
-    /**
-     * Almacena el archivo en el storage
-     */
-    private function almacenarArchivo(Tramite $tramite, UploadedFile $archivo, ?int $catalogoId, ?int $index): string
-    {
-        $carpeta = "documentos/{$tramite->id}";
-        
-        if ($catalogoId && $index !== null) {
-            $carpeta .= "/{$catalogoId}_{$index}";
-        }
-        
-        return $archivo->store($carpeta, 'public');
-    }
-
-    /**
-     * Crea el registro del archivo en la base de datos
-     */
-    private function crearRegistroArchivo(Tramite $tramite, UploadedFile $archivo, string $ruta, ?int $catalogoId): void
-    {
         Archivo::create([
-            'tramite_id' => $tramite->id,
-            'idCatalogoArchivo' => $catalogoId,
+            'id_tramite' => $tramite->id,
+            'id_catalogo_archivo' => $catalogoArchivo->id,
             'nombre_original' => $archivo->getClientOriginalName(),
-            'ruta_archivo' => $ruta,
-            'aprobado' => false,
+            'nombre_archivo' => $nombreArchivo,
+            'ruta' => $ruta,
+            'tipo_archivo' => $archivo->getClientMimeType(),
+            'tamano' => $archivo->getSize(),
+            'activo' => true,
         ]);
     }
 
@@ -114,8 +61,8 @@ class DocumentosFormService
     public function getValidationRules(): array
     {
         return [
-            'documentos' => 'required|array',
-            'documentos.*' => 'required|file|mimes:pdf,jpg,jpeg,png|max:51200', // 50MB
+            'documentos' => 'sometimes|array',
+            'documentos.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:10240', // 10MB max
         ];
     }
 
@@ -125,11 +72,10 @@ class DocumentosFormService
     public function getValidationMessages(): array
     {
         return [
-            'documentos.required' => 'Debe subir todos los documentos requeridos.',
-            'documentos.*.required' => 'Debe subir todos los documentos requeridos.',
+            'documentos.array' => 'Los documentos deben ser enviados correctamente.',
             'documentos.*.file' => 'El archivo debe ser válido.',
-            'documentos.*.mimes' => 'Solo se permiten archivos PDF, JPG, JPEG o PNG.',
-            'documentos.*.max' => 'El archivo no puede exceder 50MB.',
+            'documentos.*.mimes' => 'El archivo debe ser de tipo: pdf, jpg, jpeg, png, doc, docx.',
+            'documentos.*.max' => 'El archivo no puede exceder 10MB.',
         ];
     }
 
@@ -140,23 +86,26 @@ class DocumentosFormService
     {
         return [
             'documentos' => 'documentos',
+            'documentos.*' => 'documento',
         ];
     }
 
     /**
-     * Valida los documentos adjuntos (método legacy)
+     * Valida los documentos (método legacy)
      */
-    public function validar(array $archivos): array
+    public function validar(array $datos): array
     {
         $errores = [];
 
-        foreach ($archivos as $campo => $archivo) {
-            if (is_array($archivo)) {
-                foreach ($archivo as $index => $archivoIndividual) {
-                    $errores = array_merge($errores, $this->validarArchivoIndividual($archivoIndividual, $campo, $index));
+        if (empty($datos['documentos'])) {
+            $errores[] = 'Debe subir al menos un documento requerido';
+        }
+
+        if (!empty($datos['documentos'])) {
+            foreach ($datos['documentos'] as $catalogoId => $archivo) {
+                if ($archivo && !$archivo->isValid()) {
+                    $errores[] = "Error al subir el documento con ID: {$catalogoId}";
                 }
-            } else {
-                $errores = array_merge($errores, $this->validarArchivoIndividual($archivo, $campo));
             }
         }
 
@@ -164,126 +113,36 @@ class DocumentosFormService
     }
 
     /**
-     * Valida un archivo individual
+     * Obtener documentos de un trámite
      */
-    private function validarArchivoIndividual($archivo, string $campo, ?int $index = null): array
+    public function obtenerDatos(Tramite $tramite): ?array
     {
-        $errores = [];
-        $etiqueta = $index !== null ? "{$campo}[{$index}]" : $campo;
-
-        if (!($archivo instanceof UploadedFile)) {
-            return $errores;
+        $archivos = $tramite->archivos;
+        if ($archivos->isEmpty()) {
+            return null;
         }
 
-        if (!$archivo->isValid()) {
-            $errores[] = "El archivo {$etiqueta} no es válido";
-            return $errores;
-        }
-
-        // Validar tamaño (50MB máximo)
-        if ($archivo->getSize() > 52428800) {
-            $errores[] = "El archivo {$etiqueta} excede el tamaño máximo de 50MB";
-        }
-
-        // Validar extensión
-        $extensionesPermitidas = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'mp3', 'mp4'];
-        $extension = strtolower($archivo->getClientOriginalExtension());
-        
-        if (!in_array($extension, $extensionesPermitidas)) {
-            $errores[] = "El archivo {$etiqueta} debe ser: " . implode(', ', $extensionesPermitidas);
-        }
-
-        return $errores;
-    }
-
-    /**
-     * Obtener documentos de un trámite organizados por tipo
-     */
-    public function obtenerDocumentos(Tramite $tramite): array
-    {
-        return $tramite->archivos->map(function($archivo) {
+        return $archivos->map(function ($archivo) {
             return [
                 'id' => $archivo->id,
                 'nombre_original' => $archivo->nombre_original,
                 'nombre_archivo' => $archivo->nombre_archivo,
-                'tipo_documento' => $archivo->catalogoArchivo?->nombre ?? 'Documento',
-                'extension' => $archivo->extension,
-                'tamaño' => $archivo->tamaño,
-                'fecha_subida' => $archivo->created_at->format('d/m/Y H:i'),
-                'url_descarga' => '#',
-                'descripcion' => $archivo->catalogoArchivo?->descripcion ?? '',
+                'ruta' => $archivo->ruta,
+                'tipo_archivo' => $archivo->tipo_archivo,
+                'tamano' => $archivo->tamano,
+                'aprobado' => $archivo->aprobado,
+                'observaciones' => $archivo->observaciones,
+                'fecha_cotejo' => $archivo->fecha_cotejo,
+                'catalogo_archivo' => $archivo->catalogoArchivo?->nombre ?? 'Documento',
             ];
-        })->groupBy('tipo_documento')->toArray();
+        })->toArray();
     }
 
     /**
-     * Obtener resumen de documentos
+     * Verificar si tiene documentos completos
      */
-    public function obtenerResumenDocumentos(Tramite $tramite): array
+    public function tienesDatosCompletos(Tramite $tramite): bool
     {
-        $archivos = $tramite->archivos;
-        $totalTamaño = $archivos->sum('tamaño');
-        
-        return [
-            'total_archivos' => $archivos->count(),
-            'tamaño_total' => $this->formatearTamaño($totalTamaño),
-            'tipos_documento' => $archivos->groupBy('catalogoArchivo.nombre')->keys()->toArray(),
-            'ultimo_archivo' => $archivos->sortByDesc('created_at')->first()?->created_at->format('d/m/Y H:i'),
-        ];
-    }
-
-    /**
-     * Formatear tamaño de archivo
-     */
-    private function formatearTamaño(int $bytes): string
-    {
-        $unidades = ['B', 'KB', 'MB', 'GB'];
-        $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($unidades) - 1);
-        
-        $bytes /= pow(1024, $pow);
-        
-        return round($bytes, 2) . ' ' . $unidades[$pow];
-    }
-
-    /**
-     * Verificar si tiene documentos requeridos
-     */
-    public function tieneDocumentosRequeridos(Tramite $tramite): bool
-    {
-        // Aquí puedes definir qué documentos son requeridos según el tipo de trámite
-        $documentosRequeridos = $this->obtenerDocumentosRequeridos($tramite->tipo_tramite);
-        $documentosSubidos = $tramite->archivos->pluck('catalogoArchivo.nombre')->toArray();
-        
-        foreach ($documentosRequeridos as $requerido) {
-            if (!in_array($requerido, $documentosSubidos)) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-
-    /**
-     * Obtener documentos requeridos por tipo de trámite
-     */
-    private function obtenerDocumentosRequeridos(string $tipoTramite): array
-    {
-        return match(strtolower($tipoTramite)) {
-            'inscripcion' => [
-                'Constancia de Situación Fiscal',
-                'Acta Constitutiva',
-                'Identificación del Representante Legal',
-            ],
-            'renovacion' => [
-                'Constancia de Situación Fiscal',
-                'Comprobante de Domicilio',
-            ],
-            'actualizacion' => [
-                'Constancia de Situación Fiscal',
-            ],
-            default => [],
-        };
+        return !$tramite->archivos->isEmpty();
     }
 }

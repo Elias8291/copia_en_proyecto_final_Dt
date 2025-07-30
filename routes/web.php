@@ -69,7 +69,6 @@ Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
 // ============================================================================
 
 Route::middleware(['auth'])->group(function () {
-    
     // Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
@@ -177,7 +176,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
         Route::post('/{tramite}/cambiar-estado', [RevisionController::class, 'cambiarEstadoTramite'])->name('cambiar-estado');
         Route::get('/{tramite}/historial-estados', [RevisionController::class, 'historialEstados'])->name('historial-estados');
-        
+
         // Rutas de documentos y archivos
         Route::get('/documentos/{tramite}/{archivo}/{filename}', [RevisionController::class, 'verDocumento'])->name('verDocumento');
         Route::post('/documento/{archivo}/comentario', [RevisionController::class, 'actualizarComentarioDocumento'])->name('documento.comentario');
@@ -196,7 +195,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{tramite}/{tipo}', [RevisionController::class, 'revisarTramite'])
             ->where('tipo', 'seleccion-tipo|documentos-presencial|revision-digital')
             ->name('revisar');
-        
+
         // Ruta genérica para mostrar trámite (debe ir al final)
         Route::get('/{tramite}', [RevisionController::class, 'show'])->name('show');
     });

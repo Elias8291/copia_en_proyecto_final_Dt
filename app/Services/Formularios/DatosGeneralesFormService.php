@@ -76,9 +76,9 @@ class DatosGeneralesFormService
             'rfc' => 'required|string|min:10|max:13',
             'curp' => 'nullable|string|size:18',
             'pagina_web' => 'nullable|url|max:255',
-            'telefono' => 'nullable|string|max:20',
+            'telefono' => 'required|string|max:20',
             'email_contacto' => 'required|email|max:255',
-            'cargo' => 'nullable|string|max:100',
+            'cargo' => 'required|string|min:2|max:100',
         ];
     }
 
@@ -97,10 +97,13 @@ class DatosGeneralesFormService
             'curp.size' => 'El CURP debe tener exactamente 18 caracteres.',
             'pagina_web.url' => 'La página web debe ser una URL válida.',
             'pagina_web.max' => 'La página web no puede exceder 255 caracteres.',
+            'telefono.required' => 'El teléfono es obligatorio.',
             'telefono.max' => 'El teléfono no puede exceder 20 caracteres.',
             'email_contacto.required' => 'El email de contacto es obligatorio.',
             'email_contacto.email' => 'El email de contacto debe ser una dirección válida.',
             'email_contacto.max' => 'El email no puede exceder 255 caracteres.',
+            'cargo.required' => 'El cargo es obligatorio.',
+            'cargo.min' => 'El cargo debe tener al menos 2 caracteres.',
             'cargo.max' => 'El cargo no puede exceder 100 caracteres.',
         ];
     }
