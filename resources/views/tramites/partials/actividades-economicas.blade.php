@@ -66,7 +66,7 @@
                                     </div>
                                     <div class="text-xs text-gray-500 mt-1">{{ $actividad['sector'] }}</div>
                                 </div>
-                                <button type="button" onclick="eliminarActividad({{ $actividad['id'] }})" 
+                                <button type="button" onclick="removeActividad('{{ $actividad['id'] }}')" 
                                         class="ml-2 text-red-500 hover:text-red-700 {{ !$permitirEdicion ? 'opacity-50 cursor-not-allowed' : '' }}"
                                         {{ !$permitirEdicion ? 'disabled' : '' }}>
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

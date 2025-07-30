@@ -308,6 +308,38 @@
 
 @push('scripts')
 <script src="{{ asset('js/tramites/form-navigator.js') }}"></script>
+<script src="{{ asset('js/tramites/handlers/actividades-buscar.js') }}"></script>
+<script src="{{ asset('js/test-actividades.js') }}"></script>
+<script src="{{ asset('js/test-codigo-postal.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el buscador de actividades
+    if (typeof ActividadesBuscar !== 'undefined') {
+        window.actividadesBuscarInstance = new ActividadesBuscar();
+    }
+    
+    // Asegurar que el buscador se inicialice cuando se muestre la sección de actividades
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const actividadesSection = document.getElementById('actividades');
+                if (actividadesSection && !actividadesSection.classList.contains('hidden')) {
+                    // Si la sección de actividades se muestra y no hay instancia del buscador
+                    if (!window.actividadesBuscarInstance && typeof ActividadesBuscar !== 'undefined') {
+                        window.actividadesBuscarInstance = new ActividadesBuscar();
+                    }
+                }
+            }
+        });
+    });
+    
+    // Observar cambios en la sección de actividades
+    const actividadesSection = document.getElementById('actividades');
+    if (actividadesSection) {
+        observer.observe(actividadesSection, { attributes: true });
+    }
+});
+</script>
 @endpush
 
 @endsection 

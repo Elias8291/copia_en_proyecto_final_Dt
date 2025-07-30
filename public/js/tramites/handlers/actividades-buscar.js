@@ -14,12 +14,19 @@ if (typeof ActividadesBuscar === 'undefined') {
         }
         
         init() {
-            if (!this.buscarInput || !this.resultadosContainer || !this.seleccionadasContainer) return;
+            if (!this.buscarInput || !this.resultadosContainer || !this.seleccionadasContainer) {
+                console.error('ActividadesBuscar: Elementos requeridos no encontrados');
+                return;
+            }
+            
+            console.log('ActividadesBuscar: Inicializando buscador de actividades');
             
             this.buscarInput.addEventListener('input', (e) => this.handleSearch(e));
             this.buscarInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
             this.setupGlobalFunctions();
             this.setupClickOutside();
+            
+            console.log('ActividadesBuscar: Inicialización completada');
         }
         
         handleSearch(event) {
@@ -56,9 +63,13 @@ if (typeof ActividadesBuscar === 'undefined') {
         }
         
         async searchActividades(query) {
+            console.log('ActividadesBuscar: Buscando actividades con query:', query);
+            
             try {
                 const response = await fetch(`/actividades/buscar?nombre=${encodeURIComponent(query)}`);
                 const data = await response.json();
+                
+                console.log('ActividadesBuscar: Respuesta del servidor:', data);
                 
                 if (Array.isArray(data)) {
                     this.showResults(data);
@@ -66,6 +77,7 @@ if (typeof ActividadesBuscar === 'undefined') {
                     this.showError('Respuesta inválida del servidor');
                 }
             } catch (error) {
+                console.error('ActividadesBuscar: Error al buscar actividades:', error);
                 this.showError('Error al buscar actividades');
             }
         }

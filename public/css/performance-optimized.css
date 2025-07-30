@@ -1,0 +1,247 @@
+/* CSS Optimizado para Rendimiento */
+
+/* Prevenir layout shifts */
+* {
+    box-sizing: border-box;
+}
+
+/* Optimizar fuentes del sistema */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Contenedor principal con dimensiones fijas */
+.main-container {
+    min-height: 100vh;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Header fijo optimizado */
+header {
+    height: 4rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Contenido principal con padding fijo */
+.pt-16 {
+    padding-top: 4rem;
+}
+
+/* Fondo optimizado sin animaciones */
+.bg-logo-pattern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #fff;
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.bg-logo-pattern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('/images/logoNegro.png');
+    background-repeat: repeat;
+    background-size: 180px auto;
+    opacity: 0.01;
+    z-index: 1;
+    transform: translateZ(0);
+}
+
+/* Formulario optimizado */
+.form-section {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s ease;
+    will-change: border-color;
+}
+
+.form-section:hover {
+    border-color: #cbd5e1;
+}
+
+/* Botones optimizados */
+.btn-optimized {
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    will-change: background-color, transform;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-optimized:hover {
+    transform: translateY(-1px);
+}
+
+.btn-optimized:active {
+    transform: translateY(0);
+}
+
+/* Progreso optimizado */
+.progress-container {
+    background: #f3f4f6;
+    border-radius: 0.5rem;
+    height: 0.5rem;
+    overflow: hidden;
+    will-change: width;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #B4325E 0%, #7a1d37 100%);
+    border-radius: 0.5rem;
+    transition: width 0.3s ease;
+    will-change: width;
+}
+
+/* Tarjetas de estado optimizadas */
+.status-card {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    will-change: background-color, border-color;
+}
+
+.status-card:hover {
+    transform: translateY(-1px);
+}
+
+/* Iconos optimizados */
+.icon-optimized {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+}
+
+/* Texto optimizado */
+.text-optimized {
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* Grid optimizado */
+.grid-optimized {
+    display: grid;
+    gap: 0.75rem;
+}
+
+/* Responsive optimizado */
+@media (min-width: 768px) {
+    .grid-optimized {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .grid-optimized {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Animaciones optimizadas */
+@keyframes fadeInOptimized {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-optimized {
+    animation: fadeInOptimized 0.2s ease-out;
+    will-change: opacity, transform;
+}
+
+/* Loading optimizado */
+.loading-optimized {
+    opacity: 0.6;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+/* Scroll optimizado */
+.scroll-optimized {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Focus optimizado */
+.focus-optimized:focus {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+
+/* Disabled optimizado */
+.disabled-optimized {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+/* Hover optimizado */
+.hover-optimized:hover {
+    background-color: #f8fafc;
+}
+
+/* Active optimizado */
+.active-optimized:active {
+    transform: scale(0.98);
+}
+
+/* Visually hidden para accesibilidad */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Reducir motion para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+} 

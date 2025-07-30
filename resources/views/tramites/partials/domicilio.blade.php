@@ -251,3 +251,7 @@
 @if($tramite)
     @include('tramites.partials.estado-seccion', ['seccion' => 'domicilio', 'tramite' => $tramite])
 @endif
+
+@push('scripts')
+<script src="{{ asset('js/tramites/handlers/codigo-postal-handler.js') }}"></script>
+@endpush

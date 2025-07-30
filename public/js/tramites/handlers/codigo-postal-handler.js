@@ -1,17 +1,30 @@
 document.addEventListener("DOMContentLoaded", function () {
+    console.log('Código Postal Handler: Inicializando...');
+    
     const cpInput = document.getElementById("codigo_postal");
     const estadoSelect = document.getElementById("estado");
     const municipioSelect = document.getElementById("municipio");
     const asentamientoSelect = document.getElementById("asentamiento");
     const municipioIdInput = document.getElementById("municipio_id");
 
-    if (!cpInput) return;
+    if (!cpInput) {
+        console.error('Código Postal Handler: Input de código postal no encontrado');
+        return;
+    }
+    
+    console.log('Código Postal Handler: Elementos encontrados correctamente');
 
     let lastSearchedCP = "";
     let isLoading = false;
 
     function buscarPorCP(cp) {
-        if (isLoading || !/^\d{5}$/.test(cp) || cp === lastSearchedCP) return;
+        console.log('Código Postal Handler: Buscando por CP:', cp);
+        
+        if (isLoading || !/^\d{5}$/.test(cp) || cp === lastSearchedCP) {
+            console.log('Código Postal Handler: Búsqueda omitida (ya cargando, formato inválido o ya buscado)');
+            return;
+        }
+        
         isLoading = true;
         estadoSelect.disabled = true;
         municipioSelect.disabled = true;
@@ -31,6 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
             .then((res) => res.json())
             .then((data) => {
+                console.log('Código Postal Handler: Respuesta de la API:', data);
                 if (data.success && data.data.length > 0) {
                     const estado = data.data[0];
                     estadoSelect.innerHTML = `<option value="${estado.estado_id}">${estado.estado}</option>`;
