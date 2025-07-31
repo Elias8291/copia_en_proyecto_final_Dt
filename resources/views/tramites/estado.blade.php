@@ -26,7 +26,7 @@
                         default => 'bg-yellow-50 text-yellow-800 border-yellow-200'
                     };
                 @endphp
-<div class="min-h-screen flex items-center justify-center p-2 sm:p-4 pt-8 sm:pt-12">
+<div class="min-h-screen flex items-center justify-center p-2 sm:p-4 pt-4 sm:pt-6">
     <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl border border-gray-100">
         {{-- Header con color primario --}}
         <div class="h-16 bg-gradient-to-r from-[#9d2449] to-[#8a203f] relative">
@@ -183,29 +183,82 @@
                                 </svg>
                             </div>
                             <div class="flex-1">
-                                <h3 class="text-lg font-bold text-purple-800 mb-2">En proceso de cotejo</h3>
-                                <p class="text-gray-700 text-sm mb-4">Su documentación está siendo verificada con las autoridades correspondientes.</p>
+                                <h3 class="text-lg font-bold text-purple-800 mb-2">Cita programada para cotejo</h3>
+                                <p class="text-gray-700 text-sm mb-4">Su cita para verificación presencial ha sido programada. Debe asistir con documentos originales.</p>
                                 
                                 <div class="bg-white rounded-lg p-4 border border-purple-200">
                                     <h4 class="text-purple-800 font-semibold text-sm mb-3 flex items-center justify-center sm:justify-start">
                                         <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                        Proceso actual:
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        Detalles de la cita:
                                     </h4>
-                                    <ul class="text-gray-700 text-sm space-y-2">
-                                        <li class="flex items-start">
+                                    <div class="space-y-3">
+                                        <div class="flex items-start">
                                             <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                            <span>Verificación de datos con SAT</span>
-                                        </li>
-                                        <li class="flex items-start">
+                                            <div>
+                                                <span class="text-gray-700 text-sm font-medium">Fecha y hora:</span>
+                                                <span class="text-gray-700 text-sm ml-2">
+                                                    @if($cita && isset($cita['fecha_cita']))
+                                                        {{ \Carbon\Carbon::parse($cita['fecha_cita'])->format('d/m/Y H:i') }}
+                                                    @else
+                                                        Por confirmar
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start">
                                             <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                            <span>Validación de documentos</span>
-                                        </li>
-                                        <li class="flex items-start">
+                                            <div>
+                                                <span class="text-gray-700 text-sm font-medium">Ubicación:</span>
+                                                <span class="text-gray-700 text-sm ml-2">Módulo de Proveedores, Edificio 1 José Vasconcelos, Nivel 1</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start">
                                             <span class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                            <span>Confirmación de información</span>
-                                        </li>
+                                            <div>
+                                                <span class="text-gray-700 text-sm font-medium">Dirección:</span>
+                                                <span class="text-gray-700 text-sm ml-2">Ciudad Administrativa Benemérito de las Américas, Carretera Oaxaca-Istmo Km. 11.5, Tlalixtac de Cabrera, Oaxaca C.P. 68270</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4 bg-purple-50 rounded-lg p-4 border border-purple-200">
+                                    <h5 class="text-purple-800 font-semibold text-sm mb-2 flex items-center justify-center sm:justify-start">
+                                        <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                        </svg>
+                                        Documentos requeridos:
+                                    </h5>
+                                    <ul class="text-gray-700 text-sm space-y-1">
+                                        @php
+                                           
+                                            $tipoPersona = $tramite->datosGenerales->tipo_persona ?? 'Física';
+                                            $documentos = \App\Services\DocumentosService::getDocumentosPorTipoPersona($tipoPersona);
+                                        @endphp
+                                        
+                                        @if($documentos->count() > 0)
+                                            @foreach($documentos as $documento)
+                                                <li class="flex items-start">
+                                                    <span class="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                                    <span>{{ $documento->nombre }}</span>
+                                                </li>
+                                            @endforeach
+                                        @else
+                                            <li class="flex items-start">
+                                                <span class="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                                <span>Documentos originales del trámite</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <span class="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                                <span>Identificación oficial vigente</span>
+                                            </li>
+                                            <li class="flex items-start">
+                                                <span class="w-1.5 h-1.5 bg-purple-500 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                                                <span>Comprobante de domicilio</span>
+                                            </li>
+                                        @endif
                                     </ul>
                                 </div>
                                 
@@ -213,7 +266,7 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    Este proceso puede tomar 1-2 días hábiles.
+                                    Llegue 15 minutos antes de su cita programada.
                                 </p>
                             </div>
                         </div>

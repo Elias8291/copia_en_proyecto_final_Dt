@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TramiteFormRequest;
+use App\Models\Proveedor;
 use App\Models\Tramite;
 use App\Services\ProveedorService;
 use App\Services\TramiteService;
@@ -186,22 +187,17 @@ class TramiteController extends Controller
      */
     public function corregir(Tramite $tramite)
     {
-        // Verificar que el usuario sea el propietario del trámite
-        if ($tramite->proveedor->usuario_id !== Auth::id()) {
-            abort(403, 'No tienes permisos para corregir este trámite.');
-        }
+        try {
+            $this->validarPermisosCorreccion($tramite);
+            $datos = $this->tramiteService->getDatosFormularioCorreccion($tramite);
 
-        // Verificar que el trámite esté en estado Para_Correccion
-        if ($tramite->estado !== 'Para_Correccion') {
+            return view('tramites.formulario-simple', $datos);
+
+        } catch (\Exception $e) {
             return redirect()
                 ->route('tramites.estado')
-                ->with('error', 'Este trámite no requiere correcciones.');
+                ->with('error', $e->getMessage());
         }
-
-        // Obtener datos del formulario usando el servicio
-        $datos = $this->tramiteService->getDatosFormularioCorreccion($tramite);
-
-        return view('tramites.formulario-simple', $datos);
     }
 
     /**
@@ -209,51 +205,62 @@ class TramiteController extends Controller
      */
     public function actualizarCorreccion(TramiteFormRequest $request, Tramite $tramite)
     {
-        // Verificar que el usuario sea el propietario del trámite
-        if ($tramite->proveedor->usuario_id !== Auth::id()) {
-            abort(403, 'No tienes permisos para corregir este trámite.');
-        }
-
-        // Verificar que el trámite esté en estado Para_Correccion
-        if ($tramite->estado !== 'Para_Correccion') {
-            return redirect()
-                ->route('tramites.estado')
-                ->with('error', 'Este trámite no requiere correcciones.');
-        }
-
         try {
-            // Procesar las correcciones usando el servicio
+            $this->validarPermisosCorreccion($tramite);
             $resultado = $this->tramiteService->procesarCorreccionTramite($request, $tramite);
 
-            if ($resultado['success']) {
-                // Si viene del formulario simple, redirigir a index
-                if ($request->has('formulario_simple')) {
-                    return redirect()
-                        ->route('tramites.index')
-                        ->with('success', 'Correcciones enviadas exitosamente. Su trámite ha sido reenviado para revisión.');
-                }
+            return $this->manejarRespuestaCorreccion($request, $tramite, $resultado);
 
-                // Si viene del formulario normal, redirigir a estado
-                return redirect()
-                    ->route('tramites.estado')
-                    ->with('success', $resultado['message'])
-                    ->with('tramite_id', $tramite->id);
-            } else {
-                return back()
-                    ->withInput()
-                    ->with('error', $resultado['message']);
-            }
         } catch (\Exception $e) {
-            Log::error('Error al procesar correcciones del trámite', [
+            Log::error('Error al procesar correcciones', [
                 'tramite_id' => $tramite->id,
-                'usuario_id' => Auth::id(),
+                'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
 
             return back()
                 ->withInput()
-                ->with('error', 'Error al procesar las correcciones: ' . $e->getMessage());
+                ->with('error', 'Error al procesar las correcciones.');
         }
+    }
+
+    /**
+     * Valida permisos y estado para correcciones
+     */
+    private function validarPermisosCorreccion(Tramite $tramite): void
+    {
+        if ($tramite->proveedor->usuario_id !== Auth::id()) {
+            abort(403, 'No tienes permisos para corregir este trámite.');
+        }
+
+        if ($tramite->estado !== 'Para_Correccion') {
+            throw new \Exception('Este trámite no requiere correcciones.');
+        }
+    }
+
+    /**
+     * Maneja la respuesta después de procesar correcciones
+     */
+    private function manejarRespuestaCorreccion(Request $request, Tramite $tramite, array $resultado)
+    {
+        if (!$resultado['success']) {
+            return back()
+                ->withInput()
+                ->with('error', $resultado['message']);
+        }
+
+        $mensaje = $request->has('formulario_simple') 
+            ? 'Correcciones enviadas exitosamente. Su trámite ha sido reenviado para revisión.'
+            : $resultado['message'];
+
+        $ruta = $request->has('formulario_simple') 
+            ? 'tramites.index' 
+            : 'tramites.estado';
+
+        return redirect()
+            ->route($ruta)
+            ->with('success', $mensaje)
+            ->with('tramite_id', $tramite->id);
     }
 
     // ============================================================================
@@ -266,80 +273,78 @@ class TramiteController extends Controller
     public function estado()
     {
         try {
-            // Buscar el proveedor directamente
-            $proveedor = \App\Models\Proveedor::where('usuario_id', auth()->id())->first();
+            $proveedor = $this->obtenerProveedor();
+            $tramite = $this->obtenerTramiteReciente($proveedor);
+            $datosAdicionales = $this->obtenerDatosAdicionales($tramite);
 
-            if (!$proveedor) {
-                return redirect()
-                    ->route('tramites.index')
-                    ->with('error', 'No se encontró información del proveedor.');
-            }
-
-            // Obtener el trámite más reciente del proveedor con todas las relaciones necesarias
-            $tramite = $proveedor
-                ->tramites()
-                ->with(['proveedor.user', 'datosGenerales', 'oficios', 'cita'])
-                ->orderBy('created_at', 'desc')
-                ->first();
-
-            if (!$tramite) {
-                return redirect()
-                    ->route('tramites.index')
-                    ->with('error', 'No se encontró ningún trámite.');
-            }
-
-            // Obtener la cita si existe
-            $cita = null;
-            if ($tramite->estado === 'Por_Cotejar') {
-                $cita = $tramite->cita;
-            }
-
-            // Obtener el oficio - mejorar la consulta
-            $oficio = null;
-            if ($tramite->estado === 'Aprobado') {
-                // Intentar obtener el oficio más reciente del trámite
-                $oficio = $tramite->oficios()->orderBy('created_at', 'desc')->first();
-
-                // Si no se encuentra en la relación, intentar búsqueda directa
-                if (!$oficio) {
-                    $oficio = \App\Models\Oficio::where('tramite_id', $tramite->id)
-                        ->orderBy('created_at', 'desc')
-                        ->first();
-                }
-
-                // Log para debugging
-                if (!$oficio) {
-                    Log::warning('No se encontró oficio para trámite aprobado', [
-                        'tramite_id' => $tramite->id,
-                        'estado' => $tramite->estado,
-                        'proveedor_id' => $tramite->proveedor_id
-                    ]);
-                } else {
-                    Log::info('Oficio encontrado para trámite', [
-                        'tramite_id' => $tramite->id,
-                        'oficio_id' => $oficio->id,
-                        'numero_oficio' => $oficio->numero_oficio
-                    ]);
-                }
-            }
-
-            return view('tramites.estado', [
+            return view('tramites.estado', array_merge([
                 'tramite' => $tramite,
                 'estado' => $tramite->estado,
                 'tramite_id' => $tramite->id,
-                'cita' => $cita,
-                'oficio' => $oficio
-            ]);
+            ], $datosAdicionales));
+
         } catch (\Exception $e) {
-            Log::error('Error en método estado()', [
+            Log::error('Error al cargar estado del trámite', [
                 'user_id' => auth()->id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getMessage()
             ]);
 
             return redirect()
                 ->route('tramites.index')
-                ->with('error', 'Error al cargar el estado del trámite: ' . $e->getMessage());
+                ->with('error', 'Error al cargar el estado del trámite.');
         }
+    }
+
+    /**
+     * Obtiene el proveedor del usuario autenticado
+     */
+    private function obtenerProveedor()
+    {
+        $proveedor = Proveedor::where('usuario_id', auth()->id())->first();
+
+        if (!$proveedor) {
+            throw new \Exception('No se encontró información del proveedor.');
+        }
+
+        return $proveedor;
+    }
+
+    /**
+     * Obtiene el trámite más reciente del proveedor
+     */
+    private function obtenerTramiteReciente(Proveedor $proveedor)
+    {
+        $tramite = $proveedor->tramites()
+            ->with(['proveedor.user', 'datosGenerales', 'oficios', 'cita'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        if (!$tramite) {
+            throw new \Exception('No se encontró ningún trámite.');
+        }
+
+        return $tramite;
+    }
+
+    /**
+     * Obtiene datos adicionales según el estado del trámite
+     */
+    private function obtenerDatosAdicionales(Tramite $tramite): array
+    {
+        $datos = ['cita' => null, 'oficio' => null];
+
+        // Obtener cita si el estado es Por_Cotejar
+        if ($tramite->estado === 'Por_Cotejar') {
+            $datos['cita'] = $tramite->cita;
+        }
+
+        // Obtener oficio si el estado es Aprobado
+        if ($tramite->estado === 'Aprobado') {
+            $datos['oficio'] = $tramite->oficios()
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
+
+        return $datos;
     }
 }

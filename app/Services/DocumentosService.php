@@ -101,6 +101,32 @@ class DocumentosService
     }
 
     /**
+     * Obtiene los documentos del catálogo según el tipo de persona
+     * Uso: DocumentosService::getDocumentosPorTipoPersona($tipoPersona)
+     */
+    public function obtenerDocumentosPorTipoPersona(string $tipoPersona)
+    {
+        return CatalogoArchivo::where('es_visible', true)
+            ->where(function ($query) use ($tipoPersona) {
+                $query->where('tipo_persona', $tipoPersona)
+                      ->orWhere('tipo_persona', 'Ambas');
+            })
+            ->whereNotIn('tipo_archivo', ['mp3', 'mp4', 'avi', 'mov', 'wmv'])
+            ->orderBy('nombre', 'asc')
+            ->get();
+    }
+
+    /**
+     * Método estático para obtener documentos por tipo de persona
+     * Uso: DocumentosService::getDocumentosPorTipoPersona($tipoPersona)
+     */
+    public static function getDocumentosPorTipoPersona(string $tipoPersona)
+    {
+        $service = app(self::class);
+        return $service->obtenerDocumentosPorTipoPersona($tipoPersona);
+    }
+
+    /**
      * Guarda los documentos enviados en el formulario
      */
     public function guardar(Tramite $tramite, Request $request): void
