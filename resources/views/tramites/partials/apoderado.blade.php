@@ -297,5 +297,5 @@
 @endpush
 
 @if($tramite)
-    @include('tramites.partials.estado-seccion', ['seccion' => 'apoderado', 'tramite' => $tramite])
+    @include('tramites.partials.estado-seccion', ['seccion' => 'apoderado', 'tramite' => $tramite, 'editable' => $editable])
 @endif

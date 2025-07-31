@@ -92,7 +92,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('tramites')->name('tramites.')->group(function () {
         Route::get('/', [TramiteController::class, 'index'])->name('index');
         Route::get('/historial', [TramiteController::class, 'historial'])->name('historial');
-        Route::get('/datos/{tramite}', [TramiteController::class, 'datos'])->name('datos');
+        Route::get('/detalles/{tramite}', [TramiteController::class, 'detalles'])->name('detalles');
         Route::get('/constancia/{tipo}', [TramiteController::class, 'constancia'])->name('constancia');
         Route::post('/constancia/{tipo}', [TramiteController::class, 'procesarConstancia'])->name('procesarConstancia');
         Route::get('/formulario/{tipo}', [TramiteController::class, 'formulario'])->name('formulario');

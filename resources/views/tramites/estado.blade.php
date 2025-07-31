@@ -283,20 +283,20 @@
                                         <div class="space-y-2">
                                             <div class="flex items-center">
                                                 <span class="w-2 h-2 bg-gray-500 rounded-full mr-3 flex-shrink-0"></span>
-                                                <div>
-                                                    <span class="text-gray-700 text-sm font-medium">Fecha y hora:</span>
-                                                    <span class="text-gray-700 text-sm ml-2">
-                                                        @if($citaActiva && isset($citaActiva->fecha_cita))
-                                                            {{ \Carbon\Carbon::parse($citaActiva->fecha_cita)->format('d/m/Y H:i') }}
-                                                            @if($citaPasada)
+                                            <div>
+                                                <span class="text-gray-700 text-sm font-medium">Fecha y hora:</span>
+                                                <span class="text-gray-700 text-sm ml-2">
+                                                    @if($citaActiva && isset($citaActiva->fecha_cita))
+                                                        {{ \Carbon\Carbon::parse($citaActiva->fecha_cita)->format('d/m/Y H:i') }}
+                                                        @if($citaPasada)
                                                                 <span class="text-red-600 font-medium"> (Vencida)</span>
-                                                            @endif
-                                                        @else
-                                                            Por confirmar
                                                         @endif
-                                                    </span>
-                                                </div>
+                                                    @else
+                                                        Por confirmar
+                                                    @endif
+                                                </span>
                                             </div>
+                                        </div>
                                             @if($citaActiva && $citaActiva->estado === 'Reagendada')
                                             <div class="flex items-center">
                                                 <span class="w-2 h-2 bg-[#9d2449] rounded-full mr-3 flex-shrink-0"></span>
@@ -308,19 +308,19 @@
                                             @endif
                                         </div>
                                         <div class="space-y-2">
-                                            <div class="flex items-start">
-                                                <span class="w-2 h-2 bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                                <div>
-                                                    <span class="text-gray-700 text-sm font-medium">Ubicación:</span>
+                                        <div class="flex items-start">
+                                            <span class="w-2 h-2 bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <div>
+                                                <span class="text-gray-700 text-sm font-medium">Ubicación:</span>
                                                     <span class="text-gray-700 text-sm ml-2">Módulo de Proveedores, Edificio 1</span>
                                                 </div>
-                                            </div>
-                                            <div class="flex items-start">
-                                                <span class="w-2 h-2 bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                                                <div>
-                                                    <span class="text-gray-700 text-sm font-medium">Dirección:</span>
+                                        </div>
+                                        <div class="flex items-start">
+                                            <span class="w-2 h-2 bg-gray-500 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                            <div>
+                                                <span class="text-gray-700 text-sm font-medium">Dirección:</span>
                                                     <span class="text-gray-700 text-sm ml-2">Ciudad Administrativa, Tlalixtac de Cabrera, Oaxaca</span>
-                                                </div>
+                                        </div>
                                             </div>
                                         </div>
                                     </div>
@@ -360,7 +360,7 @@
                                                 <div class="flex items-center mb-3">
                                                     <svg class="w-5 h-5 text-[#9d2449] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                                    </svg>
+                                                </svg>
                                                     <h6 class="text-gray-800 font-semibold">Notificación</h6>
                                                 </div>
                                                 <p class="text-gray-700 text-sm mb-3">Revise su correo electrónico para más información sobre el estado de su trámite.</p>
@@ -405,7 +405,7 @@
                                                 Iniciar Nuevo Trámite
                                             </a>
                                         </div>
-                                    </div>
+                                        </div>
                                     @endif
                                 @endif
                                 

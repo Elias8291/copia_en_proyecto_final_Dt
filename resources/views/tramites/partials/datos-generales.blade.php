@@ -259,5 +259,5 @@
 </div>
 
 @if($tramite)
-    @include('tramites.partials.estado-seccion', ['seccion' => 'datos_generales', 'tramite' => $tramite])
+    @include('tramites.partials.estado-seccion', ['seccion' => 'datos_generales', 'tramite' => $tramite, 'editable' => $editable])
 @endif

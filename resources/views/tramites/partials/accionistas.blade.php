@@ -539,5 +539,5 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 
 @if($tramite)
-    @include('tramites.partials.estado-seccion', ['seccion' => 'accionistas', 'tramite' => $tramite])
+    @include('tramites.partials.estado-seccion', ['seccion' => 'accionistas', 'tramite' => $tramite, 'editable' => $editable])
 @endif

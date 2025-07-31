@@ -374,7 +374,7 @@ class TramiteController extends Controller
         }
     }
 
-    public function datos(Tramite $tramite)
+    public function detalles(Tramite $tramite)
     {
         try {
             // Validar que el usuario autenticado sea el propietario del trámite
@@ -386,20 +386,23 @@ class TramiteController extends Controller
             $tramite->load([
                 'proveedor.user',
                 'datosGenerales',
-                'direccion',
-                'datosConstitutivos',
-                'apoderadoLegal',
+                'oficios',
+                'cita',
+                'actividades',
                 'accionistas',
+                'apoderadoLegal',
                 'archivos',
-                'actividades'
+                'direcciones.coordenadas',
+                'contactos',
+                'datosConstitutivos'
             ]);
 
-            return view('tramites.datos', [
+            return view('tramites.detalles', [
                 'tramite' => $tramite
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error al cargar datos del trámite', [
+            Log::error('Error al cargar detalles del trámite', [
                 'tramite_id' => $tramite->id,
                 'usuario_id' => Auth::id(),
                 'error' => $e->getMessage()
@@ -407,7 +410,7 @@ class TramiteController extends Controller
 
             return redirect()
                 ->route('tramites.historial')
-                ->with('error', 'Error al cargar los datos del trámite.');
+                ->with('error', 'Error al cargar los detalles del trámite.');
         }
     }
 }

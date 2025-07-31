@@ -252,7 +252,7 @@
 </div>
 
 @if($tramite)
-    @include('tramites.partials.estado-seccion', ['seccion' => 'domicilio', 'tramite' => $tramite])
+    @include('tramites.partials.estado-seccion', ['seccion' => 'domicilio', 'tramite' => $tramite, 'editable' => $editable])
 @endif
 
 @push('scripts')

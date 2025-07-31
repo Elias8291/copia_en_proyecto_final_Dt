@@ -1,4 +1,4 @@
-@props(['seccion' => '', 'tramite' => null])
+@props(['seccion' => '', 'tramite' => null, 'editable' => true])
 
 @php
     $revisionSeccion = null;
@@ -31,6 +31,7 @@
     $permitirEdicion = $aprobado !== true;
 @endphp
 
+@if($editable)
 <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
     <div class="flex items-center justify-between mb-3">
         <div class="flex items-center space-x-2">
@@ -121,4 +122,5 @@
             </div>
         </div>
     @endif
-</div> 
+</div>
+@endif 

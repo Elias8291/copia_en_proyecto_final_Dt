@@ -289,6 +289,6 @@
 </div>
 
 @if($tramite)
-    @include('tramites.partials.estado-seccion', ['seccion' => 'documentos', 'tramite' => $tramite])
+    @include('tramites.partials.estado-seccion', ['seccion' => 'documentos', 'tramite' => $tramite, 'editable' => $editable])
 @endif
 
