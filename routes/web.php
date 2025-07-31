@@ -14,7 +14,8 @@ use App\Http\Controllers\{
     NotificacionController,
     ProfileController,
     OficioController,
-    OficioPdfController
+    OficioPdfController,
+    EstadoController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -90,6 +91,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('tramites')->name('tramites.')->group(function () {
         Route::get('/', [TramiteController::class, 'index'])->name('index');
+        Route::get('/historial', [TramiteController::class, 'historial'])->name('historial');
+        Route::get('/datos/{tramite}', [TramiteController::class, 'datos'])->name('datos');
         Route::get('/constancia/{tipo}', [TramiteController::class, 'constancia'])->name('constancia');
         Route::post('/constancia/{tipo}', [TramiteController::class, 'procesarConstancia'])->name('procesarConstancia');
         Route::get('/formulario/{tipo}', [TramiteController::class, 'formulario'])->name('formulario');
@@ -97,10 +100,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{tipo}', [TramiteController::class, 'store'])->name('store');
         Route::get('/exito', [TramiteController::class, 'exito'])->name('exito');
         Route::get('/estado', [TramiteController::class, 'estado'])->name('estado');
-
-        // Rutas para corrección de trámites
-        Route::get('/corregir/{tramite}', [TramiteController::class, 'corregir'])->name('corregir');
-        Route::post('/corregir/{tramite}', [TramiteController::class, 'actualizarCorreccion'])->name('actualizar.correccion');
+        Route::post('/{tramite}/reagendar-cita', [EstadoController::class, 'reagendarCita'])->name('reagendar-cita');
+        Route::post('/{tramite}/cancelar', [TramiteController::class, 'cancelar'])->name('cancelar');
     });
 
     // ============================================================================
@@ -244,7 +245,4 @@ Route::middleware(['auth'])->group(function () {
 Route::prefix('api')->group(function () {
     Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
-    Route::get('/revision/{tramite}/estados', [RevisionController::class, 'obtenerEstados'])->name('api.revision.estados');
-    Route::post('/revision/{tramite}/aprobar', [RevisionController::class, 'aprobarTramite'])->name('api.revision.aprobar');
-    Route::post('/revision/{tramite}/agendar-cita', [RevisionController::class, 'agendarCitaAutomatica'])->name('api.revision.agendar-cita');
 });

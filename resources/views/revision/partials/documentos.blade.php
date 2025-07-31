@@ -175,5 +175,5 @@
 @endif
 
 @if($editable)
-    <script src="{{ asset('js/revision/documentos.js') }}"></script>
+    <!-- Scripts se cargan en la vista principal para evitar duplicación -->
 @endif

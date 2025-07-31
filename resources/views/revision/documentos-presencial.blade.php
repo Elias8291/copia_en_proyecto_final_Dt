@@ -167,13 +167,13 @@
             <form id="form-regendar-cita" action="{{ route('api.revision.agendar-cita', $tramite->id) }}" method="POST" class="inline">
                 @csrf
                 <input type="hidden" name="comentario_general" id="comentario_general_regendar">
-                <button type="button" onclick="confirmarRegendarCita()"
+                <button type="submit"
                     class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
                     <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span class="hidden sm:inline">Agendar Cita Automática</span>
-                    <span class="sm:hidden">Agendar</span>
+                    <span class="hidden sm:inline">Agendar/Reagendar Cita</span>
+                    <span class="sm:hidden">Cita</span>
                 </button>
             </form>
         </div>
@@ -238,33 +238,6 @@
             }
         );
     }
-
-    function confirmarRegendarCita() {
-        // Capturar comentario general
-        const comentarioGeneral = document.getElementById('comentario_general').value;
-        document.getElementById('comentario_general_regendar').value = comentarioGeneral;
-        
-        showConfirmModal(
-            'Confirmar Agenda de Cita Automática',
-            '¿Está seguro que desea agendar una cita automática para este trámite? Se asignará el próximo horario disponible.',
-            null,
-            function() {
-                // Mostrar modal de carga cuando se confirma
-                showLoading(
-                    'Agendando Cita Automática',
-                    'Procesando la agenda de cita automática. Por favor espere...',
-                    0
-                );
-                
-                // Enviar el formulario después de un pequeño delay
-                setTimeout(() => {
-                    document.getElementById('form-regendar-cita').submit();
-                }, 100);
-            }
-        );
-    }
-
-
 
     // Función para mostrar notificaciones
     function showNotification(message, type = 'success') {

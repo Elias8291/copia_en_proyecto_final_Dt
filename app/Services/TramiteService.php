@@ -32,7 +32,6 @@ class TramiteService
         private ActividadesFormService $actividadesFormService,
     ) {}
 
-    // Datos para página de índice
     public function getDatosTramitesIndex(?Proveedor $proveedor): array
     {
         return [
@@ -41,22 +40,17 @@ class TramiteService
         ];
     }
 
-    // Valida acceso a tipo de trámite
     public function validarAccesoTramite(string $tipo, ?Proveedor $proveedor): bool
     {
         $tramitesDisponibles = $this->proveedorService->determinarTramitesDisponibles($proveedor);
         
-        // Más permisivo en development
         if (app()->environment('local', 'development')) {
-            if (in_array($tipo, ['inscripcion', 'renovacion', 'actualizacion'])) {
-                return true;
-            }
+            return in_array($tipo, ['inscripcion', 'renovacion', 'actualizacion']);
         }
         
         return $tramitesDisponibles[$tipo] ?? false;
     }
 
-    // Datos para página de constancia
     public function getDatosConstancia(string $tipo, ?Proveedor $proveedor): array
     {
         return [
@@ -65,38 +59,13 @@ class TramiteService
         ];
     }
 
-    // Procesa datos de constancia SAT
     public function procesarDatosConstancia(Request $request): void
     {
-        $datosSat = [];
-        foreach (self::CLAVES_SESION_SAT as $clave) {
-            $datosSat[$clave] = $request->input($clave);
-        }
-
-        // Validar RFC del usuario vs constancia
-        $rfcUsuario = Auth::user()->rfc;
-        $rfcConstancia = $datosSat['sat_rfc'] ?? null;
-
-        if ($rfcUsuario && $rfcConstancia) {
-            $rfcUsuarioNormalizado = strtoupper(trim($rfcUsuario));
-            $rfcConstanciaNormalizado = strtoupper(trim($rfcConstancia));
-
-            if ($rfcUsuarioNormalizado !== $rfcConstanciaNormalizado) {
-                throw new \Exception('El RFC de la constancia fiscal no coincide con su RFC registrado. Verifique que esté cargando la constancia correcta.');
-            }
-        } else {
-            if (!$rfcUsuario) {
-                throw new \Exception('Su cuenta no tiene un RFC registrado. Contacte al administrador.');
-            }
-            if (!$rfcConstancia) {
-                throw new \Exception('No se pudo extraer el RFC de la constancia. Verifique que el archivo sea válido.');
-            }
-        }
-
+        $datosSat = $this->extraerDatosSat($request);
+        $this->validarRfcConstancia($datosSat);
         Session::put($datosSat);
     }
 
-    // Datos para formulario de trámite
     public function getDatosFormulario(string $tipo, ?Proveedor $proveedor): array
     {
         return [
@@ -109,7 +78,6 @@ class TramiteService
         ];
     }
 
-    // Datos para corrección de trámite
     public function getDatosFormularioCorreccion(Tramite $tramite): array
     {
         $tramite->load([
@@ -136,7 +104,6 @@ class TramiteService
         ];
     }
 
-    // Procesa envío de formulario
     public function procesarEnvioFormulario(Request $request, string $tipo, ?Proveedor $proveedor): array
     {
         try {
@@ -163,7 +130,6 @@ class TramiteService
         }
     }
 
-    // Procesa corrección de trámite
     public function procesarCorreccionTramite(Request $request, Tramite $tramite): array
     {
         try {
@@ -193,7 +159,6 @@ class TramiteService
         }
     }
 
-    // Limpia datos de sesión SAT
     public function limpiarDatosSesion(): void
     {
         foreach (self::CLAVES_SESION_SAT as $clave) {
@@ -201,7 +166,6 @@ class TramiteService
         }
     }
 
-    // Obtiene título del trámite
     public function getTituloTramite(string $tipo): string
     {
         $titulos = [
@@ -213,7 +177,6 @@ class TramiteService
         return $titulos[$tipo] ?? 'Formulario de Trámite';
     }
 
-    // Obtiene descripción del trámite
     public function getDescripcionTramite(string $tipo): string
     {
         $descripciones = [
@@ -225,7 +188,6 @@ class TramiteService
         return $descripciones[$tipo] ?? 'Procese su trámite completando el formulario.';
     }
 
-    // Obtiene datos SAT de sesión
     public function getDatosSatDeSesion(): array
     {
         return [
@@ -241,7 +203,37 @@ class TramiteService
         ];
     }
 
-    // Asegura que existe proveedor
+    private function extraerDatosSat(Request $request): array
+    {
+        $datosSat = [];
+        foreach (self::CLAVES_SESION_SAT as $clave) {
+            $datosSat[$clave] = $request->input($clave);
+        }
+        return $datosSat;
+    }
+
+    private function validarRfcConstancia(array $datosSat): void
+    {
+        $rfcUsuario = Auth::user()->rfc;
+        $rfcConstancia = $datosSat['sat_rfc'] ?? null;
+
+        if ($rfcUsuario && $rfcConstancia) {
+            $rfcUsuarioNormalizado = strtoupper(trim($rfcUsuario));
+            $rfcConstanciaNormalizado = strtoupper(trim($rfcConstancia));
+
+            if ($rfcUsuarioNormalizado !== $rfcConstanciaNormalizado) {
+                throw new \Exception('El RFC de la constancia fiscal no coincide con su RFC registrado. Verifique que esté cargando la constancia correcta.');
+            }
+        } else {
+            if (!$rfcUsuario) {
+                throw new \Exception('Su cuenta no tiene un RFC registrado. Contacte al administrador.');
+            }
+            if (!$rfcConstancia) {
+                throw new \Exception('No se pudo extraer el RFC de la constancia. Verifique que el archivo sea válido.');
+            }
+        }
+    }
+
     private function asegurarProveedor(?Proveedor $proveedor, Request $request): Proveedor
     {
         if ($proveedor) {
@@ -249,9 +241,7 @@ class TramiteService
         }
 
         $rfc = $this->normalizarRfc($request->input('rfc', 'XAXX010101000'));
-        
-        $proveedorTemporal = new Proveedor(['rfc' => $rfc]);
-        $tipoPersona = $this->proveedorService->getTipoPersona($proveedorTemporal);
+        $tipoPersona = $this->proveedorService->getTipoPersona(new Proveedor(['rfc' => $rfc]));
 
         return Proveedor::create([
             'usuario_id' => Auth::id(),
@@ -262,7 +252,6 @@ class TramiteService
         ]);
     }
 
-    // Crea nuevo trámite
     private function crearTramite(string $tipo, Proveedor $proveedor): Tramite
     {
         return Tramite::create([
@@ -275,28 +264,25 @@ class TramiteService
         ]);
     }
 
-    // Procesa todos los datos del trámite
     private function procesarDatosTramite(Tramite $tramite, Request $request): void
     {
         $this->guardarDatosPrincipales($tramite, $request);
         
         if ($this->esPersonaMoral($request->input('rfc', 'XAXX010101000'))) {
-            $this->procesarPersonaMoral($tramite, $request);
+            $this->datosConstitutivosService->procesar($tramite, $request);
         }
     }
 
-    // Guarda datos principales
     private function guardarDatosPrincipales(Tramite $tramite, Request $request): void
     {
         app(DatosGeneralesService::class)->guardar($tramite, $request);
         app(DireccionService::class)->guardar($tramite, $request);
         app(ContactoService::class)->guardar($tramite, $request);
-        $this->procesarActividadesConTemporales($tramite, $request);
+        $this->procesarActividades($tramite, $request);
         app(DocumentosService::class)->guardar($tramite, $request);
     }
     
-    // Procesa actividades con temporales
-    private function procesarActividadesConTemporales(Tramite $tramite, Request $request): void
+    private function procesarActividades(Tramite $tramite, Request $request): void
     {
         $actividades = $request->input('actividades', []);
 
@@ -306,63 +292,97 @@ class TramiteService
         }
     }
 
-    // Procesa datos de persona moral
-    private function procesarPersonaMoral(Tramite $tramite, Request $request): void
-    {
-        $this->datosConstitutivosService->procesar($tramite, $request);
-    }
-
-    // Procesa datos de corrección
     private function procesarDatosTramiteCorreccion(Tramite $tramite, Request $request): void
     {
-        // Datos generales
-        if ($request->has('rfc') || $request->has('razon_social') || $request->has('pagina_web') || 
-            $request->has('telefono') || $request->has('email_contacto') || $request->has('cargo')) {
+        $this->procesarCorreccionDatosGenerales($tramite, $request);
+        $this->procesarCorreccionActividades($tramite, $request);
+        $this->procesarCorreccionDomicilio($tramite, $request);
+        $this->procesarCorreccionDatosConstitutivos($tramite, $request);
+        $this->procesarCorreccionApoderado($tramite, $request);
+        $this->procesarCorreccionAccionistas($tramite, $request);
+        $this->procesarCorreccionDocumentos($tramite, $request);
+    }
+
+    private function procesarCorreccionDatosGenerales(Tramite $tramite, Request $request): void
+    {
+        if ($this->tieneDatosGenerales($request)) {
             $tramite->datosGenerales()->delete();
             $tramite->contactos()->delete();
             $this->datosGeneralesFormService->procesar($tramite, $request->all());
         }
+    }
 
-        // Actividades
+    private function procesarCorreccionActividades(Tramite $tramite, Request $request): void
+    {
         if ($request->has('actividades') || $request->has('buscador_actividad')) {
             $tramite->actividades()->detach();
             $this->actividadesFormService->procesar($tramite, $request->all());
         }
+    }
 
-        // Domicilio
-        if ($request->has('codigo_postal') || $request->has('estado_id') || $request->has('municipio') || 
-            $request->has('asentamiento') || $request->has('calle') || $request->has('numero_exterior')) {
+    private function procesarCorreccionDomicilio(Tramite $tramite, Request $request): void
+    {
+        if ($this->tieneDatosDomicilio($request)) {
             $tramite->direcciones()->delete();
             $this->direccionFormService->procesar($tramite, $request->all());
         }
+    }
 
-        // Datos constitutivos
-        if ($request->has('numero_escritura') || $request->has('fecha_constitucion') || 
-            $request->has('notario_nombre') || $request->has('entidad_federativa')) {
+    private function procesarCorreccionDatosConstitutivos(Tramite $tramite, Request $request): void
+    {
+        if ($this->tieneDatosConstitutivos($request)) {
             $tramite->datosConstitutivos()->delete();
             $this->personaMoralFormService->procesar($tramite, $request->all());
         }
+    }
 
-        // Apoderado legal
-        if ($request->has('apoderado_nombre') || $request->has('apoderado_rfc') || 
-            $request->has('poder_numero_escritura') || $request->has('poder_fecha_constitucion')) {
+    private function procesarCorreccionApoderado(Tramite $tramite, Request $request): void
+    {
+        if ($this->tieneDatosApoderado($request)) {
             $tramite->apoderadoLegal()->delete();
             $this->datosConstitutivosService->procesar($tramite, $request);
         }
+    }
 
-        // Accionistas
+    private function procesarCorreccionAccionistas(Tramite $tramite, Request $request): void
+    {
         if ($request->has('accionistas')) {
             $tramite->accionistas()->delete();
             $this->datosConstitutivosService->procesar($tramite, $request);
+        }
     }
 
-        // Documentos
+    private function procesarCorreccionDocumentos(Tramite $tramite, Request $request): void
+    {
         if ($request->has('documentos')) {
             $this->documentosFormService->procesar($tramite, $request->all());
         }
     }
 
-    // Normaliza RFC
+    private function tieneDatosGenerales(Request $request): bool
+    {
+        return $request->has('rfc') || $request->has('razon_social') || $request->has('pagina_web') || 
+               $request->has('telefono') || $request->has('email_contacto') || $request->has('cargo');
+    }
+
+    private function tieneDatosDomicilio(Request $request): bool
+    {
+        return $request->has('codigo_postal') || $request->has('estado_id') || $request->has('municipio') || 
+               $request->has('asentamiento') || $request->has('calle') || $request->has('numero_exterior');
+    }
+
+    private function tieneDatosConstitutivos(Request $request): bool
+    {
+        return $request->has('numero_escritura') || $request->has('fecha_constitucion') || 
+               $request->has('notario_nombre') || $request->has('entidad_federativa');
+    }
+
+    private function tieneDatosApoderado(Request $request): bool
+    {
+        return $request->has('apoderado_nombre') || $request->has('apoderado_rfc') || 
+               $request->has('poder_numero_escritura') || $request->has('poder_fecha_constitucion');
+    }
+
     private function normalizarRfc(?string $rfc): string
     {
         if (!empty($rfc) && strlen($rfc) >= 10) {
@@ -372,12 +392,9 @@ class TramiteService
         return 'TEMP' . substr((string) time(), -6);
     }
 
-    // Verifica si es persona moral
     private function esPersonaMoral(string $rfc): bool
     {
-        $proveedorTemporal = new Proveedor(['rfc' => $rfc]);
-        $tipoPersona = $this->proveedorService->getTipoPersona($proveedorTemporal);
-
+        $tipoPersona = $this->proveedorService->getTipoPersona(new Proveedor(['rfc' => $rfc]));
         return $tipoPersona === 'Moral';
     }
 }

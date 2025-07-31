@@ -38,6 +38,8 @@ class CitaService
                 'fecha_cita' => $fechaCita,
                 'tipo_cita' => 'Cotejo',
                 'estado' => 'Programada',
+                'contador_reagendamientos' => 0,
+                'max_reagendamientos' => 2,
                 'motivo' => 'Cotejo presencial de documentos para trámite #' . $tramite->id,
                 'observaciones' => 'Cita automática generada al enviar trámite a cotejo'
             ]);
@@ -49,6 +51,76 @@ class CitaService
             DB::rollBack();
             return null;
         }
+    }
+
+    /**
+     * Reagendar cita existente para un trámite
+     */
+    public function reagendarCitaTramite(Tramite $tramite): ?Cita
+    {
+        try {
+            DB::beginTransaction();
+
+            // Buscar cita existente para este trámite
+            $citaExistente = Cita::where('tramite_id', $tramite->id)
+                ->whereIn('estado', ['Programada', 'Confirmada', 'Reagendada'])
+                ->first();
+
+            if (!$citaExistente) {
+                // Si no existe cita, crear una nueva
+                return $this->agendarCitaCotejo($tramite);
+            }
+
+            // Verificar si ya alcanzó el límite de reagendamientos
+            if ($citaExistente->contador_reagendamientos >= $citaExistente->max_reagendamientos) {
+                DB::rollBack();
+                throw new \Exception('Se ha alcanzado el límite máximo de reagendamientos para este trámite.');
+            }
+
+            // Obtener nuevo horario disponible
+            $tramite->load('proveedor');
+            $nuevaFechaCita = $this->obtenerProximoHorarioDisponible();
+            
+            if (!$nuevaFechaCita || !$tramite->proveedor->usuario_id) {
+                DB::rollBack();
+                return null;
+            }
+
+            // Actualizar la cita existente con la nueva fecha
+            $citaExistente->fecha_cita = $nuevaFechaCita;
+            $citaExistente->estado = 'Reagendada';
+            $citaExistente->contador_reagendamientos = $citaExistente->contador_reagendamientos + 1;
+            $citaExistente->observaciones = ($citaExistente->observaciones ?: '') . ' - Cita reagendada automáticamente el ' . now()->format('d/m/Y H:i') . ' (Reagendamiento #' . $citaExistente->contador_reagendamientos . ')';
+            $citaExistente->save();
+
+            DB::commit();
+            return $citaExistente;
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al reagendar cita: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Verificar si existe una cita activa para un trámite
+     */
+    public function existeCitaActiva(Tramite $tramite): bool
+    {
+        return Cita::where('tramite_id', $tramite->id)
+            ->whereIn('estado', ['Programada', 'Confirmada', 'Reagendada'])
+            ->exists();
+    }
+
+    /**
+     * Obtener cita activa para un trámite
+     */
+    public function obtenerCitaActiva(Tramite $tramite): ?Cita
+    {
+        return Cita::where('tramite_id', $tramite->id)
+            ->whereIn('estado', ['Programada', 'Confirmada', 'Reagendada'])
+            ->first();
     }
 
     /**
@@ -137,13 +209,21 @@ class CitaService
     private function obtenerProximoHorarioDisponible(): ?Carbon
     {
         $fechaActual = Carbon::now();
-        if ($fechaActual->hour >= self::HORA_FIN) $fechaActual->addDay();
-
-        for ($dia = 0; $dia < 30; $dia++) {
+        
+        // Si es después de las 14:00, empezar desde mañana
+        if ($fechaActual->hour >= self::HORA_FIN) {
+            $fechaActual->addDay();
+        }
+        
+        // Buscar solo en los próximos 7 días para mayor velocidad
+        for ($dia = 0; $dia < 7; $dia++) {
             $fechaBusqueda = $fechaActual->copy()->addDays($dia);
+            
             if (DiaInhabil::esHabil($fechaBusqueda)) {
                 $horarioDisponible = $this->buscarHorarioEnDia($fechaBusqueda);
-                if ($horarioDisponible) return $horarioDisponible;
+                if ($horarioDisponible) {
+                    return $horarioDisponible;
+                }
             }
         }
 
@@ -155,14 +235,21 @@ class CitaService
      */
     private function buscarHorarioEnDia(Carbon $fecha): ?Carbon
     {
+        // Obtener todas las citas del día en una sola consulta
         $citasDelDia = Cita::whereDate('fecha_cita', $fecha->format('Y-m-d'))
-            ->where('estado', '!=', 'Cancelada')
+            ->whereIn('estado', ['Programada', 'Confirmada', 'Reagendada'])
             ->pluck('fecha_cita')
             ->map(fn($fecha) => Carbon::parse($fecha)->format('H:i'))
             ->toArray();
 
         $horaActual = $fecha->copy()->setTime(self::HORA_INICIO, 0, 0);
         $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0, 0);
+
+        // Si es hoy, empezar desde la próxima hora disponible
+        if ($fecha->isToday()) {
+            $horaActual = Carbon::now()->addMinutes(15)->startOfMinute();
+            $horaActual->setMinute(($horaActual->minute / self::DURACION_CITA) * self::DURACION_CITA);
+        }
 
         while ($horaActual < $horaFin) {
             if (!in_array($horaActual->format('H:i'), $citasDelDia)) {
@@ -172,5 +259,43 @@ class CitaService
         }
 
         return null;
+    }
+
+    /**
+     * Verificar si se puede reagendar una cita
+     */
+    public function puedeReagendar(Tramite $tramite): bool
+    {
+        $citaActiva = $this->obtenerCitaActiva($tramite);
+        
+        if (!$citaActiva) {
+            return true; // No hay cita activa, se puede crear una nueva
+        }
+        
+        return $citaActiva->contador_reagendamientos < $citaActiva->max_reagendamientos;
+    }
+
+    /**
+     * Obtener información de reagendamientos
+     */
+    public function obtenerInfoReagendamientos(Tramite $tramite): array
+    {
+        $citaActiva = $this->obtenerCitaActiva($tramite);
+        
+        if (!$citaActiva) {
+            return [
+                'puede_reagendar' => true,
+                'reagendamientos_usados' => 0,
+                'reagendamientos_disponibles' => 2,
+                'limite_alcanzado' => false
+            ];
+        }
+        
+        return [
+            'puede_reagendar' => $citaActiva->contador_reagendamientos < $citaActiva->max_reagendamientos,
+            'reagendamientos_usados' => $citaActiva->contador_reagendamientos,
+            'reagendamientos_disponibles' => $citaActiva->max_reagendamientos - $citaActiva->contador_reagendamientos,
+            'limite_alcanzado' => $citaActiva->contador_reagendamientos >= $citaActiva->max_reagendamientos
+        ];
     }
 } 

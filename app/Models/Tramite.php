@@ -16,6 +16,7 @@ class Tramite extends Model
         'fecha_inicio',
         'paso_actual',
         'fecha_finalizacion',
+        'fecha_cancelacion',
         'observaciones',
         'revisado_por',
         'correcciones_count',
@@ -24,6 +25,7 @@ class Tramite extends Model
     protected $casts = [
         'fecha_inicio' => 'datetime',
         'fecha_finalizacion' => 'datetime',
+        'fecha_cancelacion' => 'datetime',
     ];
 
     // Relaciones

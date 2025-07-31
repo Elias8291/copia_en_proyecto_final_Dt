@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\CatalogoArchivoController;
+use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\UbicacionController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +51,14 @@ Route::get('/documentos/{tipoPersona}', [CatalogoArchivoController::class, 'porT
 
 // QR Extraction Route (sin middleware de autenticación)
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
+
+// Rutas de revisión y citas
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/revision/{tramite}/estados', [RevisionController::class, 'obtenerEstados'])->name('api.revision.estados');
+    Route::post('/revision/{tramite}/aprobar', [RevisionController::class, 'aprobarTramite'])->name('api.revision.aprobar');
+    Route::post('/revision/{tramite}/agendar-cita', [RevisionController::class, 'agendarCitaAutomatica'])->name('api.revision.agendar-cita');
+    Route::get('/tramites/{tramite}/cita-activa', [RevisionController::class, 'obtenerCitaActiva'])->name('api.tramites.cita-activa');
+});
 
 
 

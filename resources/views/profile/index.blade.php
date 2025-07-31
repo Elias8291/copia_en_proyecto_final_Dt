@@ -135,6 +135,129 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Historial de Trámites -->
+            <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center mr-4">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <h2 class="text-xl font-bold text-gray-900">Historial de Trámites</h2>
+                        </div>
+                        <a href="{{ route('tramites.historial') }}" class="text-sm text-[#9d2449] hover:text-[#8a203f] font-medium flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                            Ver todos
+                        </a>
+                    </div>
+                    
+                    @php
+                        $proveedor = $user->proveedor;
+                        $tramites = $proveedor ? $proveedor->tramites()->orderBy('created_at', 'desc')->take(5)->get() : collect();
+                    @endphp
+                    
+                    @if($tramites->count() > 0)
+                        <div class="space-y-4">
+                            @foreach($tramites as $tramite)
+                                @php
+                                    $estadoColor = match ($tramite->estado) {
+                                        'Pendiente' => 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                                        'Por_Cotejar' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                        'En_Revision' => 'bg-orange-50 text-orange-700 border-orange-200',
+                                        'Aprobado' => 'bg-green-50 text-green-700 border-green-200',
+                                        'Rechazado' => 'bg-red-50 text-red-700 border-red-200',
+                                        'Cancelado' => 'bg-gray-50 text-gray-700 border-gray-200',
+                                        default => 'bg-gray-50 text-gray-700 border-gray-200',
+                                    };
+                                    
+                                    $estadoIcon = match ($tramite->estado) {
+                                        'Pendiente' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+                                        'Por_Cotejar' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2 2v12a2 2 0 002 2z"></path>',
+                                        'En_Revision' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>',
+                                        'Aprobado' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>',
+                                        'Rechazado' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>',
+                                        'Cancelado' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>',
+                                        default => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+                                    };
+                                @endphp
+                                
+                                <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-4">
+                                            <div class="w-10 h-10 bg-gradient-to-br from-[#9d2449] to-[#8a203f] rounded-lg flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    {!! $estadoIcon !!}
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-sm font-semibold text-gray-900">
+                                                    Trámite #{{ str_pad($tramite->id, 4, '0', STR_PAD_LEFT) }}
+                                                </h3>
+                                                <p class="text-xs text-gray-500">
+                                                    {{ $tramite->created_at->format('d/m/Y H:i') }}
+                                                </p>
+                                                <p class="text-xs text-gray-600 mt-1">
+                                                    {{ ucfirst(str_replace('_', ' ', $tramite->tipo_tramite)) }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center space-x-3">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border {{ $estadoColor }}">
+                                                {{ ucfirst(str_replace('_', ' ', $tramite->estado)) }}
+                                            </span>
+                                                                                         <div class="flex space-x-2">
+                                                 <a href="{{ route('tramites.datos', $tramite->id) }}" 
+                                                    class="text-gray-600 hover:text-[#9d2449] transition-colors" title="Ver datos">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                    </svg>
+                                                 </a>
+                                                 <a href="{{ route('tramites.estado', $tramite->id) }}" 
+                                                    class="text-[#9d2449] hover:text-[#8a203f] transition-colors" title="Ver estado">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                 </a>
+                                             </div>
+                                        </div>
+                                    </div>
+                                    
+                                    @if($tramite->observaciones)
+                                        <div class="mt-3 pt-3 border-t border-gray-100">
+                                            <p class="text-xs text-gray-600">
+                                                <span class="font-medium">Observaciones:</span> 
+                                                {{ Str::limit($tramite->observaciones, 100) }}
+                                            </p>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay trámites</h3>
+                            <p class="text-sm text-gray-500 mb-4">Aún no has realizado ningún trámite</p>
+                            <a href="{{ route('tramites.index') }}" class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a203f] transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Iniciar Primer Trámite
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <!-- Sidebar -->

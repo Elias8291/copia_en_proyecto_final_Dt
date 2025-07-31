@@ -43,7 +43,7 @@ class ProveedorService
         }
 
         return Tramite::where('proveedor_id', $proveedor->id)
-            ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado', 'Aprobado'])
+            ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado'])
             ->exists();
     }
 
@@ -57,8 +57,8 @@ class ProveedorService
         }
 
         return Tramite::where('proveedor_id', $proveedor->id)
-            ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado', 'Aprobado'])
-            ->with(['proveedor.user', 'datosGenerales', 'oficios', 'cita'])
+            ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado'])
+            ->with(['proveedor', 'proveedor.user', 'datosGenerales', 'apoderadoLegal', 'oficios', 'cita'])
             ->latest()
             ->first();
     }
@@ -153,6 +153,34 @@ class ProveedorService
             'Rechazado' => 'Revise las observaciones y puede iniciar un nuevo proceso si es necesario.',
             default => 'Contacte al área de soporte para más información.'
         };
+    }
+
+    /**
+     * Obtener quién debe presentarse según el tipo de persona del trámite
+     */
+    public function getQuienDebePresentarse(Tramite $tramite): string
+    {
+        $rfc = $tramite->proveedor->rfc ?? '';
+        $tipoPersona = (strlen($rfc) === 12) ? 'Moral' : 'Física';
+        
+        if ($tipoPersona === 'Moral') {
+            $apoderadoLegal = $tramite->apoderadoLegal;
+            $representanteLegal = null;
+            
+            if ($apoderadoLegal) {
+                $representanteLegal = $apoderadoLegal->nombre_apoderado ?? null;
+            }
+            
+            return $representanteLegal ?: 'su representante legal';
+        } else {
+            // Para persona física, mostrar el nombre del usuario que realizó el trámite
+            $usuario = $tramite->proveedor->user ?? null;
+            if ($usuario) {
+                return $usuario->name ?? 'quien realizó el trámite';
+            }
+            
+            return 'quien realizó el trámite';
+        }
     }
 
     public function determinarTramitesDisponibles($proveedor): array

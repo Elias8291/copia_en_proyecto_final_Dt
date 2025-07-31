@@ -6,23 +6,22 @@
     <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             
-            <!-- Header Principal -->
             <div class="w-full max-w-7xl mx-auto bg-white shadow-md rounded-xl overflow-hidden border border-gray-200/70 p-8 -mt-4 mb-8">
-                <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
-                    <div class="p-6 border-b border-gray-200/70">
-                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                            <div class="flex items-center space-x-4">
-                                <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light rounded-xl p-3 shadow-lg">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0112 21a12.083 12.083 0 01-6.16-10.422L12 14z" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h1 class="text-2xl font-bold text-gray-800">Trámites Disponibles</h1>
-                                    <p class="text-base text-gray-500 mt-1">Seleccione el tipo de trámite que desea realizar</p>
-                                </div>
+                <div class="p-6 border-b border-gray-200/70">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light rounded-xl p-3 shadow-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0112 21a12.083 12.083 0 01-6.16-10.422L12 14z" />
+                                </svg>
                             </div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gray-800">Trámites Disponibles</h1>
+                                <p class="text-base text-gray-500 mt-1">Seleccione el tipo de trámite que desea realizar</p>
+                            </div>
+                        </div>
 
                         @if ($proveedor)
                             <div class="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-3">
@@ -52,7 +51,6 @@
                         @endif
                     </div>
                 </div>
-            </div>
 
             <!-- Estado del Trámite Pendiente -->
             @if ($globalTramites['tiene_tramite_pendiente'] && $globalTramites['tramite_pendiente'])
@@ -60,25 +58,32 @@
                     $detalles = $globalTramites['tramite_pendiente'];
                     $tramite = $detalles['tramite'];
                     
-                    $tramite_id = str_pad($tramite->id, 4, '0', STR_PAD_LEFT);
-                    $estado = $tramite->estado;
-                    $paso_actual = $detalles['estado_descripcion'];
-                    $historial = [];
-                    $cita = $detalles['cita'] ?? null;
-                    
-                    // Obtener el oficio si el trámite está aprobado
-                    $oficio = null;
-                    if ($tramite->estado === 'Aprobado') {
-                        $oficio = $tramite->oficios()->orderBy('created_at', 'desc')->first();
+                    // No mostrar el estado si el trámite está rechazado
+                    if ($tramite->estado === 'Rechazado') {
+                        $mostrarEstado = false;
+                    } else {
+                        $mostrarEstado = true;
+                        $tramite_id = str_pad($tramite->id, 4, '0', STR_PAD_LEFT);
+                        $estado = $tramite->estado;
+                        $paso_actual = $detalles['estado_descripcion'];
+                        $historial = [];
+                        $cita = $detalles['cita'] ?? null;
                         
-                        if (!$oficio) {
-                            $oficio = \App\Models\Oficio::where('tramite_id', $tramite->id)
-                                ->orderBy('created_at', 'desc')
-                                ->first();
+                        // Obtener el oficio si el trámite está aprobado
+                        $oficio = null;
+                        if ($tramite->estado === 'Aprobado') {
+                            $oficio = $tramite->oficios()->orderBy('created_at', 'desc')->first();
+                            
+                            if (!$oficio) {
+                                $oficio = \App\Models\Oficio::where('tramite_id', $tramite->id)
+                                    ->orderBy('created_at', 'desc')
+                                    ->first();
+                            }
                         }
                     }
                 @endphp
                 
+                @if($mostrarEstado ?? true)
                 @include('tramites.estado', [
                     'tramite' => $tramite,
                     'tramite_id' => $tramite_id,
@@ -88,40 +93,16 @@
                     'cita' => $cita,
                     'oficio' => $oficio
                 ])
+                @endif
             @endif
 
             <!-- Contenedor de Tarjetas de Trámites -->
-            @if (!($globalTramites['tiene_tramite_pendiente'] ?? false))
-                <!-- Botón de Acceso a Formulario Simple -->
-                <div class="mb-6 bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-[#9D2449] to-[#B91C1C] rounded-xl flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-800">Formulario Simple</h3>
-                                <p class="text-sm text-gray-600">Acceda al formulario sin pasos, todo en una sola vista</p>
-                            </div>
-                        </div>
-                        <div class="flex space-x-3">
-                            <a href="{{ route('tramites.formulario', 'inscripcion') }}" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-                                Formulario Original
-                            </a>
-                            <a href="{{ route('tramites.formulario.simple', 'inscripcion') }}" class="px-4 py-2 bg-gradient-to-r from-[#9D2449] to-[#B91C1C] text-white rounded-lg hover:from-[#8a203f] hover:to-[#a91b1b] transition-all duration-200">
-                                Formulario Simple
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                
+            @if (!($globalTramites['tiene_tramite_pendiente'] ?? false) || ($globalTramites['tiene_tramite_pendiente'] && $globalTramites['tramite_pendiente']['tramite']->estado === 'Rechazado'))
                 <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             @include('tramites.partials.tramite-card', [
                                 'tipo' => 'inscripcion',
                                 'titulo' => 'Inscripción al Padrón',
-                                'descripcion' => 'Registro inicial para nuevos proveedores. Complete todos los requisitos para formar parte del padrón oficial.',
+                                'descripcion' => 'Para nuevos proveedores o proveedores vencidos.',
                                 'disponible' => $globalTramites['inscripcion'] ?? false,
                                 'colorFrom' => 'from-primary',
                                 'colorTo' => 'to-primary-dark',

@@ -153,64 +153,51 @@ class RevisionController extends Controller
     {
         try {
             $citaService = app(CitaService::class);
-            $cita = $citaService->agendarCitaCotejo($tramite);
+            
+            // Verificar si se puede reagendar
+            if (!$citaService->puedeReagendar($tramite)) {
+                return redirect()->back()
+                    ->with('error', 'Se ha alcanzado el límite máximo de reagendamientos para este trámite. Contacte al administrador.');
+            }
+            
+            // Verificar si ya existe una cita activa
+            $citaExistente = $citaService->obtenerCitaActiva($tramite);
+            
+            if ($citaExistente) {
+                // Reagendar cita existente
+                $cita = $citaService->reagendarCitaTramite($tramite);
+                $mensaje = "Cita reagendada exitosamente para el día {$cita->fecha_cita->format('d/m/Y')} a las {$cita->fecha_cita->format('H:i')}.";
+                $tipoAccion = 'reagendada';
+            } else {
+                // Crear nueva cita
+                $cita = $citaService->agendarCitaCotejo($tramite);
+                $mensaje = "Cita agendada exitosamente para el día {$cita->fecha_cita->format('d/m/Y')} a las {$cita->fecha_cita->format('H:i')}.";
+                $tipoAccion = 'agendada';
+            }
 
             if ($cita) {
                 // Crear notificación
-                $mensaje = "Se ha agendado una cita automática para el trámite #{$tramite->id} el día {$cita->fecha_cita->format('d/m/Y')} a las {$cita->fecha_cita->format('H:i')}.";
-
                 $this->notificacionService->crearNotificacion(
                     $tramite->proveedor->user->id,
                     $tramite->id,
                     'Cita',
-                    'Cita Agendada Automáticamente',
+                    'Cita ' . ucfirst($tipoAccion) . ' Automáticamente',
                     $mensaje
                 );
 
-                // Si es una petición AJAX, devolver JSON
-                if (request()->ajax() || request()->wantsJson()) {
-                    return response()->json([
-                        'success' => true,
-                        'message' => 'Cita agendada exitosamente',
-                        'cita' => [
-                            'id' => $cita->id,
-                            'fecha' => $cita->fecha_cita->format('d/m/Y'),
-                            'hora' => $cita->fecha_cita->format('H:i'),
-                            'tipo' => $cita->tipo_cita
-                        ]
-                    ]);
-                }
-
-                // Si es una petición web normal, redirigir con mensaje de éxito
+                // Redirigir con mensaje de éxito
                 return redirect()->back()
-                    ->with('success', "Cita agendada exitosamente para el día {$cita->fecha_cita->format('d/m/Y')} a las {$cita->fecha_cita->format('H:i')}.");
+                    ->with('success', $mensaje);
             } else {
-                // Si es una petición AJAX, devolver JSON de error
-                if (request()->ajax() || request()->wantsJson()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No se pudo agendar la cita. No hay horarios disponibles.'
-                    ], 400);
-                }
-
-                // Si es una petición web normal, redirigir con mensaje de error
+                // Redirigir con mensaje de error
                 return redirect()->back()
-                    ->with('error', 'No se pudo agendar la cita. No hay horarios disponibles.');
+                    ->with('error', 'No se pudo ' . $tipoAccion . ' la cita. No hay horarios disponibles.');
             }
         } catch (\Exception $e) {
-            Log::error('Error al agendar cita automática: ' . $e->getMessage());
+            Log::error('Error al agendar/reagendar cita automática: ' . $e->getMessage());
             
-            // Si es una petición AJAX, devolver JSON de error
-            if (request()->ajax() || request()->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al agendar la cita'
-                ], 500);
-            }
-
-            // Si es una petición web normal, redirigir con mensaje de error
             return redirect()->back()
-                ->with('error', 'Error al agendar la cita: ' . $e->getMessage());
+                ->with('error', 'Error al procesar la cita: ' . $e->getMessage());
         }
     }
 
@@ -765,6 +752,46 @@ class RevisionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al obtener los archivos del catálogo 2'
+            ], 500);
+        }
+    }
+
+    /**
+     * Obtener cita activa para un trámite
+     */
+    public function obtenerCitaActiva(Tramite $tramite)
+    {
+        try {
+            $citaService = app(CitaService::class);
+            $cita = $citaService->obtenerCitaActiva($tramite);
+            
+            if ($cita) {
+                return response()->json([
+                    'success' => true,
+                    'cita' => [
+                        'id' => $cita->id,
+                        'fecha_cita' => $cita->fecha_cita,
+                        'estado' => $cita->estado,
+                        'tipo_cita' => $cita->tipo_cita,
+                        'motivo' => $cita->motivo,
+                        'observaciones' => $cita->observaciones
+                    ]
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró cita activa para este trámite'
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al obtener cita activa', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener la cita activa'
             ], 500);
         }
     }
