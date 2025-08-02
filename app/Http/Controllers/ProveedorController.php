@@ -45,8 +45,7 @@ class ProveedorController extends Controller
         } else {
             // Funcionalidad normal con paginación
             $query = $this->proveedorService->obtenerConFiltros($filtros);
-            $perPage = $request->get('per_page', 15); // Valor por defecto 15
-            $todosProveedores = $query->orderBy('created_at', 'desc')->paginate($perPage);
+            $todosProveedores = $query->orderBy('created_at', 'desc')->paginate(10);
         }
     
         $todosProveedores->getCollection()->transform(function ($proveedor) {

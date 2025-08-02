@@ -49,7 +49,9 @@
                 <div class="flex-1">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-400 text-sm">🔍</span>
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
                         </div>
                         <input type="text" id="search-filter"
                             class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200"
@@ -70,7 +72,9 @@
                                 @endforeach
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                <span class="text-gray-400 text-xs">▼</span>
+                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
                             </div>
                         </div>
                         @elseif($filter['type'] === 'input')
@@ -194,7 +198,9 @@
                                                                         onclick="openDeleteModal('deleteModal{{ $item->id }}', '{{ $item->nombre ?? $item->name ?? 'Elemento' }}', '{{ $action['itemType'] ?? 'elemento' }}')"
                                                                         class="p-2 {{ $action['color'] ?? 'text-[#9d2449]' }} hover:bg-[#9d2449]/10 rounded-lg transition-colors duration-200" 
                                                                         title="{{ $action['label'] ?? $actionKey }}">
-                                                                    <span class="text-xs">⚙️</span>
+                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        {!! $action['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>' !!}
+                                                                    </svg>
                                                                 </button>
                                                             </form>
                                                         @else
@@ -204,7 +210,9 @@
                                                                 <button type="submit" 
                                                                         class="p-2 {{ $action['color'] ?? 'text-[#9d2449]' }} hover:bg-[#9d2449]/10 rounded-lg transition-colors duration-200" 
                                                                         title="{{ $action['label'] ?? $actionKey }}">
-                                                                    <span class="text-xs">⚙️</span>
+                                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        {!! $action['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>' !!}
+                                                                    </svg>
                                                                 </button>
                                                             </form>
                                                         @endif
@@ -212,13 +220,17 @@
                                                         <a href="{{ route($action['url'], $item->id) }}" 
                                                        class="p-2 {{ $action['color'] ?? 'text-[#9d2449]' }} hover:bg-[#9d2449]/10 rounded-lg transition-colors duration-200" 
                                                        title="{{ $action['label'] ?? $actionKey }}">
-                                                        <span class="text-xs">⚙️</span>
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            {!! $action['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>' !!}
+                                                        </svg>
                                                     </a>
                                                     @endif
                                                 @else
                                                     <button class="p-2 {{ $action['color'] ?? 'text-[#9d2449]' }} hover:bg-[#9d2449]/10 rounded-lg transition-colors duration-200" 
                                                             title="{{ $action['label'] ?? $actionKey }}">
-                                                        <span class="text-xs">⚙️</span>
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            {!! $action['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>' !!}
+                                                        </svg>
                                                     </button>
                                                 @endif
                                             @endif
@@ -231,7 +243,9 @@
                         <tr>
                             <td colspan="{{ count($columns) + ($showActions ? 1 : 0) }}" class="px-6 py-12 text-center">
                                 <div class="text-gray-500">
-                                    <span class="text-2xl mx-auto mb-2 block">📄</span>
+                                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
                                     <p class="text-sm">No hay datos</p>
                                 </div>
                             </td>
@@ -260,7 +274,9 @@
                                             <span class="text-white font-bold text-xs">{{ strtoupper(substr($value ?? 'U', 0, 1)) }}</span>
                                         </div>
                                     @else
-                                        <span class="text-xs text-gray-500">ℹ️</span>
+                                        <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
                                     @endif
                                 </div>
                                 
@@ -356,13 +372,17 @@
                                                     <a href="{{ route($action['url'], $item->id) }}" 
                                                        class="p-2 {{ $action['color'] ?? 'text-[#9d2449]' }} hover:bg-[#9d2449]/10 rounded-lg transition-colors duration-200" 
                                                        title="{{ $action['label'] ?? $actionKey }}">
-                                                        <span class="text-xs">⚙️</span>
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            {!! $action['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>' !!}
+                                                        </svg>
                                                     </a>
                                                 @endif
                                             @else
                                                 <button class="p-2 {{ $action['color'] ?? 'text-[#9d2449]' }} hover:bg-[#9d2449]/10 rounded-lg transition-colors duration-200" 
                                                         title="{{ $action['label'] ?? $actionKey }}">
-                                                    <span class="text-xs">⚙️</span>
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        {!! $action['icon'] ?? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>' !!}
+                                                    </svg>
                                                 </button>
                                             @endif
                                         @endif
@@ -376,7 +396,9 @@
             @empty
             <div class="p-8 text-center">
                 <div class="text-gray-500">
-                    <span class="text-2xl mx-auto mb-2 block">📄</span>
+                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
                     <p class="text-sm">No hay datos</p>
                 </div>
             </div>
@@ -400,11 +422,15 @@
                     <!-- Botón Anterior -->
                     @if($pagination->onFirstPage())
                         <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed">
-                            <span class="text-xs">◀</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
                         </span>
                     @else
                         <a href="{{ $pagination->previousPageUrl() }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200">
-                            <span class="text-xs">◀</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
                         </a>
                     @endif
 
@@ -424,11 +450,15 @@
                     <!-- Botón Siguiente -->
                     @if($pagination->hasMorePages())
                         <a href="{{ $pagination->nextPageUrl() }}" class="px-3 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200">
-                            <span class="text-xs">▶</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
                         </a>
                     @else
                         <span class="px-3 py-2 text-sm text-gray-400 bg-gray-100 rounded-lg cursor-not-allowed">
-                            <span class="text-xs">▶</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
                         </span>
                     @endif
                 </div>
