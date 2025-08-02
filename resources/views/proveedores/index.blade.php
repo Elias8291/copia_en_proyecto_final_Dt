@@ -1,33 +1,33 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4 sm:p-5 md:p-6 lg:p-8 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 lg:gap-6">
-                <div class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 814 0z"></path>
-                    </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h1 class="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-semibold text-gray-900 leading-tight">Proveedores</h1>
-                    <p class="text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 mt-1">Gestión de proveedores del sistema</p>
+<div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
+    <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
+        <div class="p-6 border-b border-gray-200/70">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Proveedores</h1>
+                        <p class="text-base text-gray-500 mt-1">Catálogo de proveedores registrados</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Búsqueda y Filtros -->
-        <div class="bg-white shadow-sm rounded-lg border border-gray-200 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
-            <form method="GET" action="{{ route('proveedores.index') }}" class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-                <!-- Barra de búsqueda principal -->
+        <div class="border-t border-gray-100 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
+            <form method="GET" action="{{ route('proveedores.index') }}" class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8" id="searchForm">
+                <input type="hidden" name="per_page" value="{{ request('per_page', 15) }}">
                 <div class="flex flex-col lg:flex-row gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-3 sm:mb-4 md:mb-5 lg:mb-6">
                     <div class="flex-1">
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-2 sm:pl-3 md:pl-4 flex items-center pointer-events-none">
-                                <svg class="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
                             <input type="text" 
@@ -37,31 +37,29 @@
                                    class="block w-full pl-7 sm:pl-10 md:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
                         </div>
                     </div>
-                    
                     <div class="flex gap-2 sm:gap-3 md:gap-4 lg:gap-6">
                         <button type="submit" 
                                 class="flex-1 lg:flex-none px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 bg-[#9d2449] text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                             <span class="hidden sm:inline">Buscar</span>
                         </button>
                         <a href="{{ route('proveedores.index') }}" 
                            class="flex-1 lg:flex-none px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-50 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200 border border-gray-200 flex items-center justify-center gap-1 sm:gap-2">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                             </svg>
                             <span class="hidden sm:inline">Limpiar</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- Filtros -->
                 <div class="border-t border-gray-100 pt-3 sm:pt-4 md:pt-5 lg:pt-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5">
                         <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z"></path>
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
                             </svg>
                             <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros avanzados</span>
                         </div>
@@ -69,12 +67,10 @@
                                 id="toggleFilters" 
                                 class="text-xs sm:text-sm md:text-base text-[#9d2449] hover:text-[#8a1f40] font-medium flex items-center gap-1 transition-colors self-start sm:self-auto">
                             <span id="filterText">Mostrar filtros</span>
-                            <svg id="filterIcon" class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                            <span id="filterIcon" class="text-xs sm:text-sm md:text-base transform transition-transform duration-200">▼</span>
                         </button>
                     </div>
-                    
+                        
                     <div id="filtersContainer" class="hidden">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
                             <div>
@@ -126,14 +122,19 @@
                             </div>
                         </div>
                         
-                        <!-- Botones de filtros -->
                         <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-3 sm:mt-4 md:mt-5 pt-3 sm:pt-4 border-t border-gray-100">
                             <button type="submit" 
-                                    class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-[#9d2449] text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200">
+                                    class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-[#9d2449] text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                                </svg>
                                 Aplicar filtros
                             </button>
                             <a href="{{ route('proveedores.index') }}" 
-                               class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-50 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200 border border-gray-200 text-center">
+                               class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-50 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200 border border-gray-200 text-center flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
                                 Limpiar filtros
                             </a>
                         </div>
@@ -142,72 +143,107 @@
             </form>
         </div>
 
-        <!-- Filtros Activos -->
-        @if(request()->hasAny(['search', 'estado', 'tipo_persona', 'vencimiento', 'año']))
-        <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-2 sm:p-3 md:p-4 lg:p-5 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
-            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
-                <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
-                
-                @if(request('search'))
-                <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449] text-white">
-                    Búsqueda: "{{ request('search') }}"
-                    <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 sm:ml-1.5 text-white hover:text-gray-200">
-                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                    </a>
-                </span>
-                @endif
+        <div class="border-t border-gray-100 p-2 sm:p-3 md:p-4 lg:p-5 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 md:gap-5">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <p class="text-xs sm:text-sm md:text-base lg:text-lg text-gray-700">
+                        <span class="font-medium text-[#9d2449]">{{ $todosProveedores->total() }}</span> 
+                        {{ $todosProveedores->total() == 1 ? 'proveedor encontrado' : 'proveedores encontrados' }}
+                        @if($todosProveedores->hasPages())
+                            <span class="text-gray-500 ml-1 sm:ml-2 md:ml-3">
+                                ({{ $todosProveedores->firstItem() }}-{{ $todosProveedores->lastItem() }})
+                            </span>
+                        @endif
+                    </p>
+                </div>
 
-                @if(request('estado'))
-                <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
-                    Estado: {{ request('estado') }}
-                    <a href="{{ request()->fullUrlWithQuery(['estado' => null]) }}" class="ml-1 sm:ml-1.5 text-blue-800 hover:text-blue-600">
-                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                    </a>
-                </span>
-                @endif
+                <!-- Controles de visualización -->
+                <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 md:gap-4">
+                    <!-- Selector de elementos por página -->
+                    <div class="flex items-center gap-2">
+                        <label for="per_page" class="text-xs sm:text-sm md:text-base font-medium text-gray-700 whitespace-nowrap">
+                            Mostrar:
+                        </label>
+                        <select name="per_page" 
+                                id="per_page" 
+                                class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white">
+                            <option value="10" {{ request('per_page', 15) == 10 ? 'selected' : '' }}>10</option>
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="25" {{ request('per_page', 15) == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                        <span class="text-xs sm:text-sm md:text-base text-gray-600 whitespace-nowrap">por página</span>
+                    </div>
 
-                @if(request('tipo_persona'))
-                <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
-                    Tipo: {{ request('tipo_persona') }}
-                    <a href="{{ request()->fullUrlWithQuery(['tipo_persona' => null]) }}" class="ml-1 sm:ml-1.5 text-green-800 hover:text-green-600">
-                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                    </a>
-                </span>
-                @endif
+                    <!-- Filtros activos -->
+                    @if(request()->hasAny(['search', 'estado', 'tipo_persona', 'vencimiento', 'año']))
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
+                        <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
+                        
+                        @if(request('search'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449] text-white">
+                            Búsqueda: "{{ request('search') }}"
+                            <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 sm:ml-1.5 text-white hover:text-gray-200">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
 
-                @if(request('vencimiento'))
-                <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-yellow-100 text-yellow-800">
-                    Vencimiento: {{ ucfirst(str_replace('_', ' ', request('vencimiento'))) }}
-                    <a href="{{ request()->fullUrlWithQuery(['vencimiento' => null]) }}" class="ml-1 sm:ml-1.5 text-yellow-800 hover:text-yellow-600">
-                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                    </a>
-                </span>
-                @endif
+                        @if(request('estado'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
+                            Estado: {{ request('estado') }}
+                            <a href="{{ request()->fullUrlWithQuery(['estado' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
 
-                @if(request('año'))
-                <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-indigo-100 text-indigo-800">
-                    Año: {{ request('año') }}
-                    <a href="{{ request()->fullUrlWithQuery(['año' => null]) }}" class="ml-1 sm:ml-1.5 text-indigo-800 hover:text-indigo-600">
-                        <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                        </svg>
-                    </a>
-                </span>
-                @endif
+                        @if(request('tipo_persona'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                            Tipo: {{ request('tipo_persona') }}
+                            <a href="{{ request()->fullUrlWithQuery(['tipo_persona' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
+                        @if(request('vencimiento'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
+                            Vencimiento: {{ ucfirst(str_replace('_', ' ', request('vencimiento'))) }}
+                            <a href="{{ request()->fullUrlWithQuery(['vencimiento' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
+                        @if(request('año'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                            Año: {{ request('año') }}
+                            <a href="{{ request()->fullUrlWithQuery(['año' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+                    </div>
+                    @endif
+                </div>
             </div>
         </div>
-        @endif
-
-        <!-- Tabla Desktop -->
-        <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden hidden xl:block">
+        <div class="border-t border-gray-100 overflow-hidden hidden xl:block">
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead>
@@ -263,36 +299,80 @@
                                     @php
                                         $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
                                         $fechaInicio = $fechaVencimiento->copy()->subYear();
+                                        $hoy = \Carbon\Carbon::now();
+                                        $diasRestantes = $hoy->diffInDays($fechaVencimiento, false);
+                                        
+                                        if ($diasRestantes < 0) {
+                                            $estadoVigencia = 'vencido';
+                                            $colorIcono = 'text-red-500';
+                                            $colorTexto = 'text-red-600';
+                                        } elseif ($diasRestantes <= 30) {
+                                            $estadoVigencia = 'por_vencer';
+                                            $colorIcono = 'text-amber-500';
+                                            $colorTexto = 'text-amber-600';
+                                        } else {
+                                            $estadoVigencia = 'vigente';
+                                            $colorIcono = 'text-emerald-500';
+                                            $colorTexto = 'text-emerald-600';
+                                        }
                                     @endphp
-                                    <div class="text-xs sm:text-sm md:text-base text-gray-900">
-                                        <div class="flex items-center space-x-1">
-                                            <i class="fas fa-calendar-alt text-blue-500 text-xs sm:text-sm"></i>
-                                            <span>{{ $fechaInicio->format('d/m/Y') }}</span>
+                                    <div class="text-xs sm:text-sm md:text-base space-y-1">
+                                        <div class="flex items-center space-x-1.5">
+                                            <svg class="w-3 h-3 sm:w-4 sm:h-4 text-[#9d2449] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            <span class="text-gray-600 font-medium">Inicio: {{ $fechaInicio->format('d/m/Y') }}</span>
                                         </div>
-                                        <div class="flex items-center space-x-1">
-                                            <i class="fas fa-calendar-check text-red-500 text-xs sm:text-sm"></i>
-                                            <span>{{ $fechaVencimiento->format('d/m/Y') }}</span>
+                                        <div class="flex items-center space-x-1.5">
+                                            <svg class="w-3 h-3 sm:w-4 sm:h-4 {{ $colorIcono }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span class="{{ $colorTexto }} font-medium">Vence: {{ $fechaVencimiento->format('d/m/Y') }}</span>
                                         </div>
+                                        @if($estadoVigencia === 'vencido')
+                                            <div class="mt-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                                    Vencido
+                                                </span>
+                                            </div>
+                                        @elseif($estadoVigencia === 'por_vencer')
+                                            <div class="mt-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                                    Por vencer
+                                                </span>
+                                            </div>
+                                        @else
+                                            <div class="mt-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    Vigente
+                                                </span>
+                                            </div>
+                                        @endif
                                     </div>
                                 @else
-                                    <span class="text-gray-400 text-xs sm:text-sm md:text-base">Sin fecha</span>
+                                    <div class="flex items-center space-x-1.5">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        <span class="text-gray-500 text-xs sm:text-sm md:text-base">Sin fecha de vigencia</span>
+                                    </div>
                                 @endif
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
-                                <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
+                                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
                                     <a href="{{ route('proveedores.show', $proveedor->id) }}" 
-                                       class="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-[#9d2449] hover:text-white hover:bg-[#9d2449] rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                                        title="Ver detalles">
-                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.639 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.639 0-8.573-3.007-9.963-7.178z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         </svg>
                                     </a>
                                     <a href="{{ route('proveedores.edit', $proveedor->id) }}" 
-                                       class="inline-flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-gray-600 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                                        title="Editar">
-                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                                         </svg>
                                     </a>
                                 </div>
@@ -302,8 +382,8 @@
                         <tr>
                             <td colspan="6" class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-8 sm:py-10 md:py-12 lg:py-16 text-center">
                                 <div class="text-gray-500">
-                                    <svg class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 mx-auto mb-2 sm:mb-3 md:mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 814 0z"></path>
+                                    <svg class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-4 sm:mb-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                     </svg>
                                     <p class="text-xs sm:text-sm md:text-base lg:text-lg">No hay proveedores registrados</p>
                                 </div>
@@ -315,8 +395,8 @@
             </div>
         </div>
 
-        <!-- Cards Mobile y Tablet -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+        <div class="border-t border-gray-100 pt-4 sm:pt-5 md:pt-6 lg:pt-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             @forelse($todosProveedores as $proveedor)
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-2 sm:p-3 md:p-4 lg:p-5">
                 <div class="flex items-start justify-between mb-2 sm:mb-3 md:mb-4">
@@ -355,76 +435,112 @@
                         @php
                             $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
                             $fechaInicio = $fechaVencimiento->copy()->subYear();
+                            $hoy = \Carbon\Carbon::now();
+                            $diasRestantes = $hoy->diffInDays($fechaVencimiento, false);
+                            
+                            if ($diasRestantes < 0) {
+                                $estadoVigencia = 'vencido';
+                                $colorIcono = 'text-red-500';
+                                $colorTexto = 'text-red-600';
+                            } elseif ($diasRestantes <= 30) {
+                                $estadoVigencia = 'por_vencer';
+                                $colorIcono = 'text-amber-500';
+                                $colorTexto = 'text-amber-600';
+                            } else {
+                                $estadoVigencia = 'vigente';
+                                $colorIcono = 'text-emerald-500';
+                                $colorTexto = 'text-emerald-600';
+                            }
                         @endphp
-                        <div class="text-xs sm:text-sm md:text-base text-gray-500 space-y-0.5 sm:space-y-1 md:space-y-1.5">
-                            <div class="flex items-center space-x-1">
-                                <i class="fas fa-calendar-alt text-blue-500 text-xs sm:text-sm flex-shrink-0"></i>
-                                <span class="truncate text-xs sm:text-sm md:text-base">Inicio: {{ $fechaInicio->format('d/m/Y') }}</span>
+                        <div class="text-xs sm:text-sm md:text-base space-y-1 sm:space-y-1.5 md:space-y-2">
+                            <div class="flex items-center space-x-1.5">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-[#9d2449] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="truncate text-gray-600 font-medium">Inicio: {{ $fechaInicio->format('d/m/Y') }}</span>
                             </div>
-                            <div class="flex items-center space-x-1">
-                                <i class="fas fa-calendar-check text-red-500 text-xs sm:text-sm flex-shrink-0"></i>
-                                <span class="truncate text-xs sm:text-sm md:text-base">Vence: {{ $fechaVencimiento->format('d/m/Y') }}</span>
+                            <div class="flex items-center space-x-1.5">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 {{ $colorIcono }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="truncate {{ $colorTexto }} font-medium">Vence: {{ $fechaVencimiento->format('d/m/Y') }}</span>
                             </div>
+                            @if($estadoVigencia === 'vencido')
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                        Vencido
+                                    </span>
+                                </div>
+                            @elseif($estadoVigencia === 'por_vencer')
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                        Por vencer
+                                    </span>
+                                </div>
+                            @else
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Vigente
+                                    </span>
+                                </div>
+                            @endif
                         </div>
                     @else
                         <div class="text-xs sm:text-sm md:text-base text-gray-500">
-                            <div class="flex items-center space-x-1">
-                                <i class="fas fa-calendar-times text-gray-400 text-xs sm:text-sm flex-shrink-0"></i>
-                                <span class="truncate">Sin fechas de vigencia</span>
+                            <div class="flex items-center space-x-1.5">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                <span class="truncate">Sin fecha de vigencia</span>
                             </div>
                         </div>
                     @endif
                 </div>
-                <div class="flex space-x-1.5 sm:space-x-2 md:space-x-3 pt-2 sm:pt-3 md:pt-4 mt-2 sm:mt-3 md:mt-4 border-t border-gray-100">
+                <div class="flex space-x-2 sm:space-x-3 md:space-x-4 pt-3 sm:pt-4 md:pt-5 mt-3 sm:mt-4 md:mt-5 border-t border-gray-100">
                     <a href="{{ route('proveedores.show', $proveedor->id) }}" 
-                       class="flex-1 text-center px-1.5 sm:px-2 md:px-3 lg:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors duration-200 truncate">
-                        Ver
+                       class="flex-1 text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-[#9d2449] bg-[#9d2449]/5 border border-[#9d2449]/20 rounded-lg hover:bg-[#9d2449] hover:text-white transition-all duration-200 truncate shadow-sm">
+                        <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.639 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.639 0-8.573-3.007-9.963-7.178z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Ver
+                        </span>
                     </a>
                     <a href="{{ route('proveedores.edit', $proveedor->id) }}" 
-                       class="flex-1 text-center px-1.5 sm:px-2 md:px-3 lg:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base font-medium text-green-600 bg-green-50 rounded-md hover:bg-green-100 transition-colors duration-200 truncate">
-                        Editar
+                       class="flex-1 text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 truncate shadow-sm">
+                        <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+                            </svg>
+                            Editar
+                        </span>
                     </a>
                 </div>
             </div>
             @empty
             <div class="col-span-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8 lg:p-10 text-center">
                 <div class="text-gray-500">
-                    <svg class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 mx-auto mb-2 sm:mb-3 md:mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 814 0z"></path>
+                    <svg class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-4 sm:mb-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                     </svg>
                     <p class="text-sm sm:text-base md:text-lg lg:text-xl">No hay proveedores</p>
                 </div>
             </div>
             @endforelse
+            </div>
         </div>
-
-        <!-- Paginación -->
-        @if($todosProveedores->hasPages() || $todosProveedores->total() > 0)
-        <div class="mt-4 sm:mt-5 md:mt-6 lg:mt-8 xl:mt-10">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-                <div class="bg-white rounded-lg border border-gray-200 shadow-sm px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-3 md:py-4">
-                    <p class="text-xs sm:text-sm md:text-base lg:text-lg text-gray-700">
-                        <span class="font-medium text-[#9d2449]">{{ $todosProveedores->total() }}</span> 
-                        {{ $todosProveedores->total() == 1 ? 'proveedor encontrado' : 'proveedores encontrados' }}
-                        @if($todosProveedores->hasPages())
-                            <span class="text-gray-500 ml-1 sm:ml-2 md:ml-3">
-                                ({{ $todosProveedores->firstItem() }}-{{ $todosProveedores->lastItem() }})
-                            </span>
-                        @endif
-                    </p>
-                </div>
-
                 @if($todosProveedores->hasPages())
-                <div class="flex justify-center sm:justify-end">
-                    <div class="text-xs sm:text-sm md:text-base">
-                        {{ $todosProveedores->links() }}
-                    </div>
+        <div class="mt-4 sm:mt-5 md:mt-6 lg:mt-8 xl:mt-10">
+            <div class="flex justify-center">
+                <div class="text-xs sm:text-sm md:text-base">
+                    {{ $todosProveedores->links() }}
                 </div>
-                @endif
             </div>
         </div>
         @endif
 
+        </div>
     </div>
 </div>
 @endsection
@@ -436,6 +552,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('filtersContainer');
     const text = document.getElementById('filterText');
     const icon = document.getElementById('filterIcon');
+    const perPageSelect = document.getElementById('per_page');
+    const searchForm = document.getElementById('searchForm');
     
     if ({{ request()->hasAny(['estado', 'tipo_persona', 'vencimiento', 'año']) ? 'true' : 'false' }}) {
         container?.classList.remove('hidden');
@@ -448,6 +566,14 @@ document.addEventListener('DOMContentLoaded', function() {
         container?.classList.toggle('hidden');
         if (text) text.textContent = hidden ? 'Ocultar filtros' : 'Mostrar filtros';
         icon?.classList.toggle('rotate-180');
+    });
+
+    perPageSelect?.addEventListener('change', function() {
+        const hiddenPerPage = searchForm.querySelector('input[name="per_page"]');
+        if (hiddenPerPage) {
+            hiddenPerPage.value = this.value;
+        }
+        searchForm.submit();
     });
 });
 </script>
