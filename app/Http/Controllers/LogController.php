@@ -35,22 +35,38 @@ class LogController extends Controller
     /** Crear log en base de datos y Laravel */
     private static function createLog(string $level, string $message, string $channel, array $context): void
     {
-        $request = request();
+        // Verificar si la aplicación está bootstrapped y la base de datos está disponible
+        if (!app()->isBooted() || !app()->bound('db')) {
+            // Si no está listo, solo usar el log de Laravel
+            LogFacade::$level($message, $context);
+            return;
+        }
 
-        // Crear log en base de datos
-        Log::create([
-            'level' => $level,
-            'message' => $message,
-            'channel' => $channel,
-            'context' => ! empty($context) ? json_encode($context) : null,
-            'user_id' => Auth::check() ? Auth::id() : null,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'url' => $request->fullUrl(),
-            'method' => $request->method(),
-        ]);
+        try {
+            $request = request();
 
-        // Crear log en Laravel también
-        LogFacade::$level($message, $context);
+            // Crear log en base de datos
+            Log::create([
+                'level' => $level,
+                'message' => $message,
+                'channel' => $channel,
+                'context' => ! empty($context) ? json_encode($context) : null,
+                'user_id' => Auth::check() ? Auth::id() : null,
+                'ip_address' => $request ? $request->ip() : null,
+                'user_agent' => $request ? $request->userAgent() : null,
+                'url' => $request ? $request->fullUrl() : null,
+                'method' => $request ? $request->method() : null,
+            ]);
+
+            // Crear log en Laravel también
+            LogFacade::$level($message, $context);
+        } catch (\Exception $e) {
+            // Si falla la base de datos, usar solo el log de Laravel
+            LogFacade::$level($message, $context);
+            LogFacade::error('Error al registrar log en BD', [
+                'original_message' => $message,
+                'db_error' => $e->getMessage(),
+            ]);
+        }
     }
 }

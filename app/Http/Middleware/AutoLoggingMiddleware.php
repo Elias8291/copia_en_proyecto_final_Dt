@@ -91,9 +91,15 @@ class AutoLoggingMiddleware
 
         } catch (\Exception $e) {
             // Si falla el logging, no interrumpir la aplicación
-            \Illuminate\Support\Facades\Log::warning('Error en AutoLoggingMiddleware', [
-                'error' => $e->getMessage(),
-            ]);
+            try {
+                \Illuminate\Support\Facades\Log::warning('Error en AutoLoggingMiddleware', [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            } catch (\Exception $logException) {
+                // Si incluso el log de Laravel falla, no hacer nada para evitar loops infinitos
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\LogController;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,22 +14,39 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\AutoLoggingMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Capturar todas las excepciones y registrarlas automáticamente
+        
         $exceptions->reportable(function (\Throwable $e) {
             try {
-                LogController::error('Excepción capturada automáticamente', 'exceptions', [
-                    'message' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString(),
-                    'class' => get_class($e),
-                ]);
+                if (app()->bound('log')) {
+                    app('log')->error('Excepción capturada automáticamente', [
+                        'message' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTraceAsString(),
+                        'class' => get_class($e),
+                    ]);
+                }    
+                if (app()->isBooted() && app()->bound('db')) {
+                    try {
+                        \App\Http\Controllers\LogController::error('Excepción capturada automáticamente', 'exceptions', [
+                            'message' => $e->getMessage(),
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'trace' => $e->getTraceAsString(),
+                            'class' => get_class($e),
+                        ]);
+                    } catch (\Exception $dbException) {
+                        
+                        if (app()->bound('log')) {
+                            app('log')->error('Error al registrar excepción en BD', [
+                                'original_error' => $e->getMessage(),
+                                'db_error' => $dbException->getMessage(),
+                            ]);
+                        }
+                    }
+                }
             } catch (\Exception $logException) {
-                // Si falla el logging, usar el log de Laravel como respaldo
-                \Illuminate\Support\Facades\Log::error('Error al registrar excepción en BD', [
-                    'original_error' => $e->getMessage(),
-                    'logging_error' => $logException->getMessage(),
-                ]);
+                
             }
         });
     })->create();
