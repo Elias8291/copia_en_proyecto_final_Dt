@@ -1,0 +1,66 @@
+/* Estilos para mensajes de validación de campos */
+.field-message {
+    transition: all 0.3s ease;
+}
+
+.field-message svg {
+    flex-shrink: 0;
+}
+
+/* Animación para mensajes de error */
+.field-message:not(:empty) {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para inputs con error */
+input.border-red-500,
+select.border-red-500,
+textarea.border-red-500 {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Estilos para inputs válidos */
+input.border-green-500,
+select.border-green-500,
+textarea.border-green-500 {
+    border-color: #10b981 !important;
+    background-color: #f0fdf4 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Mensaje de error */
+.field-message.text-red-600 {
+    color: #dc2626;
+}
+
+/* Mensaje de éxito */
+.field-message.text-green-600 {
+    color: #059669;
+}
+
+/* Contenedor de mensaje */
+.field-message {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+/* Iconos en mensajes */
+.field-message svg {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+} 

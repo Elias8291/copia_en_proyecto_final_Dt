@@ -16,12 +16,12 @@ class CustomPasswordBroker extends PasswordBroker
      */
     public function sendResetLink(array $credentials, ?Closure $callback = null)
     {
-        // Change 'email' to 'correo' for our custom field
+        // Convert 'email' to 'correo' for our custom user field
         if (isset($credentials['email'])) {
             $credentials['correo'] = $credentials['email'];
             unset($credentials['email']);
         }
-
+        
         // Retrieve the user by correo field
         $user = $this->getUser($credentials);
 
@@ -51,12 +51,12 @@ class CustomPasswordBroker extends PasswordBroker
      */
     public function reset(array $credentials, Closure $callback)
     {
-        // Change 'email' to 'correo' for our custom field
+        // Convert 'email' to 'correo' for our custom user field
         if (isset($credentials['email'])) {
             $credentials['correo'] = $credentials['email'];
             unset($credentials['email']);
         }
-
+        
         $user = $this->validateReset($credentials);
 
         if (! $user instanceof CanResetPasswordContract) {

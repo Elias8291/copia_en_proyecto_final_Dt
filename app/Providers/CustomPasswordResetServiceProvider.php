@@ -8,20 +8,11 @@ use Illuminate\Support\ServiceProvider;
 
 class CustomPasswordResetServiceProvider extends ServiceProvider
 {
-    /**
-     * Register services.
-     */
+   
     public function register(): void
     {
-        //
-    }
-
-    /**
-     * Bootstrap services.
-     */
-    public function boot(): void
-    {
-        $this->app->make('auth.password')->extend('custom', function ($app, $name, $config) {
+        $this->app->singleton('auth.password.tokens', function ($app) {
+            $config = $app['config']['auth.passwords.users'];
             $key = $app['config']['app.key'];
 
             if (empty($key)) {
@@ -29,22 +20,24 @@ class CustomPasswordResetServiceProvider extends ServiceProvider
             }
 
             $connection = $config['connection'] ?? null;
-
             $table = $config['table'];
             $hashKey = $config['key'] ?? $key;
             $expire = $config['expire'];
 
-            $tokenRepository = new CustomDatabaseTokenRepository(
+            return new CustomDatabaseTokenRepository(
                 $app['db']->connection($connection),
                 $app['hash'],
                 $table,
                 $hashKey,
                 $expire
             );
+        });
+    }
 
-            $users = $app['auth']->createUserProvider($config['provider'] ?? null);
-
-            return new CustomPasswordBroker($tokenRepository, $users);
+    public function boot(): void
+    {
+        \Illuminate\Support\Facades\Auth::provider('custom-eloquent', function ($app, $config) {
+            return new \App\Auth\CustomEloquentUserProvider($app['hash'], $config['model']);
         });
     }
 }

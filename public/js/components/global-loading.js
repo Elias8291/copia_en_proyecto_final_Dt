@@ -80,7 +80,17 @@ class GlobalLoading {
             </div>
         `;
 
-        document.body.appendChild(this.loadingElement);
+        // Verificar que document.body exista antes de append
+        if (document.body) {
+            document.body.appendChild(this.loadingElement);
+        } else {
+            // Si el body no está listo, esperar a que el DOM se cargue
+            document.addEventListener('DOMContentLoaded', () => {
+                if (document.body && this.loadingElement) {
+                    document.body.appendChild(this.loadingElement);
+                }
+            });
+        }
     }
 
     /** Agregar estilos CSS */
@@ -636,13 +646,39 @@ class GlobalLoading {
     }
 }
 
-// Crear instancia global
-window.globalLoading = new GlobalLoading();
+// Crear instancia global cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.globalLoading = new GlobalLoading();
+    });
+} else {
+    window.globalLoading = new GlobalLoading();
+}
 
-// Funciones de conveniencia globales
-window.showLoading = (options) => window.globalLoading.show(options);
-window.hideLoading = () => window.globalLoading.hide();
-window.showLoadingFor = (duration, options) => window.globalLoading.showFor(duration, options);
+// Funciones de conveniencia globales con verificación
+window.showLoading = (options) => {
+    if (window.globalLoading) {
+        window.globalLoading.show(options);
+    } else {
+        console.warn('GlobalLoading no está inicializado aún');
+    }
+};
+
+window.hideLoading = () => {
+    if (window.globalLoading) {
+        window.globalLoading.hide();
+    } else {
+        console.warn('GlobalLoading no está inicializado aún');
+    }
+};
+
+window.showLoadingFor = (duration, options) => {
+    if (window.globalLoading) {
+        window.globalLoading.showFor(duration, options);
+    } else {
+        console.warn('GlobalLoading no está inicializado aún');
+    }
+};
 
 // Exportar para módulos
 if (typeof module !== 'undefined' && module.exports) {

@@ -16,9 +16,19 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                 </svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2">¡Registro Exitoso!</h3>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">
+                @if (session('isResend'))
+                    ¡Correo Reenviado!
+                @else
+                    ¡Registro Exitoso!
+                @endif
+            </h3>
             <p class="text-gray-600 text-sm px-6 leading-relaxed">
-                Tu cuenta ha sido creada correctamente. Hemos enviado un correo de verificación a tu dirección de email.
+                @if (session('isResend'))
+                    Hemos actualizado tus datos y reenviado el correo de verificación a tu dirección de email.
+                @else
+                    Tu cuenta ha sido creada correctamente. Hemos enviado un correo de verificación a tu dirección de email.
+                @endif
             </p>
             @if (session('userEmail'))
                 <div class="mt-3 mx-6">
@@ -40,15 +50,41 @@
                         </svg>
                     </div>
                     <div>
-                        <h4 class="text-sm font-semibold text-blue-900 mb-1">Verifica tu correo electrónico</h4>
+                        <h4 class="text-sm font-semibold text-blue-900 mb-1">
+                            @if (session('isResend'))
+                                Revisa tu correo nuevamente
+                            @else
+                                Verifica tu correo electrónico
+                            @endif
+                        </h4>
                         <p class="text-xs text-blue-700 leading-relaxed">
-                            Revisa tu bandeja de entrada y haz clic en el enlace de verificación para activar tu cuenta.
+                            @if (session('isResend'))
+                                Como ya tenías una cuenta pendiente de verificación, hemos actualizado tus datos y enviado un nuevo enlace de verificación.
+                            @else
+                                Revisa tu bandeja de entrada y haz clic en el enlace de verificación para activar tu cuenta.
+                            @endif
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="space-y-3 mb-6">
+                @if (session('isResend'))
+                    <div class="flex items-center space-x-3 text-sm text-gray-600">
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Tus datos han sido actualizados con la nueva información</span>
+                    </div>
+                    <div class="flex items-center space-x-3 text-sm text-gray-600">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 0121 9z"></path>
+                        </svg>
+                        <span>Se generó un nuevo token de verificación</span>
+                    </div>
+                @endif
                 <div class="flex items-center space-x-3 text-sm text-gray-600">
                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

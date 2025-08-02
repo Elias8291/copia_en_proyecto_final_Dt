@@ -5,66 +5,75 @@ namespace App\Http\Controllers;
 use App\Models\Proveedor;
 use App\Models\User;
 use App\Services\ProveedorService;
-use Carbon\Carbon;
+use App\Services\Proveedores\BusquedaProveedorService;
+
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Log;
 
 class ProveedorController extends Controller
 {
-    protected $proveedorService;
-
-    public function __construct(ProveedorService $proveedorService)
-    {
-        $this->proveedorService = $proveedorService;
-    }
+    public function __construct(
+        private ProveedorService $proveedorService,
+        private BusquedaProveedorService $busquedaService
+    ) {}
 
     /**
      * Mostrar lista de proveedores
      */
     public function index(Request $request): View
     {
-        $query = Proveedor::with(['usuario'])
-            ->orderBy('created_at', 'desc');
-
-        // Filtros de búsqueda
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('rfc', 'like', "%{$search}%")
-                    ->orWhere('razon_social', 'like', "%{$search}%")
-                    ->orWhere('pv_numero', 'like', "%{$search}%")
-                    ->orWhereHas('usuario', function ($userQuery) use ($search) {
-                        $userQuery->where('nombre', 'like', "%{$search}%")
-                            ->orWhere('correo', 'like', "%{$search}%");
-                    });
-            });
+        $filtros = $request->only(['search', 'estado', 'tipo_persona', 'vencimiento', 'año']);
+        
+        // Si se solicita filtrado en tiempo real, cargar todos los datos
+        $cargarTodos = $request->get('filter_realtime', false);
+        
+        if ($cargarTodos) {
+            // Cargar todos los proveedores para filtrado en tiempo real
+            $query = $this->proveedorService->obtenerConFiltros([]);
+            $todosProveedores = $query->orderBy('created_at', 'desc')->get();
+            
+            // Crear una colección paginada falsa para mantener compatibilidad con la vista
+            $todosProveedores = new \Illuminate\Pagination\LengthAwarePaginator(
+                $todosProveedores,
+                $todosProveedores->count(),
+                $todosProveedores->count(),
+                1,
+                ['path' => request()->url(), 'pageName' => 'page']
+            );
+        } else {
+            // Funcionalidad normal con paginación
+            $query = $this->proveedorService->obtenerConFiltros($filtros);
+            $todosProveedores = $query->orderBy('created_at', 'desc')->paginate(10);
         }
-
-        if ($request->filled('estado')) {
-            $query->where('estado_padron', $request->estado);
-        }
-
-        if ($request->filled('tipo_persona')) {
-            $query->where('tipo_persona', $request->tipo_persona);
-        }
-
-        $proveedores = $query->paginate(15)->withQueryString();
-
-        // Estadísticas
-        $estadisticas = [
-            'total' => Proveedor::count(),
-            'activos' => Proveedor::where('estado_padron', 'Activo')->count(),
-            'pendientes' => Proveedor::where('estado_padron', 'Pendiente')->count(),
-            'vencidos' => Proveedor::where('estado_padron', 'Vencido')
-                ->orWhere(function ($q) {
-                    $q->where('fecha_vencimiento_padron', '<', Carbon::now())
-                        ->where('estado_padron', 'Activo');
-                })->count(),
-        ];
-
-        return view('proveedores.index', compact('proveedores', 'estadisticas'));
+    
+        $todosProveedores->getCollection()->transform(function ($proveedor) {
+            try {
+                $datosGenerales = $this->proveedorService->obtenerDatosGeneralesUltimoTramite($proveedor);
+                
+                // Usar razón social del último trámite si existe y no está vacía
+                if (!empty($datosGenerales['razon_social'] ?? null)) {
+                    $proveedor->razon_social_ultimo_tramite = $datosGenerales['razon_social'];
+                }
+                // Si no hay datos generales del último trámite, mantener la razón social original del proveedor
+                // No asignar nada para que la vista use el fallback automáticamente
+                
+            } catch (\Exception $e) {
+                Log::error('Error al obtener datos generales del proveedor', [
+                    'proveedor_id' => $proveedor->id,
+                    'error' => $e->getMessage()
+                ]);
+                // En caso de error, no asignar nada para usar el fallback en la vista
+            }
+            return $proveedor;
+        });
+    
+        $estadisticas = $this->proveedorService->obtenerEstadisticas();
+    
+        return view('proveedores.index', compact('estadisticas', 'todosProveedores', 'cargarTodos'));
     }
+    
 
     /**
      * Mostrar formulario de creación
@@ -87,26 +96,15 @@ class ProveedorController extends Controller
             'razon_social' => 'nullable|string|max:255',
         ]);
 
-        // Crear usuario
-        $user = User::create([
-            'nombre' => $validated['nombre'],
-            'correo' => $validated['correo'],
-            'rfc' => $validated['rfc'],
-            'password' => bcrypt('temporal123'), // Password temporal
-            'estado' => 'pendiente',
-        ]);
-
-        // Crear proveedor
-        $proveedor = Proveedor::create([
-            'usuario_id' => $user->id,
-            'rfc' => $validated['rfc'],
-            'tipo_persona' => $validated['tipo_persona'],
-            'razon_social' => $validated['razon_social'],
-            'estado_padron' => 'Pendiente',
-        ]);
-
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor creado exitosamente.');
+        try {
+            $this->proveedorService->crearProveedor($validated);
+            
+            return redirect()->route('proveedores.index')
+                ->with('success', 'Proveedor creado exitosamente.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Error al crear el proveedor: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -114,9 +112,48 @@ class ProveedorController extends Controller
      */
     public function show(Proveedor $proveedor): View
     {
-        $proveedor->load(['usuario', 'tramites', 'accionistas', 'contactos']);
+        // Cargar relaciones existentes
+        $proveedor->load([
+            'user',
+            'tramites' => function ($query) {
+                $query->where('estado', 'Aprobado')->orderBy('updated_at', 'desc');
+            }
+        ]);
 
-        return view('proveedores.show', compact('proveedor'));
+        try {
+            // Obtener el último trámite aprobado
+            $tramite = $proveedor->tramites()->where('estado', 'Aprobado')->orderBy('updated_at', 'desc')->first();
+            
+            if (!$tramite) {
+                // Si no hay trámite aprobado, mostrar página básica del proveedor
+                return view('proveedores.tramite-details', [
+                    'proveedor' => $proveedor,
+                    'tramite' => null,
+                    'datosCompletos' => null
+                ])->with('warning', 'Este proveedor no tiene trámites aprobados.');
+            }
+
+            // Obtener datos completos del último trámite aprobado
+            $datosCompletos = $this->proveedorService->obtenerInformacionCompletaUltimoTramite($proveedor);
+
+            return view('proveedores.tramite-details', compact(
+                'proveedor',
+                'tramite', 
+                'datosCompletos'
+            ));
+
+        } catch (\Exception $e) {
+            Log::error('Error al mostrar detalles del proveedor', [
+                'proveedor_id' => $proveedor->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return view('proveedores.tramite-details', [
+                'proveedor' => $proveedor,
+                'tramite' => null,
+                'datosCompletos' => null
+            ])->with('error', 'Error al cargar los datos del proveedor: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -145,25 +182,15 @@ class ProveedorController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        // Actualizar usuario
-        $proveedor->usuario->update([
-            'nombre' => $validated['nombre'],
-            'correo' => $validated['correo'],
-            'rfc' => $validated['rfc'],
-        ]);
-
-        // Actualizar proveedor
-        $proveedor->update([
-            'rfc' => $validated['rfc'],
-            'tipo_persona' => $validated['tipo_persona'],
-            'razon_social' => $validated['razon_social'],
-            'estado_padron' => $validated['estado_padron'],
-            'fecha_vencimiento_padron' => $validated['fecha_vencimiento_padron'],
-            'observaciones' => $validated['observaciones'],
-        ]);
-
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor actualizado exitosamente.');
+        try {
+            $this->proveedorService->actualizarProveedor($proveedor, $validated);
+            
+            return redirect()->route('proveedores.index')
+                ->with('success', 'Proveedor actualizado exitosamente.');
+        } catch (\Exception $e) {
+            return back()->withInput()
+                ->with('error', 'Error al actualizar el proveedor: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -171,40 +198,17 @@ class ProveedorController extends Controller
      */
     public function destroy(Proveedor $proveedor): RedirectResponse
     {
-        $proveedor->delete();
-
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor eliminado exitosamente.');
-    }
-
-    /**
-     * Crear un nuevo proveedor (método legacy)
-     */
-    public function createProveedor(User $user, array $data): Proveedor
-    {
-        $existingProveedor = Proveedor::where('usuario_id', $user->id)->first();
-
-        if ($existingProveedor) {
-            return $existingProveedor;
+        try {
+            $this->proveedorService->eliminarProveedor($proveedor);
+            
+            return redirect()->route('proveedores.index')
+                ->with('success', 'Proveedor eliminado exitosamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al eliminar el proveedor: ' . $e->getMessage());
         }
-
-        $proveedorData = [
-            'usuario_id' => $user->id,
-            'rfc' => $data['rfc'],
-            'tipo_persona' => $this->determineTipoPersona($data['rfc']),
-            'estado_padron' => 'Pendiente',
-        ];
-
-        return Proveedor::create($proveedorData);
     }
 
-    /**
-     * Determinar tipo de persona basado en RFC
-     */
-    private function determineTipoPersona(string $rfc): string
-    {
-        return strlen($rfc) === 13 ? 'Física' : 'Moral';
-    }
+
 
     /**
      * Cambiar estado del proveedor
@@ -216,114 +220,107 @@ class ProveedorController extends Controller
             'observaciones' => 'nullable|string',
         ]);
 
-        $proveedor->update($validated);
+        try {
+            $this->proveedorService->cambiarEstado(
+                $proveedor, 
+                $validated['estado_padron'], 
+                $validated['observaciones'] ?? null
+            );
+            
+            return back()->with('success', 'Estado del proveedor actualizado exitosamente.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error al cambiar el estado: ' . $e->getMessage());
+        }
+    }
 
-        return back()->with('success', 'Estado del proveedor actualizado exitosamente.');
+
+
+    /**
+     * Obtener datos generales del último trámite aprobado de un proveedor
+     */
+    public function obtenerDatosGenerales(Proveedor $proveedor)
+    {
+        try {
+            $datosGenerales = $this->proveedorService->obtenerDatosGeneralesUltimoTramite($proveedor);
+            
+            if (!$datosGenerales) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontraron datos generales del último trámite aprobado'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $datosGenerales,
+                'message' => 'Datos generales obtenidos exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener datos generales: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
-     * Exportar proveedores
+     * Obtener información completa del último trámite aprobado
      */
-    public function export(Request $request)
+    public function obtenerInformacionCompleta(Proveedor $proveedor)
     {
-        // Implementar exportación a Excel/PDF
-        // Por ahora retornamos un mensaje
-        return back()->with('info', 'Funcionalidad de exportación en desarrollo.');
+        try {
+            $informacionCompleta = $this->proveedorService->obtenerInformacionCompletaUltimoTramite($proveedor);
+            
+            if (!$informacionCompleta) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró información del último trámite aprobado'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $informacionCompleta,
+                'message' => 'Información completa obtenida exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener información completa: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Obtener proveedor por usuario (método usado por el servicio)
-     */
-    public function getProveedorByUser(User $user): ?Proveedor
+    public function showTramiteDetails(Proveedor $proveedor)
     {
-        return $this->proveedorService->getProveedorByUser($user);
-    }
+        try {
+            // Obtener el último trámite aprobado con todos sus datos relacionados
+            $ultimoTramite = $this->proveedorService->obtenerUltimoTramiteAprobado($proveedor);
+            
+            if (!$ultimoTramite) {
+                return redirect()->route('proveedores.index')
+                    ->with('error', 'El proveedor no tiene trámites aprobados.');
+            }
 
-    /**
-     * Crear o obtener proveedor existente para un usuario
-     */
-    public function createOrGetProveedor(User $user, array $data = []): Proveedor
-    {
-        return $this->proveedorService->createOrGetProveedor($user, $data);
-    }
-
-    /**
-     * Verificar si un usuario puede realizar un tipo de trámite
-     */
-    public function puedeRealizarTramite(User $user, string $tipoTramite): array
-    {
-        return $this->proveedorService->puedeRealizarTramite($user, $tipoTramite);
-    }
-
-    /**
-     * Obtener resumen de trámites disponibles para un usuario
-     */
-    public function getTramitesDisponibles(User $user): array
-    {
-        return $this->proveedorService->getTramitesDisponibles($user);
-    }
-
-    /**
-     * Buscar proveedor por RFC
-     */
-    public function buscarPorRFC(string $rfc): ?Proveedor
-    {
-        return $this->proveedorService->buscarPorRFC($rfc);
-    }
-
-    /**
-     * Buscar proveedor por correo
-     */
-    public function buscarPorCorreo(string $correo): ?Proveedor
-    {
-        return $this->proveedorService->buscarPorCorreo($correo);
-    }
-
-    /**
-     * Activar proveedor (cambiar estado y asignar número PV)
-     */
-    public function activarProveedor(Proveedor $proveedor, ?string $fechaVencimiento = null): Proveedor
-    {
-        return $this->proveedorService->activarProveedor($proveedor, $fechaVencimiento);
-    }
-
-    /**
-     * Obtener estadísticas detalladas de un proveedor
-     */
-    public function getEstadisticasProveedor(Proveedor $proveedor): array
-    {
-        return $this->proveedorService->getEstadisticasProveedor($proveedor);
-    }
-
-    /**
-     * Obtener proveedores próximos a vencer
-     */
-    public function getProveedoresProximosAVencer(int $diasAnticipacion = 30)
-    {
-        return $this->proveedorService->getProveedoresProximosAVencer($diasAnticipacion);
-    }
-
-    /**
-     * Verificar si un proveedor está próximo a vencer
-     */
-    public function estaProximoAVencer(Proveedor $proveedor, int $diasAnticipacion = 30): bool
-    {
-        return $this->proveedorService->estaProximoAVencer($proveedor, $diasAnticipacion);
-    }
-
-    /**
-     * Generar número PV único
-     */
-    public function generarNumeroPV(): string
-    {
-        return $this->proveedorService->generarNumeroPV();
-    }
-
-    /**
-     * Asignar número PV a proveedor
-     */
-    public function asignarNumeroPV(Proveedor $proveedor): Proveedor
-    {
-        return $this->proveedorService->asignarNumeroPV($proveedor);
+            // Obtener todos los datos relacionados del trámite
+            $datosCompletos = $this->proveedorService->obtenerDatosCompletosUltimoTramite($proveedor);
+            
+            return view('proveedores.tramite-details', [
+                'proveedor' => $proveedor,
+                'tramite' => $ultimoTramite,
+                'datosCompletos' => $datosCompletos
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error al mostrar detalles del trámite: ' . $e->getMessage(), [
+                'proveedor_id' => $proveedor->id,
+                'rfc' => $proveedor->rfc
+            ]);
+            
+            return redirect()->route('proveedores.index')
+                ->with('error', 'Error al cargar los detalles del trámite.');
+        }
     }
 }

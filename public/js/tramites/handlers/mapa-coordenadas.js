@@ -19,6 +19,14 @@ class MapaSimple {
         const domicilioContainer = document.querySelector('[data-seccion="domicilio"]');
         if (!domicilioContainer) return;
         
+        // Verificar si está en modo de solo lectura
+        const isReadOnly = domicilioContainer.querySelector('input[disabled]') !== null;
+        
+        // Verificar si hay coordenadas disponibles
+        const latInput = document.getElementById('latitud');
+        const lngInput = document.getElementById('longitud');
+        const hasCoordinates = latInput && lngInput && latInput.value && lngInput.value;
+        
         const mapContainer = document.createElement('div');
         mapContainer.id = 'mapa-simple';
         mapContainer.className = 'w-full h-64 rounded-lg border border-gray-200 mb-4';
@@ -26,73 +34,105 @@ class MapaSimple {
         
         const mapTitle = document.createElement('div');
         mapTitle.className = 'flex items-center space-x-2 mb-3';
-        mapTitle.innerHTML = '<i class="fas fa-map-marker-alt text-[#9d2449]"></i><span class="text-sm font-medium text-gray-700">Vista del Mapa</span>';
         
-        const coordenadasContainer = document.createElement('div');
-        coordenadasContainer.id = 'coordenadas-container';
-        coordenadasContainer.className = 'bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3';
-        coordenadasContainer.innerHTML = `
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-2">
-                    <i class="fas fa-crosshairs text-[#9d2449]"></i>
-                    <span class="text-sm font-medium text-gray-700">Coordenadas</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <div id="indicador-domicilio-fiscal" class="hidden">
-                        <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
-                            <i class="fas fa-check-circle mr-1"></i>En domicilio fiscal
-                        </span>
-                    </div>
-                    <button id="btn-ubicacion-actual" class="flex items-center space-x-1 px-2 py-1 bg-[#9d2449] text-white text-xs rounded hover:bg-[#7a1c37] transition-colors">
-                        <i class="fas fa-location-arrow"></i><span>Mi Ubicación</span>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="mb-3 p-2 bg-white border border-gray-200 rounded">
-                <div class="flex items-center justify-between mb-2">
+        // Título diferente según el contexto
+        if (isReadOnly && !hasCoordinates) {
+            mapTitle.innerHTML = '<i class="fas fa-map-marker-alt text-gray-400"></i><span class="text-sm font-medium text-gray-500">Ubicación no disponible</span>';
+        } else {
+            mapTitle.innerHTML = '<i class="fas fa-map-marker-alt text-[#9d2449]"></i><span class="text-sm font-medium text-gray-700">Vista del Mapa</span>';
+        }
+        
+        // Solo crear controles de coordenadas si no está en modo de solo lectura
+        let coordenadasContainer = null;
+        if (!isReadOnly) {
+            coordenadasContainer = document.createElement('div');
+            coordenadasContainer.id = 'coordenadas-container';
+            coordenadasContainer.className = 'bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3';
+            coordenadasContainer.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center space-x-2">
-                        <i class="fas fa-search text-[#9d2449] text-xs"></i>
-                        <span class="text-xs font-medium text-gray-700">Ingresar coordenadas</span>
+                        <i class="fas fa-crosshairs text-[#9d2449]"></i>
+                        <span class="text-sm font-medium text-gray-700">Coordenadas</span>
                     </div>
-                    <button id="btn-limpiar-coordenadas" class="text-xs text-gray-500 hover:text-gray-700">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="text-xs text-gray-600 mb-2">Ingresa las coordenadas del lugar</div>
-                <div class="flex space-x-2">
-                    <div class="flex-1">
-                        <label class="block text-xs text-gray-600 mb-1">Latitud</label>
-                        <input type="text" id="input-latitud" placeholder="Ej: 19.4326" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:border-[#9d2449]">
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-xs text-gray-600 mb-1">Longitud</label>
-                        <input type="text" id="input-longitud" placeholder="Ej: -99.1332" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:border-[#9d2449]">
-                    </div>
-                    <div class="flex flex-col justify-end">
-                        <button id="btn-buscar-coordenadas" class="px-3 py-1 bg-[#9d2449] text-white text-xs rounded hover:bg-[#7a1c37] transition-colors">
-                            <i class="fas fa-search"></i>
+                    <div class="flex items-center space-x-2">
+                        <div id="indicador-domicilio-fiscal" class="hidden">
+                            <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>En domicilio fiscal
+                            </span>
+                        </div>
+                        <button id="btn-ubicacion-actual" class="flex items-center space-x-1 px-2 py-1 bg-[#9d2449] text-white text-xs rounded hover:bg-[#7a1c37] transition-colors">
+                            <i class="fas fa-location-arrow"></i><span>Mi Ubicación</span>
                         </button>
                     </div>
                 </div>
-            </div>
-            
-            <div class="flex space-x-4">
-                <div class="flex items-center space-x-1">
-                    <span class="text-xs text-gray-500">Lat:</span>
-                    <span id="latitud-display" class="text-xs font-mono text-gray-700">19.4326</span>
+                
+                <div class="mb-3 p-2 bg-white border border-gray-200 rounded">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-search text-[#9d2449] text-xs"></i>
+                            <span class="text-xs font-medium text-gray-700">Ingresar coordenadas</span>
+                        </div>
+                        <button id="btn-limpiar-coordenadas" class="text-xs text-gray-500 hover:text-gray-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-600 mb-2">Ingresa las coordenadas del lugar</div>
+                    <div class="flex space-x-2">
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-600 mb-1">Latitud</label>
+                            <input type="text" id="input-latitud" placeholder="Ej: 19.4326" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:border-[#9d2449]">
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-xs text-gray-600 mb-1">Longitud</label>
+                            <input type="text" id="input-longitud" placeholder="Ej: -99.1332" class="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:border-[#9d2449]">
+                        </div>
+                        <div class="flex flex-col justify-end">
+                            <button id="btn-buscar-coordenadas" class="px-3 py-1 bg-[#9d2449] text-white text-xs rounded hover:bg-[#7a1c37] transition-colors">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-1">
-                    <span class="text-xs text-gray-500">Lng:</span>
-                    <span id="longitud-display" class="text-xs font-mono text-gray-700">-99.1332</span>
+                
+                <div class="flex space-x-4">
+                    <div class="flex items-center space-x-1">
+                        <span class="text-xs text-gray-500">Lat:</span>
+                        <span id="latitud-display" class="text-xs font-mono text-gray-700">19.4326</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <span class="text-xs text-gray-500">Lng:</span>
+                        <span id="longitud-display" class="text-xs font-mono text-gray-700">-99.1332</span>
+                    </div>
                 </div>
-            </div>
-            
-
-        `;
+            `;
+        } else if (hasCoordinates) {
+            // En modo de solo lectura con coordenadas, mostrar solo las coordenadas
+            coordenadasContainer = document.createElement('div');
+            coordenadasContainer.id = 'coordenadas-container';
+            coordenadasContainer.className = 'bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3';
+            coordenadasContainer.innerHTML = `
+                <div class="flex items-center space-x-2 mb-3">
+                    <i class="fas fa-crosshairs text-[#9d2449]"></i>
+                    <span class="text-sm font-medium text-gray-700">Coordenadas del Domicilio</span>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="flex items-center space-x-1">
+                        <span class="text-xs text-gray-500">Latitud:</span>
+                        <span id="latitud-display" class="text-xs font-mono text-gray-700">19.4326</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <span class="text-xs text-gray-500">Longitud:</span>
+                        <span id="longitud-display" class="text-xs font-mono text-gray-700">-99.1332</span>
+                    </div>
+                </div>
+            `;
+        }
+        // Si está en modo de solo lectura sin coordenadas, no crear contenedor de coordenadas
         
         domicilioContainer.appendChild(mapTitle);
-        domicilioContainer.appendChild(coordenadasContainer);
+        if (coordenadasContainer) {
+            domicilioContainer.appendChild(coordenadasContainer);
+        }
         domicilioContainer.appendChild(mapContainer);
     }
     
@@ -118,37 +158,100 @@ class MapaSimple {
         const mapContainer = document.getElementById('mapa-simple');
         if (!mapContainer) return;
         
-        // Obtener coordenadas existentes o usar valores por defecto
-        const latInput = document.getElementById('latitud');
-        const lngInput = document.getElementById('longitud');
+        // Verificar si está en modo de solo lectura
+        const domicilioContainer = document.querySelector('[data-seccion="domicilio"]');
+        const isReadOnly = domicilioContainer && domicilioContainer.querySelector('input[disabled]') !== null;
         
+        // Obtener coordenadas de diferentes fuentes
         let defaultLat = 19.4326, defaultLng = -99.1332;
+        let hasCoordinates = false;
         
-        if (latInput && lngInput && latInput.value && lngInput.value) {
-            defaultLat = parseFloat(latInput.value);
-            defaultLng = parseFloat(lngInput.value);
+        // 1. Intentar obtener de atributos data del contenedor (más confiable)
+        if (domicilioContainer) {
+            const dataLat = domicilioContainer.getAttribute('data-lat');
+            const dataLng = domicilioContainer.getAttribute('data-lng');
+            if (dataLat && dataLng) {
+                defaultLat = parseFloat(dataLat);
+                defaultLng = parseFloat(dataLng);
+                hasCoordinates = true;
+                console.log('Coordenadas obtenidas de atributos data:', { lat: defaultLat, lng: defaultLng });
+            }
         }
         
-        this.map = L.map('mapa-simple').setView([defaultLat, defaultLng], 10);
+        // 2. Si no hay atributos data, intentar obtener de variables globales (pasadas desde el componente)
+        if (!hasCoordinates && window.domicilioMapInstance && window.domicilioMapInstance.coordinates) {
+            defaultLat = window.domicilioMapInstance.coordinates.lat;
+            defaultLng = window.domicilioMapInstance.coordinates.lng;
+            hasCoordinates = true;
+            console.log('Coordenadas obtenidas de variables globales:', { lat: defaultLat, lng: defaultLng });
+        }
+        
+        // 3. Intentar obtener de campos hidden del formulario (solo en modo editable)
+        if (!hasCoordinates && !isReadOnly) {
+            const latInput = document.getElementById('latitud');
+            const lngInput = document.getElementById('longitud');
+            
+            if (latInput && lngInput && latInput.value && lngInput.value) {
+                defaultLat = parseFloat(latInput.value);
+                defaultLng = parseFloat(lngInput.value);
+                hasCoordinates = true;
+                console.log('Coordenadas obtenidas de campos hidden:', { lat: defaultLat, lng: defaultLng });
+            }
+        }
+        
+        console.log('Estado final de coordenadas:', { hasCoordinates, isReadOnly, lat: defaultLat, lng: defaultLng });
+        
+        // En modo de solo lectura, si no hay coordenadas, usar un centro genérico de México
+        if (isReadOnly && !hasCoordinates) {
+            defaultLat = 23.6345; // Centro aproximado de México
+            defaultLng = -102.5528;
+        }
+        
+        this.map = L.map('mapa-simple').setView([defaultLat, defaultLng], isReadOnly && !hasCoordinates ? 5 : 10);
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors'
         }).addTo(this.map);
         
-        this.marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(this.map);
-        
-        this.marker.on('dragend', (e) => {
-            const { lat, lng } = e.target.getLatLng();
-            this.updateCoordenadas(lat, lng);
-            this.verificarDomicilioFiscal(lat, lng);
-        });
-        
-        this.map.on('click', (e) => {
-            const { lat, lng } = e.latlng;
-            this.marker.setLatLng([lat, lng]);
-            this.updateCoordenadas(lat, lng);
-            this.verificarDomicilioFiscal(lat, lng);
-        });
+        // Solo crear marcador si hay coordenadas o no está en modo de solo lectura
+        if (hasCoordinates || !isReadOnly) {
+            // Crear marcador con configuración según el modo
+            this.marker = L.marker([defaultLat, defaultLng], { 
+                draggable: !isReadOnly 
+            }).addTo(this.map);
+            
+            // Solo agregar eventos si no está en modo de solo lectura
+            if (!isReadOnly) {
+                this.marker.on('dragend', (e) => {
+                    const { lat, lng } = e.target.getLatLng();
+                    this.updateCoordenadas(lat, lng);
+                    this.verificarDomicilioFiscal(lat, lng);
+                });
+                
+                this.map.on('click', (e) => {
+                    const { lat, lng } = e.latlng;
+                    this.marker.setLatLng([lat, lng]);
+                    this.updateCoordenadas(lat, lng);
+                    this.verificarDomicilioFiscal(lat, lng);
+                });
+                
+                // Solo obtener ubicación si no hay coordenadas existentes
+                if (!latInput?.value || !lngInput?.value) {
+                    this.obtenerUbicacionDispositivo();
+                }
+            }
+        } else {
+            // En modo de solo lectura sin coordenadas, mostrar mensaje en el mapa
+            const noCoordinatesDiv = document.createElement('div');
+            noCoordinatesDiv.className = 'no-coordinates-message';
+            noCoordinatesDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <i class="fas fa-map-marker-alt" style="font-size: 2em; margin-bottom: 10px; color: #ccc;"></i>
+                    <p>No hay coordenadas disponibles para este domicilio</p>
+                </div>
+            `;
+            mapContainer.appendChild(noCoordinatesDiv);
+        }
         
         setTimeout(() => {
             if (this.map) {
@@ -156,12 +259,10 @@ class MapaSimple {
             }
         }, 100);
         
-        // Solo obtener ubicación si no hay coordenadas existentes
-        if (!latInput?.value || !lngInput?.value) {
-            this.obtenerUbicacionDispositivo();
+        // Solo actualizar coordenadas si hay marcador
+        if (this.marker) {
+            this.updateCoordenadas(defaultLat, defaultLng);
         }
-        
-        this.updateCoordenadas(defaultLat, defaultLng);
     }
     
     obtenerUbicacionDispositivo() {

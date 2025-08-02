@@ -7,7 +7,7 @@ use App\Models\Tramite;
 use App\Models\Notificacion;
 use App\Mail\TramiteRechazado;
 use Carbon\Carbon;
-use Mail;
+use Illuminate\Support\Facades\Mail;
 
 class LimpiarTramitesVencidos extends Command
 {

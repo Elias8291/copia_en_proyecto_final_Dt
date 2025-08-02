@@ -16,7 +16,7 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
      */
     protected function getPayload($email, $token)
     {
-        return ['correo' => $email, 'token' => $this->hasher->make($token), 'created_at' => new \DateTime];
+        return ['email' => $email, 'token' => $this->hasher->make($token), 'created_at' => new \DateTime];
     }
 
     /**
@@ -28,7 +28,7 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     public function exists(CanResetPasswordContract $user, $token)
     {
         $record = (array) $this->getTable()->where(
-            'correo', $user->getEmailForPasswordReset()
+            'email', $user->getEmailForPasswordReset()
         )->first();
 
         return $record &&
@@ -74,7 +74,7 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
      */
     protected function deleteExisting(CanResetPasswordContract $user)
     {
-        return $this->getTable()->where('correo', $user->getEmailForPasswordReset())->delete();
+        return $this->getTable()->where('email', $user->getEmailForPasswordReset())->delete();
     }
 
     /**
@@ -85,7 +85,7 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     public function recentlyCreatedToken(CanResetPasswordContract $user)
     {
         $record = (array) $this->getTable()->where(
-            'correo', $user->getEmailForPasswordReset()
+            'email', $user->getEmailForPasswordReset()
         )->first();
 
         return $record && $this->tokenRecentlyCreated($record['created_at']);

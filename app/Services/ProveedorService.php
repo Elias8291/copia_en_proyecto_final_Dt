@@ -6,13 +6,26 @@ use App\Models\Proveedor;
 use App\Models\User;
 use App\Models\Tramite;
 use App\Helpers\TiempoHelper;
+use App\Services\Proveedores\EstadosProveedorService;
+use App\Services\Proveedores\TramitesDisponiblesService;
+use App\Services\Proveedores\AprobacionTramiteService;
+use App\Services\Proveedores\BusquedaProveedorService;
+use App\Services\Proveedores\GestionProveedorService;
+use App\Services\Proveedores\DatosTramiteAprobadoService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB; // Added DB facade
-use App\Services\OficioService; // Added OficioService
 
 class ProveedorService
 {
+    public function __construct(
+        private EstadosProveedorService $estadosService,
+        private TramitesDisponiblesService $tramitesDisponiblesService,
+        private AprobacionTramiteService $aprobacionService,
+        private BusquedaProveedorService $busquedaService,
+        private GestionProveedorService $gestionService,
+        private DatosTramiteAprobadoService $datosTramiteAprobadoService
+    ) {}
+
     /**
      * Get the proveedor associated with the authenticated user
      */
@@ -42,7 +55,7 @@ class ProveedorService
             return false;
         }
 
-        return Tramite::where('proveedor_id', $proveedor->id)
+        return $proveedor->tramites()
             ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado'])
             ->exists();
     }
@@ -56,7 +69,7 @@ class ProveedorService
             return null;
         }
 
-        return Tramite::where('proveedor_id', $proveedor->id)
+        return $proveedor->tramites()
             ->whereIn('estado', ['Para_Correccion', 'Por_Cotejar', 'Cancelado', 'En_Revision', 'Pendiente', 'Enviado', 'Rechazado'])
             ->with(['proveedor', 'proveedor.user', 'datosGenerales', 'apoderadoLegal', 'oficios', 'cita'])
             ->latest()
@@ -74,86 +87,34 @@ class ProveedorService
             return null;
         }
 
+        $informacionEstado = $this->estadosService->obtenerInformacionCompleta($tramite->estado);
+
         $detalles = [
             'tramite' => $tramite,
             'dias_transcurridos' => $tramite->created_at->diffInDays(now()),
-            'estado_color' => $this->getEstadoColor($tramite->estado),
-            'estado_descripcion' => $this->getEstadoDescripcion($tramite->estado),
-            'siguiente_paso' => $this->getSiguientePaso($tramite->estado),
+            'estado_color' => $informacionEstado['color'],
+            'estado_descripcion' => $informacionEstado['descripcion'],
+            'siguiente_paso' => $informacionEstado['siguiente_paso'],
             'puede_editar' => in_array($tramite->estado, ['Para_Correccion', 'Pendiente'])
         ];
 
         // Si el estado es Por_Cotejar, incluir información de la cita
-        if ($tramite->estado === 'Por_Cotejar') {
+        if ($tramite->estado === 'Por_Cotejar' && $tramite->cita) {
             $cita = $tramite->cita;
-            if ($cita) {
-                $detalles['cita'] = [
-                    'id' => $cita->id,
-                    'fecha_cita' => $cita->fecha_cita,
-                    'tipo_cita' => $cita->tipo_cita,
-                    'estado' => $cita->estado,
-                    'motivo' => $cita->motivo,
-                    'observaciones' => $cita->observaciones
-                ];
-            }
+            $detalles['cita'] = [
+                'id' => $cita->id,
+                'fecha_cita' => $cita->fecha_cita,
+                'tipo_cita' => $cita->tipo_cita,
+                'estado' => $cita->estado,
+                'motivo' => $cita->motivo,
+                'observaciones' => $cita->observaciones
+            ];
         }
 
         return $detalles;
     }
 
-    /**
-     * Obtener el color CSS para el estado del trámite
-     */
-    private function getEstadoColor(string $estado): string
-    {
-        return match($estado) {
-            'Pendiente' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-            'En_Revision' => 'bg-blue-100 text-blue-800 border-blue-200',
-            'Para_Correccion' => 'bg-amber-100 text-amber-800 border-amber-200',
-            'Por_Cotejar' => 'bg-purple-100 text-purple-800 border-purple-200',
-            'Cancelado' => 'bg-gray-100 text-gray-800 border-gray-200',
-            'Enviado' => 'bg-blue-100 text-blue-800 border-blue-200',
-            'Aprobado' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
-            'Rechazado' => 'bg-red-100 text-red-800 border-red-200',
-            default => 'bg-gray-100 text-gray-800 border-gray-200'
-        };
-    }
 
-    /**
-     * Obtener descripción amigable del estado
-     */
-    private function getEstadoDescripcion(string $estado): string
-    {
-        return match($estado) {
-            'Pendiente' => 'Su trámite está en revisión por el equipo del padrón de proveedores.',
-            'En_Revision' => 'Su expediente está siendo revisado minuciosamente por nuestro equipo técnico.',
-            'Para_Correccion' => 'Su trámite requiere correcciones. Revise las observaciones del equipo administrativo.',
-            'Por_Cotejar' => 'Su documentación está siendo cotejada y verificada por nuestro equipo especializado.',
-            'Cancelado' => 'Su trámite ha sido cancelado. Puede consultar los motivos o iniciar un nuevo proceso.',
-            'Enviado' => 'Su trámite ha sido enviado y está pendiente de revisión inicial.',
-            'Aprobado' => 'Su trámite ha sido aprobado exitosamente.',
-            'Rechazado' => 'Su trámite ha sido rechazado. Revise las observaciones.',
-            default => 'Estado del trámite no reconocido.'
-        };
-    }
-
-    /**
-     * Obtener el siguiente paso sugerido
-     */
-    private function getSiguientePaso(string $estado): string
-    {
-        return match($estado) {
-            'Pendiente' => 'Espere a que un especialista revise su solicitud. Le notificaremos cualquier actualización.',
-            'En_Revision' => 'Su trámite está siendo evaluado minuciosamente. Manténgase atento a las notificaciones.',
-            'Para_Correccion' => 'Revise las observaciones específicas y corrija la información señalada antes de reenviar.',
-            'Por_Cotejar' => 'Su documentación está en proceso de verificación. Este proceso puede tomar algunos días.',
-            'Cancelado' => 'Contacte al área de soporte para conocer los motivos o inicie un nuevo proceso.',
-            'Enviado' => 'Su trámite ha sido recibido y será asignado a un especialista para revisión.',
-            'Aprobado' => 'Su trámite ha sido completado exitosamente.',
-            'Rechazado' => 'Revise las observaciones y puede iniciar un nuevo proceso si es necesario.',
-            default => 'Contacte al área de soporte para más información.'
-        };
-    }
 
     /**
      * Obtener quién debe presentarse según el tipo de persona del trámite
@@ -185,59 +146,7 @@ class ProveedorService
 
     public function determinarTramitesDisponibles($proveedor): array
     {
-        $defaults = [
-            'inscripcion' => false,
-            'renovacion' => false,
-            'actualizacion' => false,
-            'is_administrative' => false,
-            'message' => '',
-            'estado_vigencia' => null,
-            'tiene_tramite_pendiente' => false,
-            'tramite_pendiente' => null,
-        ];
-
-        // Verificar si tiene trámites pendientes
-        if ($this->tieneTramitesPendientes($proveedor)) {
-            $defaults['tiene_tramite_pendiente'] = true;
-            $defaults['tramite_pendiente'] = $this->getDetallesTramitePendiente($proveedor);
-            return $defaults;
-        }
-
-        if (! $proveedor) {
-            $defaults['inscripcion'] = true;
-            $defaults['message'] = 'Para comenzar, realice su inscripción al padrón de proveedores.';
-
-            return $defaults;
-        }
-
-        $defaults['estado_vigencia'] = $this->getEstadoVigencia($proveedor);
-        $estado = ucfirst(strtolower($proveedor?->estado_padron ?? ''));
-
-        switch ($estado) {
-            case 'Pendiente':
-            case 'Vencido':
-            case 'Inactivo':
-                $defaults['inscripcion'] = true;
-                $defaults['message'] = 'Su registro está '.strtolower($estado).'. Debe realizar el proceso de inscripción.';
-                break;
-
-            case 'Activo':
-                if ($this->estaEnPeriodoRenovacion($proveedor)) {
-                    $defaults['renovacion'] = true;
-                    $defaults['message'] = 'Su registro está próximo a vencer. Por favor, realice la renovación.';
-                } else {
-                    $defaults['actualizacion'] = true;
-                    $defaults['message'] = 'Su registro se encuentra activo. Puede actualizar su información si lo necesita.';
-                }
-                break;
-
-            default:
-                $defaults['inscripcion'] = true;
-                $defaults['message'] = 'No reconocemos el estado de su registro. Por favor, inicie el proceso de inscripción.';
-                break;
-        }
-
-        return $defaults;
+        return $this->tramitesDisponiblesService->determinar($proveedor);
     }
 
     /**
@@ -250,44 +159,7 @@ class ProveedorService
         return $proveedor?->estado_padron === 'Activo';
     }
 
-    /**
-     * Obtiene el estado de vigencia del proveedor
-     */
-    private function getEstadoVigencia($proveedor): ?string
-    {
-        if (! $proveedor || ! $proveedor->fecha_vencimiento_padron) {
-            return null;
-        }
 
-        $hoy = now()->toDateString();
-        $vencimiento = $proveedor->fecha_vencimiento_padron->toDateString();
-
-        if ($vencimiento < $hoy) {
-            return 'vencido';
-        }
-
-        $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
-
-        if ($diasParaVencer <= 7) {
-            return 'por_vencer';
-        }
-
-        return 'vigente';
-    }
-
-    /**
-     * Verifica si el proveedor está en período de renovación (30 días antes del vencimiento)
-     */
-    private function estaEnPeriodoRenovacion($proveedor): bool
-    {
-        if (! $proveedor || ! $proveedor->fecha_vencimiento_padron || $proveedor?->estado_padron !== 'Activo') {
-            return false;
-        }
-
-        $diasParaVencer = now()->diffInDays($proveedor->fecha_vencimiento_padron, false);
-
-        return $diasParaVencer <= 7 && $diasParaVencer >= 0;
-    }
 
     /**
      * Calcula el tipo de persona basado en el RFC del proveedor
@@ -316,179 +188,260 @@ class ProveedorService
      */
     public function aprobarTramite(Tramite $tramite): array
     {
+        return $this->aprobacionService->aprobar($tramite);
+    }
+
+    // ========== MÉTODOS DE BÚSQUEDA ==========
+
+    /**
+     * Buscar proveedor por RFC
+     */
+    public function buscarPorRFC(string $rfc): ?Proveedor
+    {
+        return $this->busquedaService->buscarPorRFC($rfc);
+    }
+
+    /**
+     * Buscar proveedor por correo
+     */
+    public function buscarPorCorreo(string $correo): ?Proveedor
+    {
+        return $this->busquedaService->buscarPorCorreo($correo);
+    }
+
+    /**
+     * Obtener proveedores con filtros
+     */
+    public function obtenerConFiltros(array $filtros = [])
+    {
+        return $this->busquedaService->obtenerConFiltros($filtros);
+    }
+
+    /**
+     * Obtener estadísticas de proveedores
+     */
+    public function obtenerEstadisticas(): array
+    {
+        return $this->busquedaService->obtenerEstadisticas();
+    }
+
+    /**
+     * Obtener proveedores próximos a vencer
+     */
+    public function getProveedoresProximosAVencer(int $diasAnticipacion = 30)
+    {
+        return $this->busquedaService->obtenerProximosAVencer($diasAnticipacion);
+    }
+
+    /**
+     * Verificar si un proveedor está próximo a vencer
+     */
+    public function estaProximoAVencer(Proveedor $proveedor, int $diasAnticipacion = 30): bool
+    {
+        return $this->busquedaService->estaProximoAVencer($proveedor, $diasAnticipacion);
+    }
+
+    // ========== MÉTODOS DE GESTIÓN ==========
+
+    /**
+     * Crear o obtener proveedor existente para un usuario
+     */
+    public function createOrGetProveedor(User $user, array $data = []): Proveedor
+    {
+        return $this->gestionService->crearObtenerProveedor($user, $data);
+    }
+
+    /**
+     * Crear un nuevo proveedor completo
+     */
+    public function crearProveedor(array $data): Proveedor
+    {
+        return $this->gestionService->crearProveedor($data);
+    }
+
+    /**
+     * Actualizar proveedor
+     */
+    public function actualizarProveedor(Proveedor $proveedor, array $data): Proveedor
+    {
+        return $this->gestionService->actualizarProveedor($proveedor, $data);
+    }
+
+    /**
+     * Activar proveedor (cambiar estado y asignar número PV)
+     */
+    public function activarProveedor(Proveedor $proveedor, ?string $fechaVencimiento = null): Proveedor
+    {
+        return $this->gestionService->activarProveedor($proveedor, $fechaVencimiento);
+    }
+
+    /**
+     * Cambiar estado del proveedor
+     */
+    public function cambiarEstado(Proveedor $proveedor, string $nuevoEstado, ?string $observaciones = null): Proveedor
+    {
+        return $this->gestionService->cambiarEstado($proveedor, $nuevoEstado, $observaciones);
+    }
+
+    /**
+     * Eliminar proveedor
+     */
+    public function eliminarProveedor(Proveedor $proveedor): bool
+    {
+        return $this->gestionService->eliminarProveedor($proveedor);
+    }
+
+    /**
+     * Obtener estadísticas detalladas de un proveedor
+     */
+    public function getEstadisticasProveedor(Proveedor $proveedor): array
+    {
+        return $this->gestionService->obtenerEstadisticasProveedor($proveedor);
+    }
+
+    // ========== MÉTODOS DE TRÁMITES ==========
+
+    /**
+     * Verificar si un usuario puede realizar un tipo de trámite
+     */
+    public function puedeRealizarTramite(User $user, string $tipoTramite): array
+    {
+        $proveedor = $this->getProveedorByUser();
+        
+        if (!$proveedor) {
+            return [
+                'puede' => false,
+                'mensaje' => 'No tiene un proveedor registrado'
+            ];
+        }
+
+        $tramitesDisponibles = $this->determinarTramitesDisponibles($proveedor);
+        
+        return [
+            'puede' => in_array($tipoTramite, $tramitesDisponibles['disponibles'] ?? []),
+            'mensaje' => $tramitesDisponibles['message'] ?? 'No puede realizar este trámite'
+        ];
+    }
+
+    /**
+     * Obtener resumen de trámites disponibles para un usuario
+     */
+    public function getTramitesDisponibles(User $user): array
+    {
+        $proveedor = $this->getProveedorByUser();
+        return $this->determinarTramitesDisponibles($proveedor);
+    }
+
+    /**
+     * Generar número PV único
+     */
+    public function generarNumeroPV(): string
+    {
+        return app(\App\Services\Proveedores\NumerosPvService::class)->generarNuevoPv();
+    }
+
+    /**
+     * Asignar número PV a proveedor
+     */
+    public function asignarNumeroPV(Proveedor $proveedor): Proveedor
+    {
+        $numeroPV = $this->generarNumeroPV();
+        $proveedor->update(['pv_numero' => $numeroPV]);
+        return $proveedor;
+    }
+
+    // ========== MÉTODOS DE DATOS DEL ÚLTIMO TRÁMITE APROBADO ==========
+    
+    /**
+     * Obtiene el último trámite aprobado del proveedor con todos sus datos relacionados
+     */
+    public function obtenerUltimoTramiteAprobado(Proveedor $proveedor): ?Tramite
+    {
+        return $this->datosTramiteAprobadoService->obtenerUltimoTramiteAprobado($proveedor);
+    }
+
+    /**
+     * Obtiene los datos generales del último trámite aprobado
+     */
+    public function obtenerDatosGeneralesUltimoTramite(Proveedor $proveedor): ?array
+    {
+        return $this->datosTramiteAprobadoService->obtenerSoloDatosGenerales($proveedor);
+    }
+
+    /**
+     * Obtiene información completa del último trámite aprobado incluyendo datos generales
+     */
+    public function obtenerInformacionCompletaUltimoTramite(Proveedor $proveedor): ?array
+    {
+        return $this->datosTramiteAprobadoService->obtenerInformacionCompletaUltimoTramite($proveedor);
+    }
+
+    /**
+     * Verifica si el proveedor tiene algún trámite aprobado
+     */
+    public function tieneTramiteAprobado(Proveedor $proveedor): bool
+    {
+        return $this->datosTramiteAprobadoService->tieneTramiteAprobado($proveedor);
+    }
+
+    /**
+     * Obtiene la fecha del último trámite aprobado
+     */
+    public function obtenerFechaUltimoTramiteAprobado(Proveedor $proveedor): ?string
+    {
+        return $this->datosTramiteAprobadoService->obtenerFechaUltimoTramiteAprobado($proveedor);
+    }
+
+    /**
+     * Obtiene el tipo del último trámite aprobado
+     */
+    public function obtenerTipoUltimoTramiteAprobado(Proveedor $proveedor): ?string
+    {
+        return $this->datosTramiteAprobadoService->obtenerTipoUltimoTramiteAprobado($proveedor);
+    }
+
+    /**
+     * Obtener todos los datos completos del último trámite aprobado
+     */
+    public function obtenerDatosCompletosUltimoTramite(Proveedor $proveedor): ?array
+    {
         try {
-            DB::beginTransaction();
-
-            $resultado = $this->procesarTramite($tramite);
+            $ultimoTramite = $this->obtenerUltimoTramiteAprobado($proveedor);
             
-            if ($resultado['success']) {
-                // Crear oficio de aprobación
-                $oficioService = app(OficioService::class);
-                $oficio = $oficioService->crearOficioAprobacion($tramite);
-                
-                // Generar PDF del oficio
-                $oficioPdfController = app(\App\Http\Controllers\OficioPdfController::class);
-                $pdfResponse = $oficioPdfController->generarPdf($oficio);
-                
-                // Guardar la URL del PDF generado
-                if ($pdfResponse) {
-                    // Crear un archivo temporal y guardar la URL
-                    $pdfPath = 'oficios/oficio_' . $oficio->numero_oficio . '.pdf';
-                    \Storage::put('public/' . $pdfPath, $pdfResponse->getContent());
-                    
-                    $oficio->update([
-                        'url_documento' => $pdfPath
-                    ]);
-                }
-
-                DB::commit();
-
-                return array_merge($resultado, [
-                    'oficio_creado' => true,
-                    'numero_oficio' => $oficio->numero_oficio,
-                    'oficio_id' => $oficio->id
-                ]);
+            if (!$ultimoTramite) {
+                return null;
             }
 
-            DB::rollBack();
-            return $resultado;
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error al aprobar trámite', [
-                'tramite_id' => $tramite->id,
-                'error' => $e->getMessage()
+            // Cargar las relaciones que realmente existen en el modelo Tramite
+            $tramiteCompleto = $ultimoTramite->load([
+                'datosGenerales',
+                'apoderadoLegal',
+                'direccion.coordenadas', // Cargar también las coordenadas
+                'accionistas',
+                'actividades',
+                'datosConstitutivos',
+                'archivos',
+                'revisionSecciones'
             ]);
 
             return [
-                'success' => false,
-                'message' => 'Error al procesar la aprobación: ' . $e->getMessage()
+                'tramite' => $tramiteCompleto,
+                'datosGenerales' => $tramiteCompleto->datosGenerales,
+                'apoderadoLegal' => $tramiteCompleto->apoderadoLegal,
+                'direccion' => $tramiteCompleto->direccion,
+                'accionistas' => $tramiteCompleto->accionistas,
+                'actividadesEconomicas' => $tramiteCompleto->actividades, // Cambiado de actividadesEconomicas a actividades
+                'constitucion' => $tramiteCompleto->datosConstitutivos, // Cambiado de constitucion a datosConstitutivos
+                'documentos' => $tramiteCompleto->archivos, // Cambiado de documentos a archivos
+                'estadoSeccion' => $tramiteCompleto->revisionSecciones // Cambiado de estadoSeccion a revisionSecciones
             ];
+            
+        } catch (\Exception $e) {
+            Log::error('Error al obtener datos completos del último trámite: ' . $e->getMessage(), [
+                'proveedor_id' => $proveedor->id,
+                'rfc' => $proveedor->rfc
+            ]);
+            return null;
         }
-    }
-
-    /**
-     * Procesar trámite según su tipo
-     */
-    private function procesarTramite(Tramite $tramite): array
-    {
-        $proveedor = $tramite->proveedor;
-        $tipoTramite = $tramite->tipo_tramite;
-        $resultado = [
-            'success' => false,
-            'message' => '',
-            'pv_asignado' => null,
-            'fecha_vencimiento' => null
-        ];
-
-        // Actualizar estado del trámite
-        $tramite->update([
-            'estado' => 'Aprobado',
-            'fecha_aprobacion' => now(),
-            'revisado_por' => auth()->id()
-        ]);
-
-        switch ($tipoTramite) {
-            case 'Inscripcion':
-                $resultado = $this->procesarInscripcion($proveedor);
-                break;
-            case 'Renovacion':
-                $resultado = $this->procesarRenovacion($proveedor);
-                break;
-            case 'Actualizacion':
-                $resultado = $this->procesarActualizacion($proveedor);
-                break;
-            default:
-                $resultado['message'] = 'Tipo de trámite no reconocido';
-                break;
-        }
-
-        return $resultado;
-    }
-
-    /**
-     * Procesar inscripción: asignar nuevo PV y fecha de alta
-     */
-    private function procesarInscripcion(Proveedor $proveedor): array
-    {
-        $nuevoPV = $this->generarNuevoPV();
-        $fechaActual = now();
-        
-        $proveedor->update([
-            'pv_numero' => $nuevoPV,
-            'estado_padron' => 'Activo',
-            'alta_al_padron' => $fechaActual,
-            'fecha_vencimiento_padron' => $fechaActual->addYear(),
-            'fecha_actualizacion' => $fechaActual
-        ]);
-
-        return [
-            'success' => true,
-            'message' => 'Inscripción aprobada exitosamente',
-            'pv_asignado' => $nuevoPV,
-            'fecha_vencimiento' => $proveedor->fecha_vencimiento_padron->format('Y-m-d')
-        ];
-    }
-
-    /**
-     * Procesar renovación: mantener PV, actualizar fecha de vencimiento
-     */
-    private function procesarRenovacion(Proveedor $proveedor): array
-    {
-        $fechaVencimientoOriginal = $proveedor->fecha_vencimiento_padron;
-        $nuevaFechaVencimiento = $fechaVencimientoOriginal->addYear();
-
-        $proveedor->update([
-            'estado_padron' => 'Activo',
-            'fecha_vencimiento_padron' => $nuevaFechaVencimiento,
-            'fecha_actualizacion' => now()
-        ]);
-
-        return [
-            'success' => true,
-            'message' => 'Renovación aprobada exitosamente',
-            'pv_asignado' => $proveedor->pv_numero,
-            'fecha_vencimiento' => $nuevaFechaVencimiento->format('Y-m-d')
-        ];
-    }
-
-    /**
-     * Procesar actualización: mantener PV y fecha de vencimiento
-     */
-    private function procesarActualizacion(Proveedor $proveedor): array
-    {
-        $proveedor->update([
-            'estado_padron' => 'Activo',
-            'fecha_actualizacion' => now()
-        ]);
-
-        return [
-            'success' => true,
-            'message' => 'Actualización aprobada exitosamente',
-            'pv_asignado' => $proveedor->pv_numero,
-            'fecha_vencimiento' => $proveedor->fecha_vencimiento_padron->format('Y-m-d')
-        ];
-    }
-
-    /**
-     * Generar nuevo PV continuando la secuencia del último registrado
-     */
-    private function generarNuevoPV(): string
-    {
-        $ultimoProveedor = Proveedor::whereNotNull('pv_numero')
-            ->where('pv_numero', 'like', 'PV%')
-            ->orderByRaw('CAST(SUBSTRING(pv_numero, 3) AS UNSIGNED) DESC')
-            ->first();
-
-        if (!$ultimoProveedor || !$ultimoProveedor->pv_numero) {
-            return 'PV0001';
-        }
-
-        // Extraer el número del último PV
-        $numeroActual = (int) substr($ultimoProveedor->pv_numero, 2);
-        $nuevoNumero = $numeroActual + 1;
-        
-        // Formatear con ceros a la izquierda (mínimo 4 dígitos)
-        return 'PV' . str_pad($nuevoNumero, 4, '0', STR_PAD_LEFT);
     }
 }

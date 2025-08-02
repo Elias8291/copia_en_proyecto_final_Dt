@@ -71,6 +71,34 @@ class RegisterController extends Controller
                 'sat_nombre' => $request->sat_nombre
             ]);
 
+            $correo = $request->sat_email ?? $request->email;
+            
+            // Verificar si ya existe un usuario con este correo
+            $existingUser = User::where('correo', $correo)->first();
+
+            if ($existingUser) {
+                // Si existe y ya está verificado, mostrar error
+                if ($existingUser->verification) {
+                    Log::warning('Intento de registro con correo ya verificado', [
+                        'email' => $correo,
+                        'user_id' => $existingUser->id
+                    ]);
+                    
+                    return redirect()->back()
+                        ->withInput($request->except('password', 'password_confirmation'))
+                        ->withErrors(['email' => 'Este correo electrónico ya está registrado y verificado.']);
+                }
+
+                // Si existe pero NO está verificado, actualizar datos y reenviar correo
+                Log::info('Usuario no verificado encontrado, actualizando datos y reenviando correo', [
+                    'email' => $correo,
+                    'user_id' => $existingUser->id
+                ]);
+
+                return $this->handleUnverifiedUser($existingUser, $request);
+            }
+
+            // Si no existe, crear nuevo usuario
             $data = [
                 'email' => $request->email,
                 'password' => $request->password,
@@ -84,7 +112,7 @@ class RegisterController extends Controller
             // Redirigir con session flash para mostrar el modal
             return redirect()->route('register')->with([
                 'showSuccessModal' => true,
-                'userEmail' => $request->email
+                'userEmail' => $correo
             ]);
 
         } catch (\Exception $e) {
@@ -97,6 +125,69 @@ class RegisterController extends Controller
             return redirect()->back()
                 ->withInput($request->except('password', 'password_confirmation'))
                 ->with('error', 'Error al registrar usuario. Por favor, inténtalo de nuevo.');
+        }
+    }
+
+    /**
+     * Manejar usuario existente no verificado
+     */
+    protected function handleUnverifiedUser(User $user, RegisterRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $emailPos = strpos($request->email, '@');
+            $nombre = $request->sat_nombre ?? 'Usuario ' . ($emailPos !== false ? substr($request->email, 0, $emailPos) : $request->email);
+            $correo = $request->sat_email ?? $request->email;
+            $rfc = $request->sat_rfc ?? null;
+
+            // Actualizar datos del usuario existente
+            $user->update([
+                'nombre' => $nombre,
+                'correo' => $correo,
+                'password' => Hash::make($request->password),
+                'rfc' => !empty($rfc) ? strtoupper($rfc) : null,
+                'verification_token' => Str::random(60), // Generar nuevo token
+                'updated_at' => now()
+            ]);
+
+            // Reenviar correo de verificación con nuevo token
+            $verificationUrl = url('/verify-email/' . $user->verification_token);
+
+            Mail::send('emails.verify-email', [
+                'user' => $user,
+                'verificationUrl' => $verificationUrl,
+                'expirationHours' => 24
+            ], function ($message) use ($user) {
+                $message->to($user->correo, $user->nombre)
+                        ->subject('Verifica tu cuenta - Padrón de Proveedores');
+            });
+
+            Log::info('Datos actualizados y correo reenviado para usuario no verificado', [
+                'user_id' => $user->id,
+                'email' => $user->correo,
+                'nuevo_nombre' => $nombre,
+                'nuevo_rfc' => $rfc
+            ]);
+
+            DB::commit();
+
+            // Redirigir con session flash para mostrar el modal
+            return redirect()->route('register')->with([
+                'showSuccessModal' => true,
+                'userEmail' => $correo,
+                'isResend' => true
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al actualizar usuario no verificado: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'user_id' => $user->id,
+                'request_data' => $request->all()
+            ]);
+            throw $e;
         }
     }
 

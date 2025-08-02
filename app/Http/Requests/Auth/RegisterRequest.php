@@ -26,7 +26,14 @@ class RegisterRequest extends FormRequest
 
         return [
             'document' => 'nullable|file|mimes:pdf,png,jpg,jpeg|max:5120',
-            'email' => 'required|email|max:255|unique:users,correo',
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('users', 'correo')->where(function ($query) {
+                    return $query->where('verification', true);
+                })
+            ],
             'password' => 'required|string|min:8|confirmed',
             'qr_url' => 'nullable|string',
             'sat_rfc' => 'nullable|string|max:13',

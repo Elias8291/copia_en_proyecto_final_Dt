@@ -41,18 +41,8 @@ class FormNavigator {
     }
 
     setupNavigationButtons() {
-        const btnSiguiente = document.getElementById('btn-siguiente');
-        const btnAnterior = document.getElementById('btn-anterior');
-
-        if (btnSiguiente) {
-            btnSiguiente.addEventListener('click', () => this.nextStep());
-        }
-
-        if (btnAnterior) {
-            btnAnterior.addEventListener('click', () => this.previousStep());
-        }
-
-        // NO TOCAR EL BOTÓN DE ENVÍO - dejar que Laravel lo maneje completamente
+        // Los botones serán manejados por el form-validator
+        // NO agregar event listeners aquí para evitar conflictos
     }
 
     showStep(step) {
@@ -81,12 +71,14 @@ class FormNavigator {
     }
 
     nextStep() {
+        // Solo navegar sin validar (la validación se hace en form-validator)
         if (this.currentStep < this.totalSteps) {
             this.showStep(this.currentStep + 1);
         }
     }
 
     previousStep() {
+        // Solo navegar sin validar (la validación se hace en form-validator)
         if (this.currentStep > 1) {
             this.showStep(this.currentStep - 1);
         }

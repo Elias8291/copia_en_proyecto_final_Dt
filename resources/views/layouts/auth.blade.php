@@ -7,267 +7,54 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Padrón de Proveedores de Oaxaca')</title>
     
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
-    
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <!-- Configuración de Tailwind -->
-    {{--
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#9d2449',
-                        'primary-dark': '#7a1d37',
-                        'primary-light': '#b83055',
-                        textDark: '#1f2937'
-                    },
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif']
-                    }
-                }
-            }
-        }
-    </script>
-    --}}
 
     <style>
-        /* Animaciones personalizadas */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-                transform: scale(1);
-            }
-            to {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-        }
-
-        .animate-fadeIn {
-            animation: fadeIn 0.3s ease-out;
-        }
-
-        .animate-fadeOut {
-            animation: fadeOut 0.3s ease-out;
-        }
-
-        /* Fondo elegante profesional */
-        .bg-elegant-pattern {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, 
-                #ffffff 0%, 
-                #f8fafc 20%, 
-                #f1f5f9 40%, 
-                #e2e8f0 60%, 
-                #f8fafc 80%, 
-                #ffffff 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .bg-elegant-pattern::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('/images/logoNegro.png');
-            background-repeat: repeat;
-            background-size: 180px auto;
-            opacity: 0.04;
-            z-index: 2;
-            animation: logoFloat 30s ease-in-out infinite;
-        }
-
-        @keyframes logoFloat {
-            0% {
-                transform: translateY(0) scale(1);
-            }
-            50% {
-                transform: translateY(-10px) scale(1.02);
-            }
-            100% {
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* Elementos decorativos flotantes */
-        .floating-elements {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 2;
-            overflow: hidden;
-        }
-
-        .floating-element {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle at center, rgba(157, 36, 73, 0.03) 0%, transparent 70%);
-            border-radius: 50%;
-            animation: float 20s infinite;
-        }
-
-        .floating-element:nth-child(1) {
-            top: 10%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .floating-element:nth-child(2) {
-            top: 60%;
-            right: 15%;
-            animation-delay: -5s;
-        }
-
-        .floating-element:nth-child(3) {
-            bottom: 10%;
-            left: 20%;
-            animation-delay: -10s;
-        }
-
-        .floating-element:nth-child(4) {
-            top: 30%;
-            right: 30%;
-            animation-delay: -15s;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform: translate(0, 0) rotate(0deg) scale(1);
-            }
-            25% {
-                transform: translate(10px, 10px) rotate(5deg) scale(1.1);
-            }
-            50% {
-                transform: translate(-5px, 15px) rotate(-5deg) scale(0.95);
-            }
-            75% {
-                transform: translate(-15px, -5px) rotate(3deg) scale(1.05);
-            }
-        }
-
-        /* Partículas decorativas */
-        .decorative-particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 3;
-        }
-
-        .particle {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: rgba(157, 36, 73, 0.1);
-            border-radius: 50%;
-            animation: particleFloat 15s infinite;
-        }
-
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }
+        @keyframes logoFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-10px) scale(1.02); } }
+        @keyframes float { 0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); } 25% { transform: translate(10px, 10px) rotate(5deg) scale(1.1); } 50% { transform: translate(-5px, 15px) rotate(-5deg) scale(0.95); } 75% { transform: translate(-15px, -5px) rotate(3deg) scale(1.05); } }
+        @keyframes particleFloat { 0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.3; } 25% { transform: translate(50px, -30px) scale(1.2); opacity: 0.6; } 50% { transform: translate(20px, 40px) scale(0.8); opacity: 0.4; } 75% { transform: translate(-40px, 20px) scale(1.1); opacity: 0.5; } }
+        @keyframes slideIn { from { transform: translate(-50%, -100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, -100%); opacity: 0; } }
+        
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        .animate-fadeOut { animation: fadeOut 0.3s ease-out; }
+        
+        .bg-elegant-pattern { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 20%, #f1f5f9 40%, #e2e8f0 60%, #f8fafc 80%, #ffffff 100%); }
+        .bg-elegant-pattern::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 2; background-image: url('/images/logoNegro.png'); background-repeat: repeat; background-size: 180px auto; opacity: 0.04; animation: logoFloat 30s ease-in-out infinite; }
+        
+        .floating-elements { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 2; overflow: hidden; }
+        .floating-element { position: absolute; width: 300px; height: 300px; border-radius: 50%; animation: float 20s infinite; background: radial-gradient(circle at center, rgba(157, 36, 73, 0.03) 0%, transparent 70%); }
+        .floating-element:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .floating-element:nth-child(2) { top: 60%; right: 15%; animation-delay: -5s; }
+        .floating-element:nth-child(3) { bottom: 10%; left: 20%; animation-delay: -10s; }
+        .floating-element:nth-child(4) { top: 30%; right: 30%; animation-delay: -15s; }
+        
+        .decorative-particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 3; }
+        .particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; animation: particleFloat 15s infinite; background: rgba(157, 36, 73, 0.1); }
         .particle:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
         .particle:nth-child(2) { top: 40%; right: 25%; animation-delay: -2s; }
         .particle:nth-child(3) { bottom: 30%; left: 30%; animation-delay: -4s; }
         .particle:nth-child(4) { top: 50%; right: 40%; animation-delay: -6s; }
         .particle:nth-child(5) { bottom: 40%; right: 35%; animation-delay: -8s; }
         .particle:nth-child(6) { top: 30%; left: 35%; animation-delay: -10s; }
-
-        @keyframes particleFloat {
-            0%, 100% {
-                transform: translate(0, 0) scale(1);
-                opacity: 0.3;
-            }
-            25% {
-                transform: translate(50px, -30px) scale(1.2);
-                opacity: 0.6;
-            }
-            50% {
-                transform: translate(20px, 40px) scale(0.8);
-                opacity: 0.4;
-            }
-            75% {
-                transform: translate(-40px, 20px) scale(1.1);
-                opacity: 0.5;
-            }
-        }
-
-        /* Notificaciones */
-        .notification-slide-in {
-            animation: slideIn 0.5s ease-out forwards;
-        }
-
-        .notification-slide-out {
-            animation: slideOut 0.5s ease-out forwards;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translate(-50%, -100%);
-                opacity: 0;
-            }
-            to {
-                transform: translate(-50%, 0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideOut {
-            from {
-                transform: translate(-50%, 0);
-                opacity: 1;
-            }
-            to {
-                transform: translate(-50%, -100%);
-                opacity: 0;
-            }
-        }
-
-        /* Card personalizada */
-        .card-custom {
-            box-shadow: 
-                0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                0 2px 4px -1px rgba(0, 0, 0, 0.06),
-                0 0 0 1px rgba(0, 0, 0, 0.05);
-        }
+        
+        .notification-slide-in { animation: slideIn 0.5s ease-out forwards; }
+        .notification-slide-out { animation: slideOut 0.5s ease-out forwards; }
+        .card-custom { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.05); }
     </style>
+    <script src="{{ asset('js/dom-safety.js') }}"></script>
 </head>
 
 <body class="font-inter text-textDark overflow-x-hidden">
-    <!-- Fondo elegante con degradado y logo -->
     <div class="bg-elegant-pattern"></div>
     
-    <!-- Elementos decorativos flotantes -->
     <div class="floating-elements">
         <div class="floating-element"></div>
         <div class="floating-element"></div>
@@ -275,7 +62,6 @@
         <div class="floating-element"></div>
     </div>
     
-    <!-- Partículas decorativas -->
     <div class="decorative-particles">
         <div class="particle"></div>
         <div class="particle"></div>
@@ -285,13 +71,11 @@
         <div class="particle"></div>
     </div>
     
-    <!-- Contenedor Principal -->
     <div class="min-h-screen flex items-center justify-center p-4 relative z-10">
         <div class="w-full max-w-[1000px] mx-auto">
-            <div class="grid lg:grid-cols-2 min-h-[500px]">
-                <!-- Sección del Carousel -->
+            <div class="grid lg:grid-cols-2 min-h-[500px]">    
                 <div class="hidden lg:block relative overflow-hidden rounded-l-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                    <!-- Carousel Container -->
+                     <!-- Carousel Container -->         
                     <div id="carousel" class="relative w-full h-full group">
                         <!-- Slide 1 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-[1200ms] ease-out opacity-100" data-slide="0">
@@ -324,13 +108,11 @@
                                         <div class="w-16 h-0.5 bg-gradient-to-r from-white/60 to-white/20 mx-auto"></div>
                                     </div>
                                     
-                                    <!-- Descripción -->
                                     <p class="text-sm text-white/90 leading-relaxed font-light">
                                         Plataforma oficial para empresas y personas físicas que desean ser proveedores del Gobierno del Estado de Oaxaca. 
                                         Proceso completamente digital y transparente.
                                     </p>
                                     
-                                    <!-- Badge Oficial -->
                                     <div class="inline-flex items-center space-x-2 px-4 py-2 bg-white/15 backdrop-blur-sm rounded-full border border-white/30">
                                         <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                                         <span class="text-xs text-white/90 font-medium tracking-wide">GOBIERNO DE OAXACA</span>
@@ -339,7 +121,6 @@
                             </div>
                         </div>
 
-                        <!-- Slide 2 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-[1200ms] ease-out opacity-0" data-slide="1">
                             <div class="relative w-full h-full">
                             <img src="{{ asset('images/carrousel2.webp') }}" 
@@ -557,136 +338,49 @@
         </div>
     </div>
 
-    <!-- Scripts -->
     <script>
-        // ===== CARRUSEL SIMPLE Y FUNCIONAL =====
+        let currentSlideIndex = 0, totalSlides = 4, autoSlideTimer = null;
         
-        // Estado del carrusel
-        let currentSlideIndex = 0;
-        const totalSlides = 4;
-        let autoSlideTimer = null;
-
-        // FUNCIÓN ANTERIOR - SIEMPRE DISPONIBLE
-        window.previousSlide = function() {
-            currentSlideIndex = (currentSlideIndex - 1 + totalSlides) % totalSlides;
-            showSlide(currentSlideIndex);
-            restartAutoSlide();
-        };
-
-        // FUNCIÓN SIGUIENTE - SIEMPRE DISPONIBLE  
-        window.nextSlideManual = function() {
-            currentSlideIndex = (currentSlideIndex + 1) % totalSlides;
-            showSlide(currentSlideIndex);
-            restartAutoSlide();
-        };
-
-        // FUNCIÓN IR A SLIDE ESPECÍFICO
-        window.goToSlide = function(index) {
-            currentSlideIndex = index;
-            showSlide(currentSlideIndex);
-            restartAutoSlide();
-        };
-
-        // Mostrar slide específico
+        window.previousSlide = () => { currentSlideIndex = (currentSlideIndex - 1 + totalSlides) % totalSlides; showSlide(currentSlideIndex); restartAutoSlide(); };
+        window.nextSlideManual = () => { currentSlideIndex = (currentSlideIndex + 1) % totalSlides; showSlide(currentSlideIndex); restartAutoSlide(); };
+        window.goToSlide = (index) => { currentSlideIndex = index; showSlide(currentSlideIndex); restartAutoSlide(); };
+        
         function showSlide(index) {
-            
-            // Obtener todos los slides
-            const slides = document.querySelectorAll('.carousel-slide');
-            const dots = document.querySelectorAll('.carousel-dot');
-            
-            if (slides.length === 0) {
-                return;
-            }
-
-            // Actualizar slides
+            const slides = document.querySelectorAll('.carousel-slide'), dots = document.querySelectorAll('.carousel-dot');
+            if (!slides.length) return;
             slides.forEach((slide, i) => {
-                if (i === index) {
-                    // Slide activo
-                    slide.style.opacity = '1';
-                    slide.style.zIndex = '10';
-                    slide.style.visibility = 'visible';
-                } else {
-                    // Slides inactivos
-                    slide.style.opacity = '0';
-                    slide.style.zIndex = '1';
-                    slide.style.visibility = 'hidden';
-                }
+                slide.style.opacity = i === index ? '1' : '0';
+                slide.style.zIndex = i === index ? '10' : '1';
+                slide.style.visibility = i === index ? 'visible' : 'hidden';
             });
-
-            // Actualizar dots
             dots.forEach((dot, i) => {
                 const progress = dot.querySelector('.dot-progress');
                 if (progress) {
-                    if (i === index) {
-                        progress.style.width = '100%';
-                        progress.style.backgroundColor = '#ffffff';
-                        dot.style.opacity = '1';
-                    } else {
-                        progress.style.width = '0%';
-                        progress.style.backgroundColor = 'rgba(255,255,255,0.4)';
-                        dot.style.opacity = '0.7';
-                    }
+                    progress.style.width = i === index ? '100%' : '0%';
+                    progress.style.backgroundColor = i === index ? '#ffffff' : 'rgba(255,255,255,0.4)';
+                    dot.style.opacity = i === index ? '1' : '0.7';
                 }
             });
         }
-
-        // Auto-avance
-        function startAutoSlide() {
-            autoSlideTimer = setInterval(() => {
-                currentSlideIndex = (currentSlideIndex + 1) % totalSlides;
-                showSlide(currentSlideIndex);
-            }, 7000);
-        }
-
-        function restartAutoSlide() {
-            clearInterval(autoSlideTimer);
-            startAutoSlide();
-        }
-
-        // Configurar dots cuando el DOM esté listo
+        
+        function startAutoSlide() { autoSlideTimer = setInterval(() => { currentSlideIndex = (currentSlideIndex + 1) % totalSlides; showSlide(currentSlideIndex); }, 7000); }
+        function restartAutoSlide() { clearInterval(autoSlideTimer); startAutoSlide(); }
+        
         function setupCarousel() {
-            
-            const dots = document.querySelectorAll('.carousel-dot');
-            
-            // Event listeners para dots
-            dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    window.goToSlide(index);
-                });
-            });
-
-            // Pausar en hover
+            document.querySelectorAll('.carousel-dot').forEach((dot, index) => dot.addEventListener('click', () => window.goToSlide(index)));
             const carousel = document.getElementById('carousel');
             if (carousel) {
-                carousel.addEventListener('mouseenter', () => {
-                    clearInterval(autoSlideTimer);
-                });
-                
-                carousel.addEventListener('mouseleave', () => {
-                    startAutoSlide();
-                });
+                carousel.addEventListener('mouseenter', () => clearInterval(autoSlideTimer));
+                carousel.addEventListener('mouseleave', startAutoSlide);
             }
-
-            // Mostrar primer slide
-            showSlide(0);
-            startAutoSlide();
+            showSlide(0); startAutoSlide();
         }
-
-        // Inicializar cuando DOM esté listo
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setupCarousel);
-        } else {
-            setupCarousel();
-        }
+        
+        document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setupCarousel) : setupCarousel();
     </script>
     
-    <!-- Modal de Carga Global -->
     @include('components.loading-modal')
-    
-    <!-- Script del componente de loading global -->
     <script src="{{ asset('js/components/global-loading.js') }}"></script>
-    
-    <!-- Scripts adicionales de las páginas -->
     @stack('scripts')
 </body>
 </html> 

@@ -2,6 +2,10 @@
 
 @section('title', $titulo ?? 'Formulario de Trámite')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/form-validation.css') }}">
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -307,7 +311,9 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/tramites/form-navigator.js') }}"></script>
+<script src="{{ asset('js/tramites/form-validator.js') }}"></script>
+<script src="{{ asset('js/tramites/actividades-validator.js') }}"></script>
+<script src="{{ asset('js/tramites/accionistas-validator.js') }}"></script>
 <script src="{{ asset('js/tramites/handlers/actividades-buscar.js') }}"></script>
 <script src="{{ asset('js/tramites/handlers/documentos-simple.js') }}"></script>
 <script src="{{ asset('js/test-actividades.js') }}"></script>

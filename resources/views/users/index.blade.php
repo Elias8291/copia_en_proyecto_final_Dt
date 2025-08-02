@@ -109,6 +109,7 @@
         :filters="$filters"
         :actions="$actions"
         searchPlaceholder="Buscar usuarios por nombre, email, RFC o rol..."
+        routeKeyName="user"
     />
 </div>
 

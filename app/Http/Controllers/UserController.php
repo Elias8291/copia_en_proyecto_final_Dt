@@ -14,50 +14,34 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        // Obtener usuarios con roles y aplicar filtros
         $query = User::with('roles');
-
-        // Filtro de búsqueda
+    
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nombre', 'like', "%{$search}%")
-                  ->orWhere('correo', 'like', "%{$search}%")
-                  ->orWhere('rfc', 'like', "%{$search}%");
-            });
+            $query->where(fn ($q) => $q->where('nombre', 'like', "%{$request->search}%")
+                ->orWhere('correo', 'like', "%{$request->search}%")
+                ->orWhere('rfc', 'like', "%{$request->search}%"));
         }
-
-        // Filtro por rol
+    
         if ($request->filled('rol')) {
-            $query->whereHas('roles', function ($q) use ($request) {
-                $q->where('name', $request->rol);
-            });
+            $query->whereHas('roles', fn ($q) => $q->where('name', $request->rol));
         }
-
-        // Filtro por estado
-        if ($request->filled('estado')) {
-            if ($request->estado === 'activo') {
-                $query->whereNull('deleted_at');
-            } elseif ($request->estado === 'inactivo') {
-                $query->withTrashed()->whereNotNull('deleted_at');
-            }
-        } else {
-            // Por defecto mostrar solo usuarios activos
-            $query->whereNull('deleted_at');
-        }
-
-        // Ordenar y paginar
-        $users = $query->orderBy('nombre', 'asc')
-            ->paginate(10)
-            ->withQueryString()
-            ->through(function ($user) {
-                // Agregar campos adicionales para el componente
-                $user->email = $user->correo; // Mapear correo a email para el componente
-                $user->rol = $user->roles->first() ? $user->roles->first()->name : 'user';
-                $user->estado = $user->deleted_at ? 'inactivo' : 'activo';
-                return $user;
-            });
-
+    
+        $query->when($request->filled('estado'), fn ($q) => $request->estado === 'activo' 
+            ? $q->whereNull('deleted_at')
+            : $q->withTrashed()->whereNotNull('deleted_at'), 
+            fn ($q) => $q->whereNull('deleted_at'));
+    
+        $users = $query->orderBy('nombre')->paginate(10)->withQueryString()->through(
+            fn ($user) => (object) [
+                'id' => $user->id,
+                'nombre' => $user->nombre,
+                'email' => $user->correo,
+                'rfc' => $user->rfc,
+                'rol' => $user->roles->first()->name ?? 'user',
+                'estado' => $user->deleted_at ? 'inactivo' : 'activo',
+            ]
+        );
+    
         return view('users.index', compact('users'));
     }
 

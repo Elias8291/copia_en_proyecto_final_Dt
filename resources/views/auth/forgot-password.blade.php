@@ -12,7 +12,7 @@
                 <img src="{{ asset('images/logoprin.jpg') }}" alt="Logo" class="w-full h-full object-contain">
             </div>
             <div class="text-center">
-                <span class="text-primary font-bold text-lg block">ADMINISTRACIÓN</span>
+                <span class="text-primary font-bold text-lg block">ADMINISTRACIÓNes</span>
                 <span class="text-gray-600 text-xs font-medium">Gobierno de Oaxaca</span>
             </div>
         </div>
@@ -23,9 +23,9 @@
         </p>
     </div>
 
-    <!-- Mensajes de estado -->
+    <!-- Mensajes de estado (ocultos cuando se usa modal) -->
     @if (session('status'))
-        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg hidden" id="status-message">
             {{ session('status') }}
         </div>
     @endif
@@ -72,4 +72,8 @@
         </a>
     </div>
 </form>
+
+<!-- Modal de confirmación -->
+@include('components.modals.auth.password-reset-sent')
+
 @endsection 

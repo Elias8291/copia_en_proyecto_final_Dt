@@ -1,6 +1,23 @@
 @props(['tipo' => 'inscripcion', 'proveedor' => null, 'editable' => true, 'tipoPersona' => 'Física', 'tramite' => null])
 
 @php
+    // Helper function para obtener tipos de archivo aceptados
+    function getAcceptTypes($tipoArchivo) {
+        $tiposArchivo = [
+            'pdf' => 'application/pdf,.pdf',
+            'png' => 'image/png,.png',
+            'jpg' => 'image/jpeg,image/jpg,.jpg,.jpeg',
+            'jpeg' => 'image/jpeg,.jpeg,.jpg',
+            'doc' => 'application/msword,.doc',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx',
+            'xls' => 'application/vnd.ms-excel,.xls',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx'
+        ];
+        
+        $tipo = strtolower($tipoArchivo);
+        return $tiposArchivo[$tipo] ?? $tipoArchivo;
+    }
+
     // Obtener documentos según el tipo de persona
     try {
         $documentos = \App\Models\CatalogoArchivo::where('es_visible', true)
@@ -139,7 +156,7 @@
                                     <input type="file" 
                                            id="file_{{ $documento->id }}" 
                                            name="documentos[{{ $documento->id }}]" 
-                                           accept="{{ $documento->tipo_archivo }}" 
+                                           accept="{{ getAcceptTypes($documento->tipo_archivo) }}" 
                                            class="hidden {{ $errors->has('documentos.' . $documento->id) ? 'border-red-500 bg-red-50' : '' }}">
                                     @if($errors->has('documentos.' . $documento->id))
                                         <div class="mt-2 flex items-center text-red-600">

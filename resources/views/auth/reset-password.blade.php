@@ -3,7 +3,6 @@
 @section('title', 'Restablecer Contraseña - Padrón de Proveedores de Oaxaca')
 
 @section('content')
-<!-- Header con Logo -->
 <div class="text-center mb-8">
     <div class="flex flex-col items-center justify-center mb-4">
         <div class="w-16 h-16 flex items-center justify-center mb-3">
@@ -21,7 +20,6 @@
     </p>
 </div>
 
-<!-- Formulario de Reset de Contraseña -->
 <div class="bg-white rounded-2xl shadow-card p-8">
     <form method="POST" action="{{ route('password.update') }}" class="space-y-6">
         @csrf
@@ -29,7 +27,6 @@
         <input type="hidden" name="token" value="{{ $token }}">
         <input type="hidden" name="email" value="{{ $email }}">
 
-        <!-- Campo Email (readonly) -->
         <div>
             <label for="email" class="block text-sm font-bold text-gray-700 mb-3">
                 Correo Electrónico
@@ -51,7 +48,6 @@
             </div>
         </div>
 
-        <!-- Campo Nueva Contraseña -->
         <div>
             <label for="password" class="block text-sm font-bold text-gray-700 mb-3">
                 Nueva Contraseña
@@ -77,7 +73,6 @@
             @enderror
         </div>
 
-        <!-- Campo Confirmar Contraseña -->
         <div>
             <label for="password-confirm" class="block text-sm font-bold text-gray-700 mb-3">
                 Confirmar Nueva Contraseña
@@ -117,7 +112,6 @@
     </form>
 </div>
 
-<!-- Link de regreso -->
 <div class="text-center mt-6">
     <a 
         href="{{ route('login') }}" 
@@ -130,7 +124,6 @@
     </a>
 </div>
 
-<!-- Información de seguridad -->
 <div class="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-200">
     <div class="flex">
         <div class="flex-shrink-0">
@@ -147,3 +140,7 @@
     </div>
 </div>
 @endsection 
+
+<script>
+    
+</script>

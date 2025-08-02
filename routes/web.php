@@ -121,6 +121,28 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ============================================================================
+    // MÓDULO DE PROVEEDORES
+    // ============================================================================
+
+    Route::prefix('proveedores')->name('proveedores.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProveedorController::class, 'index'])->name('index');
+        Route::get('/create', [\App\Http\Controllers\ProveedorController::class, 'create'])->name('create');
+        Route::get('/export', [\App\Http\Controllers\ProveedorController::class, 'export'])->name('export');
+        Route::post('/', [\App\Http\Controllers\ProveedorController::class, 'store'])->name('store');
+        Route::get('/{proveedor}', [\App\Http\Controllers\ProveedorController::class, 'show'])->name('show');
+        Route::get('/{proveedor}/edit', [\App\Http\Controllers\ProveedorController::class, 'edit'])->name('edit');
+        Route::put('/{proveedor}', [\App\Http\Controllers\ProveedorController::class, 'update'])->name('update');
+        Route::delete('/{proveedor}', [\App\Http\Controllers\ProveedorController::class, 'destroy'])->name('destroy');
+        Route::post('/{proveedor}/cambiar-estado', [\App\Http\Controllers\ProveedorController::class, 'cambiarEstado'])->name('cambiar-estado');
+        Route::post('/{proveedor}/activar', [\App\Http\Controllers\ProveedorController::class, 'activarProveedor'])->name('activar');
+        
+        // Rutas para obtener datos del último trámite aprobado
+        Route::get('/{proveedor}/datos-generales', [\App\Http\Controllers\ProveedorController::class, 'obtenerDatosGenerales'])->name('datos-generales');
+        Route::get('/{proveedor}/informacion-completa', [\App\Http\Controllers\ProveedorController::class, 'obtenerInformacionCompleta'])->name('informacion-completa');
+        Route::get('/{proveedor}/tramite-details', [\App\Http\Controllers\ProveedorController::class, 'showTramiteDetails'])->name('tramite-details');
+    });
+
+    // ============================================================================
     // MÓDULO DE ROLES
     // ============================================================================
 

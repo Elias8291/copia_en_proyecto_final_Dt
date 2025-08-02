@@ -381,36 +381,39 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            function updateDateTime() {
-                const now = new Date();
-                const hours = now.getHours();
-                const minutes = now.getMinutes();
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                const formattedHours = hours % 12 || 12;
-                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+                    function updateDateTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const formattedHours = hours % 12 || 12;
+            const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
 
-                document.getElementById('currentTime').textContent =
-                    `${formattedHours}:${formattedMinutes} ${ampm}`;
+            // Usar funciones seguras para establecer contenido
+            window.safeSetText('currentTime', `${formattedHours}:${formattedMinutes} ${ampm}`);
 
-                const options = {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                };
-                document.getElementById('currentDate').textContent = now.toLocaleDateString('es-ES', options);
+            const options = {
+                weekday: 'long',
+                year: 'numeric',  
+                month: 'long',
+                day: 'numeric'
+            };
+            window.safeSetText('currentDate', now.toLocaleDateString('es-ES', options));
 
-                const greeting = document.getElementById('greeting');
-                const userName = '{{ auth()->check() ? auth()->user()->name : 'Invitado' }}';
-
-                if (hours < 12) {
-                    greeting.textContent = `Buenos días, ${userName}`;
-                } else if (hours >= 12 && hours < 19) {
-                    greeting.textContent = `Buenas tardes, ${userName}`;
-                } else {
-                    greeting.textContent = `Buenas noches, ${userName}`;
-                }
+            // Saludo seguro
+            const userName = '{{ auth()->check() ? auth()->user()->name : 'Invitado' }}';
+            let greetingText;
+            
+            if (hours < 12) {
+                greetingText = `Buenos días, ${userName}`;
+            } else if (hours >= 12 && hours < 19) {
+                greetingText = `Buenas tardes, ${userName}`;
+            } else {
+                greetingText = `Buenas noches, ${userName}`;
             }
+            
+            window.safeSetText('greeting', greetingText);
+        }
 
             updateDateTime();
             setInterval(updateDateTime, 60000);

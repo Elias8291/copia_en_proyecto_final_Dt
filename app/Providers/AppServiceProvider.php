@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\ProveedorService;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -11,6 +12,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        // Configurar vista por defecto de paginación
+        Paginator::defaultView('pagination::tailwind');
+        
         // Compartir datos del proveedor y trámites en todas las vistas
         View::composer('*', function ($view) {
             if (Auth::check()) {

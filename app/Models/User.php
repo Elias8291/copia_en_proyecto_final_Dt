@@ -34,4 +34,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\Notificacion::class, 'usuario_id');
     }
+
+    /**
+     * Get the email address where password reset links are sent.
+     *
+     * @return string
+     */
+    public function getEmailForPasswordReset()
+    {
+        return $this->correo;
+    }
 }
