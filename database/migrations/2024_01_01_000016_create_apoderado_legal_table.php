@@ -16,6 +16,9 @@ return new class extends Migration
             $table->foreignId('instrumento_notarial_id')->constrained('instrumentos_notariales')->onDelete('cascade');
             $table->string('nombre_apoderado', 255);
             $table->string('rfc', 255);
+            $table->string('numero_escritura_constitutiva_poder', 255)->nullable();
+            $table->string('numero_registro_publico_poder', 255)->nullable();
+            $table->date('fecha_inscripcion_poder')->nullable();
             $table->foreignId('tramite_id')->constrained('tramites')->onDelete('cascade');
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->enum('status', ['pendiente', 'vigente', 'historico', 'rechazado'])->default('pendiente');

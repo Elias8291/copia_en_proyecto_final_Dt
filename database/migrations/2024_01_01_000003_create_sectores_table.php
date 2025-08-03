@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('sectores', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 100);
-            $table->text('descripcion');
+            $table->string('nombre', 255);
+            $table->string('codigo', 10)->nullable();
+            $table->text('descripcion')->nullable();
             $table->timestamps();
         });
     }

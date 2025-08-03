@@ -17,6 +17,11 @@ return new class extends Migration
             $table->foreignId('municipio_id')->constrained('municipios')->onDelete('cascade');
             $table->timestamps();
         });
+
+        // Add foreign key constraint for asentamientos table
+        Schema::table('asentamientos', function (Blueprint $table) {
+            $table->foreign('localidad_id')->references('id')->on('localidades')->onDelete('cascade');
+        });
     }
 
     /**
@@ -24,6 +29,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('asentamientos', function (Blueprint $table) {
+            $table->dropForeign(['localidad_id']);
+        });
+        
         Schema::dropIfExists('localidades');
     }
 }; 

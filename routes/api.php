@@ -2,64 +2,34 @@
 
 use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\Api\QRExtractorController;
-use App\Http\Controllers\CatalogoArchivoController;
+// use App\Http\Controllers\CatalogoArchivoController;
+use App\Http\Controllers\CatalogoActividadController;
 use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\UbicacionController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
 
-// Validation Routes
 Route::controller(\App\Http\Controllers\UserController::class)->group(function () {
     Route::get('/validate/email', 'validateEmail');
     Route::get('/validate/rfc', 'validateRfc');
 });
 
-// Actividades Routes
-Route::controller(ActividadesController::class)->group(function () {
-    Route::get('/actividades/buscar', 'buscar');
-    Route::get('/actividades/por-ids', 'porIds');
-    Route::post('/actividades/validar', 'validar');
-    Route::post('/actividades/rechazar', 'rechazar');
-    Route::get('/actividades/obtener', 'obtener');
-});
-
-// Ubicación Routes
-Route::controller(UbicacionController::class)->group(function () {
-    Route::post('/ubicacion/codigo-postal', 'buscarPorCodigoPostal');
-    Route::get('/ubicacion/estados', 'getEstados');
-    Route::post('/ubicacion/municipios', 'getMunicipiosPorEstado');
-    Route::post('/ubicacion/localidades', 'getLocalidadesPorMunicipio');
-});
-
-Route::middleware(['auth:sanctum'])->prefix('archivos')->name('archivos.')->group(function () {
-    Route::get('/buscar', [CatalogoArchivoController::class, 'buscar'])->name('buscar');
-    Route::get('/estadisticas', [CatalogoArchivoController::class, 'estadisticas'])->name('estadisticas');
-});
-
 // Documentos por tipo de persona (sin autenticación para el modal)
-Route::get('/documentos/{tipoPersona}', [CatalogoArchivoController::class, 'porTipoPersona']);
+// Route::get('/documentos/{tipoPersona}', [CatalogoArchivoController::class, 'porTipoPersona']);
 
 // QR Extraction Route (sin middleware de autenticación)
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
 
-// Rutas de revisión y citas
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/revision/{tramite}/estados', [RevisionController::class, 'obtenerEstados'])->name('api.revision.estados');
-    Route::post('/revision/{tramite}/aprobar', [RevisionController::class, 'aprobarTramite'])->name('api.revision.aprobar');
-    Route::post('/revision/{tramite}/agendar-cita', [RevisionController::class, 'agendarCitaAutomatica'])->name('api.revision.agendar-cita');
-    Route::get('/tramites/{tramite}/cita-activa', [RevisionController::class, 'obtenerCitaActiva'])->name('api.tramites.cita-activa');
-});
+// Catálogo de actividades
+Route::get('/catalogo/actividades', [CatalogoActividadController::class, 'buscar']);
 
+// Ubicación API routes
+Route::prefix('ubicacion')->group(function () {
+    Route::post('/buscar-codigo-postal', [UbicacionController::class, 'buscarPorCodigoPostal']);
+    Route::get('/estados', [UbicacionController::class, 'getEstados']);
+    Route::post('/municipios-por-estado', [UbicacionController::class, 'getMunicipiosPorEstado']);
+    Route::post('/localidades-por-municipio', [UbicacionController::class, 'getLocalidadesPorMunicipio']);
+});
 
 
 

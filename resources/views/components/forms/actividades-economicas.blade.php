@@ -15,83 +15,135 @@
             </div>
         </div>
 
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">
-                        No hay actividades registradas
-                    </h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <p>Para continuar, debe seleccionar al menos una actividad económica.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         @if($editable)
         <div class="space-y-4">
             <div class="border border-gray-200 rounded-lg p-4">
                 <h4 class="text-sm font-semibold text-gray-800 mb-3">Seleccionar Actividades</h4>
                 
-                <div class="space-y-3">
-                    <div class="flex items-center">
-                        <input type="checkbox" name="actividades[]" value="comercio" id="act_comercio" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                        <label for="act_comercio" class="ml-2 block text-sm text-gray-900">
-                            Comercio al por mayor y menor
-                        </label>
+                <!-- Búsqueda en tiempo real -->
+                <div class="mb-4">
+                    <label for="buscar-actividad" class="block text-sm font-medium text-gray-700 mb-2">
+                        Buscar actividad económica
+                    </label>
+                    <div class="relative">
+                        <input type="text" 
+                               id="buscar-actividad" 
+                               class="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                               placeholder="Escriba para buscar actividades...">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
                     </div>
                     
-                    <div class="flex items-center">
-                        <input type="checkbox" name="actividades[]" value="servicios" id="act_servicios" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                        <label for="act_servicios" class="ml-2 block text-sm text-gray-900">
-                            Servicios profesionales
-                        </label>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <input type="checkbox" name="actividades[]" value="manufactura" id="act_manufactura" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                        <label for="act_manufactura" class="ml-2 block text-sm text-gray-900">
-                            Manufactura e industria
-                        </label>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <input type="checkbox" name="actividades[]" value="construccion" id="act_construccion" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                        <label for="act_construccion" class="ml-2 block text-sm text-gray-900">
-                            Construcción
-                        </label>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <input type="checkbox" name="actividades[]" value="transporte" id="act_transporte" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                        <label for="act_transporte" class="ml-2 block text-sm text-gray-900">
-                            Transporte y logística
-                        </label>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <input type="checkbox" name="actividades[]" value="tecnologia" id="act_tecnologia" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
-                        <label for="act_tecnologia" class="ml-2 block text-sm text-gray-900">
-                            Tecnología e informática
-                        </label>
+                    <!-- Resultados de búsqueda -->
+                    <div id="resultados-busqueda" class="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg hidden">
+                        <!-- Los resultados se cargarán aquí dinámicamente -->
                     </div>
                 </div>
                 
-                <div class="mt-4">
-                    <label for="actividad_otra" class="block text-sm font-medium text-gray-700 mb-2">
-                        Otra actividad (especifique)
-                    </label>
-                    <input type="text" name="actividad_otra" id="actividad_otra" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                           placeholder="Describa otra actividad económica">
+                <!-- Actividades seleccionadas -->
+                <div id="actividades-seleccionadas" class="space-y-2">
+                    <!-- Las actividades seleccionadas se mostrarán aquí -->
                 </div>
+                
+                <!-- Input oculto para enviar datos -->
+                <input type="hidden" name="actividades_seleccionadas" id="actividades-json" value="[]">
             </div>
         </div>
+        
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buscarInput = document.getElementById('buscar-actividad');
+            const resultadosDiv = document.getElementById('resultados-busqueda');
+            const actividadesSeleccionadas = document.getElementById('actividades-seleccionadas');
+            const actividadesJson = document.getElementById('actividades-json');
+            
+            let timeoutId;
+            let actividadesSeleccionadasArray = [];
+            
+            // Búsqueda en tiempo real
+            buscarInput.addEventListener('input', function() {
+                clearTimeout(timeoutId);
+                const query = this.value.trim();
+                
+                if (query.length < 2) {
+                    resultadosDiv.classList.add('hidden');
+                    return;
+                }
+                
+                timeoutId = setTimeout(() => {
+                    fetch(`/api/catalogo/actividades?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            mostrarResultados(data);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                }, 300);
+            });
+            
+            function mostrarResultados(actividades) {
+                if (actividades.length === 0) {
+                    resultadosDiv.innerHTML = '<div class="p-3 text-sm text-gray-500">No se encontraron actividades</div>';
+                } else {
+                    resultadosDiv.innerHTML = actividades.map(actividad => `
+                        <div class="p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 actividad-item" 
+                             data-id="${actividad.id}" 
+                             data-nombre="${actividad.nombre}">
+                            <div class="text-sm text-gray-900">${actividad.nombre}</div>
+                        </div>
+                    `).join('');
+                }
+                resultadosDiv.classList.remove('hidden');
+            }
+            
+            // Seleccionar actividad
+            resultadosDiv.addEventListener('click', function(e) {
+                if (e.target.closest('.actividad-item')) {
+                    const item = e.target.closest('.actividad-item');
+                    const id = item.dataset.id;
+                    const nombre = item.dataset.nombre;
+                    
+                    if (!actividadesSeleccionadasArray.find(a => a.id == id)) {
+                        actividadesSeleccionadasArray.push({id, nombre});
+                        actualizarActividadesSeleccionadas();
+                    }
+                    
+                    buscarInput.value = '';
+                    resultadosDiv.classList.add('hidden');
+                }
+            });
+            
+            function actualizarActividadesSeleccionadas() {
+                actividadesSeleccionadas.innerHTML = actividadesSeleccionadasArray.map(actividad => `
+                    <div class="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                        <span class="text-sm text-blue-900">${actividad.nombre}</span>
+                        <button type="button" 
+                                class="text-red-500 hover:text-red-700 text-sm"
+                                onclick="removerActividad(${actividad.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+                
+                actividadesJson.value = JSON.stringify(actividadesSeleccionadasArray);
+            }
+            
+            // Función global para remover actividad
+            window.removerActividad = function(id) {
+                actividadesSeleccionadasArray = actividadesSeleccionadasArray.filter(a => a.id != id);
+                actualizarActividadesSeleccionadas();
+            };
+            
+            // Ocultar resultados al hacer clic fuera
+            document.addEventListener('click', function(e) {
+                if (!buscarInput.contains(e.target) && !resultadosDiv.contains(e.target)) {
+                    resultadosDiv.classList.add('hidden');
+                }
+            });
+        });
+        </script>
         @endif
     </div>
 @else

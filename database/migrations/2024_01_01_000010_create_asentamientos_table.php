@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('asentamientos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 100);
+            $table->string('codigo_postal', 10)->nullable();
+            $table->unsignedBigInteger('localidad_id')->nullable();
             $table->foreignId('tipo_asentamiento_id')->constrained('tipos_asentamiento')->onDelete('cascade');
             $table->timestamps();
         });

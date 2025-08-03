@@ -1,4 +1,22 @@
-@props(['datos' => [], 'editable' => false])
+@props(['datos' => [], 'editable' => false, 'datosConstancia' => null])
+
+@php
+    if ($datosConstancia instanceof \App\ViewModels\TramiteViewModel) {
+        $datosFinales = $datosConstancia->getDatosDomicilioForm($datos);
+    } else {
+        $datosFinales = $datosConstancia ? [
+            'codigo_postal' => $datosConstancia['domicilio']['codigo_postal'] ?? ($datos['codigo_postal'] ?? ''),
+            'estado' => $datosConstancia['domicilio']['entidad_federativa'] ?? ($datos['estado'] ?? ''),
+            'municipio' => $datosConstancia['domicilio']['municipio'] ?? ($datos['municipio'] ?? ''),
+            'asentamiento' => $datosConstancia['domicilio']['colonia'] ?? ($datos['asentamiento'] ?? ''),
+            'calle' => $datosConstancia['domicilio']['calle'] ?? ($datos['calle'] ?? ''),
+            'numero_exterior' => $datosConstancia['domicilio']['numero_exterior'] ?? ($datos['numero_exterior'] ?? ''),
+            'numero_interior' => $datosConstancia['domicilio']['numero_interior'] ?? ($datos['numero_interior'] ?? ''),
+            'entre_calle' => $datos['entre_calle'] ?? '',
+            'y_calle' => $datos['y_calle'] ?? '',
+        ] : $datos;
+    }
+@endphp
 
 <div class="space-y-6" {{ $attributes }} data-seccion="domicilio">
     <!-- Título de la sección -->
@@ -32,10 +50,16 @@
                     </div>
                     <input type="text"
                         name="codigo_postal"
-                        value="{{ $datos['codigo_postal'] ?? old('codigo_postal') }}"
+                        id="codigo_postal"
+                        value="{{ $datosFinales['codigo_postal'] ?? old('codigo_postal') }}"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono"
                         placeholder="12345"
                         maxlength="5">
+                    <div id="loading-cp" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
+                        <span class="text-sm text-gray-500">
+                            <i class="fas fa-spinner fa-spin"></i> Buscando...
+                        </span>
+                    </div>
                 </div>
             </div>
 
@@ -48,15 +72,13 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-map-marked-alt text-gray-500"></i>
                     </div>
-                    <select name="estado_id"
+                    <select name="estado_id" id="estado_id"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
-                        <option value="">Seleccione estado</option>
-                        <option value="1" {{ ($datos['estado_id'] ?? old('estado_id')) == '1' ? 'selected' : '' }}>Ciudad de México</option>
-                        <option value="2" {{ ($datos['estado_id'] ?? old('estado_id')) == '2' ? 'selected' : '' }}>Estado de México</option>
-                        <option value="3" {{ ($datos['estado_id'] ?? old('estado_id')) == '3' ? 'selected' : '' }}>Jalisco</option>
-                        <option value="4" {{ ($datos['estado_id'] ?? old('estado_id')) == '4' ? 'selected' : '' }}>Nuevo León</option>
-                        <option value="5" {{ ($datos['estado_id'] ?? old('estado_id')) == '5' ? 'selected' : '' }}>Veracruz</option>
+                        <option value="">Cargando estados...</option>
                     </select>
+                    <div id="loading-estados" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                    </div>
                 </div>
             </div>
 
@@ -71,7 +93,8 @@
                     </div>
                     <input type="text"
                         name="municipio"
-                        value="{{ $datos['municipio'] ?? old('municipio') }}"
+                        id="municipio"
+                        value="{{ $datosFinales['municipio'] ?? old('municipio') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
                         placeholder="Ingrese municipio o delegación">
                 </div>
@@ -88,13 +111,14 @@
                     </div>
                     <input type="text"
                         name="asentamiento"
-                        value="{{ $datos['asentamiento'] ?? old('asentamiento') }}"
+                        id="asentamiento"
+                        value="{{ $datosFinales['asentamiento'] ?? old('asentamiento') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
                         placeholder="Ingrese colonia o asentamiento">
                 </div>
             </div>
 
-            <!-- Campo: Calle -->
+            <!-- Campo: Calle       -->
             <div class="form-group field-container">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Calle <span class="text-red-500">*</span>
@@ -105,9 +129,43 @@
                     </div>
                     <input type="text"
                         name="calle"
-                        value="{{ $datos['calle'] ?? old('calle') }}"
+                        value="{{ $datosFinales['calle'] ?? old('calle') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
                         placeholder="Ingrese nombre de la calle">
+                </div>
+            </div>
+
+            <!-- Campo: Entre Calle -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Entre Calle
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-road text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        name="entre_calle"
+                        value="{{ $datosFinales['entre_calle'] ?? old('entre_calle') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="Ingrese primera calle de referencia">
+                </div>
+            </div>
+
+            <!-- Campo: Y Calle -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Y Calle
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-road text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        name="y_calle"
+                        value="{{ $datosFinales['y_calle'] ?? old('y_calle') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="Ingrese segunda calle de referencia">
                 </div>
             </div>
 
@@ -122,7 +180,7 @@
                     </div>
                     <input type="text"
                         name="numero_exterior"
-                        value="{{ $datos['numero_exterior'] ?? old('numero_exterior') }}"
+                        value="{{ $datosFinales['numero_exterior'] ?? old('numero_exterior') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
                         placeholder="123 o A-1">
                 </div>
@@ -139,9 +197,47 @@
                     </div>
                     <input type="text"
                         name="numero_interior"
-                        value="{{ $datos['numero_interior'] ?? old('numero_interior') }}"
+                        value="{{ $datosFinales['numero_interior'] ?? old('numero_interior') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
                         placeholder="Apto 5 o Local 2">
+                </div>
+            </div>
+
+            <!-- Campo: Latitud -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Latitud
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-map-marker-alt text-gray-500"></i>
+                    </div>
+                    <input type="number"
+                        name="latitud"
+                        id="latitud-manual"
+                        value="{{ $datos['latitud'] ?? old('latitud') }}"
+                        step="0.000001"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="19.4326">
+                </div>
+            </div>
+
+            <!-- Campo: Longitud -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Longitud
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-map-marker-alt text-gray-500"></i>
+                    </div>
+                    <input type="number"
+                        name="longitud"
+                        id="longitud-manual"
+                        value="{{ $datos['longitud'] ?? old('longitud') }}"
+                        step="0.000001"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="-99.1332">
                 </div>
             </div>
         </div>
@@ -158,33 +254,153 @@
                 </div>
                 <div class="flex-1">
                     <p class="text-sm text-gray-800 leading-relaxed">
-                        {{ $datos['calle'] ?? '' }}
-                        @if(!empty($datos['numero_exterior'] ?? '')) #{{ $datos['numero_exterior'] }} @endif
-                        @if(!empty($datos['numero_interior'] ?? '')) Int. {{ $datos['numero_interior'] }} @endif
-                        @if(!empty($datos['asentamiento'] ?? '')) , {{ $datos['asentamiento'] }} @endif
-                        @if(!empty($datos['codigo_postal'] ?? '')) , C.P. {{ $datos['codigo_postal'] }} @endif
-                        @if(!empty($datos['municipio'] ?? '')) , {{ $datos['municipio'] }} @endif
-                        @if(!empty($datos['estado'] ?? '')) , {{ $datos['estado'] }} @endif
+                        {{ $datosFinales['calle'] ?? '' }}
+                        @if(!empty($datosFinales['numero_exterior'] ?? '')) #{{ $datosFinales['numero_exterior'] }} @endif
+                        @if(!empty($datosFinales['numero_interior'] ?? '')) Int. {{ $datosFinales['numero_interior'] }} @endif
+                        @if(!empty($datosFinales['entre_calle'] ?? '') && !empty($datosFinales['y_calle'] ?? '')) , Entre {{ $datosFinales['entre_calle'] }} y {{ $datosFinales['y_calle'] }} @endif
+                        @if(!empty($datosFinales['asentamiento'] ?? '')) , {{ $datosFinales['asentamiento'] }} @endif
+                        @if(!empty($datosFinales['codigo_postal'] ?? '')) , C.P. {{ $datosFinales['codigo_postal'] }} @endif
+                        @if(!empty($datosFinales['municipio'] ?? '')) , {{ $datosFinales['municipio'] }} @endif
+                        @if(!empty($datosFinales['estado'] ?? '')) , {{ $datosFinales['estado'] }} @endif
                     </p>
                 </div>
             </div>
         </div>
     </div>
-
-    <div id="map" class="w-full h-64 rounded-lg border border-gray-200"></div>
     @endif
+
+    <!-- Mapa siempre visible -->
+    <div class="mt-6">
+        <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
+            Ubicación en Mapa
+        </h4>
+        <x-openstreet-map 
+            :lat="$datos['latitud'] ?? null" 
+            :lng="$datos['longitud'] ?? null" 
+            :editable="$editable"
+            height="300px"
+        />
+        
+        @if($editable)
+        <div class="mt-2 text-sm text-gray-600">
+            <span id="coordenadas-display">
+                @if(!empty($datos['latitud']) && !empty($datos['longitud']))
+                    Coordenadas seleccionadas: {{ $datos['latitud'] }}, {{ $datos['longitud'] }}
+                @else
+                    Haz clic en el mapa o ingresa las coordenadas manualmente
+                @endif
+            </span>
+        </div>
+        @endif
+    </div>
 </div>
 
+@if($editable)
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const map = L.map('map').setView([19.4326, -99.1332], 13); // Coordenadas CDMX
+document.addEventListener('DOMContentLoaded', () => {
+    const $ = id => document.getElementById(id);
+    const elements = {
+        cp: $('codigo_postal'),
+        estado: $('estado_id'),
+        municipio: $('municipio'),
+        asentamiento: $('asentamiento'),
+        loadingCp: $('loading-cp'),
+        loadingEstados: $('loading-estados'),
+    };
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+    // 🔁 Utilidad: Notificación visual
+    const notificar = (msg, tipo = 'success') => {
+        const div = document.createElement('div');
+        div.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 text-white ${
+            tipo === 'success' ? 'bg-green-500' :
+            tipo === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
+        }`;
+        div.textContent = msg;
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 3000);
+    };
 
-        L.marker([19.4326, -99.1332]).addTo(map)
-            .bindPopup('Ubicación de ejemplo')
-            .openPopup();
+    // 📥 Cargar estados
+    fetch('/api/ubicacion/estados')
+        .then(res => res.json())
+        .then(data => {
+            elements.loadingEstados.classList.add('hidden');
+            if (data.success) {
+                elements.estado.innerHTML = `<option value="">Seleccione estado</option>` +
+                    data.data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
+                
+                if (elements.cp.value.trim().length === 5) {
+                    buscarPorCodigoPostal(elements.cp.value.trim());
+                }
+            } else {
+                throw new Error();
+            }
+        })
+        .catch(() => {
+            elements.loadingEstados.classList.add('hidden');
+            elements.estado.innerHTML = `<option>Error al cargar</option>`;
+        });
+
+    // 🔍 Función para buscar por código postal
+    function buscarPorCodigoPostal(cp) {
+        if (cp.length !== 5) return;
+
+        elements.loadingCp.classList.remove('hidden');
+
+        fetch('/api/ubicacion/buscar-codigo-postal', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ codigo_postal: cp })
+        })
+        .then(res => res.json())
+        .then(data => {
+            elements.loadingCp.classList.add('hidden');
+
+            if (data.success && data.data.length > 0) {
+                const u = data.data[0];
+                
+                // Solo llenar campos que estén vacíos o que no vengan de la constancia
+                if (!elements.municipio.value) {
+                    elements.municipio.value = u.municipio;
+                }
+                if (!elements.asentamiento.value) {
+                    elements.asentamiento.value = u.asentamiento;
+                }
+
+                const estadoOption = [...elements.estado.options]
+                    .find(o => o.text.toLowerCase() === u.estado.toLowerCase());
+
+                if (estadoOption && !elements.estado.value) {
+                    elements.estado.value = estadoOption.value;
+                }
+
+                notificar('Datos cargados automáticamente', 'success');
+            } else {
+                notificar('No se encontraron datos para este código postal', 'warning');
+            }
+        })
+        .catch(() => {
+            elements.loadingCp.classList.add('hidden');
+            notificar('Error al cargar los datos', 'error');
+        });
+    }
+    let timeoutId;
+    elements.cp.addEventListener('input', () => {
+        const cp = elements.cp.value.trim();
+
+        clearTimeout(timeoutId);
+        if (cp.length !== 5) {
+            elements.loadingCp.classList.add('hidden');
+            return;
+        }
+
+        timeoutId = setTimeout(() => {
+            buscarPorCodigoPostal(cp);
+        }, 500);
     });
+});
 </script>
+@endif

@@ -1,16 +1,33 @@
-@props(['datos' => [], 'editable' => false])
+@props(['datos' => [], 'editable' => false, 'datosConstancia' => null])
 
 @php
-    // Determinar tipo de persona basado en RFC
-    $rfcValue = $datos['rfc'] ?? '';
-    $tipoPersona = 'Física';
-    if ($rfcValue && strlen($rfcValue) > 13) {
-        $tipoPersona = 'Moral';
+    // Usar view model si está disponible
+    if ($datosConstancia instanceof \App\ViewModels\TramiteViewModel) {
+        $datosFinales = $datosConstancia->getDatosGenerales($datos);
+        $camposNoEditables = !$datosConstancia->sonCamposEditables();
+        $tipoPersona = $datosConstancia->determinarTipoPersona($datosFinales['rfc'] ?? '');
+    } else {
+        // Fallback para compatibilidad
+        $datosFinales = $datosConstancia ? [
+            'razon_social' => $datosConstancia['razon_social'] ?? ($datos['razon_social'] ?? ''),
+            'rfc' => $datosConstancia['rfc'] ?? ($datos['rfc'] ?? ''),
+            'tipo_persona' => $datosConstancia['tipo_persona'] ?? ($datos['tipo_persona'] ?? ''),
+            'curp' => $datosConstancia['curp'] ?? ($datos['curp'] ?? ''),
+        ] : $datos;
+        
+        $rfcValue = $datosFinales['rfc'] ?? '';
+        $tipoPersona = 'Física';
+        if ($rfcValue && strlen($rfcValue) === 12) {
+            $tipoPersona = 'Moral';
+        } elseif ($rfcValue && strlen($rfcValue) === 13) {
+            $tipoPersona = 'Física';
+        }
+        
+        $camposNoEditables = $datosConstancia ? true : false;
     }
 @endphp
 
 <div class="space-y-6" {{ $attributes }}>
-    <!-- Título de la sección -->
     <div class="flex items-center space-x-3 mb-6">
         <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,7 +39,6 @@
             <p class="text-sm text-gray-500">Información personal y de contacto</p>
         </div>
     </div>
-
     <div>
         <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
             Información Básica
@@ -38,9 +54,9 @@
                     </div>
                     <input type="text"
                         name="razon_social"
-                        value="{{ $datos['razon_social'] ?? old('razon_social') }}"
-                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
-                        {{ !$editable ? 'disabled' : '' }}
+                        value="{{ $datosFinales['razon_social'] ?? old('razon_social') }}"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
+                        {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}
                         placeholder="Ingrese la razón social">
                 </div>
             </div>
@@ -55,9 +71,9 @@
                     </div>
                     <input type="text"
                         name="rfc"
-                        value="{{ $datos['rfc'] ?? old('rfc') }}"
-                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
-                        {{ !$editable ? 'disabled' : '' }}
+                        value="{{ $datosFinales['rfc'] ?? old('rfc') }}"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
+                        {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}
                         placeholder="Ingrese el RFC">
                 </div>
             </div>
@@ -71,11 +87,11 @@
                         <i class="fas fa-user-tag text-gray-500"></i>
                     </div>
                     <select name="tipo_persona"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
-                        {{ !$editable ? 'disabled' : '' }}>
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
+                        {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}>
                         <option value="">Seleccione tipo</option>
-                        <option value="Física" {{ ($datos['tipo_persona'] ?? old('tipo_persona')) == 'Física' ? 'selected' : '' }}>Persona Física</option>
-                        <option value="Moral" {{ ($datos['tipo_persona'] ?? old('tipo_persona')) == 'Moral' ? 'selected' : '' }}>Persona Moral</option>
+                        <option value="Física" {{ $tipoPersona == 'Física' ? 'selected' : '' }}>Persona Física</option>
+                        <option value="Moral" {{ $tipoPersona == 'Moral' ? 'selected' : '' }}>Persona Moral</option>
                     </select>
                 </div>
             </div>
@@ -90,9 +106,9 @@
                     </div>
                     <input type="text"
                         name="curp"
-                        value="{{ $datos['curp'] ?? old('curp') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
-                        {{ !$editable ? 'disabled' : '' }}
+                        value="{{ $datosFinales['curp'] ?? old('curp') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }}"
+                        {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}
                         placeholder="Ingrese la CURP">
                 </div>
             </div>
@@ -171,8 +187,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        tipoPersonaSelect.addEventListener('change', toggleCurpField);
-        toggleCurpField(); // Ejecutar al cargar la página
+        // Solo agregar event listener si el campo es editable
+        if (!tipoPersonaSelect.disabled) {
+            tipoPersonaSelect.addEventListener('change', toggleCurpField);
+        }
+        
+        // Ejecutar una vez al cargar para mostrar/ocultar CURP
+        toggleCurpField();
     }
 });
 </script>

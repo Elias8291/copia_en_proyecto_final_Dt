@@ -114,6 +114,53 @@
                         placeholder="Ingrese número de notario">
                 </div>
             </div>
+
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Número de Escritura Constitutiva
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-file-alt text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        name="numero_escritura_constitutiva_poder"
+                        value="{{ $datos['numero_escritura_constitutiva_poder'] ?? old('numero_escritura_constitutiva_poder') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="Ingrese número constitutivo">
+                </div>
+            </div>
+
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Número de Registro Público
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-registered text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        name="numero_registro_publico_poder"
+                        value="{{ $datos['numero_registro_publico_poder'] ?? old('numero_registro_publico_poder') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        placeholder="Ingrese número de registro">
+                </div>
+            </div>
+
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha de Inscripción
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-calendar-check text-gray-500"></i>
+                    </div>
+                    <input type="date"
+                        name="fecha_inscripcion_poder"
+                        value="{{ $datos['fecha_inscripcion_poder'] ?? old('fecha_inscripcion_poder') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                </div>
+            </div>
         </div>
     </div>
     @else
@@ -142,6 +189,15 @@
                             @endif
                             @if(!empty($datos['numero_escritura_poder']))
                                 <li>Escritura: {{ $datos['numero_escritura_poder'] }}</li>
+                            @endif
+                            @if(!empty($datos['numero_escritura_constitutiva_poder']))
+                                <li>Escritura Constitutiva: {{ $datos['numero_escritura_constitutiva_poder'] }}</li>
+                            @endif
+                            @if(!empty($datos['numero_registro_publico_poder']))
+                                <li>Registro Público: {{ $datos['numero_registro_publico_poder'] }}</li>
+                            @endif
+                            @if(!empty($datos['fecha_inscripcion_poder']))
+                                <li>Fecha de Inscripción: {{ $datos['fecha_inscripcion_poder'] }}</li>
                             @endif
                         </ul>
                     </div>

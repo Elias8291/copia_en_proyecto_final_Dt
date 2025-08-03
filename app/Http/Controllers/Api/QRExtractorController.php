@@ -74,44 +74,8 @@ class QRExtractorController extends Controller
         }
     }
 
-    /**
-     * Extrae QR usando script de Python
-     */
-    private function extractQrUsingPython(string $pdfPath): ?string
-    {
-        try {
-            $pythonScript = app_path('Python/qr_extractor_minimal.py');
-
-            // Verificar que el script existe
-            if (! file_exists($pythonScript)) {
-                throw new \Exception('Script de Python no encontrado');
-            }
-
-            // Ejecutar script de Python (usar 'py' en Windows)
-            $command = "py \"$pythonScript\" \"$pdfPath\"";
-            $output = shell_exec($command);
-
-            if ($output === null) {
-                throw new \Exception('Error ejecutando script de Python');
-            }
-
-            $result = json_decode(trim($output), true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new \Exception('Respuesta inválida del script de Python');
-            }
-
-            return $result['success'] ? $result['url'] : null;
-        } catch (\Exception $e) {
-            Log::error('Error en script Python: '.$e->getMessage());
-
-            return null;
-        }
-    }
-
-    /**
-     * Método alternativo usando JavaScript/Node.js (si está disponible)
-     */
+   
+ 
     private function extractQrUsingNode(string $pdfPath): ?string
     {
         try {

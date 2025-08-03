@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreignId('tramite_id')->constrained('tramites')->onDelete('cascade');
             
             $table->string('calle', 255);
+            $table->string('entre_calle', 255)->nullable(); // Primera calle de referencia
+            $table->string('y_calle', 255)->nullable(); // Segunda calle de referencia
             $table->string('numero_exterior', 20); // Puede contener números y letras
             $table->string('numero_interior', 20)->nullable(); // Puede contener números y letras
             $table->string('colonia', 255);

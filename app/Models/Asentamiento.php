@@ -11,11 +11,18 @@ class Asentamiento extends Model
     
     protected $fillable = [
         'nombre',
+        'codigo_postal',
+        'localidad_id',
         'tipo_asentamiento_id'
     ];
 
     public function tipoAsentamiento(): BelongsTo
     {
         return $this->belongsTo(TipoAsentamiento::class);
+    }
+
+    public function localidad(): BelongsTo
+    {
+        return $this->belongsTo(Localidad::class);
     }
 } 

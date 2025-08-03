@@ -24,10 +24,7 @@ class DatabaseSeeder extends Seeder
             TiposAsentamientoSeeder::class,
             AsentamientosSeeder::class,
             SectoresSeeder::class,
-            ActividadesSeeder::class,
-            CatalogoArchivoSeeder::class,
-            DiasInhabilesSeeder::class,
-            
+           ActividadesEconomicasSeeder::class,
         ]);
     }
 }

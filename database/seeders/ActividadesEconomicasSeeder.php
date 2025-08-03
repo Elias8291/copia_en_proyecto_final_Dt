@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\ActividadEconomica;
+use App\Models\Actividad;
 use App\Models\Sector;
 use Illuminate\Database\Seeder;
 
@@ -12,76 +12,61 @@ class ActividadesEconomicasSeeder extends Seeder
     {
         // Crear sectores primero si no existen
         $sectores = [
-            ['nombre' => 'Construcción'],
-            ['nombre' => 'Servicios Profesionales'],
-            ['nombre' => 'Comercio'],
-            ['nombre' => 'Tecnología'],
-            ['nombre' => 'Manufactura'],
-            ['nombre' => 'Otros'],
+            ['id' => 1, 'nombre' => 'Agricultura, ganadería, aprovechamiento forestal, pesca y caza'],
+            ['id' => 2, 'nombre' => 'Minería'],
+            ['id' => 3, 'nombre' => 'Generación, transmisión y distribución de energía eléctrica, suministro de agua y de gas por ductos al consumidor final'],
+            ['id' => 4, 'nombre' => 'Construcción'],
+            ['id' => 5, 'nombre' => 'Industrias manufactureras'],
+            ['id' => 6, 'nombre' => 'Comercio al por mayor'],
+            ['id' => 7, 'nombre' => 'Comercio al por menor'],
+            ['id' => 8, 'nombre' => 'Transportes, correos y almacenamiento'],
+            ['id' => 9, 'nombre' => 'Información en medios masivos'],
+            ['id' => 10, 'nombre' => 'Servicios financieros y de seguros'],
+            ['id' => 11, 'nombre' => 'Servicios inmobiliarios y de alquiler de bienes muebles e intangibles'],
+            ['id' => 12, 'nombre' => 'Servicios profesionales, científicos y técnicos'],
+            ['id' => 13, 'nombre' => 'Corporativos'],
+            ['id' => 14, 'nombre' => 'Servicios de apoyo a los negocios y manejo de desechos y servicios de remediación'],
+            ['id' => 15, 'nombre' => 'Servicios educativos'],
+            ['id' => 16, 'nombre' => 'Servicios de salud y de asistencia social'],
+            ['id' => 17, 'nombre' => 'Servicios de esparcimiento culturales y deportivos, y otros servicios recreativos'],
+            ['id' => 18, 'nombre' => 'Servicios de alojamiento temporal y de preparación de alimentos y bebidas'],
+            ['id' => 19, 'nombre' => 'Otros servicios excepto actividades gubernamentales'],
+            ['id' => 20, 'nombre' => 'Actividades gubernamentales y de organismos internacionales'],
         ];
 
         foreach ($sectores as $sector) {
-            Sector::firstOrCreate(['nombre' => $sector['nombre']]);
+            Sector::firstOrCreate(
+                ['id' => $sector['id']],
+                [
+                    'nombre' => $sector['nombre'],
+                    'descripcion' => $sector['nombre']
+                ]
+            );
         }
 
-        // Crear actividades económicas de ejemplo
-        $actividades = [
-            [
-                'sector_id' => 1,
-                'nombre' => 'Construcción de edificaciones residenciales',
-                'codigo_scian' => '2361',
-                'descripcion' => 'Construcción de casas y edificios residenciales',
-                'estado_validacion' => 'Validada',
-            ],
-            [
-                'sector_id' => 1,
-                'nombre' => 'Construcción de obras de ingeniería civil',
-                'codigo_scian' => '2371',
-                'descripcion' => 'Construcción de carreteras, puentes y obras civiles',
-                'estado_validacion' => 'Validada',
-            ],
-            [
-                'sector_id' => 2,
-                'nombre' => 'Servicios de consultoría en administración',
-                'codigo_scian' => '5416',
-                'descripcion' => 'Consultoría empresarial y administrativa',
-                'estado_validacion' => 'Validada',
-            ],
-            [
-                'sector_id' => 2,
-                'nombre' => 'Servicios de contabilidad y auditoría',
-                'codigo_scian' => '5412',
-                'descripcion' => 'Servicios contables y de auditoría',
-                'estado_validacion' => 'Validada',
-            ],
-            [
-                'sector_id' => 3,
-                'nombre' => 'Comercio al por menor de productos alimentarios',
-                'codigo_scian' => '4621',
-                'descripcion' => 'Venta al menudeo de alimentos y bebidas',
-                'estado_validacion' => 'Validada',
-            ],
-            [
-                'sector_id' => 4,
-                'nombre' => 'Desarrollo de sistemas informáticos',
-                'codigo_scian' => '5415',
-                'descripcion' => 'Desarrollo de software y aplicaciones',
-                'estado_validacion' => 'Validada',
-            ],
-            [
-                'sector_id' => 5,
-                'nombre' => 'Fabricación de productos metálicos',
-                'codigo_scian' => '3323',
-                'descripción' => 'Manufactura de productos de metal',
-                'estado_validacion' => 'Validada',
-            ],
-        ];
-
-        foreach ($actividades as $actividad) {
-            ActividadEconomica::firstOrCreate(
-                ['codigo_scian' => $actividad['codigo_scian']],
-                $actividad
-            );
+        // Cargar actividades desde el archivo JSON
+        $jsonPath = database_path('json/actividades.json');
+        if (file_exists($jsonPath)) {
+            $jsonData = json_decode(file_get_contents($jsonPath), true);
+            
+            if (isset($jsonData['Hoja1'])) {
+                foreach ($jsonData['Hoja1'] as $actividadData) {
+                    Actividad::firstOrCreate(
+                        ['nombre' => $actividadData['actividad']],
+                        [
+                            'sector_id' => $actividadData['id_sector'],
+                            'nombre' => $actividadData['actividad'],
+                            'descripcion' => $actividadData['actividad']
+                        ]
+                    );
+                }
+                
+                $this->command->info('Se importaron ' . count($jsonData['Hoja1']) . ' actividades económicas desde el archivo JSON.');
+            } else {
+                $this->command->error('No se encontró la clave "Hoja1" en el archivo JSON.');
+            }
+        } else {
+            $this->command->error('No se encontró el archivo actividades.json en database/json/');
         }
     }
 }

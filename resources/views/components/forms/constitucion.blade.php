@@ -20,6 +20,25 @@
             Datos de Constitución
         </h4>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
+            <!-- Campo: Estado -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Estado <span class="text-red-500">*</span>
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-map-marked-alt text-gray-500"></i>
+                    </div>
+                    <select name="estado_id" id="estado_constitucion"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                        <option value="">Cargando estados...</option>
+                    </select>
+                    <div id="loading-estados-constitucion" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
             <div class="form-group field-container">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
                     Número de Escritura <span class="text-red-500">*</span>
@@ -149,6 +168,9 @@
                     </h3>
                     <div class="mt-2 text-sm text-green-700">
                         <ul class="list-disc list-inside space-y-1">
+                            @if(!empty($datos['estado']))
+                                <li>Estado: {{ $datos['estado'] }}</li>
+                            @endif
                             @if(!empty($datos['numero_escritura']))
                                 <li>Escritura: {{ $datos['numero_escritura'] }}</li>
                             @endif
@@ -165,4 +187,41 @@
         </div>
     </div>
     @endif
-</div> 
+</div>
+
+@if($editable)
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estadoSelect = document.getElementById('estado_constitucion');
+    const loadingEstados = document.getElementById('loading-estados-constitucion');
+    
+    // Cargar estados al iniciar
+    cargarEstadosConstitucion();
+    
+    function cargarEstadosConstitucion() {
+        fetch('/api/ubicacion/estados')
+            .then(response => response.json())
+            .then(data => {
+                loadingEstados.classList.add('hidden');
+                
+                if (data.success) {
+                    estadoSelect.innerHTML = '<option value="">Seleccione estado</option>';
+                    data.data.forEach(estado => {
+                        const option = document.createElement('option');
+                        option.value = estado.id;
+                        option.textContent = estado.nombre;
+                        estadoSelect.appendChild(option);
+                    });
+                } else {
+                    estadoSelect.innerHTML = '<option value="">Error al cargar estados</option>';
+                }
+            })
+            .catch(error => {
+                loadingEstados.classList.add('hidden');
+                estadoSelect.innerHTML = '<option value="">Error al cargar estados</option>';
+                console.error('Error:', error);
+            });
+    }
+});
+</script>
+@endif 

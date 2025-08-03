@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('actividad', function (Blueprint $table) {
             $table->id();
-            $table->string('nombre', 100);
+            $table->string('nombre', 255);
             $table->text('descripcion');
             $table->foreignId('sector_id')->constrained('sectores')->onDelete('cascade');
             $table->timestamps();

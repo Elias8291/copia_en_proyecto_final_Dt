@@ -7,15 +7,11 @@ use Illuminate\Support\Facades\Log;
 
 class SATScraperService
 {
-    /**
-     * Extrae datos del SAT desde la URL del QR
-     */
     public function extractDataFromQRUrl($url)
     {
         try {
-            // Hacer request a la URL del SAT
             $response = Http::timeout(30)
-                ->withoutVerifying() // Deshabilitar verificación SSL para el SAT
+                ->withoutVerifying()
                 ->withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -26,17 +22,14 @@ class SATScraperService
                 ])
                 ->get($url);
 
-            if (! $response->successful()) {
+            if (!$response->successful()) {
                 throw new \Exception('No se pudo acceder a la URL del SAT');
             }
 
-            $html = $response->body();
-
-            // Parsear el HTML y extraer datos
-            return $this->parseHTML($html);
+            return $this->parseHTML($response->body());
 
         } catch (\Exception $e) {
-            Log::error('Error en SATScraperService: '.$e->getMessage());
+            Log::error('Error en SATScraperService: ' . $e->getMessage());
 
             return [
                 'success' => false,
@@ -45,9 +38,6 @@ class SATScraperService
         }
     }
 
-    /**
-     * Parsea el HTML del SAT y extrae los datos estructurados
-     */
     private function parseHTML($html)
     {
         $data = [
@@ -59,7 +49,6 @@ class SATScraperService
         ];
 
         try {
-            // Crear DOMDocument
             $dom = new \DOMDocument;
             libxml_use_internal_errors(true);
             $dom->loadHTML($html);
@@ -67,13 +56,9 @@ class SATScraperService
 
             $xpath = new \DOMXPath($dom);
 
-            // Extraer RFC - Múltiples métodos de búsqueda
             $data['rfc'] = $this->extractRFC($xpath);
+            Log::info('RFC extraído: ' . ($data['rfc'] ?: 'No encontrado'));
 
-            // Log para debug
-            Log::info('RFC extraído: '.($data['rfc'] ?: 'No encontrado'));
-
-            // Buscar todas las tablas de datos
             $dataTables = $xpath->query("//tbody[@class='ui-datatable-data ui-widget-content']");
 
             foreach ($dataTables as $table) {
@@ -86,120 +71,98 @@ class SATScraperService
                         $label = trim($cells->item(0)->textContent);
                         $value = trim($cells->item(1)->textContent);
 
-                        // Limpiar label (remover ":" y texto en bold)
                         $label = preg_replace('/[:\s]*$/', '', $label);
                         $label = strip_tags($label);
 
-                        if (! empty($label) && ! empty($value)) {
+                        if (!empty($label) && !empty($value)) {
                             $sectionData[$this->normalizeKey($label)] = $value;
                         }
                     }
                 }
 
-                // Clasificar datos por sección
-                if (! empty($sectionData)) {
+                if (!empty($sectionData)) {
                     $this->classifyData($sectionData, $data);
                 }
             }
 
-            // Determinar tipo de persona
             $data['tipo_persona'] = $this->determinePersonType($data);
-
-            // Extraer CURP con validación mejorada
             $data['curp_validado'] = $this->extractCURP($data);
-
-            // Normalizar datos para el formulario
             $data['form_data'] = $this->normalizeForForm($data);
 
             return $data;
 
         } catch (\Exception $e) {
-            Log::error('Error parseando HTML del SAT: '.$e->getMessage());
+            Log::error('Error parseando HTML del SAT: ' . $e->getMessage());
 
             return [
                 'success' => false,
-                'error' => 'Error procesando datos del SAT: '.$e->getMessage(),
+                'error' => 'Error procesando datos del SAT: ' . $e->getMessage(),
             ];
         }
     }
 
-    /**
-     * Extrae el RFC usando múltiples estrategias
-     */
     private function extractRFC($xpath)
     {
         $rfc = null;
 
-        // Estrategia 1: Buscar en elementos li con clase ui-li-static
         $rfcElements = $xpath->query("//li[contains(@class, 'ui-li-static')]");
         foreach ($rfcElements as $element) {
             $text = $element->textContent;
-            // Buscar patrón: "El RFC: XXXXX, tiene asociada..."
             if (preg_match('/El RFC:\s*([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3}),?\s*tiene\s*asociada/i', $text, $matches)) {
                 $rfc = $matches[1];
-                Log::info('RFC encontrado (método 1): '.$rfc);
+                Log::info('RFC encontrado (método 1): ' . $rfc);
                 break;
             }
-            // Patrón alternativo: "RFC: XXXXX"
             if (preg_match('/RFC:\s*([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})/i', $text, $matches)) {
                 $rfc = $matches[1];
-                Log::info('RFC encontrado (método 1b): '.$rfc);
+                Log::info('RFC encontrado (método 1b): ' . $rfc);
                 break;
             }
         }
 
-        // Estrategia 2: Buscar en cualquier texto que contenga RFC
-        if (! $rfc) {
+        if (!$rfc) {
             $allTextElements = $xpath->query("//text()[contains(., 'RFC')]");
             foreach ($allTextElements as $textNode) {
                 $text = $textNode->textContent;
                 if (preg_match('/RFC:\s*([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})/i', $text, $matches)) {
                     $rfc = $matches[1];
-                    Log::info('RFC encontrado (método 2): '.$rfc);
+                    Log::info('RFC encontrado (método 2): ' . $rfc);
                     break;
                 }
             }
         }
 
-        // Estrategia 3: Buscar en tablas de datos específicamente
-        if (! $rfc) {
+        if (!$rfc) {
             $rfcCells = $xpath->query("//td[contains(text(), 'RFC')]/../td[2]");
             foreach ($rfcCells as $cell) {
                 $text = trim($cell->textContent);
                 if (preg_match('/^([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})$/', $text, $matches)) {
                     $rfc = $matches[1];
-                    Log::info('RFC encontrado (método 3): '.$rfc);
+                    Log::info('RFC encontrado (método 3): ' . $rfc);
                     break;
                 }
             }
         }
 
-        // Estrategia 4: Buscar en cualquier parte del documento con patrón RFC válido
-        if (! $rfc) {
+        if (!$rfc) {
             $bodyText = $xpath->query('//body')->item(0)->textContent ?? '';
             if (preg_match_all('/\b([A-Z]{3,4}[0-9]{6}[A-Z0-9]{2,3})\b/', $bodyText, $matches)) {
-                // Tomar el primer RFC válido encontrado
                 $rfc = $matches[1][0];
-                Log::info('RFC encontrado (método 4): '.$rfc);
+                Log::info('RFC encontrado (método 4): ' . $rfc);
             }
         }
 
         return $rfc;
     }
 
-    /**
-     * Extrae el CURP con mejor precisión
-     */
     private function extractCURP($data)
     {
         $curp = null;
 
-        // Buscar CURP en los datos de identificación
         if (isset($data['identificacion']['curp'])) {
             $curp = $data['identificacion']['curp'];
         }
 
-        // Validar formato CURP (18 caracteres)
         if ($curp && preg_match('/^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$/', $curp)) {
             return $curp;
         }
@@ -207,9 +170,6 @@ class SATScraperService
         return null;
     }
 
-    /**
-     * Normaliza las claves para consistencia
-     */
     private function normalizeKey($key)
     {
         $key = strtolower($key);
@@ -220,26 +180,20 @@ class SATScraperService
         return $key;
     }
 
-    /**
-     * Clasifica los datos en las secciones apropiadas
-     */
     private function classifyData($sectionData, &$data)
     {
-        // Palabras clave para identificación
         $identificationKeys = [
             'curp', 'nombre', 'apellido_paterno', 'apellido_materno',
             'fecha_nacimiento', 'denominacion_o_razon_social',
             'regimen_de_capital', 'fecha_de_constitucion',
         ];
 
-        // Palabras clave para ubicación
         $locationKeys = [
             'entidad_federativa', 'municipio_o_delegacion', 'localidad',
             'colonia', 'tipo_de_vialidad', 'nombre_de_la_vialidad',
             'numero_exterior', 'numero_interior', 'cp', 'correo_electronico', 'al',
         ];
 
-        // Palabras clave para características fiscales
         $fiscalKeys = [
             'regimen', 'fecha_de_alta', 'fecha_de_inicio_de_operaciones',
             'situacion_del_contribuyente', 'fecha_del_ultimo_cambio_de_situacion',
@@ -253,38 +207,28 @@ class SATScraperService
             } elseif (in_array($key, $fiscalKeys)) {
                 $data['caracteristicas_fiscales'][$key] = $value;
             } else {
-                // Si no se puede clasificar, agregarlo a identificación por defecto
                 $data['identificacion'][$key] = $value;
             }
         }
     }
 
-    /**
-     * Determina si es persona física o moral
-     */
     private function determinePersonType($data)
     {
-        // Si tiene CURP, es persona física
         if (isset($data['identificacion']['curp'])) {
             return 'fisica';
         }
 
-        // Si tiene denominación o razón social, es persona moral
         if (isset($data['identificacion']['denominacion_o_razon_social'])) {
             return 'moral';
         }
 
-        // Si tiene régimen de capital, es persona moral
         if (isset($data['identificacion']['regimen_de_capital'])) {
             return 'moral';
         }
 
-        return 'fisica'; // Por defecto
+        return 'fisica';
     }
 
-    /**
-     * Normaliza los datos para el formulario
-     */
     private function normalizeForForm($data)
     {
         $formData = [
@@ -306,18 +250,15 @@ class SATScraperService
             'numero_interior' => $data['ubicacion']['numero_interior'] ?? '',
         ];
 
-        // Log para debug
         Log::info('Datos normalizados para formulario:', [
             'rfc' => $formData['rfc'],
             'curp' => $formData['curp'],
             'tipo_persona' => $formData['tipo_persona'],
         ]);
 
-        // Determinar razón social según tipo de persona
         if ($data['tipo_persona'] === 'moral') {
             $formData['razon_social'] = $data['identificacion']['denominacion_o_razon_social'] ?? '';
         } else {
-            // Para persona física, concatenar nombre completo
             $nombre = $data['identificacion']['nombre'] ?? '';
             $apellidoP = $data['identificacion']['apellido_paterno'] ?? '';
             $apellidoM = $data['identificacion']['apellido_materno'] ?? '';

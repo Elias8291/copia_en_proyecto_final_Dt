@@ -17,121 +17,118 @@
     @if(empty($datos))
         @if($editable)
         <div class="space-y-4">
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div class="flex">
                     <div class="flex-shrink-0">
-                        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
+                        <i class="fas fa-info-circle text-blue-400 text-xl"></i>
                     </div>
                     <div class="ml-3">
-                        <h3 class="text-sm font-medium text-yellow-800">
-                            No hay accionistas registrados
+                        <h3 class="text-sm font-medium text-blue-800">
+                            Debe tener por lo menos un accionista
                         </h3>
-                        <div class="mt-2 text-sm text-yellow-700">
-                            <p>Agregue al menos un accionista para continuar.</p>
-                        </div>
+                        <p class="text-sm text-blue-700 mt-1">
+                            Complete la información del accionista principal para continuar.
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <div class="border border-gray-200 rounded-lg p-4">
-                <h4 class="text-sm font-semibold text-gray-800 mb-3">Agregar Accionista</h4>
-                
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
+            <div id="accionistas-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <!-- Primer accionista por defecto -->
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div class="bg-gray-50 border-b border-gray-200 rounded-t-xl p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-[#9d2449] rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-white text-sm"></i>
+                                </div>
+                                <h4 class="text-gray-700 font-semibold text-sm">Accionista #1</h4>
+                            </div>
+                            <button type="button" class="text-gray-500 hover:text-red-600 transition-colors" onclick="this.closest('.bg-white').remove(); actualizarNumeracion();">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-4">
                     <div class="form-group field-container">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Nombre Completo <span class="text-red-500">*</span>
-                        </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-user text-gray-500"></i>
+                                </div>
+                                <input type="text" name="accionistas[0][nombre]" class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
                             </div>
-                            <input type="text"
-                                name="accionistas[0][nombre]"
-                                class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                                placeholder="Ingrese nombre completo">
                         </div>
-                    </div>
-
                     <div class="form-group field-container">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            RFC <span class="text-red-500">*</span>
-                        </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">RFC</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-id-card text-gray-500"></i>
+                                </div>
+                                <input type="text" name="accionistas[0][rfc]" class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono">
                             </div>
-                            <input type="text"
-                                name="accionistas[0][rfc]"
-                                class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono"
-                                placeholder="Ingrese RFC">
                         </div>
-                    </div>
-
                     <div class="form-group field-container">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Porcentaje de Participación <span class="text-red-500">*</span>
-                        </label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Porcentaje de Participación</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-percentage text-gray-500"></i>
+                                </div>
+                                <input type="number" name="accionistas[0][porcentaje_participacion]" step="0.01" min="0" max="100" class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
                             </div>
-                            <input type="number"
-                                name="accionistas[0][porcentaje_participacion]"
-                                step="0.01"
-                                min="0"
-                                max="100"
-                                class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                                placeholder="0.00">
+                        </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mt-4">
                     <button type="button" id="agregarAccionista" 
-                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                        class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <i class="fas fa-plus mr-2"></i>
                         Agregar otro accionista
                     </button>
-                </div>
             </div>
         </div>
         @else
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
+                    <i class="fas fa-info-circle text-gray-400 text-xl"></i>
                 </div>
                 <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">
+                    <h3 class="text-sm font-medium text-gray-800">
                         No hay accionistas registrados
                     </h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <p>No se han registrado accionistas para este trámite.</p>
-                    </div>
+                    <p class="text-gray-600">
+                        No se han registrado accionistas para este trámite.
+                    </p>
                 </div>
             </div>
         </div>
         @endif
     @else
-        <div class="space-y-4">
+        <div id="accionistas-container" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             @foreach($datos as $index => $accionista)
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <h4 class="text-sm font-semibold text-gray-800">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="bg-gray-50 border-b border-gray-200 rounded-t-xl p-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-[#9d2449] rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <h4 class="text-gray-700 font-semibold text-sm">
                         Accionista #{{ $index + 1 }}
                     </h4>
+                        </div>
                     @if($editable)
-                    <button type="button" class="text-red-600 hover:text-red-800" onclick="eliminarAccionista({{ $index }})">
-                        <i class="fas fa-trash"></i>
+                        <button type="button" class="text-gray-500 hover:text-red-600 transition-colors" onclick="eliminarAccionista({{ $index }})">
+                            <i class="fas fa-trash text-sm"></i>
                     </button>
                     @endif
+                    </div>
                 </div>
                 
-                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
+                <div class="p-4 space-y-4">
                     <div class="form-group field-container">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Nombre Completo
@@ -185,100 +182,92 @@
                 </div>
             </div>
             @endforeach
+        </div>
 
             @if($editable)
             <div class="mt-4">
                 <button type="button" id="agregarAccionista" 
-                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                    class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                     <i class="fas fa-plus mr-2"></i>
                     Agregar otro accionista
                 </button>
             </div>
             @endif
-        </div>
     @endif
 </div>
 
 @if($editable)
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let accionistaCount = {{ empty($datos) ? 1 : count($datos) }};
+let accionistaCount = {{ empty($datos) ? 1 : count($datos) }};
+
+document.getElementById('agregarAccionista').addEventListener('click', function() {
+    const container = document.getElementById('accionistas-container');
     
-    document.getElementById('agregarAccionista').addEventListener('click', function() {
-        const container = document.querySelector('.space-y-4');
-        const newAccionista = document.createElement('div');
-        newAccionista.className = 'border border-gray-200 rounded-lg p-4';
-        newAccionista.innerHTML = `
-            <div class="flex items-center justify-between mb-3">
-                <h4 class="text-sm font-semibold text-gray-800">
-                    Accionista #${accionistaCount + 1}
-                </h4>
-                <button type="button" class="text-red-600 hover:text-red-800" onclick="this.parentElement.parentElement.remove()">
-                    <i class="fas fa-trash"></i>
+    const newAccionista = document.createElement('div');
+    newAccionista.className = 'bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200';
+    newAccionista.innerHTML = `
+        <div class="bg-gray-50 border-b border-gray-200 rounded-t-xl p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-[#9d2449] rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                    <h4 class="text-gray-700 font-semibold text-sm">Accionista #${accionistaCount + 1}</h4>
+                </div>
+                <button type="button" class="text-gray-500 hover:text-red-600 transition-colors" onclick="this.closest('.bg-white').remove(); actualizarNumeracion();">
+                    <i class="fas fa-trash text-sm"></i>
                 </button>
             </div>
-            
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
-                <div class="form-group field-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Nombre Completo <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-user text-gray-500"></i>
-                        </div>
-                        <input type="text"
-                            name="accionistas[${accionistaCount}][nombre]"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                            placeholder="Ingrese nombre completo">
+        </div>
+        <div class="p-4 space-y-4">
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-500"></i>
                     </div>
-                </div>
-
-                <div class="form-group field-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        RFC <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-id-card text-gray-500"></i>
-                        </div>
-                        <input type="text"
-                            name="accionistas[${accionistaCount}][rfc]"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono"
-                            placeholder="Ingrese RFC">
-                    </div>
-                </div>
-
-                <div class="form-group field-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Porcentaje de Participación <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-percentage text-gray-500"></i>
-                        </div>
-                        <input type="number"
-                            name="accionistas[${accionistaCount}][porcentaje_participacion]"
-                            step="0.01"
-                            min="0"
-                            max="100"
-                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                            placeholder="0.00">
-                    </div>
+                    <input type="text" name="accionistas[${accionistaCount}][nombre]" class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
                 </div>
             </div>
-        `;
-        
-        container.insertBefore(newAccionista, document.getElementById('agregarAccionista').parentElement);
-        accionistaCount++;
-    });
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">RFC</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-id-card text-gray-500"></i>
+                    </div>
+                    <input type="text" name="accionistas[${accionistaCount}][rfc]" class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono">
+                </div>
+            </div>
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Porcentaje de Participación</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-percentage text-gray-500"></i>
+                    </div>
+                    <input type="number" name="accionistas[${accionistaCount}][porcentaje_participacion]" step="0.01" min="0" max="100" class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(newAccionista);
+    accionistaCount++;
 });
 
 function eliminarAccionista(index) {
-    if (confirm('¿Está seguro de que desea eliminar este accionista?')) {
-        const accionistaElement = document.querySelector(`[name="accionistas[${index}][nombre]"]`).closest('.border');
-        accionistaElement.remove();
+    if (confirm('¿Eliminar este accionista?')) {
+        document.querySelector(`[name="accionistas[${index}][nombre]"]`).closest('.bg-white').remove();
+        actualizarNumeracion();
     }
+}
+
+function actualizarNumeracion() {
+    const accionistas = document.querySelectorAll('#accionistas-container .bg-white');
+    accionistas.forEach((accionista, index) => {
+        const titulo = accionista.querySelector('h4');
+        titulo.textContent = `Accionista #${index + 1}`;
+    });
+    accionistaCount = accionistas.length;
 }
 </script>
 @endif 
