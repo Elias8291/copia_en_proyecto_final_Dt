@@ -185,14 +185,7 @@
                             <input type="hidden" id="sat_municipio" name="sat_municipio" value="{{ old('sat_municipio') }}">
                             <input type="hidden" id="sat_entidad_federativa" name="sat_entidad_federativa" value="{{ old('sat_entidad_federativa') }}">
 
-                            <div class="mb-3 p-2 bg-gray-50 border border-gray-200 rounded-md">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-3.5 h-3.5 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span class="text-xs text-gray-600">Los datos fiscales se autocompletaron de su constancia</span>
-                                </div>
-                            </div>
+
 
                             <div class="flex justify-end mb-3">
                                 <button type="button" onclick="showSatDataFromForm()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-[#9D2449] bg-white border border-[#9D2449] rounded-md hover:bg-[#9D2449]/5 hover:border-[#9D2449]/80 transition-all duration-200 shadow-sm hover:shadow-md">

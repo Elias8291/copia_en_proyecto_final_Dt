@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.estado.value = estadoOption.value;
                 }
 
-                notificar('Datos cargados automáticamente', 'success');
+
             } else {
                 notificar('No se encontraron datos para este código postal', 'warning');
             }

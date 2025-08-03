@@ -13,6 +13,8 @@ class Direccion extends Model
         'proveedor_id',
         'tramite_id',
         'calle',
+        'entre_calle',
+        'y_calle',
         'numero_exterior',
         'numero_interior',
         'colonia',

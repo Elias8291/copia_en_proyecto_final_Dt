@@ -53,25 +53,38 @@
                     ])
                 </div>
 
-                <!-- Constitución -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="3" id="section-3">
-                    @include('components.forms.constitucion', ['editable' => true])
-                </div>
+                @if($tipoPersona === 'Moral')
+                    <!-- Constitución -->
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="3" id="section-3">
+                        @include('components.forms.constitucion', ['editable' => true])
+                    </div>
 
-                <!-- Accionistas -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="4" id="section-4">
-                    @include('components.forms.accionistas', ['editable' => true])
-                </div>
+                    <!-- Accionistas -->
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="4" id="section-4">
+                        @include('components.forms.accionistas', ['editable' => true])
+                    </div>
 
-                <!-- Apoderado Legal -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="5" id="section-5">
-                    @include('components.forms.apoderado', ['editable' => true])
-                </div>
+                    <!-- Apoderado Legal -->
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="5" id="section-5">
+                        @include('components.forms.apoderado', ['editable' => true])
+                    </div>
 
-                <!-- Archivos -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="6" id="section-6">
-                    @include('components.forms.archivos', ['editable' => true])
-                </div>
+                    <!-- Archivos -->
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="6" id="section-6">
+                        @include('components.forms.archivos-dinamicos', [
+                            'editable' => true, 
+                            'archivosRequeridos' => $archivosRequeridos
+                        ])
+                    </div>
+                @else
+                    <!-- Archivos -->
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="3" id="section-3">
+                        @include('components.forms.archivos-dinamicos', [
+                            'editable' => true, 
+                            'archivosRequeridos' => $archivosRequeridos
+                        ])
+                    </div>
+                @endif
 
                 <!-- Botón de envío -->
                 <div class="flex justify-center bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -99,6 +112,7 @@
 <script>
 let currentSection = 0;
 const sections = document.querySelectorAll('[data-section]');
+const tipoPersona = '{{ $tipoPersona }}';
 
 function navigateSection(direction) {
     if (direction === 'prev' && currentSection > 0) {
@@ -112,10 +126,8 @@ function navigateSection(direction) {
 
 window.navigateSection = navigateSection;
 
-// Auto-completar campos con datos de la constancia
 document.addEventListener('DOMContentLoaded', function() {
     @if(isset($viewModel))
-        // Auto-completar datos generales
         if (document.getElementById('razon_social')) {
             document.getElementById('razon_social').value = '{{ $viewModel->getDatosGenerales()["razon_social"] ?? "" }}';
         }
@@ -126,7 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('curp').value = '{{ $viewModel->getDatosGenerales()["curp"] ?? "" }}';
         }
         
-        // Auto-completar domicilio
         @php
             $datosDomicilio = $viewModel->getDatosDomicilioForm();
         @endphp

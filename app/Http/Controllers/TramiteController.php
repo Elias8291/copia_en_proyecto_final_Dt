@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProcesarConstanciaRequest;
 use App\Services\Tramites\TramiteService;
 use App\Services\Tramites\ConstanciaService;
+use App\Services\RfcProveedorService;
 use App\ViewModels\TramiteViewModel;
 use Illuminate\Http\Request;
 
@@ -12,16 +13,48 @@ class TramiteController extends Controller
 {
     private TramiteService $tramiteService;
     private ConstanciaService $constanciaService;
+    private RfcProveedorService $rfcProveedorService;
 
-    public function __construct(TramiteService $tramiteService, ConstanciaService $constanciaService)
+    public function __construct(TramiteService $tramiteService, ConstanciaService $constanciaService, RfcProveedorService $rfcProveedorService)
     {
         $this->tramiteService = $tramiteService;
         $this->constanciaService = $constanciaService;
+        $this->rfcProveedorService = $rfcProveedorService;
     }
 
     public function index()
     {
-        return view('tramites.index');
+        $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
+        
+        if (!$rfc) {
+            $tramites = [
+                'inscripcion' => ['activo' => true, 'motivo' => 'Usuario sin RFC'],
+                'renovacion' => ['activo' => false, 'motivo' => 'Usuario sin RFC'],
+                'actualizacion' => ['activo' => false, 'motivo' => 'Usuario sin RFC']
+            ];
+        } else {
+            $accion = $this->rfcProveedorService->determinarAccion($rfc);
+            $proveedorActivo = $accion['proveedor_activo'];
+            
+            $tramites = [
+                'inscripcion' => [
+                    'activo' => $accion['accion'] === 'crear_nuevo',
+                    'motivo' => $accion['motivo']
+                ],
+                'renovacion' => [
+                    'activo' => $accion['accion'] === 'actualizar_existente' && 
+                               $proveedorActivo && 
+                               $this->rfcProveedorService->proveedorEstaActivo($proveedorActivo),
+                    'motivo' => $accion['accion'] === 'actualizar_existente' ? 'Proveedor activo disponible' : 'No hay proveedor activo'
+                ],
+                'actualizacion' => [
+                    'activo' => $accion['accion'] === 'actualizar_existente' && $proveedorActivo,
+                    'motivo' => $accion['accion'] === 'actualizar_existente' ? 'Proveedor existente' : 'No hay proveedor para actualizar'
+                ]
+            ];
+        }
+        
+        return view('tramites.index', compact('tramites'));
     }
 
     public function cargarConstancia()
@@ -59,8 +92,15 @@ class TramiteController extends Controller
 
         $datosConstancia = $this->tramiteService->obtenerDatosConstancia();
         $viewModel = new TramiteViewModel($datosConstancia);
+        
+        $rfc = $datosConstancia['sat_rfc'] ?? null;
+        $tipoPersona = $rfc ? $this->rfcProveedorService->determinarTipoPersona($rfc) : 'Física';
+        
+        $archivosRequeridos = $rfc ? 
+            $this->rfcProveedorService->obtenerArchivosPorTipoPersona($rfc) : 
+            $this->rfcProveedorService->obtenerArchivosPorTipoPersonaDirecto('Física');
 
-        return view('tramites.create', compact('viewModel'));
+        return view('tramites.create', compact('viewModel', 'tipoPersona', 'archivosRequeridos'));
     }
 
     public function store(Request $request)

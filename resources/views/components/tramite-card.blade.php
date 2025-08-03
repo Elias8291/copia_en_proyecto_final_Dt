@@ -20,6 +20,9 @@
                     </svg>
                 </div>
                 <p class="text-gray-600 font-semibold text-sm text-center">No Disponible</p>
+                @if(isset($disabledReason))
+                    <p class="text-gray-500 text-xs text-center mt-2 max-w-32">{{ $disabledReason }}</p>
+                @endif
             </div>
         </div>
     @endif
