@@ -2,161 +2,94 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Tramite extends Model
 {
-    use HasFactory;
-
+    protected $table = 'tramites';
+    
     protected $fillable = [
         'proveedor_id',
         'tipo_tramite',
-        'estado',
+        'status',
         'fecha_inicio',
-        'paso_actual',
         'fecha_finalizacion',
         'fecha_cancelacion',
         'observaciones',
-        'revisado_por',
         'correcciones_count',
+        'paso_actual'
     ];
 
     protected $casts = [
         'fecha_inicio' => 'datetime',
         'fecha_finalizacion' => 'datetime',
-        'fecha_cancelacion' => 'datetime',
+        'fecha_cancelacion' => 'datetime'
     ];
 
-    // Relaciones
-    public function proveedor()
+    public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
     }
 
-    public function datosGenerales()
+    public function datosGenerales(): HasMany
     {
-        return $this->hasOne(DatosGenerales::class);
+        return $this->hasMany(DatoGeneral::class);
     }
 
-    public function datosConstitutivos()
+    public function apoderadosLegales(): HasMany
     {
-        return $this->hasOne(DatosConstitutivos::class);
+        return $this->hasMany(ApoderadoLegal::class);
     }
 
-    public function direccion()
+    public function datosConstitutivos(): HasMany
     {
-        return $this->hasOne(Direccion::class, 'id_tramite');
+        return $this->hasMany(DatoConstitutivo::class);
     }
 
-    public function direcciones()
-    {
-        return $this->hasMany(Direccion::class, 'id_tramite');
-    }
-
-    public function datosProveedor()
-    {
-        return $this->hasOne(DatosProveedor::class);
-    }
-
-    public function contactos()
-    {
-        return $this->hasMany(Contacto::class);
-    }
-
-    public function accionistas()
+    public function accionistas(): HasMany
     {
         return $this->hasMany(Accionista::class);
     }
 
-    public function actividades()
+    public function contactos(): HasMany
     {
-        return $this->belongsToMany(ActividadEconomica::class, 'actividades', 'tramite_id', 'actividad_id')
-                    ->withPivot('id', 'created_at', 'updated_at');
+        return $this->hasMany(Contacto::class);
     }
 
-    public function apoderadoLegal()
+    public function actividades(): HasMany
     {
-        return $this->hasOne(ApoderadoLegal::class);
+        return $this->hasMany(ActividadProveedor::class);
     }
 
-    public function archivos()
+    public function direcciones(): HasMany
+    {
+        return $this->hasMany(Direccion::class);
+    }
+
+    public function archivos(): HasMany
     {
         return $this->hasMany(Archivo::class);
     }
 
-    public function revisionSecciones()
+    public function seccionesRevision(): HasMany
     {
-        return $this->hasMany(RevisionSeccion::class);
+        return $this->hasMany(SeccionRevision::class);
     }
 
-    public function oficios()
+    public function citas(): HasMany
+    {
+        return $this->hasMany(Cita::class);
+    }
+
+    public function revisiones(): HasMany
+    {
+        return $this->hasMany(RevisionTramite::class);
+    }
+
+    public function oficios(): HasMany
     {
         return $this->hasMany(Oficio::class);
     }
-
-    public function cita()
-    {
-        return $this->hasOne(Cita::class);
-    }
-
-    public function revisadoPor()
-    {
-        return $this->belongsTo(User::class, 'revisado_por');
-    }
-
-    public function procesadoPor()
-    {
-        return $this->belongsTo(User::class, 'procesado_por');
-    }
-
-    /**
-     * Obtiene el texto de las correcciones
-     */
-    public function getCorreccionesTextoAttribute(): string
-    {
-        $count = $this->correcciones_count ?? 0;
-        
-        if ($count === 0) {
-            return 'Ninguna corrección';
-        } elseif ($count === 1) {
-            return '1 corrección';
-        } else {
-            return $count . ' correcciones';
-        }
-    }
-
-    /**
-     * Obtiene el tiempo transcurrido desde la creación del trámite
-     */
-    public function getTiempoTranscurridoAttribute(): string
-    {
-        $diferencia = $this->created_at->diff(now());
-
-        if ($diferencia->days > 30) {
-            $tiempo = $diferencia->m . ' mes' . ($diferencia->m > 1 ? 'es' : '');
-            if ($diferencia->d > 0) {
-                $tiempo .= ' y ' . $diferencia->d . ' día' . ($diferencia->d > 1 ? 's' : '');
-            }
-            return $tiempo;
-        }
-
-        if ($diferencia->days > 0) {
-            $tiempo = $diferencia->days . ' día' . ($diferencia->days > 1 ? 's' : '');
-            if ($diferencia->h > 0) {
-                $tiempo .= ' y ' . $diferencia->h . ' hora' . ($diferencia->h > 1 ? 's' : '');
-            }
-            return $tiempo;
-        }
-
-        if ($diferencia->h > 0) {
-            $tiempo = $diferencia->h . ' hora' . ($diferencia->h > 1 ? 's' : '');
-            if ($diferencia->i > 0) {
-                $tiempo .= ' y ' . $diferencia->i . ' minuto' . ($diferencia->i > 1 ? 's' : '');
-            }
-            return $tiempo;
-        }
-
-        return $diferencia->i . ' minuto' . ($diferencia->i > 1 ? 's' : '');
-    }
-}
+} 

@@ -69,15 +69,19 @@ class AutoLoggingMiddleware
                 'url' => $request->fullUrl(),
                 'status_code' => $statusCode,
                 'duration_ms' => $duration,
-                'user_agent' => $request->userAgent(),
-                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent() ?? 'Unknown',
+                'ip' => $request->ip() ?? 'Unknown',
                 'user_id' => Auth::id() ?? null,
-                'session_id' => $request->session()->getId(),
+                'session_id' => $request->hasSession() ? $request->session()->getId() : null,
             ];
 
             // Agregar información específica según el tipo de petición
             if ($request->isMethod('POST')) {
-                $context['input_data'] = $this->sanitizeInput($request->all());
+                try {
+                    $context['input_data'] = $this->sanitizeInput($request->all());
+                } catch (\Exception $e) {
+                    $context['input_data'] = 'Error al obtener datos de entrada';
+                }
             }
 
             // Determinar nivel de log basado en el código de estado

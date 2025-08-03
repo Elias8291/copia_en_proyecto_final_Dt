@@ -2,27 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Localidad extends Model
 {
-    use HasFactory;
-
     protected $table = 'localidades';
-
+    
     protected $fillable = [
-        'municipio_id',
         'nombre',
+        'municipio_id'
     ];
 
-    public function municipio()
+    public function municipio(): BelongsTo
     {
         return $this->belongsTo(Municipio::class);
     }
-
-    public function asentamientos()
-    {
-        return $this->hasMany(Asentamiento::class);
-    }
-}
+} 

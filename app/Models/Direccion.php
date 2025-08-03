@@ -2,63 +2,45 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// use Illuminate\Database\Eloquent\SoftDeletes;
-// use Spatie\Activitylog\LogOptions;
-// use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Direccion extends Model
 {
-    use HasFactory; // Removed SoftDeletes and LogsActivity traits temporarily
-
     protected $table = 'direcciones';
-
+    
     protected $fillable = [
-        'id_tramite',
+        'proveedor_id',
+        'tramite_id',
         'calle',
-        'entre_calles',
         'numero_exterior',
         'numero_interior',
+        'colonia',
         'codigo_postal',
-        'colonia_asentamiento',
         'municipio',
-        'id_estado',
-        'coordenadas_id',
-        // Removed non-existent columns: 'es_principal', 'activo'
+        'asentamiento',
+        'coordenada_id',
+        'estado_id',
+        'status'
     ];
 
-    protected $casts = [
-        // Removed casts for non-existent columns
-        // 'es_principal' => 'boolean',
-        // 'activo' => 'boolean',
-    ];
-
-    // Commented out activity log method temporarily
-    /*
-    public function getActivitylogOptions(): LogOptions
+    public function proveedor(): BelongsTo
     {
-        return LogOptions::defaults()
-            ->logAll()
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn (string $eventName) => "Dirección {$eventName}")
-            ->useLogName('direccion');
-    }
-    */
-
-    public function tramite()
-    {
-        return $this->belongsTo(Tramite::class, 'id_tramite');
+        return $this->belongsTo(Proveedor::class);
     }
 
-    public function estado()
+    public function tramite(): BelongsTo
     {
-        return $this->belongsTo(Estado::class, 'id_estado');
+        return $this->belongsTo(Tramite::class);
     }
 
-    public function coordenadas()
+    public function coordenada(): BelongsTo
     {
-        return $this->belongsTo(Coordenada::class, 'coordenadas_id');
+        return $this->belongsTo(Coordenada::class);
     }
-}
+
+    public function estado(): BelongsTo
+    {
+        return $this->belongsTo(Estado::class);
+    }
+} 

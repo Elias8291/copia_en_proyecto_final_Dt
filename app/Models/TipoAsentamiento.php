@@ -2,21 +2,19 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TipoAsentamiento extends Model
 {
-    use HasFactory;
-
     protected $table = 'tipos_asentamiento';
-
+    
     protected $fillable = [
-        'nombre',
+        'nombre'
     ];
 
-    public function asentamientos()
+    public function asentamientos(): HasMany
     {
         return $this->hasMany(Asentamiento::class);
     }
-}
+} 

@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sector extends Model
 {
-    // Nombre de la tabla
     protected $table = 'sectores';
-
-    // Campos que se pueden asignar masivamente
+    
     protected $fillable = [
         'nombre',
-        'codigo',
-        'descripcion',
+        'descripcion'
     ];
-}
+
+    public function actividades(): HasMany
+    {
+        return $this->hasMany(Actividad::class);
+    }
+} 

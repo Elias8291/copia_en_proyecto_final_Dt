@@ -1,30 +1,28 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Actividad extends Model
 {
-    use HasFactory;
-
-    protected $table = 'actividades_economicas';
-
+    protected $table = 'actividad';
+    
     protected $fillable = [
-        'sector_id',
         'nombre',
-        'codigo_scian',
         'descripcion',
-        'fuente',
-        'estado_validacion',
+        'sector_id'
     ];
 
     public function sector(): BelongsTo
     {
-        return $this->belongsTo(Sector::class, 'sector_id');
+        return $this->belongsTo(Sector::class);
     }
-}
+
+    public function actividades(): HasMany
+    {
+        return $this->hasMany(ActividadProveedor::class);
+    }
+} 

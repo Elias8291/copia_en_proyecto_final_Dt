@@ -1,137 +1,174 @@
 @extends('layouts.app')
 
-@section('title', 'Trámites Disponibles')
-
 @section('content')
-    <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            
-            <div class="w-full max-w-7xl mx-auto bg-white shadow-md rounded-xl overflow-hidden border border-gray-200/70 p-8 -mt-4 mb-8">
-                <div class="p-6 border-b border-gray-200/70">
-                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Trámites') }}
+        </h2>
+        <a href="{{ route('tramites.create') }}" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+            Nuevo Trámite
+        </a>
+    </div>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                <div class="p-6">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Lista de Trámites</h3>
                         
-                        <div class="flex items-center space-x-4">
-                            <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light rounded-xl p-3 shadow-lg">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422A12.083 12.083 0 0112 21a12.083 12.083 0 01-6.16-10.422L12 14z" />
-                                </svg>
+                        <!-- Filtros -->
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                <select class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                                    <option value="">Todos</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="En_Revision">En Revisión</option>
+                                    <option value="Aprobado">Aprobado</option>
+                                    <option value="Rechazado">Rechazado</option>
+                                </select>
                             </div>
                             <div>
-                                <h1 class="text-2xl font-bold text-gray-800">Trámites Disponibles</h1>
-                                <p class="text-base text-gray-500 mt-1">Seleccione el tipo de trámite que desea realizar</p>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                                <select class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                                    <option value="">Todos</option>
+                                    <option value="Inscripcion">Inscripción</option>
+                                    <option value="Renovacion">Renovación</option>
+                                    <option value="Actualizacion">Actualización</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Desde</label>
+                                <input type="date" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Fecha Hasta</label>
+                                <input type="date" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
                             </div>
                         </div>
 
-                        @if ($proveedor)
-                            <div class="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-3">
-                                <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl border border-gray-200/50 p-4 shadow-sm">
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="w-3 h-3 bg-gray-400 rounded-full"></div>
-                                            <div class="flex flex-col">
-                                                <span class="text-sm font-medium text-gray-700">{{ $proveedor->razon_social }}</span>
-                                                <span class="text-xs text-gray-500">Proveedor registrado</span>
-                                            </div>
-                                        </div>
-                                        @php
-                                            $estadoColor = match ($proveedor->estado_padron ?? 'Sin Estado') {
-                                                'Activo' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                                'Pendiente' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                                'Vencido', 'Inactivo' => 'bg-red-50 text-red-700 border-red-200',
-                                                default => 'bg-gray-50 text-gray-700 border-gray-200',
-                                            };
-                                        @endphp
-                                        <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium border {{ $estadoColor }} ml-3">
-                                            {{ $proveedor->estado_padron ?? 'Sin Estado' }}
-                                        </span>
-                                    </div>
-                                </div>
+                        <!-- Tabla de trámites -->
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            ID
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Proveedor
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Tipo
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Estado
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Fecha Inicio
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Paso Actual
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Acciones
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            #001
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            Empresa ABC S.A. de C.V.
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Inscripción
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                En Revisión
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            15/01/2024
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                3 de 7
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <a href="#" class="text-primary hover:text-primary-dark mr-3">Ver</a>
+                                            <a href="#" class="text-primary hover:text-primary-dark mr-3">Editar</a>
+                                            <a href="#" class="text-red-600 hover:text-red-900">Eliminar</a>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            #002
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            Comercial XYZ Ltda.
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                Renovación
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                Aprobado
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            10/01/2024
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                7 de 7
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <a href="#" class="text-primary hover:text-primary-dark mr-3">Ver</a>
+                                            <a href="#" class="text-primary hover:text-primary-dark mr-3">Editar</a>
+                                            <a href="#" class="text-red-600 hover:text-red-900">Eliminar</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        <div class="mt-6 flex items-center justify-between">
+                            <div class="text-sm text-gray-700">
+                                Mostrando <span class="font-medium">1</span> a <span class="font-medium">10</span> de <span class="font-medium">97</span> resultados
                             </div>
-                        @endif
-                    </div>
-                </div>
-
-            <!-- Estado del Trámite Pendiente -->
-            @if ($globalTramites['tiene_tramite_pendiente'] && $globalTramites['tramite_pendiente'])
-                @php
-                    $detalles = $globalTramites['tramite_pendiente'];
-                    $tramite = $detalles['tramite'];
-                    
-                    // No mostrar el estado si el trámite está rechazado
-                    if ($tramite->estado === 'Rechazado') {
-                        $mostrarEstado = false;
-                    } else {
-                        $mostrarEstado = true;
-                        $tramite_id = str_pad($tramite->id, 4, '0', STR_PAD_LEFT);
-                        $estado = $tramite->estado;
-                        $paso_actual = $detalles['estado_descripcion'];
-                        $historial = [];
-                        $cita = $detalles['cita'] ?? null;
-                        
-                        // Obtener el oficio si el trámite está aprobado
-                        $oficio = null;
-                        if ($tramite->estado === 'Aprobado') {
-                            $oficio = $tramite->oficios()->orderBy('created_at', 'desc')->first();
-                            
-                            if (!$oficio) {
-                                $oficio = \App\Models\Oficio::where('tramite_id', $tramite->id)
-                                    ->orderBy('created_at', 'desc')
-                                    ->first();
-                            }
-                        }
-                    }
-                @endphp
-                
-                @if($mostrarEstado ?? true)
-                @include('tramites.estado', [
-                    'tramite' => $tramite,
-                    'tramite_id' => $tramite_id,
-                    'estado' => $estado,
-                    'paso_actual' => $paso_actual,
-                    'historial' => $historial,
-                    'cita' => $cita,
-                    'oficio' => $oficio
-                ])
-                @endif
-            @endif
-
-            <!-- Contenedor de Tarjetas de Trámites -->
-            @if (!($globalTramites['tiene_tramite_pendiente'] ?? false) || ($globalTramites['tiene_tramite_pendiente'] && $globalTramites['tramite_pendiente']['tramite']->estado === 'Rechazado'))
-                <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            @include('tramites.partials.tramite-card', [
-                                'tipo' => 'inscripcion',
-                                'titulo' => 'Inscripción al Padrón',
-                                'descripcion' => 'Para nuevos proveedores o proveedores vencidos.',
-                                'disponible' => $globalTramites['inscripcion'] ?? false,
-                                'colorFrom' => 'from-primary',
-                                'colorTo' => 'to-primary-dark',
-                                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>',
-                            ])
-
-                            @include('tramites.partials.tramite-card', [
-                                'tipo' => 'renovacion',
-                                'titulo' => 'Renovación de Registro',
-                                'descripcion' => 'Renueve su registro anual para mantener activo su estado en el padrón de proveedores.',
-                                'disponible' => $globalTramites['renovacion'] ?? false,
-                                'colorFrom' => 'from-primary-dark',
-                                'colorTo' => 'to-primary',
-                                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>',
-                            ])
-
-                            @include('tramites.partials.tramite-card', [
-                                'tipo' => 'actualizacion',
-                                'titulo' => 'Actualización de Datos',
-                                'descripcion' => 'Modifique su información registrada. Mantenga sus datos siempre actualizados.',
-                                'disponible' => $globalTramites['actualizacion'] ?? false,
-                                'colorFrom' => 'from-primary',
-                                'colorTo' => 'to-primary-dark',
-                                'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>',
-                            ])
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                    Anterior
+                                </button>
+                                <button class="px-3 py-2 text-sm font-medium text-white bg-primary border border-transparent rounded-md hover:bg-primary-dark">
+                                    1
+                                </button>
+                                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                    2
+                                </button>
+                                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                    3
+                                </button>
+                                <button class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                                    Siguiente
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            @endif
+            </div>
         </div>
     </div>
-@endsection
+@endsection 

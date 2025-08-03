@@ -2,38 +2,42 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InstrumentoNotarial extends Model
 {
-    use HasFactory;
-
     protected $table = 'instrumentos_notariales';
-
+    
     protected $fillable = [
         'numero_escritura',
         'numero_escritura_constitutiva',
         'fecha_constitucion',
         'nombre_notario',
-        'entidad_federativa',
+        'estado_id',
         'numero_notario',
         'numero_registro_publico',
-        'fecha_inscripcion',
+        'fecha_inscripcion'
     ];
 
     protected $casts = [
         'fecha_constitucion' => 'date',
-        'fecha_inscripcion' => 'date',
+        'fecha_inscripcion' => 'date'
     ];
 
-    public function datosConstitutivos()
+    public function estado(): BelongsTo
     {
-        return $this->hasMany(DatosConstitutivos::class);
+        return $this->belongsTo(Estado::class);
     }
 
-    public function apoderadosLegales()
+    public function apoderadosLegales(): HasMany
     {
         return $this->hasMany(ApoderadoLegal::class);
+    }
+
+    public function datosConstitutivos(): HasMany
+    {
+        return $this->hasMany(DatoConstitutivo::class);
     }
 } 

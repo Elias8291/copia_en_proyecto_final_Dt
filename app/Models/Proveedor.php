@@ -1,32 +1,15 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @property int $id
- * @property int $usuario_id
- * @property string|null $pv_numero
- * @property string $rfc
- * @property string $tipo_persona
- * @property string $estado_padron
- * @property \Carbon\Carbon|null $fecha_alta_padron
- * @property \Carbon\Carbon|null $fecha_vencimiento_padron
- * @property \Carbon\Carbon|null $created_at
- * @property \Carbon\Carbon|null $updated_at
- */
 class Proveedor extends Model
 {
-    use HasFactory;
-
     protected $table = 'proveedores';
-
+    
     protected $fillable = [
         'usuario_id',
         'pv_numero',
@@ -39,46 +22,56 @@ class Proveedor extends Model
 
     protected $casts = [
         'fecha_alta_padron' => 'date',
-        'fecha_vencimiento_padron' => 'date',
-        'estado_padron' => 'string',
-        'tipo_persona' => 'string',
+        'fecha_vencimiento_padron' => 'date'
     ];
 
-    protected $attributes = [
-        'estado_padron' => 'Pendiente',
-    ];
-
-    public function user(): BelongsTo
+    public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
     public function tramites(): HasMany
     {
-        return $this->hasMany(Tramite::class, 'proveedor_id');
+        return $this->hasMany(Tramite::class);
     }
 
-    // Scope activos removido - columna es_activo no existe en la tabla actual
-
-    public function scopePorEstado($query, string $estado)
+    public function datosGenerales(): HasMany
     {
-        return $query->where('estado_padron', $estado);
+        return $this->hasMany(DatoGeneral::class);
     }
 
-    /**
-     * Verifica si el proveedor está activo
-     */
-    public function estaActivo(): bool
+    public function apoderadosLegales(): HasMany
     {
-        return $this->estado_padron === 'Activo';
+        return $this->hasMany(ApoderadoLegal::class);
     }
 
-    /**
-     * Verifica si el proveedor está vencido
-     */
-    public function estaVencido(): bool
+    public function datosConstitutivos(): HasMany
     {
-        return $this->estado_padron === 'Vencido' || 
-               ($this->fecha_vencimiento_padron && $this->fecha_vencimiento_padron->isPast());
+        return $this->hasMany(DatoConstitutivo::class);
     }
-}
+
+    public function accionistas(): HasMany
+    {
+        return $this->hasMany(Accionista::class);
+    }
+
+    public function contactos(): HasMany
+    {
+        return $this->hasMany(Contacto::class);
+    }
+
+    public function actividades(): HasMany
+    {
+        return $this->hasMany(ActividadProveedor::class);
+    }
+
+    public function direcciones(): HasMany
+    {
+        return $this->hasMany(Direccion::class);
+    }
+
+    public function archivos(): HasMany
+    {
+        return $this->hasMany(Archivo::class);
+    }
+} 

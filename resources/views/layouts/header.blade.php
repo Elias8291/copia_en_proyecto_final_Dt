@@ -21,66 +21,7 @@
 
             <!-- Notificaciones y usuario -->
             <div class="hidden md:flex items-center space-x-4 pr-4">
-                <!-- Notificaciones -->
-                <div class="relative" id="notifications-container">
-                    <button id="notifications-btn"
-                        class="group p-1.5 rounded-lg hover:bg-gray-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary relative">
-                        <span class="sr-only">Ver notificaciones</span>
-                        <svg class="w-6 h-6 text-gray-500 group-hover:text-primary transition-colors duration-200"
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                        </svg>
-                        <span id="notifications-badge" class="absolute -top-0.5 -right-0.5 flex h-5 w-5" style="display: none;">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-5 w-5 bg-primary items-center justify-center">
-                                <span class="text-white text-xs font-bold" id="notifications-count">0</span>
-                            </span>
-                        </span>
-                    </button>
-
-                    <!-- Panel de notificaciones -->
-                    <div id="notifications-panel" 
-                         class="origin-top-right absolute right-0 mt-3 w-96 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 focus:outline-none z-50 overflow-hidden"
-                         style="display: none;">
-                        
-                        <!-- Header -->
-                        <div class="px-4 py-3 bg-gradient-to-r from-primary to-primary-dark flex items-center justify-between">
-                            <div class="flex items-center">
-                                <svg class="w-5 h-5 text-white mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                </svg>
-                                <h3 class="text-white text-sm font-semibold">Notificaciones</h3>
-                            </div>
-                            <span id="notifications-header-count" class="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-primary bg-white rounded-full" style="display: none;">
-                                <span id="notifications-header-number">0</span> nueva<span id="notifications-header-text">s</span>
-                            </span>
-                        </div>
-
-                        <!-- Contenido -->
-                        <div class="max-h-96 overflow-y-auto divide-y divide-gray-100" id="notifications-content">
-                            <!-- Loading -->
-                            <div id="notifications-loading" class="p-4 flex items-center justify-center">
-                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                                <span class="ml-2 text-sm text-gray-500">Cargando notificaciones...</span>
-                            </div>
-                        </div>
-
-                        <!-- Footer -->
-                        <div class="p-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-                            <a href="{{ route('notificaciones.index') }}"
-                                class="text-xs text-primary hover:text-primary-dark font-medium">
-                                Ver todas las notificaciones
-                            </a>
-                            <button id="mark-all-read-btn"
-                                    class="text-xs text-gray-600 hover:text-gray-900 font-medium"
-                                    style="display: none;">
-                                Marcar todas como leídas
-                            </button>
-                        </div>
-                    </div>
-                </div>
+               
 
                 <!-- Menú de usuario -->
                 <div class="relative" x-data="{ open: false }">

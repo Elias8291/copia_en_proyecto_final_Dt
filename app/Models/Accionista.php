@@ -2,40 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Activitylog\LogOptions;
-use Spatie\Activitylog\Traits\LogsActivity;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Accionista extends Model
 {
-    use HasFactory, LogsActivity;
-
+    protected $table = 'accionistas';
+    
     protected $fillable = [
-        'tramite_id',
-        'nombre_completo',
-        'rfc',
+        'nombre',
         'porcentaje_participacion',
-        'activo',
+        'proveedor_id',
+        'tramite_id',
+        'rfc',
+        'status'
     ];
 
     protected $casts = [
-        'porcentaje_participacion' => 'decimal:2',
-        'activo' => 'boolean',
+        'porcentaje_participacion' => 'decimal:2'
     ];
 
-    public function getActivitylogOptions(): LogOptions
+    public function proveedor(): BelongsTo
     {
-        return LogOptions::defaults()
-            ->logAll()
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs()
-            ->setDescriptionForEvent(fn (string $eventName) => "Accionista {$eventName}")
-            ->useLogName('accionista');
+        return $this->belongsTo(Proveedor::class);
     }
 
-    public function tramite()
+    public function tramite(): BelongsTo
     {
         return $this->belongsTo(Tramite::class);
     }
-}
+} 

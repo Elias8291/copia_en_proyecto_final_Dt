@@ -2,27 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Municipio extends Model
 {
-    use HasFactory;
-
     protected $table = 'municipios';
-
+    
     protected $fillable = [
-        'estado_id',
         'nombre',
+        'estado_id'
     ];
 
-    public function estado()
+    public function estado(): BelongsTo
     {
         return $this->belongsTo(Estado::class);
     }
 
-    public function localidades()
+    public function localidades(): HasMany
     {
         return $this->hasMany(Localidad::class);
     }
-}
+} 
