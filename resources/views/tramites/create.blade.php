@@ -1,6 +1,27 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    .border-red-500 {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+    
+    .btn-loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+    
+    .field-error {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    }
+    
+    .field-error:focus {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    }
+</style>
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-6 border-b border-gray-200/70">
@@ -29,11 +50,46 @@
         </div>
 
         <div class="p-6">
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <h3 class="text-red-800 font-semibold mb-2">Errores de validación:</h3>
+                    <ul class="text-red-700 text-sm">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            @if (session('success'))
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <p class="text-green-800">{{ session('success') }}</p>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <p class="text-red-800">{{ session('error') }}</p>
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" class="space-y-8" id="tramite-form">
                 @csrf
+                
+
 
                 <!-- Datos Generales -->
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="0" id="section-0">
+                    @if($errors->any())
+                        <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <h4 class="text-red-800 font-medium">Errores de validación:</h4>
+                            <ul class="mt-2 text-red-700 text-sm">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     @include('components.forms.datos-generales', [
                         'editable' => true, 
                         'datosConstancia' => $viewModel
@@ -88,7 +144,7 @@
 
                 <!-- Botón de envío -->
                 <div class="flex justify-center bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <button type="submit" class="bg-[#9d2449] hover:bg-[#8a1f40] text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl">
+                    <button type="submit" id="btn-enviar-tramite" class="bg-[#9d2449] hover:bg-[#8a1f40] text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Enviar Trámite
                     </button>
@@ -127,6 +183,7 @@ function navigateSection(direction) {
 window.navigateSection = navigateSection;
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Cargar datos de la constancia si están disponibles
     @if(isset($viewModel))
         if (document.getElementById('razon_social')) {
             document.getElementById('razon_social').value = '{{ $viewModel->getDatosGenerales()["razon_social"] ?? "" }}';
@@ -163,6 +220,17 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('estado').value = '{{ $datosDomicilio["estado"] ?? "" }}';
         }
     @endif
+
+    // Solo mostrar estado de carga al enviar
+    const form = document.getElementById('tramite-form');
+    const btnEnviar = document.getElementById('btn-enviar-tramite');
+
+    form.addEventListener('submit', function() {
+        btnEnviar.disabled = true;
+        btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+    });
 });
+
+
 </script>
 @endsection 

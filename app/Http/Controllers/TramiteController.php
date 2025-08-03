@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProcesarConstanciaRequest;
+use App\Http\Requests\TramiteFormRequest;
 use App\Services\Tramites\TramiteService;
 use App\Services\Tramites\ConstanciaService;
+use App\Services\Tramites\FormDataService;
 use App\Services\RfcProveedorService;
 use App\ViewModels\TramiteViewModel;
 use Illuminate\Http\Request;
@@ -14,12 +16,18 @@ class TramiteController extends Controller
     private TramiteService $tramiteService;
     private ConstanciaService $constanciaService;
     private RfcProveedorService $rfcProveedorService;
+    private FormDataService $formDataService;
 
-    public function __construct(TramiteService $tramiteService, ConstanciaService $constanciaService, RfcProveedorService $rfcProveedorService)
-    {
+    public function __construct(
+        TramiteService $tramiteService, 
+        ConstanciaService $constanciaService, 
+        RfcProveedorService $rfcProveedorService,
+        FormDataService $formDataService
+    ) {
         $this->tramiteService = $tramiteService;
         $this->constanciaService = $constanciaService;
         $this->rfcProveedorService = $rfcProveedorService;
+        $this->formDataService = $formDataService;
     }
 
     public function index()
@@ -83,6 +91,8 @@ class TramiteController extends Controller
         }
     }
 
+
+
     public function create()
     {
         if (!$this->tramiteService->verificarConstanciaCargada()) {
@@ -93,7 +103,7 @@ class TramiteController extends Controller
         $datosConstancia = $this->tramiteService->obtenerDatosConstancia();
         $viewModel = new TramiteViewModel($datosConstancia);
         
-        $rfc = $datosConstancia['sat_rfc'] ?? null;
+        $rfc = $datosConstancia['rfc'] ?? null;
         $tipoPersona = $rfc ? $this->rfcProveedorService->determinarTipoPersona($rfc) : 'Física';
         
         $archivosRequeridos = $rfc ? 
@@ -103,16 +113,16 @@ class TramiteController extends Controller
         return view('tramites.create', compact('viewModel', 'tipoPersona', 'archivosRequeridos'));
     }
 
-    public function store(Request $request)
+    public function store(TramiteFormRequest $request)
     {
         try {
-            $tramite = $this->tramiteService->crear($request->all());
+            $tramite = $this->formDataService->guardarTramite($request);
 
             return redirect()->route('tramites.index')
                 ->with('success', 'Trámite creado exitosamente.');
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Error al crear el trámite. Por favor, inténtelo de nuevo.']);
+            return back()->withErrors(['error' => 'Error al crear el trámite: ' . $e->getMessage()]);
         }
     }
 } 

@@ -95,6 +95,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/procesar-constancia', [TramiteController::class, 'procesarConstancia'])->name('procesar-constancia');
         Route::get('/create', [TramiteController::class, 'create'])->name('create');
         Route::post('/', [TramiteController::class, 'store'])->name('store');
+
     });
 });
 
