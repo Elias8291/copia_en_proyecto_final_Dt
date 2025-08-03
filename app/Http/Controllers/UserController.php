@@ -34,11 +34,13 @@ class UserController extends Controller
         $users = $query->orderBy('nombre')->paginate(10)->withQueryString()->through(
             fn ($user) => (object) [
                 'id' => $user->id,
-                'nombre' => $user->nombre,
+                'name' => $user->nombre,
                 'email' => $user->correo,
                 'rfc' => $user->rfc,
-                'rol' => $user->roles->first()->name ?? 'user',
-                'estado' => $user->deleted_at ? 'inactivo' : 'activo',
+                'roles' => $user->roles,
+                'email_verified_at' => $user->email_verified_at,
+                'created_at' => $user->created_at,
+                'deleted_at' => $user->deleted_at,
             ]
         );
     

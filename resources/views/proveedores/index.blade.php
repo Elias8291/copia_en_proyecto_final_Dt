@@ -71,7 +71,7 @@
                         </button>
                     </div>
                         
-                    <div id="filtersContainer" class="hidden">
+                    <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
                             <div>
                                 <label for="estado" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estado</label>
@@ -555,17 +555,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const perPageSelect = document.getElementById('per_page');
     const searchForm = document.getElementById('searchForm');
     
-    if ({{ request()->hasAny(['estado', 'tipo_persona', 'vencimiento', 'año']) ? 'true' : 'false' }}) {
-        container?.classList.remove('hidden');
-        if (text) text.textContent = 'Ocultar filtros';
-        icon?.classList.add('rotate-180');
-    }
+    // Los filtros siempre empiezan ocultos, sin importar si hay búsqueda
     
     toggle?.addEventListener('click', function() {
         const hidden = container?.classList.contains('hidden');
-        container?.classList.toggle('hidden');
-        if (text) text.textContent = hidden ? 'Ocultar filtros' : 'Mostrar filtros';
-        icon?.classList.toggle('rotate-180');
+        if (hidden) {
+            container?.classList.remove('hidden');
+            container?.classList.remove('max-h-0');
+            container?.classList.add('max-h-screen');
+            if (text) text.textContent = 'Ocultar filtros';
+            icon?.classList.add('rotate-180');
+        } else {
+            container?.classList.add('max-h-0');
+            setTimeout(() => {
+                container?.classList.add('hidden');
+            }, 300);
+            if (text) text.textContent = 'Mostrar filtros';
+            icon?.classList.remove('rotate-180');
+        }
     });
 
     perPageSelect?.addEventListener('change', function() {

@@ -10,8 +10,28 @@ class RolesController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $roles = Role::withCount('users')->paginate($perPage);
+        $perPage = $request->get('per_page', 15);
+        
+        $query = Role::withCount(['users', 'permissions']);
+        
+        // Búsqueda por nombre o descripción
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+        
+        // Filtro por guard
+        if ($request->filled('guard_name')) {
+            $query->where('guard_name', $request->get('guard_name'));
+        }
+        
+        $roles = $query->paginate($perPage);
+        
+        // Mantener los parámetros de búsqueda en la paginación
+        $roles->appends($request->query());
 
         return view('roles.index', compact('roles', 'perPage'));
     }
@@ -38,8 +58,22 @@ class RolesController extends Controller
             'description' => $request->description,
         ]);
 
-        if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
+        // Manejar permisos de forma más segura
+        try {
+            if ($request->has('permissions') && is_array($request->permissions)) {
+                // Verificar que todos los permisos existan y sean del guard correcto
+                $permissionIds = $request->permissions;
+                $validPermissions = Permission::whereIn('id', $permissionIds)
+                    ->where('guard_name', $request->guard_name)
+                    ->pluck('id')
+                    ->toArray();
+                
+                $role->syncPermissions($validPermissions);
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al sincronizar permisos: ' . $e->getMessage());
         }
 
         return redirect()->route('roles.index')
@@ -77,10 +111,24 @@ class RolesController extends Controller
             'description' => $request->description,
         ]);
 
-        if ($request->has('permissions')) {
-            $role->syncPermissions($request->permissions);
-        } else {
-            $role->syncPermissions([]);
+        // Manejar permisos de forma más segura
+        try {
+            if ($request->has('permissions') && is_array($request->permissions)) {
+                // Verificar que todos los permisos existan y sean del guard correcto
+                $permissionIds = $request->permissions;
+                $validPermissions = Permission::whereIn('id', $permissionIds)
+                    ->where('guard_name', $request->guard_name)
+                    ->pluck('id')
+                    ->toArray();
+                
+                $role->syncPermissions($validPermissions);
+            } else {
+                $role->syncPermissions([]);
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al sincronizar permisos: ' . $e->getMessage());
         }
 
         return redirect()->route('roles.index')
