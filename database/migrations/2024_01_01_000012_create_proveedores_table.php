@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')->unique()->constrained('users')->onDelete('cascade');
+            $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
             $table->string('pv_numero', 20);
             $table->string('rfc', 13);
             $table->enum('tipo_persona', ['Física', 'Moral']);

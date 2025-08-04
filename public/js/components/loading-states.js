@@ -171,51 +171,55 @@ function crearSpinnerElegante() {
 
 // Función para interceptar envíos de formularios con efectos elegantes
 function interceptarFormularios() {
-    document.addEventListener('submit', function(e) {
-        const form = e.target;
-        if (form.tagName === 'FORM') {
-            const submitBtn = form.querySelector('button[type="submit"]');
-            if (submitBtn && !submitBtn.disabled) {
-                // Obtener texto original
-                const originalText = submitBtn.innerHTML;
-                const isIcon = submitBtn.querySelector('svg, i');
-                
-                // Aplicar estado de carga
-                submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-80', 'cursor-not-allowed', 'scale-95');
-                submitBtn.classList.remove('hover:scale-105');
-                
-                // Contenido de carga elegante
-                if (isIcon) {
-                    // Si tiene icono, usar loader de puntos
-                    submitBtn.innerHTML = crearLoaderInline();
-                } else {
-                    // Si es texto, usar spinner + texto breve
-                    submitBtn.innerHTML = `
-                        <div class="flex items-center justify-center space-x-2">
-                            ${crearSpinnerElegante()}
-                            <span>Enviando...</span>
-                        </div>
-                    `;
-                }
-                
-                // Mostrar notificación
-                mostrarNotificacionCarga('Procesando...', 'loading');
-                
-                // Restaurar estado original en caso de error (timeout)
-                setTimeout(() => {
-                    if (submitBtn.disabled) {
-                        submitBtn.disabled = false;
-                        submitBtn.classList.remove('opacity-80', 'cursor-not-allowed', 'scale-95');
-                        submitBtn.classList.add('hover:scale-105');
-                        submitBtn.innerHTML = originalText;
-                        ocultarNotificacionCarga();
-                        mostrarNotificacionCarga('Error de conexión', 'error');
+    try {
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form && form.tagName === 'FORM') {
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.disabled) {
+                    // Obtener texto original
+                    const originalText = submitBtn.innerHTML;
+                    const isIcon = submitBtn.querySelector('svg, i');
+                    
+                    // Aplicar estado de carga
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-80', 'cursor-not-allowed', 'scale-95');
+                    submitBtn.classList.remove('hover:scale-105');
+                    
+                    // Contenido de carga elegante
+                    if (isIcon) {
+                        // Si tiene icono, usar loader de puntos
+                        submitBtn.innerHTML = crearLoaderInline();
+                    } else {
+                        // Si es texto, usar spinner + texto breve
+                        submitBtn.innerHTML = `
+                            <div class="flex items-center justify-center space-x-2">
+                                ${crearSpinnerElegante()}
+                                <span>Enviando...</span>
+                            </div>
+                        `;
                     }
-                }, 10000); // 10 segundos de timeout
+                    
+                    // Mostrar notificación
+                    mostrarNotificacionCarga('Procesando...', 'loading');
+                    
+                    // Restaurar estado original en caso de error (timeout)
+                    setTimeout(() => {
+                        if (submitBtn && submitBtn.disabled) {
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-80', 'cursor-not-allowed', 'scale-95');
+                            submitBtn.classList.add('hover:scale-105');
+                            submitBtn.innerHTML = originalText;
+                            ocultarNotificacionCarga();
+                            mostrarNotificacionCarga('Error de conexión', 'error');
+                        }
+                    }, 10000); // 10 segundos de timeout
+                }
             }
-        }
-    });
+        });
+    } catch (error) {
+        console.warn('Error setting up form interceptors:', error);
+    }
 }
 
 // Función para simular carga exitosa (usar en callbacks de éxito)
@@ -257,25 +261,29 @@ function ocultarOverlayCarga() {
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    interceptarFormularios();
-    
-    // Agregar estilos CSS personalizados
-    const styles = document.createElement('style');
-    styles.textContent = `
-        @keyframes pulse-soft {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
+    try {
+        interceptarFormularios();
         
-        .loading-pulse {
-            animation: pulse-soft 1.5s ease-in-out infinite;
-        }
-        
-        .loading-dots div:nth-child(1) { animation-delay: 0ms; }
-        .loading-dots div:nth-child(2) { animation-delay: 150ms; }
-        .loading-dots div:nth-child(3) { animation-delay: 300ms; }
-    `;
-    document.head.appendChild(styles);
+        // Agregar estilos CSS personalizados
+        const styles = document.createElement('style');
+        styles.textContent = `
+            @keyframes pulse-soft {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.7; }
+            }
+            
+            .loading-pulse {
+                animation: pulse-soft 1.5s ease-in-out infinite;
+            }
+            
+            .loading-dots div:nth-child(1) { animation-delay: 0ms; }
+            .loading-dots div:nth-child(2) { animation-delay: 150ms; }
+            .loading-dots div:nth-child(3) { animation-delay: 300ms; }
+        `;
+        document.head.appendChild(styles);
+    } catch (error) {
+        console.warn('Error initializing loading states:', error);
+    }
 });
 
 // Exportar funciones para uso global

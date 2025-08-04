@@ -11,14 +11,32 @@ class ContactoService
 {
     public function guardar(Tramite $tramite, Proveedor $proveedor, Request $request): void
     {
-        Contacto::create([
+        \Log::info('ContactoService: Iniciando guardado', [
             'tramite_id' => $tramite->id,
             'proveedor_id' => $proveedor->id,
-            'nombre_contacto' => $request->nombre_contacto,
-            'cargo' => $request->cargo,
-            'correo_electronico' => $request->correo_contacto,
-            'telefono' => $request->telefono_contacto,
-            'status' => 'pendiente',
+            'request_data' => $request->all()
         ]);
+        
+        try {
+            $contacto = Contacto::create([
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $proveedor->id,
+                'nombre_contacto' => $request->nombre_contacto,
+                'cargo' => $request->cargo,
+                'correo_electronico' => $request->correo_contacto,
+                'telefono' => $request->telefono_contacto,
+                'status' => 'pendiente',
+            ]);
+            
+            \Log::info('ContactoService: Contacto creado exitosamente', [
+                'contacto_id' => $contacto->id
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('ContactoService: Error al crear contacto', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 } 

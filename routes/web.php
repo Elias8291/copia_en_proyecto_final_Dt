@@ -91,11 +91,14 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('tramites')->name('tramites.')->group(function () {
         Route::get('/', [TramiteController::class, 'index'])->name('index');
-        Route::get('/cargar-constancia', [TramiteController::class, 'cargarConstancia'])->name('cargar-constancia');
+        Route::get('/cargar-constancia/{tipo}', [TramiteController::class, 'cargarConstancia'])->name('cargar-constancia');
         Route::post('/procesar-constancia', [TramiteController::class, 'procesarConstancia'])->name('procesar-constancia');
         Route::get('/create', [TramiteController::class, 'create'])->name('create');
         Route::post('/', [TramiteController::class, 'store'])->name('store');
-
+        Route::get('/estado', [TramiteController::class, 'estado'])->name('estado');
+        
+        // Ruta de prueba temporal para depuración
+        Route::post('/test-store', [TramiteController::class, 'testStore'])->name('test-store');
     });
 });
 

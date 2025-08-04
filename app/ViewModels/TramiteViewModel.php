@@ -3,16 +3,19 @@
 namespace App\ViewModels;
 
 use App\Services\Tramites\ConstanciaService;
+use App\Services\RfcProveedorService;
 
 class TramiteViewModel
 {
     private array $datosConstancia;
     private ConstanciaService $constanciaService;
+    private RfcProveedorService $rfcProveedorService;
 
     public function __construct(array $datosConstancia = [])
     {
         $this->datosConstancia = $datosConstancia;
         $this->constanciaService = app(ConstanciaService::class);
+        $this->rfcProveedorService = app(RfcProveedorService::class);
     }
 
     public function getDatosFinales(array $datos = []): array
@@ -44,8 +47,9 @@ class TramiteViewModel
             'calle' => $this->datosConstancia['domicilio']['calle'] ?? ($datos['calle'] ?? ''),
             'numero_exterior' => $this->datosConstancia['domicilio']['numero_exterior'] ?? ($datos['numero_exterior'] ?? ''),
             'numero_interior' => $this->datosConstancia['domicilio']['numero_interior'] ?? ($datos['numero_interior'] ?? ''),
-            'entre_calle' => $datos['entre_calle'] ?? '',
-            'y_calle' => $datos['y_calle'] ?? '',
+            // Los campos entre_calle y y_calle SOLO vienen de los datos del formulario, nunca de la constancia
+            'entre_calle' => !empty($datos['entre_calle']) ? $datos['entre_calle'] : '',
+            'y_calle' => !empty($datos['y_calle']) ? $datos['y_calle'] : '',
         ];
     }
 
@@ -56,7 +60,7 @@ class TramiteViewModel
 
     public function determinarTipoPersona(string $rfc): string
     {
-        return $this->constanciaService->determinarTipoPersona($rfc);
+        return $this->rfcProveedorService->determinarTipoPersona($rfc);
     }
 
     public function getDatosGenerales(array $datos = []): array

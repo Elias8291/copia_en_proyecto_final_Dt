@@ -1,5 +1,23 @@
 @props(['datos' => [], 'editable' => false])
 
+@php
+    // Obtener actividades del old() si hay errores de validación
+    $actividadesOld = old('actividades_seleccionadas');
+    $actividadesArray = [];
+    
+    if ($actividadesOld) {
+        // Si viene como JSON string, decodificarlo
+        if (is_string($actividadesOld)) {
+            $actividadesArray = json_decode($actividadesOld, true) ?: [];
+        } elseif (is_array($actividadesOld)) {
+            $actividadesArray = $actividadesOld;
+        }
+    } elseif (!empty($datos)) {
+        // Si no hay old() pero hay datos, usar los datos
+        $actividadesArray = $datos;
+    }
+@endphp
+
 @if(empty($datos))
     <div class="space-y-6" {{ $attributes }}>
         <!-- Título de la sección -->
@@ -47,7 +65,18 @@
                 </div>
                 
                 <!-- Input oculto para enviar datos -->
-                <input type="hidden" name="actividades_seleccionadas" id="actividades-json" value="[]">
+                <input type="hidden" name="actividades_seleccionadas" id="actividades-json" value="{{ old('actividades_seleccionadas', '[]') }}">
+                @error('actividades')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                
+                <!-- Mensaje de error para actividades vacías -->
+                <div id="error-actividades-vacias" class="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg hidden">
+                    <p class="text-sm text-red-600">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Debe seleccionar al menos una actividad económica
+                    </p>
+                </div>
             </div>
         </div>
         
@@ -57,9 +86,22 @@
             const resultadosDiv = document.getElementById('resultados-busqueda');
             const actividadesSeleccionadas = document.getElementById('actividades-seleccionadas');
             const actividadesJson = document.getElementById('actividades-json');
+            const errorActividadesVacias = document.getElementById('error-actividades-vacias');
+            
+            // Check if required elements exist
+            if (!buscarInput || !resultadosDiv || !actividadesSeleccionadas || !actividadesJson) {
+                console.warn('Required elements for actividades-economicas not found');
+                return;
+            }
             
             let timeoutId;
             let actividadesSeleccionadasArray = [];
+            
+            // Cargar actividades existentes desde old() o datos
+            @if(!empty($actividadesArray))
+                actividadesSeleccionadasArray = @json($actividadesArray);
+                actualizarActividadesSeleccionadas();
+            @endif
             
             // Búsqueda en tiempo real
             buscarInput.addEventListener('input', function() {
@@ -128,6 +170,7 @@
                 `).join('');
                 
                 actividadesJson.value = JSON.stringify(actividadesSeleccionadasArray);
+                verificarActividadesSeleccionadas();
             }
             
             // Función global para remover actividad
@@ -138,10 +181,18 @@
             
             // Ocultar resultados al hacer clic fuera
             document.addEventListener('click', function(e) {
-                if (!buscarInput.contains(e.target) && !resultadosDiv.contains(e.target)) {
+                if (buscarInput && resultadosDiv && !buscarInput.contains(e.target) && !resultadosDiv.contains(e.target)) {
                     resultadosDiv.classList.add('hidden');
                 }
             });
+
+            function verificarActividadesSeleccionadas() {
+                if (actividadesSeleccionadasArray.length === 0) {
+                    errorActividadesVacias.classList.remove('hidden');
+                } else {
+                    errorActividadesVacias.classList.add('hidden');
+                }
+            }
         });
         </script>
         @endif

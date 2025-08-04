@@ -14,19 +14,30 @@ class ActividadesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'actividades' => 'required|array|min:1',
-            'actividades.*' => 'exists:actividades,id',
-            'actividades_seleccionadas' => 'nullable|string',
+            'actividades_seleccionadas' => 'required|string',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'actividades.required' => 'Debe seleccionar al menos una actividad económica.',
-            'actividades.array' => 'Las actividades deben ser una lista válida.',
-            'actividades.min' => 'Debe seleccionar al menos una actividad económica.',
-            'actividades.*.exists' => 'Una de las actividades seleccionadas no es válida.',
+            'actividades_seleccionadas.required' => 'Debe seleccionar al menos una actividad económica.',
+            'actividades_seleccionadas.string' => 'El formato de actividades no es válido.',
         ];
+    }
+    
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $actividadesSeleccionadas = $this->input('actividades_seleccionadas');
+            
+            if ($actividadesSeleccionadas) {
+                $actividadesArray = json_decode($actividadesSeleccionadas, true);
+                
+                if (!is_array($actividadesArray) || empty($actividadesArray)) {
+                    $validator->errors()->add('actividades', 'Debe seleccionar al menos una actividad económica.');
+                }
+            }
+        });
     }
 } 

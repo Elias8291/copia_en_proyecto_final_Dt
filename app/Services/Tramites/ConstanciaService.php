@@ -16,19 +16,21 @@ class ConstanciaService
             'constancia_path' => $path,
             'constancia_name' => $file->getClientOriginalName(),
             'constancia_uploaded' => true,
-            'sat_rfc' => $request->sat_rfc,
-            'sat_nombre' => $request->sat_nombre,
-            'sat_tipo_persona' => $request->sat_tipo_persona,
-            'sat_email' => $request->sat_email,
-            'sat_curp' => $request->sat_curp,
+            'rfc' => $request->sat_rfc,
+            'razon_social' => $request->sat_nombre,
+            'tipo_persona' => $request->sat_tipo_persona,
+            'curp' => $request->sat_curp,
+            'email' => $request->sat_email,
             'qr_url' => $request->qr_url,
-            'sat_calle' => $request->sat_calle,
-            'sat_numero_exterior' => $request->sat_numero_exterior,
-            'sat_numero_interior' => $request->sat_numero_interior,
-            'sat_colonia' => $request->sat_colonia,
-            'sat_cp' => $request->sat_cp,
-            'sat_municipio' => $request->sat_municipio,
-            'sat_entidad_federativa' => $request->sat_entidad_federativa,
+            'domicilio' => [
+                'calle' => $request->sat_calle,
+                'numero_exterior' => $request->sat_numero_exterior,
+                'numero_interior' => $request->sat_numero_interior,
+                'colonia' => $request->sat_colonia,
+                'codigo_postal' => $request->sat_cp,
+                'municipio' => $request->sat_municipio,
+                'entidad_federativa' => $request->sat_entidad_federativa,
+            ]
         ];
     }
 

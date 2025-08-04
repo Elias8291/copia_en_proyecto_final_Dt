@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Get all required elements with null checks
     const progressBar = document.getElementById('progress-bar');
     const progressLine = document.getElementById('progress-line');
     const progressPercentage = document.getElementById('progress-percentage');
@@ -8,11 +9,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const finishBtn = document.querySelector('[data-hs-stepper-finish-btn]');
     const contentItems = document.querySelectorAll('[data-hs-stepper-content-item]');
     
+    // If no stepper elements are found, exit early
+    if (!progressBar && !progressLine && !progressPercentage && steps.length === 0) {
+        console.debug('Stepper elements not found on this page - skipping stepper initialization');
+        return;
+    }
+    
     let currentStep = 1;
     const totalSteps = steps.length;
     let isTransitioning = false;
 
     function updateProgress() {
+        if (!progressBar || !progressLine || !progressPercentage) return;
+        
         const progress = ((currentStep - 1) / (totalSteps - 1)) * 100;
         progressBar.style.width = `${progress}%`;
         progressLine.style.width = `${progress}%`;
@@ -24,6 +33,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const stepNumber = index + 1;
             const circle = step.querySelector('.step-circle');
             const text = step.querySelector('span:not(.step-circle)');
+
+            if (!circle || !text) return;
 
             if (stepNumber < currentStep) {
                 // Completed step
@@ -53,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showCurrentContent() {
-        if (isTransitioning) return;
+        if (isTransitioning || contentItems.length === 0) return;
         isTransitioning = true;
 
         contentItems.forEach((item, index) => {
@@ -61,13 +72,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         const currentContent = contentItems[currentStep - 1];
-        setTimeout(() => {
-            currentContent.classList.add('active');
+        if (currentContent) {
+            setTimeout(() => {
+                currentContent.classList.add('active');
+                isTransitioning = false;
+            }, 50);
+        } else {
             isTransitioning = false;
-        }, 50);
+        }
     }
 
     function updateButtons() {
+        if (!backBtn || !nextBtn || !finishBtn) return;
+        
         backBtn.disabled = currentStep === 1;
         backBtn.classList.toggle('opacity-50', currentStep === 1);
         
@@ -95,43 +112,52 @@ document.addEventListener('DOMContentLoaded', function() {
         updateButtons();
     }
 
-    // Event listeners for navigation
-    nextBtn.addEventListener('click', () => updateStep('next'));
-    backBtn.addEventListener('click', () => updateStep('back'));
+    // Event listeners for navigation - only add if elements exist
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => updateStep('next'));
+    }
+    if (backBtn) {
+        backBtn.addEventListener('click', () => updateStep('back'));
+    }
 
-    // Initialize stepper
-    updateProgress();
-    updateStepStyles();
-    showCurrentContent();
-    updateButtons();
+    // Initialize stepper only if we have the required elements
+    if (steps.length > 0) {
+        updateProgress();
+        updateStepStyles();
+        showCurrentContent();
+        updateButtons();
 
-    // Add hover effects for steps
-    steps.forEach(step => {
-        const circle = step.querySelector('.step-circle');
-        
-        circle.addEventListener('mouseenter', () => {
-            if (parseInt(step.dataset.step) >= currentStep) {
-                circle.classList.add('transform', 'scale-110', 'shadow-lg');
-            }
+        // Add hover effects for steps
+        steps.forEach(step => {
+            const circle = step.querySelector('.step-circle');
+            if (!circle) return;
+            
+            circle.addEventListener('mouseenter', () => {
+                if (parseInt(step.dataset.step) >= currentStep) {
+                    circle.classList.add('transform', 'scale-110', 'shadow-lg');
+                }
+            });
+
+            circle.addEventListener('mouseleave', () => {
+                circle.classList.remove('transform', 'scale-110', 'shadow-lg');
+            });
         });
+    }
 
-        circle.addEventListener('mouseleave', () => {
-            circle.classList.remove('transform', 'scale-110', 'shadow-lg');
-        });
-    });
-
-    // Handle actividades selection
+    // Handle actividades selection - only if element exists
     const actividadSelect = document.getElementById('actividad');
     const actividadesContainer = document.getElementById('actividades-seleccionadas');
     const selectedActividades = new Set();
 
-    actividadSelect?.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        if (selectedOption.value && !selectedActividades.has(selectedOption.value)) {
-            selectedActividades.add(selectedOption.value);
-            updateActividadesDisplay();
-        }
-    });
+    if (actividadSelect) {
+        actividadSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption && selectedOption.value && !selectedActividades.has(selectedOption.value)) {
+                selectedActividades.add(selectedOption.value);
+                updateActividadesDisplay();
+            }
+        });
+    }
 
     function updateActividadesDisplay() {
         if (!actividadesContainer) return;

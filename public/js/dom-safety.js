@@ -123,15 +123,19 @@
 
     // Inicialización cuando el DOM esté listo
     function initDOMSafety() {
-        console.info('DOM Safety inicializado correctamente');
-        
-        // Verificar elementos comunes que suelen causar errores
-        const commonElements = ['currentTime', 'currentDate', 'greeting', 'main-content', 'sidebar'];
-        commonElements.forEach(id => {
-            if (!document.getElementById(id)) {
-                console.debug(`Elemento común '${id}' no encontrado - esto es normal si no está en esta página`);
-            }
-        });
+        try {
+            console.info('DOM Safety inicializado correctamente');
+            
+            // Verificar elementos comunes que suelen causar errores
+            const commonElements = ['currentTime', 'currentDate', 'greeting', 'main-content', 'sidebar'];
+            commonElements.forEach(id => {
+                if (!document.getElementById(id)) {
+                    console.debug(`Elemento común '${id}' no encontrado - esto es normal si no está en esta página`);
+                }
+            });
+        } catch (error) {
+            console.warn('Error initializing DOM Safety:', error);
+        }
     }
 
     // Ejecutar cuando el DOM esté listo

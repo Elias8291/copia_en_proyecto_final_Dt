@@ -14,9 +14,14 @@ class DatosGeneralesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'razon_social' => 'required|string|max:255',
-            'rfc' => 'required|string|max:13|regex:/^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/',
+            'razon_social' => 'nullable|string|max:255',
+            'razon_social_hidden' => 'nullable|string|max:255',
+            'rfc' => 'nullable|string|max:13|regex:/^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/',
+            'rfc_hidden' => 'nullable|string|max:13|regex:/^[A-ZÑ&]{3,4}[0-9]{6}[A-Z0-9]{3}$/',
+            'tipo_persona' => 'nullable|string|in:Física,Moral',
+            'tipo_persona_hidden' => 'nullable|string|in:Física,Moral',
             'curp' => 'nullable|string|max:18|regex:/^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$/',
+            'curp_hidden' => 'nullable|string|max:18|regex:/^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z][0-9]$/',
             'pagina_web' => 'nullable|url|max:255',
             'telefono' => 'required|string|max:50|regex:/^[0-9\s\(\)\-\+]+$/',
             'nombre_contacto' => 'required|string|max:255',
@@ -29,13 +34,18 @@ class DatosGeneralesRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'razon_social.required' => 'La razón social es obligatoria.',
             'razon_social.max' => 'La razón social no puede tener más de 255 caracteres.',
-            'rfc.required' => 'El RFC es obligatorio.',
+            'razon_social_hidden.max' => 'La razón social no puede tener más de 255 caracteres.',
             'rfc.max' => 'El RFC no puede tener más de 13 caracteres.',
             'rfc.regex' => 'El formato del RFC no es válido.',
+            'rfc_hidden.max' => 'El RFC no puede tener más de 13 caracteres.',
+            'rfc_hidden.regex' => 'El formato del RFC no es válido.',
+            'tipo_persona.in' => 'El tipo de persona debe ser Física o Moral.',
+            'tipo_persona_hidden.in' => 'El tipo de persona debe ser Física o Moral.',
             'curp.max' => 'La CURP no puede tener más de 18 caracteres.',
             'curp.regex' => 'El formato de la CURP no es válido.',
+            'curp_hidden.max' => 'La CURP no puede tener más de 18 caracteres.',
+            'curp_hidden.regex' => 'El formato de la CURP no es válido.',
             'pagina_web.url' => 'La página web debe tener un formato válido.',
             'pagina_web.max' => 'La página web no puede tener más de 255 caracteres.',
             'telefono.required' => 'El teléfono del proveedor es obligatorio.',
@@ -50,5 +60,27 @@ class DatosGeneralesRequest extends FormRequest
             'telefono_contacto.required' => 'El teléfono del contacto es obligatorio.',
             'telefono_contacto.regex' => 'El teléfono del contacto debe contener solo números, espacios, paréntesis, guiones y signos más.',
         ];
+    }
+    
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // Validar que al menos uno de los campos (principal o oculto) tenga valor
+            $razonSocial = $this->input('razon_social') ?: $this->input('razon_social_hidden');
+            $rfc = $this->input('rfc') ?: $this->input('rfc_hidden');
+            $tipoPersona = $this->input('tipo_persona') ?: $this->input('tipo_persona_hidden');
+            
+            if (empty($razonSocial)) {
+                $validator->errors()->add('razon_social', 'La razón social es obligatoria.');
+            }
+            
+            if (empty($rfc)) {
+                $validator->errors()->add('rfc', 'El RFC es obligatorio.');
+            }
+            
+            if (empty($tipoPersona)) {
+                $validator->errors()->add('tipo_persona', 'El tipo de persona es obligatorio.');
+            }
+        });
     }
 } 

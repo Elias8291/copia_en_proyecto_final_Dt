@@ -12,10 +12,15 @@
             'calle' => $datosConstancia['domicilio']['calle'] ?? ($datos['calle'] ?? ''),
             'numero_exterior' => $datosConstancia['domicilio']['numero_exterior'] ?? ($datos['numero_exterior'] ?? ''),
             'numero_interior' => $datosConstancia['domicilio']['numero_interior'] ?? ($datos['numero_interior'] ?? ''),
-            'entre_calle' => $datos['entre_calle'] ?? '',
-            'y_calle' => $datos['y_calle'] ?? '',
+            // Los campos entre_calle y y_calle SOLO vienen de los datos del formulario, no de la constancia
+            'entre_calle' => !empty($datos['entre_calle']) ? $datos['entre_calle'] : '',
+            'y_calle' => !empty($datos['y_calle']) ? $datos['y_calle'] : '',
         ] : $datos;
     }
+    
+    // Asegurar que entre_calle y y_calle siempre vengan de los datos del formulario
+    $datosFinales['entre_calle'] = !empty($datos['entre_calle']) ? $datos['entre_calle'] : '';
+    $datosFinales['y_calle'] = !empty($datos['y_calle']) ? $datos['y_calle'] : '';
 @endphp
 
 <div class="space-y-6" {{ $attributes }} data-seccion="domicilio">
@@ -52,7 +57,7 @@
                         name="codigo_postal"
                         id="codigo_postal"
                         value="{{ $datosFinales['codigo_postal'] ?? old('codigo_postal') }}"
-                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ $errors->has('codigo_postal') ? 'border-red-500' : '' }}"
                         placeholder="12345"
                         maxlength="5">
                     <div id="loading-cp" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden">
@@ -61,6 +66,9 @@
                         </span>
                     </div>
                 </div>
+                @error('codigo_postal')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Estado -->
@@ -73,13 +81,16 @@
                         <i class="fas fa-map-marked-alt text-gray-500"></i>
                     </div>
                     <select name="estado_id" id="estado_id"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('estado_id') ? 'border-red-500' : '' }}">
                         <option value="">Cargando estados...</option>
                     </select>
                     <div id="loading-estados" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                         <i class="fas fa-spinner fa-spin text-gray-400"></i>
                     </div>
                 </div>
+                @error('estado_id')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Municipio -->
@@ -95,9 +106,12 @@
                         name="municipio"
                         id="municipio"
                         value="{{ $datosFinales['municipio'] ?? old('municipio') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('municipio') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese municipio o delegación">
                 </div>
+                @error('municipio')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Asentamiento -->
@@ -113,9 +127,12 @@
                         name="asentamiento"
                         id="asentamiento"
                         value="{{ $datosFinales['asentamiento'] ?? old('asentamiento') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('asentamiento') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese colonia o asentamiento">
                 </div>
+                @error('asentamiento')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Calle       -->
@@ -129,10 +146,14 @@
                     </div>
                     <input type="text"
                         name="calle"
+                        id="calle"
                         value="{{ $datosFinales['calle'] ?? old('calle') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('calle') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese nombre de la calle">
                 </div>
+                @error('calle')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Entre Calle -->
@@ -146,10 +167,14 @@
                     </div>
                     <input type="text"
                         name="entre_calle"
-                        value="{{ $datosFinales['entre_calle'] ?? old('entre_calle') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        id="entre_calle"
+                        value="{{ old('entre_calle') ?: ($datosFinales['entre_calle'] ?? '') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('entre_calle') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese primera calle de referencia">
                 </div>
+                @error('entre_calle')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Y Calle -->
@@ -163,10 +188,14 @@
                     </div>
                     <input type="text"
                         name="y_calle"
-                        value="{{ $datosFinales['y_calle'] ?? old('y_calle') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        id="y_calle"
+                        value="{{ old('y_calle') ?: ($datosFinales['y_calle'] ?? '') }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('y_calle') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese segunda calle de referencia">
                 </div>
+                @error('y_calle')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Número Exterior -->
@@ -180,10 +209,14 @@
                     </div>
                     <input type="text"
                         name="numero_exterior"
+                        id="numero_exterior"
                         value="{{ $datosFinales['numero_exterior'] ?? old('numero_exterior') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_exterior') ? 'border-red-500' : '' }}"
                         placeholder="123 o A-1">
                 </div>
+                @error('numero_exterior')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Número Interior -->
@@ -197,10 +230,14 @@
                     </div>
                     <input type="text"
                         name="numero_interior"
+                        id="numero_interior"
                         value="{{ $datosFinales['numero_interior'] ?? old('numero_interior') }}"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_interior') ? 'border-red-500' : '' }}"
                         placeholder="Apto 5 o Local 2">
                 </div>
+                @error('numero_interior')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Latitud -->
@@ -215,11 +252,14 @@
                     <input type="number"
                         name="latitud"
                         id="latitud-manual"
-                        value="{{ $datos['latitud'] ?? old('latitud') }}"
+                        value="{{ $datos['latitud'] ?? old('latitud') ?? '19.4326' }}"
                         step="0.000001"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('latitud') ? 'border-red-500' : '' }}"
                         placeholder="19.4326">
                 </div>
+                @error('latitud')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Campo: Longitud -->
@@ -234,12 +274,18 @@
                     <input type="number"
                         name="longitud"
                         id="longitud-manual"
-                        value="{{ $datos['longitud'] ?? old('longitud') }}"
+                        value="{{ $datos['longitud'] ?? old('longitud') ?? '-99.1332' }}"
                         step="0.000001"
-                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('longitud') ? 'border-red-500' : '' }}"
                         placeholder="-99.1332">
                 </div>
+                @error('longitud')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
+
+            <!-- Campo oculto para colonia (usa el valor de asentamiento) -->
+            <input type="hidden" name="colonia" value="{{ $datosFinales['asentamiento'] ?? old('asentamiento') }}">
         </div>
     </div>
     @else
@@ -304,6 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
         estado: $('estado_id'),
         municipio: $('municipio'),
         asentamiento: $('asentamiento'),
+        entreCalle: $('entre_calle'),
+        yCalle: $('y_calle'),
         loadingCp: $('loading-cp'),
         loadingEstados: $('loading-estados'),
     };
@@ -329,16 +377,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.estado.innerHTML = `<option value="">Seleccione estado</option>` +
                     data.data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
                 
+                // Si no hay valor seleccionado, usar el primer estado como valor por defecto
+                if (!elements.estado.value && data.data.length > 0) {
+                    elements.estado.value = data.data[0].id;
+                }
+                
                 if (elements.cp.value.trim().length === 5) {
                     buscarPorCodigoPostal(elements.cp.value.trim());
                 }
             } else {
-                throw new Error();
+                throw new Error('Error al cargar estados');
             }
         })
-        .catch(() => {
+        .catch((error) => {
+            console.error('Error cargando estados:', error);
             elements.loadingEstados.classList.add('hidden');
-            elements.estado.innerHTML = `<option>Error al cargar</option>`;
+            elements.estado.innerHTML = `<option value="1">Error al cargar - usando valor por defecto</option>`;
         });
 
     // 🔍 Función para buscar por código postal
@@ -377,7 +431,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     elements.estado.value = estadoOption.value;
                 }
 
-
             } else {
                 notificar('No se encontraron datos para este código postal', 'warning');
             }
@@ -387,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
             notificar('Error al cargar los datos', 'error');
         });
     }
+    
     let timeoutId;
     elements.cp.addEventListener('input', () => {
         const cp = elements.cp.value.trim();

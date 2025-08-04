@@ -1,4 +1,11 @@
-@props(['editable' => false, 'archivosRequeridos' => []])
+@props(['editable' => false, 'archivosRequeridos' => [], 'tipoPersona' => 'Física'])
+
+@php
+    // Filtrar archivos según el tipo de persona
+    $archivosFiltrados = $archivosRequeridos->filter(function($archivo) use ($tipoPersona) {
+        return $archivo->tipo_persona === 'Ambas' || $archivo->tipo_persona === $tipoPersona;
+    });
+@endphp
 
 <div class="space-y-6" {{ $attributes }}>
     <div class="flex items-center space-x-3 mb-6">
@@ -9,11 +16,11 @@
         </div>
         <div>
             <h3 class="text-lg font-semibold text-gray-900">Archivos Requeridos</h3>
-            <p class="text-sm text-gray-500">Documentación obligatoria según su tipo de persona</p>
+            <p class="text-sm text-gray-500">Documentación obligatoria para {{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}</p>
         </div>
     </div>
 
-    @if($editable && $archivosRequeridos->count() > 0)
+    @if($editable && $archivosFiltrados->count() > 0)
         <div class="bg-[#9D2449]/10 border border-[#9D2449]/20 rounded-lg p-4 mb-6">
             <div class="flex">
                 <div class="flex-shrink-0">
@@ -33,7 +40,7 @@
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            @foreach($archivosRequeridos as $archivo)
+            @foreach($archivosFiltrados as $archivo)
                 <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#9D2449] transition-colors">
                     <div class="text-center">
                         <!-- Icono según tipo de archivo -->
@@ -67,7 +74,9 @@
                         </div>
                         
                         <!-- Nombre del archivo -->
-                        <h5 class="font-medium text-gray-900 mb-2 text-sm">{{ $archivo->nombre }}</h5>
+                        <h5 class="font-medium text-gray-900 mb-2 text-sm">
+                            {{ $archivo->nombre }} <span class="text-red-500">*</span>
+                        </h5>
                         
                         <!-- Descripción -->
                         <p class="text-xs text-gray-500 mb-3 line-clamp-2">{{ $archivo->descripcion }}</p>
@@ -84,7 +93,7 @@
                             <input type="file"
                                 name="documentos[{{ Str::slug($archivo->nombre) }}]"
                                 accept=".{{ $archivo->tipo_archivo }}"
-                                class="hidden"
+                                class="hidden {{ $errors->has('documentos.' . Str::slug($archivo->nombre)) ? 'border-red-500' : '' }}"
                                 onchange="updateFileName(this, '{{ Str::slug($archivo->nombre) }}-name')">
                             <span class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-gray-800 text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,9 +105,43 @@
                         
                         <!-- Nombre del archivo seleccionado -->
                         <p id="{{ Str::slug($archivo->nombre) }}-name" class="text-xs text-[#9D2449] mt-2 hidden font-medium"></p>
+                        
+                        <!-- Error individual para cada archivo -->
+                        @error('documentos.' . Str::slug($archivo->nombre))
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
             @endforeach
+        </div>
+        
+        @error('documentos.*')
+            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+
+        @error('archivos_faltantes')
+            <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    <p class="text-sm text-red-700">
+                        <strong>Error:</strong> {{ $message }}
+                    </p>
+                </div>
+            </div>
+        @enderror
+
+        <!-- Mensaje de archivos requeridos -->
+        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p class="text-sm text-blue-700">
+                    <strong>Importante:</strong> Todos los archivos marcados con <span class="text-red-500">*</span> son obligatorios para continuar con el trámite.
+                </p>
+            </div>
         </div>
 
         <!-- Información adicional -->

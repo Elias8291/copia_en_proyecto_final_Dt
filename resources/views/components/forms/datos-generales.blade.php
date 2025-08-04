@@ -17,14 +17,19 @@
         
         $rfcValue = $datosFinales['rfc'] ?? '';
         $tipoPersona = 'Física';
-        if ($rfcValue && strlen($rfcValue) === 12) {
-            $tipoPersona = 'Moral';
-        } elseif ($rfcValue && strlen($rfcValue) === 13) {
-            $tipoPersona = 'Física';
+        if ($rfcValue) {
+            $rfcService = app(\App\Services\RfcProveedorService::class);
+            $tipoPersona = $rfcService->determinarTipoPersona($rfcValue);
         }
         
         $camposNoEditables = $datosConstancia ? true : false;
     }
+    
+    // Obtener valores para los campos, priorizando los valores de constancia cuando están bloqueados
+    $razonSocial = $camposNoEditables ? ($datosFinales['razon_social'] ?? '') : (old('razon_social') ?: ($datosFinales['razon_social'] ?? ''));
+    $rfc = $camposNoEditables ? ($datosFinales['rfc'] ?? '') : (old('rfc') ?: ($datosFinales['rfc'] ?? ''));
+    $curp = $camposNoEditables ? ($datosFinales['curp'] ?? '') : (old('curp') ?: ($datosFinales['curp'] ?? ''));
+    $tipoPersonaValue = $camposNoEditables ? $tipoPersona : (old('tipo_persona') ?: $tipoPersona);
 @endphp
 
 <div class="space-y-6" {{ $attributes }}>
@@ -54,12 +59,12 @@
                     </div>
                     <input type="text"
                         name="razon_social"
-                        value="{{ $datosFinales['razon_social'] ?? old('razon_social') }}"
+                        value="{{ $razonSocial }}"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('razon_social') ? 'border-red-500' : '' }}"
                         {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}
                         placeholder="Ingrese la razón social">
                     @if($camposNoEditables)
-                        <input type="hidden" name="razon_social_hidden" value="{{ $datosFinales['razon_social'] ?? '' }}">
+                        <input type="hidden" name="razon_social_hidden" value="{{ $razonSocial }}">
                     @endif
                 </div>
                 @error('razon_social')
@@ -77,12 +82,12 @@
                     </div>
                     <input type="text"
                         name="rfc"
-                        value="{{ $datosFinales['rfc'] ?? old('rfc') }}"
+                        value="{{ $rfc }}"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('rfc') ? 'border-red-500' : '' }}"
                         {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}
                         placeholder="Ingrese el RFC">
                     @if($camposNoEditables)
-                        <input type="hidden" name="rfc_hidden" value="{{ $datosFinales['rfc'] ?? '' }}">
+                        <input type="hidden" name="rfc_hidden" value="{{ $rfc }}">
                     @endif
                 </div>
                 @error('rfc')
@@ -102,11 +107,11 @@
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('tipo_persona') ? 'border-red-500' : '' }}"
                         {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}>
                         <option value="">Seleccione tipo</option>
-                        <option value="Física" {{ $tipoPersona == 'Física' ? 'selected' : '' }}>Persona Física</option>
-                        <option value="Moral" {{ $tipoPersona == 'Moral' ? 'selected' : '' }}>Persona Moral</option>
+                        <option value="Física" {{ $tipoPersonaValue == 'Física' ? 'selected' : '' }}>Persona Física</option>
+                        <option value="Moral" {{ $tipoPersonaValue == 'Moral' ? 'selected' : '' }}>Persona Moral</option>
                     </select>
                     @if($camposNoEditables)
-                        <input type="hidden" name="tipo_persona_hidden" value="{{ $tipoPersona }}">
+                        <input type="hidden" name="tipo_persona_hidden" value="{{ $tipoPersonaValue }}">
                     @endif
                 </div>
                 @error('tipo_persona')
@@ -124,12 +129,12 @@
                     </div>
                     <input type="text"
                         name="curp"
-                        value="{{ $datosFinales['curp'] ?? old('curp') }}"
+                        value="{{ $curp }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ ($editable && !$camposNoEditables) ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('curp') ? 'border-red-500' : '' }}"
                         {{ (!$editable || $camposNoEditables) ? 'disabled' : '' }}
                         placeholder="Ingrese la CURP">
                     @if($camposNoEditables)
-                        <input type="hidden" name="curp_hidden" value="{{ $datosFinales['curp'] ?? '' }}">
+                        <input type="hidden" name="curp_hidden" value="{{ $curp }}">
                     @endif
                 </div>
                 @error('curp')
@@ -270,10 +275,6 @@
             </div>
         </div>
     </div>
-    
-    @if($camposNoEditables)
-        <input type="hidden" name="tipo_persona_hidden" value="{{ $tipoPersona }}">
-    @endif
 </div>
 
 @if($editable)

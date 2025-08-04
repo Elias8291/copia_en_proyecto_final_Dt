@@ -20,10 +20,16 @@
 
     // Initialize error handling first
     const initErrorHandling = () => {
-        loadScript('/js/error-handler.js', () => {
-            console.log('Error handler loaded');
+        // Check if error handler is already loaded
+        if (window.safeElement && window.safeAddEventListener) {
+            console.log('Error handler already loaded');
             initSVGValidation();
-        });
+        } else {
+            loadScript('/js/error-handler.js?v=1.0.1', () => {
+                console.log('Error handler loaded');
+                initSVGValidation();
+            });
+        }
     };
 
     // Initialize SVG validation

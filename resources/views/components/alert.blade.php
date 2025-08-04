@@ -1,7 +1,7 @@
 @if(session('success') || session('error') || session('warning') || session('info'))
     <div class="fixed top-4 right-4 z-50 max-w-sm w-full space-y-2">
-        @if(session('success') && !request()->routeIs('users.*') && !request()->routeIs('archivos.*') && !request()->routeIs('roles.*') && !request()->routeIs('profile.*') && !request()->routeIs('revision.*'))
-            <div class="bg-green-50 border border-green-200 rounded-lg p-3 shadow-lg transform transition-all duration-300 hover:scale-105" id="alert-success">
+        @if(session('success'))
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 shadow-lg" id="alert-success">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <svg class="h-4 w-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -12,7 +12,7 @@
                         <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
                     </div>
                     <div class="ml-2">
-                        <button onclick="dismissAlert('alert-success')" class="inline-flex text-green-400 hover:text-green-600 transition-colors">
+                        <button onclick="dismissAlert('alert-success')" class="inline-flex text-green-400 hover:text-green-600">
                             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
@@ -22,8 +22,8 @@
             </div>
         @endif
 
-        @if(session('error') && !request()->routeIs('users.*') && !request()->routeIs('archivos.*') && !request()->routeIs('roles.*') && !request()->routeIs('profile.*') && !request()->routeIs('revision.*'))
-            <div class="bg-red-50 border border-red-200 rounded-lg p-3 shadow-lg transform transition-all duration-300 hover:scale-105" id="alert-error">
+        @if(session('error'))
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 shadow-lg" id="alert-error">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <svg class="h-4 w-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
@@ -34,7 +34,7 @@
                         <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
                     </div>
                     <div class="ml-2">
-                        <button onclick="dismissAlert('alert-error')" class="inline-flex text-red-400 hover:text-red-600 transition-colors">
+                        <button onclick="dismissAlert('alert-error')" class="inline-flex text-red-400 hover:text-red-600">
                             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
@@ -44,8 +44,8 @@
             </div>
         @endif
 
-        @if(session('warning') && !request()->routeIs('revision.*'))
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 shadow-lg transform transition-all duration-300 hover:scale-105" id="alert-warning">
+        @if(session('warning'))
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 shadow-lg" id="alert-warning">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <svg class="h-4 w-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
@@ -56,7 +56,7 @@
                         <p class="text-sm font-medium text-yellow-800">{{ session('warning') }}</p>
                     </div>
                     <div class="ml-2">
-                        <button onclick="dismissAlert('alert-warning')" class="inline-flex text-yellow-400 hover:text-yellow-600 transition-colors">
+                        <button onclick="dismissAlert('alert-warning')" class="inline-flex text-yellow-400 hover:text-yellow-600">
                             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
@@ -66,8 +66,8 @@
             </div>
         @endif
 
-        @if(session('info') && !request()->routeIs('revision.*'))
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 shadow-lg transform transition-all duration-300 hover:scale-105" id="alert-info">
+        @if(session('info'))
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 shadow-lg" id="alert-info">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
                         <svg class="h-4 w-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
@@ -78,7 +78,7 @@
                         <p class="text-sm font-medium text-blue-800">{{ session('info') }}</p>
                     </div>
                     <div class="ml-2">
-                        <button onclick="dismissAlert('alert-info')" class="inline-flex text-blue-400 hover:text-blue-600 transition-colors">
+                        <button onclick="dismissAlert('alert-info')" class="inline-flex text-blue-400 hover:text-blue-600">
                             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
@@ -93,11 +93,7 @@
         function dismissAlert(alertId) {
             const alert = document.getElementById(alertId);
             if (alert) {
-                alert.style.transform = 'translateX(100%)';
-                alert.style.opacity = '0';
-                setTimeout(() => {
-                    alert.remove();
-                }, 300);
+                alert.remove();
             }
         }
 

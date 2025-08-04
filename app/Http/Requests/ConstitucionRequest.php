@@ -14,8 +14,9 @@ class ConstitucionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'instrumento_notarial_id' => 'required|exists:instrumentos_notariales,id',
+            'estado_id' => 'required|exists:estados,id',
             'numero_escritura' => 'required|string|max:255',
+            'numero_escritura_constitutiva' => 'required|string|max:255',
             'fecha_constitucion' => 'required|date|before_or_equal:today',
             'nombre_notario' => 'required|string|max:255',
             'numero_notario' => 'required|string|max:255',
@@ -27,10 +28,12 @@ class ConstitucionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'instrumento_notarial_id.required' => 'El instrumento notarial es obligatorio.',
-            'instrumento_notarial_id.exists' => 'El instrumento notarial seleccionado no es válido.',
+            'estado_id.required' => 'El estado es obligatorio.',
+            'estado_id.exists' => 'El estado seleccionado no es válido.',
             'numero_escritura.required' => 'El número de escritura es obligatorio.',
             'numero_escritura.max' => 'El número de escritura no puede tener más de 255 caracteres.',
+            'numero_escritura_constitutiva.required' => 'El número de escritura constitutiva es obligatorio.',
+            'numero_escritura_constitutiva.max' => 'El número de escritura constitutiva no puede tener más de 255 caracteres.',
             'fecha_constitucion.required' => 'La fecha de constitución es obligatoria.',
             'fecha_constitucion.date' => 'La fecha de constitución debe tener un formato válido.',
             'fecha_constitucion.before_or_equal' => 'La fecha de constitución no puede ser posterior a hoy.',

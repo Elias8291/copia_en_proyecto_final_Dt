@@ -26,7 +26,10 @@
                             </div>
                             <div>
                                 <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Cargar Constancia</h1>
-                                <p class="text-xs sm:text-sm text-gray-500">Sube tu constancia de situación fiscal para continuar</p>
+                                <p class="text-xs sm:text-sm text-gray-500">
+                                    Sube tu constancia de situación fiscal para continuar con el trámite de 
+                                    <strong>{{ ucfirst($tipo) }}</strong>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -44,10 +47,15 @@
                             </div>
                             <div>
                                 <h3 class="text-sm font-semibold text-blue-800 mb-1">Información Importante</h3>
-                                <p class="text-sm text-blue-700">
-                                    Para continuar con el trámite, necesitamos que subas tu constancia de situación fiscal vigente. 
+                                <p class="text-sm text-blue-700 mb-2">
+                                    Para continuar con el trámite de <strong>{{ ucfirst($tipo) }}</strong>, necesitamos que subas tu constancia de situación fiscal vigente. 
                                     Este documento es obligatorio y debe estar en formato PDF. Los datos se extraerán automáticamente.
                                 </p>
+                                <div class="bg-white border border-blue-200 rounded-md p-2">
+                                    <p class="text-xs text-blue-600 font-medium">
+                                        <strong>Tipo de trámite:</strong> {{ ucfirst($tipo) }}
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -11,9 +11,21 @@ class AccionistasService
 {
     public function guardar(Tramite $tramite, Proveedor $proveedor, Request $request): void
     {
+        \Log::info('AccionistasService: Iniciando guardado', [
+            'tramite_id' => $tramite->id,
+            'proveedor_id' => $proveedor->id,
+            'has_accionistas' => $request->has('accionistas'),
+            'accionistas_count' => $request->has('accionistas') ? count($request->accionistas) : 0
+        ]);
+        
         if ($request->has('accionistas') && is_array($request->accionistas)) {
-            foreach ($request->accionistas as $accionista) {
-                Accionista::create([
+            foreach ($request->accionistas as $index => $accionista) {
+                \Log::info('AccionistasService: Procesando accionista', [
+                    'index' => $index,
+                    'accionista' => $accionista
+                ]);
+                
+                $accionistaGuardado = Accionista::create([
                     'tramite_id' => $tramite->id,
                     'proveedor_id' => $proveedor->id,
                     'nombre' => $accionista['nombre'],
@@ -21,7 +33,14 @@ class AccionistasService
                     'porcentaje_participacion' => $accionista['porcentaje_participacion'],
                     'status' => 'pendiente',
                 ]);
+                
+                \Log::info('AccionistasService: Accionista guardado', [
+                    'accionista_id' => $accionistaGuardado->id,
+                    'nombre' => $accionista['nombre']
+                ]);
             }
+        } else {
+            \Log::warning('AccionistasService: No se encontraron accionistas para guardar');
         }
     }
 } 

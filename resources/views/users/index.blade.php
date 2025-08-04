@@ -446,40 +446,48 @@ document.addEventListener('DOMContentLoaded', function() {
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const toggle = document.getElementById('toggleFilters');
-    const container = document.getElementById('filtersContainer');
-    const text = document.getElementById('filterText');
-    const icon = document.getElementById('filterIcon');
-    const perPageSelect = document.getElementById('per_page');
-    const searchForm = document.getElementById('searchForm');
-    
-    // Los filtros siempre empiezan ocultos, sin importar si hay búsqueda
-    
-    toggle?.addEventListener('click', function() {
-        const hidden = container?.classList.contains('hidden');
-        if (hidden) {
-            container?.classList.remove('hidden');
-            container?.classList.remove('max-h-0');
-            container?.classList.add('max-h-screen');
-            if (text) text.textContent = 'Ocultar filtros';
-            icon?.classList.add('rotate-180');
-        } else {
-            container?.classList.add('max-h-0');
-            setTimeout(() => {
-                container?.classList.add('hidden');
-            }, 300);
-            if (text) text.textContent = 'Mostrar filtros';
-            icon?.classList.remove('rotate-180');
+    try {
+        const toggle = document.getElementById('toggleFilters');
+        const container = document.getElementById('filtersContainer');
+        const text = document.getElementById('filterText');
+        const icon = document.getElementById('filterIcon');
+        const perPageSelect = document.getElementById('per_page');
+        const searchForm = document.getElementById('searchForm');
+        
+        // Los filtros siempre empiezan ocultos, sin importar si hay búsqueda
+        
+        if (toggle && container) {
+            toggle.addEventListener('click', function() {
+                const hidden = container.classList.contains('hidden');
+                if (hidden) {
+                    container.classList.remove('hidden');
+                    container.classList.remove('max-h-0');
+                    container.classList.add('max-h-screen');
+                    if (text) text.textContent = 'Ocultar filtros';
+                    if (icon) icon.classList.add('rotate-180');
+                } else {
+                    container.classList.add('max-h-0');
+                    setTimeout(() => {
+                        container.classList.add('hidden');
+                    }, 300);
+                    if (text) text.textContent = 'Mostrar filtros';
+                    if (icon) icon.classList.remove('rotate-180');
+                }
+            });
         }
-    });
 
-    perPageSelect?.addEventListener('change', function() {
-        const hiddenPerPage = searchForm.querySelector('input[name="per_page"]');
-        if (hiddenPerPage) {
-            hiddenPerPage.value = this.value;
+        if (perPageSelect && searchForm) {
+            perPageSelect.addEventListener('change', function() {
+                const hiddenPerPage = searchForm.querySelector('input[name="per_page"]');
+                if (hiddenPerPage) {
+                    hiddenPerPage.value = this.value;
+                }
+                searchForm.submit();
+            });
         }
-        searchForm.submit();
-    });
+    } catch (error) {
+        console.warn('Error initializing users page JavaScript:', error);
+    }
 });
 </script>
 @endpush

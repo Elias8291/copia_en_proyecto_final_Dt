@@ -69,6 +69,65 @@ class RfcProveedorService
         return $this->crearRespuestaAccion('crear_nuevo', 'Proveedor existente no está activo o vencido', $proveedorActivo, $proveedores->count());
     }
 
+    public function determinarAccionPorTipoTramite(string $rfc, string $tipoTramite): array
+    {
+        $proveedores = $this->buscarProveedoresPorRfc($rfc);
+        $proveedorActivo = $this->buscarProveedorActivo($rfc);
+        $proveedorConTramitePendiente = $this->buscarProveedorConTramitePendiente($rfc);
+        
+        // Convertir el tipo de trámite a minúsculas para la comparación
+        $tipoTramiteLower = strtolower($tipoTramite);
+        
+        switch ($tipoTramiteLower) {
+            case 'inscripcion':
+                if ($proveedorConTramitePendiente) {
+                    return $this->crearRespuestaAccion('tramite_pendiente', 'Tiene un trámite pendiente', $proveedorConTramitePendiente, $proveedores->count());
+                }
+                if ($proveedorActivo && $this->proveedorEstaActivo($proveedorActivo)) {
+                    return $this->crearRespuestaAccion('proveedor_activo', 'Ya tiene un proveedor activo', $proveedorActivo, $proveedores->count());
+                }
+                return $this->crearRespuestaAccion('crear_nuevo', 'Puede crear nueva inscripción', $proveedorActivo, $proveedores->count());
+                
+            case 'renovacion':
+                if ($proveedorConTramitePendiente) {
+                    return $this->crearRespuestaAccion('tramite_pendiente', 'Tiene un trámite pendiente', $proveedorConTramitePendiente, $proveedores->count());
+                }
+                if ($proveedorActivo && $this->proveedorEstaActivo($proveedorActivo)) {
+                    return $this->crearRespuestaAccion('renovar_activo', 'Puede renovar proveedor activo', $proveedorActivo, $proveedores->count());
+                }
+                if ($proveedorActivo && !$this->proveedorEstaActivo($proveedorActivo)) {
+                    return $this->crearRespuestaAccion('renovar_vencido', 'Puede renovar proveedor vencido', $proveedorActivo, $proveedores->count());
+                }
+                return $this->crearRespuestaAccion('no_renovar', 'No tiene proveedor para renovar', null, $proveedores->count());
+                
+            case 'actualizacion':
+                if ($proveedorConTramitePendiente) {
+                    return $this->crearRespuestaAccion('tramite_pendiente', 'Tiene un trámite pendiente', $proveedorConTramitePendiente, $proveedores->count());
+                }
+                if ($proveedorActivo) {
+                    return $this->crearRespuestaAccion('actualizar_existente', 'Puede actualizar proveedor existente', $proveedorActivo, $proveedores->count());
+                }
+                return $this->crearRespuestaAccion('no_actualizar', 'No tiene proveedor para actualizar', null, $proveedores->count());
+                
+            default:
+                return $this->crearRespuestaAccion('error', 'Tipo de trámite no válido', null, $proveedores->count());
+        }
+    }
+
+    public function buscarProveedorConTramitePendiente(string $rfc): ?Proveedor
+    {
+        return Proveedor::where('rfc', $rfc)
+            ->whereHas('tramites', function($query) {
+                $query->where('status', 'Pendiente');
+            })
+            ->first();
+    }
+
+    public function tieneTramitePendiente(string $rfc): bool
+    {
+        return $this->buscarProveedorConTramitePendiente($rfc) !== null;
+    }
+
     private function crearRespuestaAccion(string $accion, string $motivo, ?Proveedor $proveedorActivo, int $totalProveedores): array
     {
         return [

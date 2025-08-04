@@ -19,11 +19,8 @@
                 </div>
             </div>
 
-            <!-- Notificaciones y usuario -->
+            <!-- Menú de usuario -->
             <div class="hidden md:flex items-center space-x-4 pr-4">
-               
-
-                <!-- Menú de usuario -->
                 <div class="relative" x-data="{ open: false }">
                     <div>
                         <button @click="open = !open"
@@ -36,9 +33,6 @@
                                     <span class="text-sm font-semibold leading-none">
                                         {{ auth()->check() ? strtoupper(substr(auth()->user()->nombre, 0, 1)) : 'I' }}</span>
                                 </span>
-                                <div
-                                    class="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-400 border-2 border-white rounded-full">
-                                </div>
                             </div>
                         </button>
                     </div>
@@ -60,11 +54,6 @@
                                     <p class="text-sm font-semibold text-gray-900 truncate">
                                         {{ auth()->check() ? auth()->user()->nombre : 'Invitado' }}
                                     </p>
-                            
-                                    <div class="flex items-center mt-1">
-                                        <div class="h-2 w-2 bg-green-400 rounded-full mr-1"></div>
-                                        <span class="text-xs text-green-600 font-medium">En línea</span>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -120,114 +109,3 @@
         </div>
     </div>
 </nav>
-
-<script>
-// Notificaciones básicas
-let notificationsOpen = false;
-
-// Toggle panel
-document.getElementById('notifications-btn').addEventListener('click', function() {
-    const panel = document.getElementById('notifications-panel');
-    notificationsOpen = !notificationsOpen;
-    
-    if (notificationsOpen) {
-        panel.style.display = 'block';
-        loadNotifications();
-    } else {
-        panel.style.display = 'none';
-    }
-});
-
-// Cerrar al hacer clic fuera
-document.addEventListener('click', function(e) {
-    const container = document.getElementById('notifications-container');
-    if (!container.contains(e.target) && notificationsOpen) {
-        document.getElementById('notifications-panel').style.display = 'none';
-        notificationsOpen = false;
-    }
-});
-
-// Cargar notificaciones
-async function loadNotifications() {
-    try {
-        const response = await fetch('/notificaciones/header');
-        const data = await response.json();
-        
-        if (data.success) {
-            updateNotifications(data.notificaciones, data.contador_no_leidas);
-        }
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-// Actualizar UI
-function updateNotifications(notifications, unreadCount) {
-    // Contador
-    const badge = document.getElementById('notifications-badge');
-    const count = document.getElementById('notifications-count');
-    
-    if (unreadCount > 0) {
-        badge.style.display = 'flex';
-        count.textContent = unreadCount;
-    } else {
-        badge.style.display = 'none';
-    }
-    
-    // Contenido
-    const content = document.getElementById('notifications-content');
-    
-    if (notifications.length === 0) {
-        content.innerHTML = '<div class="p-4 text-center text-gray-500">No hay notificaciones</div>';
-        return;
-    }
-    
-    const html = notifications.map(notif => `
-        <div class="p-4 ${notif.leida ? 'hover:bg-gray-50' : 'bg-blue-50'}">
-            <div class="flex">
-                <div class="flex-1">
-                    <p class="text-sm font-medium">${notif.titulo}</p>
-                    <p class="text-sm text-gray-600 mt-1">${notif.mensaje}</p>
-                    <div class="mt-2 flex justify-between items-center">
-                        <span class="text-xs text-gray-500">${formatDate(notif.created_at)}</span>
-                        ${!notif.leida ? `<button onclick="markAsRead(${notif.id})" class="text-xs text-blue-600">Marcar leído</button>` : ''}
-                    </div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-    
-    content.innerHTML = html;
-}
-
-// Marcar como leído
-async function markAsRead(id) {
-    try {
-        await fetch('/notificaciones/marcar-leida', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ notificacion_id: id })
-        });
-        loadNotifications();
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-// Formato fecha simple
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = Math.floor((now - date) / (1000 * 60));
-    
-    if (diff < 60) return 'Hace ' + diff + ' min';
-    if (diff < 1440) return 'Hace ' + Math.floor(diff / 60) + ' h';
-    return date.toLocaleDateString();
-}
-
-// Cargar al inicio
-loadNotifications();
-</script>
