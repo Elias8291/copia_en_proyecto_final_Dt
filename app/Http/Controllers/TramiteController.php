@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProcesarConstanciaRequest;
 use App\Http\Requests\TramiteFormRequest;
-use App\Services\Tramites\FormDataService;
 use App\Services\Tramites\TramiteService;
 use App\Services\Tramites\ConstanciaService;
 use App\Services\RfcProveedorService;
@@ -17,18 +16,15 @@ class TramiteController extends Controller
     private TramiteService $tramiteService;
     private ConstanciaService $constanciaService;
     private RfcProveedorService $rfcProveedorService;
-    private FormDataService $formDataService;
 
     public function __construct(
         TramiteService $tramiteService, 
         ConstanciaService $constanciaService, 
-        RfcProveedorService $rfcProveedorService,
-        FormDataService $formDataService
+        RfcProveedorService $rfcProveedorService
     ) {
         $this->tramiteService = $tramiteService;
         $this->constanciaService = $constanciaService;
         $this->rfcProveedorService = $rfcProveedorService;
-        $this->formDataService = $formDataService;
     }
 
     public function index()
@@ -37,9 +33,9 @@ class TramiteController extends Controller
         
         if (!$rfc) {
             $tramites = [
-                'inscripcion' => ['activo' => true, 'motivo' => 'Usuario sin RFC'],
-                'renovacion' => ['activo' => false, 'motivo' => 'Usuario sin RFC'],
-                'actualizacion' => ['activo' => false, 'motivo' => 'Usuario sin RFC']
+                'inscripcion' => ['activo' => true, 'pendiente' => false, 'motivo' => 'Usuario sin RFC'],
+                'renovacion' => ['activo' => false, 'pendiente' => false, 'motivo' => 'Usuario sin RFC'],
+                'actualizacion' => ['activo' => false, 'pendiente' => false, 'motivo' => 'Usuario sin RFC']
             ];
         } else {
             // Usar la nueva lógica para cada tipo de trámite
@@ -49,17 +45,20 @@ class TramiteController extends Controller
             
             $tramites = [
                 'inscripcion' => [
-                    'activo' => in_array($accionInscripcion['accion'], ['crear_nuevo', 'proveedor_activo']),
+                    'activo' => in_array($accionInscripcion['accion'], ['crear_nuevo']),
+                    'pendiente' => $accionInscripcion['accion'] === 'tramite_pendiente',
                     'motivo' => $accionInscripcion['motivo'],
                     'accion' => $accionInscripcion['accion']
                 ],
                 'renovacion' => [
-                    'activo' => in_array($accionRenovacion['accion'], ['renovar_activo', 'renovar_vencido']),
+                    'activo' => in_array($accionRenovacion['accion'], ['renovar_vencido']),
+                    'pendiente' => $accionRenovacion['accion'] === 'tramite_pendiente',
                     'motivo' => $accionRenovacion['motivo'],
                     'accion' => $accionRenovacion['accion']
                 ],
                 'actualizacion' => [
                     'activo' => $accionActualizacion['accion'] === 'actualizar_existente',
+                    'pendiente' => $accionActualizacion['accion'] === 'tramite_pendiente',
                     'motivo' => $accionActualizacion['motivo'],
                     'accion' => $accionActualizacion['accion']
                 ]
@@ -168,8 +167,8 @@ class TramiteController extends Controller
         
         // Verificar si el trámite está disponible
         $tramites = [
-            'inscripcion' => ['activo' => in_array($accion['accion'], ['crear_nuevo', 'proveedor_activo'])],
-            'renovacion' => ['activo' => in_array($accion['accion'], ['renovar_activo', 'renovar_vencido'])],
+            'inscripcion' => ['activo' => in_array($accion['accion'], ['crear_nuevo'])],
+            'renovacion' => ['activo' => in_array($accion['accion'], ['renovar_vencido'])],
             'actualizacion' => ['activo' => $accion['accion'] === 'actualizar_existente']
         ];
         
@@ -230,7 +229,7 @@ class TramiteController extends Controller
             // Agregar el tipo de trámite al request
             $request->merge(['tipo_tramite' => $tipoTramite]);
             
-            $this->formDataService->guardarTramite($request);
+            $this->tramiteService->crearTramiteCompleto($request);
             
             Log::info('TramiteController: Trámite creado exitosamente');
             
@@ -248,81 +247,7 @@ class TramiteController extends Controller
         }
     }
 
-    public function testStore(Request $request)
-    {
-        try {
-            Log::info('TEST: Iniciando creación de trámite sin validaciones estrictas', [
-                'user_id' => auth()->id(),
-                'request_data' => $request->all(),
-                'files' => $request->allFiles()
-            ]);
 
-            $rfc = $request->rfc_hidden ?? 'TEST123456789';
-            
-            // Verificar si ya existe un proveedor con este RFC para este usuario
-            $proveedor = \App\Models\Proveedor::where('usuario_id', auth()->id())
-                ->where('rfc', $rfc)
-                ->first();
-            
-            if (!$proveedor) {
-                // Crear un proveedor básico si no existe con este RFC
-                $proveedor = \App\Models\Proveedor::create([
-                    'usuario_id' => auth()->id(),
-                    'pv_numero' => 'TEST-' . time(),
-                    'rfc' => $rfc,
-                    'tipo_persona' => $request->tipo_persona_hidden ?? 'Física',
-                    'estado_padron' => 'pendiente',
-                    'fecha_alta_padron' => now(),
-                    'fecha_vencimiento_padron' => now()->addYear(),
-                ]);
-                
-                Log::info('TEST: Nuevo proveedor creado', [
-                    'proveedor_id' => $proveedor->id,
-                    'rfc' => $rfc
-                ]);
-            } else {
-                // Actualizar el proveedor existente
-                $proveedor->update([
-                    'tipo_persona' => $request->tipo_persona_hidden ?? $proveedor->tipo_persona,
-                    'estado_padron' => 'pendiente',
-                    'fecha_alta_padron' => now(),
-                    'fecha_vencimiento_padron' => now()->addYear(),
-                ]);
-                
-                Log::info('TEST: Proveedor existente actualizado', [
-                    'proveedor_id' => $proveedor->id,
-                    'rfc' => $rfc
-                ]);
-            }
-
-            // Crear un trámite básico
-            $tramite = \App\Models\Tramite::create([
-                'proveedor_id' => $proveedor->id,
-                'tipo_tramite' => 'Inscripcion',
-                'status' => 'Pendiente',
-                'fecha_inicio' => now(),
-                'correcciones_count' => 0,
-                'paso_actual' => 1,
-            ]);
-
-            Log::info('TEST: Trámite básico creado exitosamente', [
-                'tramite_id' => $tramite->id,
-                'proveedor_id' => $proveedor->id
-            ]);
-
-            return redirect()->route('tramites.index')
-                ->with('success', 'Trámite de prueba creado exitosamente.');
-
-        } catch (\Exception $e) {
-            Log::error('TEST: Error al crear trámite básico', [
-                'user_id' => auth()->id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return back()->withErrors(['error' => 'Error al crear el trámite de prueba: ' . $e->getMessage()]);
-        }
-    }
 
     public function estado()
     {

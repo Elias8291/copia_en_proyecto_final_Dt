@@ -15,7 +15,6 @@ class ConstitucionRequest extends FormRequest
     {
         return [
             'estado_id' => 'required|exists:estados,id',
-            'numero_escritura' => 'required|string|max:255',
             'numero_escritura_constitutiva' => 'required|string|max:255',
             'fecha_constitucion' => 'required|date|before_or_equal:today',
             'nombre_notario' => 'required|string|max:255',
@@ -30,8 +29,6 @@ class ConstitucionRequest extends FormRequest
         return [
             'estado_id.required' => 'El estado es obligatorio.',
             'estado_id.exists' => 'El estado seleccionado no es válido.',
-            'numero_escritura.required' => 'El número de escritura es obligatorio.',
-            'numero_escritura.max' => 'El número de escritura no puede tener más de 255 caracteres.',
             'numero_escritura_constitutiva.required' => 'El número de escritura constitutiva es obligatorio.',
             'numero_escritura_constitutiva.max' => 'El número de escritura constitutiva no puede tener más de 255 caracteres.',
             'fecha_constitucion.required' => 'La fecha de constitución es obligatoria.',

@@ -92,4 +92,17 @@ class Tramite extends Model
     {
         return $this->hasMany(Oficio::class);
     }
+
+ 
+    public function getDatosGeneralesRecientes()
+    {
+        return $this->datosGenerales()->orderBy('created_at', 'desc')->first();
+    }
+
+   
+    public function getRazonSocial()
+    {
+        $datosGenerales = $this->getDatosGeneralesRecientes();
+        return $datosGenerales ? $datosGenerales->razon_social : null;
+    }
 } 

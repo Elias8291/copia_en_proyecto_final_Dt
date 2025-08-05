@@ -35,8 +35,6 @@
                         'title' => 'Inscripción al Padrón',
                         'description' => 'Registro inicial para nuevos proveedores. Complete todos los requisitos para formar parte del padrón oficial.',
                         'gradient' => 'from-[#9D2449] to-[#B91C1C]',
-                        'actionText' => $tramites['inscripcion']['accion'] === 'tramite_pendiente' ? 'Ver Trámite Pendiente' : 'Comenzar Inscripción',
-                        'actionUrl' => $tramites['inscripcion']['accion'] === 'tramite_pendiente' ? route('tramites.estado') : route('tramites.cargar-constancia', 'inscripcion'),
                         'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>'
@@ -49,8 +47,6 @@
                         'title' => 'Renovación de Registro',
                         'description' => 'Renueve su registro anual para mantener activo su estado en el padrón de proveedores.',
                         'gradient' => 'from-[#B91C1C] to-[#DC2626]',
-                        'actionText' => $tramites['renovacion']['accion'] === 'tramite_pendiente' ? 'Ver Trámite Pendiente' : 'Renovar Registro',
-                        'actionUrl' => $tramites['renovacion']['accion'] === 'tramite_pendiente' ? route('tramites.estado') : route('tramites.cargar-constancia', 'renovacion'),
                         'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>'
@@ -63,8 +59,6 @@
                         'title' => 'Actualización de Datos',
                         'description' => 'Modifique su información registrada. Mantenga sus datos siempre actualizados.',
                         'gradient' => 'from-[#DC2626] to-[#EF4444]',
-                        'actionText' => $tramites['actualizacion']['accion'] === 'tramite_pendiente' ? 'Ver Trámite Pendiente' : 'Actualizar Datos',
-                        'actionUrl' => $tramites['actualizacion']['accion'] === 'tramite_pendiente' ? route('tramites.estado') : route('tramites.cargar-constancia', 'actualizacion'),
                         'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>'

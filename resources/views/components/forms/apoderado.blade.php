@@ -1,4 +1,28 @@
-@props(['datos' => [], 'editable' => false])
+@props(['datos' => [], 'editable' => false, 'datosApoderado' => null])
+
+@php
+    // Si se proporciona un FormDataViewModel, usar sus datos
+    if ($datosApoderado instanceof \App\ViewModels\FormDataViewModel) {
+        $datos = $datosApoderado->getApoderado();
+    }
+    
+    // Asegurar que tenemos todos los campos necesarios
+    $datos = array_merge([
+        'nombre_apoderado' => '',
+        'rfc' => '',
+        'numero_escritura_poder' => '',
+        'fecha_poder' => '',
+        'nombre_notario_poder' => '',
+        'numero_notario_poder' => '',
+        'numero_escritura_constitutiva_poder' => '',
+        'numero_registro_publico_poder' => '',
+        'fecha_inscripcion_poder' => '',
+        'estado_id' => '',
+        'estado_nombre' => '',
+        'numero_registro_publico' => '',
+        'fecha_inscripcion' => '',
+    ], $datos ?? []);
+@endphp
 
 <div class="space-y-6" {{ $attributes }}>
     <!-- Título de la sección -->
@@ -193,44 +217,161 @@
     @else
     <div>
         <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
-            Datos del Apoderado Registrados
+            Datos del Apoderado
         </h4>
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-green-800">
-                        Apoderado registrado
-                    </h3>
-                    <div class="mt-2 text-sm text-green-700">
-                        <ul class="list-disc list-inside space-y-1">
-                            @if(!empty($datos['nombre_apoderado']))
-                                <li>Nombre: {{ $datos['nombre_apoderado'] }}</li>
-                            @endif
-                            @if(!empty($datos['rfc']))
-                                <li>RFC: {{ $datos['rfc'] }}</li>
-                            @endif
-                            @if(!empty($datos['numero_escritura_poder']))
-                                <li>Escritura: {{ $datos['numero_escritura_poder'] }}</li>
-                            @endif
-                            @if(!empty($datos['numero_escritura_constitutiva_poder']))
-                                <li>Escritura Constitutiva: {{ $datos['numero_escritura_constitutiva_poder'] }}</li>
-                            @endif
-                            @if(!empty($datos['numero_registro_publico_poder']))
-                                <li>Registro Público: {{ $datos['numero_registro_publico_poder'] }}</li>
-                            @endif
-                            @if(!empty($datos['fecha_inscripcion_poder']))
-                                <li>Fecha de Inscripción: {{ $datos['fecha_inscripcion_poder'] }}</li>
-                            @endif
-                        </ul>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Datos básicos del apoderado -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre del Apoderado
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-500"></i>
                     </div>
+                    <input type="text"
+                        value="{{ $datos['nombre_apoderado'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                        readonly>
+                </div>
+            </div>
+
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    RFC
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-id-card text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datos['rfc'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm font-mono"
+                        readonly>
                 </div>
             </div>
         </div>
+
+        <!-- Datos del Instrumento Notarial del Poder -->
+        @if(!empty($datos['numero_escritura']) || !empty($datos['nombre_notario_poder']))
+        <div class="mt-6">
+            <h5 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b border-gray-200">
+                Datos del Instrumento Notarial del Poder
+            </h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="form-group field-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Número de Escritura del Poder
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-file-contract text-gray-500"></i>
+                        </div>
+                        <input type="text"
+                            value="{{ $datos['numero_escritura'] ?? $datos['numero_escritura_poder'] ?? '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                            readonly>
+                    </div>
+                </div>
+
+                <div class="form-group field-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha del Poder
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-calendar-alt text-gray-500"></i>
+                        </div>
+                        <input type="text"
+                            value="{{ $datos['fecha_poder'] ?? '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                            readonly>
+                    </div>
+                </div>
+
+                <div class="form-group field-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre del Notario del Poder
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-user-tie text-gray-500"></i>
+                        </div>
+                        <input type="text"
+                            value="{{ $datos['nombre_notario_poder'] ?? '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                            readonly>
+                    </div>
+                </div>
+
+                <div class="form-group field-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Número del Notario del Poder
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-id-badge text-gray-500"></i>
+                        </div>
+                        <input type="text"
+                            value="{{ $datos['numero_notario_poder'] ?? '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                            readonly>
+                    </div>
+                </div>
+
+                @if(!empty($datos['estado_id']))
+                <div class="form-group field-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Estado del Notario
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-map-marker-alt text-gray-500"></i>
+                        </div>
+                        <input type="text"
+                            value="{{ !empty($datos['estado_nombre']) ? $datos['estado_nombre'] : (!empty($datos['estado_id']) ? 'Estado ID: ' . $datos['estado_id'] : '') }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                            readonly>
+                    </div>
+                </div>
+                @endif
+
+                @if(!empty($datos['numero_registro_publico']))
+                <div class="form-group field-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Número de Registro Público del Instrumento
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-registered text-gray-500"></i>
+                        </div>
+                        <input type="text"
+                            value="{{ $datos['numero_registro_publico'] ?? '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                            readonly>
+                    </div>
+                </div>
+                @endif
+
+                @if(!empty($datos['fecha_inscripcion']))
+                <div class="form-group field-container">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha de Inscripción del Instrumento
+                    </label>
+                    <div class="relative group">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-calendar-check text-gray-500"></i>
+                        </div>
+                        <input type="text"
+                            value="{{ $datos['fecha_inscripcion'] ?? '' }}"
+                            class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                            readonly>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
     @endif
 </div> 

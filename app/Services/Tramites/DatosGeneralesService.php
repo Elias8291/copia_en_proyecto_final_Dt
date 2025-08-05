@@ -7,51 +7,54 @@ use App\Models\Proveedor;
 use App\Models\DatoGeneral;
 use Illuminate\Http\Request;
 
-class DatosGeneralesService
+class DatosGeneralesService extends BaseService
 {
     public function guardar(Tramite $tramite, Proveedor $proveedor, Request $request): void
     {
-        \Log::info('DatosGeneralesService: Iniciando guardado', [
+        $datos = $this->procesarDatos($request);
+        
+        DatoGeneral::create([
             'tramite_id' => $tramite->id,
             'proveedor_id' => $proveedor->id,
-            'request_data' => $request->all()
+            'curp' => $datos['curp'],
+            'razon_social' => $datos['razon_social'],
+            'pagina_web' => $datos['pagina_web'],
+            'telefono' => $datos['telefono'],
+            'status' => 'pendiente',
         ]);
+    }
+
+    /**
+     * Obtiene los datos generales de un trámite
+     */
+    public function obtener(Tramite $tramite): ?array
+    {
+        $datos = $tramite->datosGenerales()->latest()->first();
         
-        // Usar campos ocultos si están disponibles (cuando los campos principales están deshabilitados)
-        $razonSocial = $request->razon_social ?: $request->razon_social_hidden;
-        $rfc = $request->rfc ?: $request->rfc_hidden;
-        $tipoPersona = $request->tipo_persona ?: $request->tipo_persona_hidden;
-        $curp = $request->curp ?: $request->curp_hidden;
-        
-        \Log::info('DatosGeneralesService: Datos procesados', [
-            'razon_social' => $razonSocial,
-            'rfc' => $rfc,
-            'tipo_persona' => $tipoPersona,
-            'curp' => $curp,
-            'pagina_web' => $request->pagina_web,
-            'telefono' => $request->telefono
-        ]);
-        
-        try {
-            $datoGeneral = DatoGeneral::create([
-                'tramite_id' => $tramite->id,
-                'proveedor_id' => $proveedor->id,
-                'curp' => $curp,
-                'razon_social' => $razonSocial,
-                'pagina_web' => $request->pagina_web,
-                'telefono' => $request->telefono,
-                'status' => 'pendiente',
-            ]);
-            
-            \Log::info('DatosGeneralesService: Datos generales creados exitosamente', [
-                'dato_general_id' => $datoGeneral->id
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('DatosGeneralesService: Error al crear datos generales', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            throw $e;
+        if (!$datos) {
+            return null;
         }
+        
+        return [
+            'razon_social' => $datos->razon_social,
+            'rfc' => $tramite->proveedor->rfc ?? '',
+            'tipo_persona' => $tramite->proveedor->tipo_persona ?? '',
+            'curp' => $datos->curp,
+            'pagina_web' => $datos->pagina_web,
+            'telefono' => $datos->telefono,
+            'correo_electronico' => $datos->correo_electronico ?? '',
+        ];
+    }
+
+    private function procesarDatos(Request $request): array
+    {
+        return [
+            'razon_social' => $this->obtenerValorOculto($request, 'razon_social'),
+            'rfc' => $this->obtenerValorOculto($request, 'rfc'),
+            'tipo_persona' => $this->obtenerValorOculto($request, 'tipo_persona'),
+            'curp' => $this->obtenerValorOculto($request, 'curp'),
+            'pagina_web' => $request->pagina_web,
+            'telefono' => $request->telefono,
+        ];
     }
 } 

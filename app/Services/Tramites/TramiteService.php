@@ -3,35 +3,139 @@
 namespace App\Services\Tramites;
 
 use App\Models\Tramite;
+use App\Models\Proveedor;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Services\Tramites\ContactoService;
+use App\Services\Tramites\ConstitucionService;
 
 class TramiteService
 {
+    private DatosGeneralesService $datosGeneralesService;
+    private DomicilioService $domicilioService;
+    private ActividadesService $actividadesService;
+    private AccionistasService $accionistasService;
+    private ApoderadoService $apoderadoService;
+    private ArchivosService $archivosService;
     private ConstanciaService $constanciaService;
+    private ContactoService $contactoService;
+    private ConstitucionService $constitucionService;
 
-    public function __construct(ConstanciaService $constanciaService)
-    {
+    public function __construct(
+        DatosGeneralesService $datosGeneralesService,
+        DomicilioService $domicilioService,
+        ActividadesService $actividadesService,
+        AccionistasService $accionistasService,
+        ApoderadoService $apoderadoService,
+        ArchivosService $archivosService,
+        ConstanciaService $constanciaService,
+        ContactoService $contactoService,
+        ConstitucionService $constitucionService
+    ) {
+        $this->datosGeneralesService = $datosGeneralesService;
+        $this->domicilioService = $domicilioService;
+        $this->actividadesService = $actividadesService;
+        $this->accionistasService = $accionistasService;
+        $this->apoderadoService = $apoderadoService;
+        $this->archivosService = $archivosService;
         $this->constanciaService = $constanciaService;
+        $this->contactoService = $contactoService;
+        $this->constitucionService = $constitucionService;
     }
 
-    public function crear(array $datos): Tramite
+    public function crearTramiteCompleto(Request $request): Tramite
     {
-        return DB::transaction(function () use ($datos) {
-            $tramite = Tramite::create([
+        return DB::transaction(function () use ($request) {
+            Log::info('TramiteService: Iniciando creación de trámite completo', [
                 'user_id' => auth()->id(),
-                'constancia_path' => session('constancia_path'),
-                'constancia_name' => session('constancia_name'),
+                'tipo_tramite' => $request->tipo_tramite
             ]);
 
-            $this->crearDatosGenerales($tramite, $datos);
-            $this->crearDomicilio($tramite, $datos);
-            $this->crearActividades($tramite, $datos);
-            $this->crearAccionistas($tramite, $datos);
-            $this->crearApoderado($tramite, $datos);
-            $this->procesarArchivos($tramite, $datos);
+            // 1. Crear o obtener proveedor
+            $proveedor = $this->crearObtenerProveedor($request);
+            
+            // 2. Crear trámite base
+            $tramite = $this->crearTramiteBase($proveedor, $request);
+            
+            // 3. Guardar secciones del trámite
+            $this->guardarSecciones($tramite, $proveedor, $request);
+
+            Log::info('TramiteService: Trámite creado exitosamente', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $proveedor->id
+            ]);
 
             return $tramite;
         });
+    }
+
+    private function crearObtenerProveedor(Request $request): Proveedor
+    {
+        $rfc = $request->rfc ?: $request->rfc_hidden;
+        $tipoPersona = $request->tipo_persona ?: $request->tipo_persona_hidden;
+
+        $proveedor = Proveedor::where('usuario_id', auth()->id())
+            ->where('rfc', $rfc)
+            ->first();
+
+        if (!$proveedor) {
+            $proveedor = Proveedor::create([
+                'usuario_id' => auth()->id(),
+                'pv_numero' => 'PV-' . time(),
+                'rfc' => $rfc,
+                'tipo_persona' => $tipoPersona,
+                'estado_padron' => 'pendiente',
+                'fecha_alta_padron' => now(),
+                'fecha_vencimiento_padron' => now()->addYear(),
+            ]);
+        }
+
+        return $proveedor;
+    }
+
+    private function crearTramiteBase(Proveedor $proveedor, Request $request): Tramite
+    {
+        return Tramite::create([
+            'proveedor_id' => $proveedor->id,
+            'tipo_tramite' => $request->tipo_tramite ?? 'Inscripcion',
+            'status' => 'Pendiente',
+            'fecha_inicio' => now(),
+            'correcciones_count' => 0,
+            'paso_actual' => 1,
+        ]);
+    }
+
+    private function guardarSecciones(Tramite $tramite, Proveedor $proveedor, Request $request): void
+    {
+        // Datos generales (siempre se guardan)
+        $this->datosGeneralesService->guardar($tramite, $proveedor, $request);
+        $this->contactoService->guardar($tramite, $proveedor, $request);
+        
+        // Domicilio (siempre se guarda)
+        $this->domicilioService->guardar($tramite, $proveedor, $request);
+        
+        // Actividades económicas (siempre se guardan)
+        $this->actividadesService->guardar($tramite, $request);
+        
+        // Solo para personas morales
+        if ($proveedor->tipo_persona === 'Moral') {
+            // Constitución (siempre requerida para personas morales)
+            $this->constitucionService->guardar($tramite, $proveedor, $request);
+            
+            if ($request->filled('accionistas')) {
+                $this->accionistasService->guardar($tramite, $proveedor, $request);
+            }
+            
+            if ($request->filled('nombre_apoderado')) {
+                $this->apoderadoService->guardar($tramite, $proveedor, $request);
+            }
+        }
+        
+        // Archivos (siempre se procesan)
+        if ($request->hasFile('documentos')) {
+            $this->archivosService->guardar($tramite, $proveedor, $request);
+        }
     }
 
     public function verificarConstanciaCargada(): bool
@@ -42,89 +146,5 @@ class TramiteService
     public function obtenerDatosConstancia(): array
     {
         return $this->constanciaService->obtenerDatos();
-    }
-
-    private function crearDatosGenerales(Tramite $tramite, array $datos): void
-    {
-        $tramite->datosGenerales()->create([
-            'razon_social' => $datos['razon_social'],
-            'rfc' => $datos['rfc'],
-            'tipo_persona' => $datos['tipo_persona'],
-            'curp' => $datos['curp'],
-            'pagina_web' => $datos['pagina_web'] ?? null,
-            'telefono' => $datos['telefono'],
-            'correo_electronico' => $datos['correo_electronico'] ?? null,
-        ]);
-    }
-
-    private function crearDomicilio(Tramite $tramite, array $datos): void
-    {
-        $tramite->domicilio()->create([
-            'codigo_postal' => $datos['codigo_postal'],
-            'estado_id' => $datos['estado_id'],
-            'municipio' => $datos['municipio'],
-            'asentamiento' => $datos['asentamiento'],
-            'calle' => $datos['calle'],
-            'entre_calle' => $datos['entre_calle'] ?? null,
-            'y_calle' => $datos['y_calle'] ?? null,
-            'numero_exterior' => $datos['numero_exterior'],
-            'numero_interior' => $datos['numero_interior'] ?? null,
-            'latitud' => $datos['latitud'] ?? null,
-            'longitud' => $datos['longitud'] ?? null,
-        ]);
-    }
-
-    private function crearActividades(Tramite $tramite, array $datos): void
-    {
-        if (!empty($datos['actividades'])) {
-            foreach ($datos['actividades'] as $actividadId) {
-                $tramite->actividades()->attach($actividadId);
-            }
-        }
-    }
-
-    private function crearAccionistas(Tramite $tramite, array $datos): void
-    {
-        if (!empty($datos['accionistas'])) {
-            foreach ($datos['accionistas'] as $accionista) {
-                $tramite->accionistas()->create([
-                    'nombre' => $accionista['nombre'],
-                    'rfc' => $accionista['rfc'],
-                    'porcentaje_participacion' => $accionista['porcentaje_participacion'],
-                ]);
-            }
-        }
-    }
-
-    private function crearApoderado(Tramite $tramite, array $datos): void
-    {
-        if (!empty($datos['apoderado'])) {
-            $tramite->apoderadoLegal()->create([
-                'nombre' => $datos['apoderado']['nombre'],
-                'rfc' => $datos['apoderado']['rfc'],
-                'numero_escritura_constitutiva_poder' => $datos['apoderado']['numero_escritura_constitutiva_poder'] ?? null,
-                'numero_registro_publico_poder' => $datos['apoderado']['numero_registro_publico_poder'] ?? null,
-                'fecha_inscripcion_poder' => $datos['apoderado']['fecha_inscripcion_poder'] ?? null,
-            ]);
-        }
-    }
-
-    private function procesarArchivos(Tramite $tramite, array $datos): void
-    {
-        if (!empty($datos['documentos'])) {
-            foreach ($datos['documentos'] as $tipo => $archivo) {
-                if ($archivo && $archivo->isValid()) {
-                    $fileName = $tipo . '_' . time() . '_' . auth()->id() . '.' . $archivo->getClientOriginalExtension();
-                    $path = $archivo->storeAs('documentos', $fileName, 'public');
-                    
-                    $tramite->archivos()->create([
-                        'tipo' => $tipo,
-                        'nombre' => $archivo->getClientOriginalName(),
-                        'ruta' => $path,
-                        'tamaño' => $archivo->getSize(),
-                    ]);
-                }
-            }
-        }
     }
 } 

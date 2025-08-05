@@ -39,4 +39,23 @@ class ContactoService
             throw $e;
         }
     }
+
+    /**
+     * Obtiene los datos de contacto de un trámite
+     */
+    public function obtener(Tramite $tramite): ?array
+    {
+        $contacto = $tramite->contactos()->latest()->first();
+        
+        if (!$contacto) {
+            return null;
+        }
+        
+        return [
+            'nombre_contacto' => $contacto->nombre_contacto,
+            'cargo' => $contacto->cargo,
+            'correo_electronico' => $contacto->correo_electronico,
+            'telefono' => $contacto->telefono,
+        ];
+    }
 } 

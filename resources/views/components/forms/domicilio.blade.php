@@ -3,6 +3,9 @@
 @php
     if ($datosConstancia instanceof \App\ViewModels\TramiteViewModel) {
         $datosFinales = $datosConstancia->getDatosDomicilioForm($datos);
+    } elseif ($datosConstancia instanceof \App\ViewModels\FormDataViewModel) {
+        // Para FormDataViewModel (datos de revisión)
+        $datosFinales = $datosConstancia->getDatosDomicilio();
     } else {
         $datosFinales = $datosConstancia ? [
             'codigo_postal' => $datosConstancia['domicilio']['codigo_postal'] ?? ($datos['codigo_postal'] ?? ''),

@@ -6,6 +6,11 @@
         $datosFinales = $datosConstancia->getDatosGenerales($datos);
         $camposNoEditables = !$datosConstancia->sonCamposEditables();
         $tipoPersona = $datosConstancia->determinarTipoPersona($datosFinales['rfc'] ?? '');
+    } elseif ($datosConstancia instanceof \App\ViewModels\FormDataViewModel) {
+        // Para FormDataViewModel (datos de revisión)
+        $datosFinales = $datosConstancia->getDatosGenerales();
+        $camposNoEditables = !$editable;
+        $tipoPersona = $datosFinales['tipo_persona'] ?? 'Física';
     } else {
         // Fallback para compatibilidad
         $datosFinales = $datosConstancia ? [
@@ -177,7 +182,7 @@
                     </div>
                     <input type="tel"
                         name="telefono"
-                        value="{{ $datos['telefono'] ?? old('telefono') }}"
+                        value="{{ $datosFinales['telefono'] ?? old('telefono') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('telefono') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="(55) 1234-5678">
@@ -204,7 +209,7 @@
                     </div>
                     <input type="text"
                         name="nombre_contacto"
-                        value="{{ $datos['nombre_contacto'] ?? old('nombre_contacto') }}"
+                        value="{{ $datosFinales['nombre_contacto'] ?? old('nombre_contacto') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('nombre_contacto') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="Nombre completo del contacto">
@@ -224,7 +229,7 @@
                     </div>
                     <input type="text"
                         name="cargo"
-                        value="{{ $datos['cargo'] ?? old('cargo') }}"
+                        value="{{ $datosFinales['cargo'] ?? old('cargo') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('cargo') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="Ej: Gerente, Director, etc.">
@@ -244,7 +249,7 @@
                     </div>
                     <input type="tel"
                         name="telefono_contacto"
-                        value="{{ $datos['telefono_contacto'] ?? old('telefono_contacto') }}"
+                        value="{{ $datosFinales['telefono_contacto'] ?? old('telefono_contacto') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('telefono_contacto') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="(55) 1234-5678">
@@ -264,7 +269,7 @@
                     </div>
                     <input type="email"
                         name="correo_contacto"
-                        value="{{ $datos['correo_contacto'] ?? old('correo_contacto') }}"
+                        value="{{ $datosFinales['correo_contacto'] ?? old('correo_contacto') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('correo_contacto') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="contacto@ejemplo.com">

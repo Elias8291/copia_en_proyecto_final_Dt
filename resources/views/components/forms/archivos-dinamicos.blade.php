@@ -1,9 +1,11 @@
-@props(['editable' => false, 'archivosRequeridos' => [], 'tipoPersona' => 'Física'])
+@props(['editable' => false, 'archivosRequeridos' => [], 'tipoPersona' => 'Física', 'archivosCargados' => null])
 
 @php
-    // Filtrar archivos según el tipo de persona
-    $archivosFiltrados = $archivosRequeridos->filter(function($archivo) use ($tipoPersona) {
-        return $archivo->tipo_persona === 'Ambas' || $archivo->tipo_persona === $tipoPersona;
+    // Asegurar que archivosRequeridos sea una colección
+    $archivosRequeridosCollection = collect($archivosRequeridos ?? []);
+    $archivosFiltrados = $archivosRequeridosCollection->filter(function($archivo) use ($tipoPersona) {
+        $tipo = is_array($archivo) ? ($archivo['tipo_persona'] ?? null) : ($archivo->tipo_persona ?? null);
+        return $tipo === 'Ambas' || $tipo === $tipoPersona;
     });
 @endphp
 
@@ -155,23 +157,136 @@
             </ul>
         </div>
     @elseif(!$editable)
-        <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <div class="flex items-center space-x-3">
-                <div class="flex-shrink-0">
-                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-lg font-medium text-gray-800">
-                        Sin Archivos
-                    </h3>
-                    <p class="text-gray-600">
-                        No se han cargado archivos para este trámite.
-                    </p>
+        @if($archivosCargados && (is_array($archivosCargados) ? count($archivosCargados) : $archivosCargados->count()) > 0)
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800">
+                            Archivos Cargados
+                        </h3>
+                        <div class="mt-2 text-sm text-green-700">
+                            <p>Archivos que han sido cargados para este trámite.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                @foreach($archivosCargados as $archivo)
+                    <div class="bg-white border border-green-200 rounded-lg p-4 flex flex-col h-full">
+                        <div class="text-center flex-grow">
+                            <!-- Icono según tipo de archivo -->
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                @php
+                                    $extension = is_array($archivo) ? ($archivo['extension'] ?? '') : ($archivo->extension ?? '');
+                                @endphp
+                                @switch($extension)
+                                    @case('pdf')
+                                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                        </svg>
+                                        @break
+                                    @case('jpg')
+                                    @case('jpeg')
+                                    @case('png')
+                                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"/>
+                                        </svg>
+                                        @break
+                                    @default
+                                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                                        </svg>
+                                @endswitch
+                            </div>
+                            
+                            <!-- Nombre del archivo -->
+                            <h5 class="font-medium text-gray-900 mb-2 text-sm">
+                                {{ is_array($archivo) ? ($archivo['nombre'] ?? 'Archivo') : ($archivo->catalogoArchivo->nombre ?? $archivo->nombre_original) }}
+                            </h5>
+                            
+                            <!-- Nombre original -->
+                            <p class="text-xs text-gray-500 mb-3">{{ is_array($archivo) ? ($archivo['nombre_original'] ?? '') : ($archivo->nombre_original ?? '') }}</p>
+                            
+                            <!-- Tipo de archivo -->
+                            <div class="mb-3">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                    {{ strtoupper($extension) }}
+                                </span>
+                            </div>
+                            
+                            <!-- Tamaño del archivo -->
+                            <p class="text-xs text-gray-500 mb-3">
+                                {{ number_format((is_array($archivo) ? ($archivo['tamaño'] ?? 0) : ($archivo->tamaño ?? 0)) / 1024, 2) }} KB
+                            </p>
+                            
+                            <!-- Botón para ver/descargar -->
+                            <a href="{{ Storage::url(is_array($archivo) ? ($archivo['ruta'] ?? '') : ($archivo->ruta ?? '')) }}" 
+                               target="_blank"
+                               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors mb-4">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                Ver Archivo
+                            </a>
+                            
+                            <!-- Área de Decisión por Archivo -->
+                            <div class="border-t border-gray-200 pt-4 mt-4">
+                                <div class="mb-3">
+                                    <label class="block text-xs font-medium text-gray-600 mb-2">
+                                        Revisión de archivo:
+                                    </label>
+                                    <textarea 
+                                        placeholder="Comentarios sobre este archivo..."
+                                        class="w-full text-xs px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                                        rows="2"></textarea>
+                                </div>
+                                
+                                <div class="flex gap-1">
+                                    <button type="button" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium py-1.5 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        <span>Aprobar</span>
+                                    </button>
+                                    
+                                    <button type="button" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 font-medium py-1.5 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        <span>Rechazar</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-800">
+                            Sin Archivos
+                        </h3>
+                        <p class="text-gray-600">
+                            No se han cargado archivos para este trámite.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
     @else
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <div class="flex items-center space-x-3">

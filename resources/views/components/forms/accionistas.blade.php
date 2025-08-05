@@ -1,4 +1,4 @@
-@props(['datos' => [], 'editable' => false])
+@props(['datos' => [], 'editable' => false, 'accionistas' => null])
 
 @php
     // Obtener accionistas del old() si hay errores de validación
@@ -7,13 +7,34 @@
     
     if ($accionistasOld && is_array($accionistasOld)) {
         $accionistasArray = $accionistasOld;
+    } elseif ($accionistas instanceof \App\ViewModels\FormDataViewModel) {
+        // Para FormDataViewModel (datos de revisión)
+        $accionistasArray = $accionistas->getAccionistas();
     } elseif (!empty($datos)) {
         $accionistasArray = $datos;
     }
     
-    // Si no hay accionistas, crear uno por defecto
-    if (empty($accionistasArray)) {
-        $accionistasArray = [
+    // Normalizar datos de accionistas
+    $accionistasNormalizados = [];
+    foreach ($accionistasArray as $accionista) {
+        if (is_array($accionista)) {
+            $accionistasNormalizados[] = [
+                'nombre' => $accionista['nombre'] ?? '',
+                'rfc' => $accionista['rfc'] ?? '',
+                'porcentaje_participacion' => $accionista['porcentaje_participacion'] ?? ''
+            ];
+        } elseif (is_object($accionista)) {
+            $accionistasNormalizados[] = [
+                'nombre' => $accionista->nombre ?? '',
+                'rfc' => $accionista->rfc ?? '',
+                'porcentaje_participacion' => $accionista->porcentaje_participacion ?? ''
+            ];
+        }
+    }
+    
+    // Si no hay accionistas, crear uno por defecto solo en modo editable
+    if (empty($accionistasNormalizados) && $editable) {
+        $accionistasNormalizados = [
             [
                 'nombre' => '',
                 'rfc' => '',
@@ -21,6 +42,8 @@
             ]
         ];
     }
+    
+    $accionistasArray = $accionistasNormalizados;
 @endphp
 
 <div class="space-y-6" {{ $attributes }}>
@@ -142,27 +165,108 @@
         @enderror
     </div>
     @else
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <i class="fas fa-info-circle text-gray-400 text-xl"></i>
+        @if(!empty($accionistasArray))
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                @foreach($accionistasArray as $index => $accionista)
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm">
+                    <div class="bg-gray-50 border-b border-gray-200 rounded-t-xl p-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-[#9d2449] rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-white text-sm"></i>
+                            </div>
+                            <h4 class="text-gray-700 font-semibold text-sm">Accionista #{{ $index + 1 }}</h4>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-4 grid grid-cols-1 gap-4">
+                        <div class="form-group field-container">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-500"></i>
+                                </div>
+                                <input type="text"
+                                    value="{{ $accionista['nombre'] ?? '' }}"
+                                    class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                                    readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group field-container">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">RFC</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-id-card text-gray-500"></i>
+                                </div>
+                                <input type="text"
+                                    value="{{ $accionista['rfc'] ?? '' }}"
+                                    class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm font-mono"
+                                    readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group field-container">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Porcentaje de Participación</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-percentage text-gray-500"></i>
+                                </div>
+                                <input type="text"
+                                    value="{{ $accionista['porcentaje_participacion'] ?? '' }}%"
+                                    class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm"
+                                    readonly>
+                            </div>
+                        </div>
+                        
+                        @if(isset($accionista['numero_escritura_constitutiva']) && !empty($accionista['numero_escritura_constitutiva']))
+                        <div class="col-span-2 mt-4 pt-4 border-t border-gray-200">
+                            <h5 class="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Datos del Instrumento Notarial</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="form-group field-container">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Número de Escritura Constitutiva</label>
+                                    <input type="text" value="{{ $accionista['numero_escritura_constitutiva'] ?? '' }}" class="block w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm text-sm" readonly>
+                                </div>
+                                <div class="form-group field-container">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Constitución</label>
+                                    <input type="text" value="{{ $accionista['fecha_constitucion'] ?? '' }}" class="block w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm text-sm" readonly>
+                                </div>
+                                <div class="form-group field-container">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Notario</label>
+                                    <input type="text" value="{{ $accionista['nombre_notario'] ?? '' }}" class="block w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm text-sm" readonly>
+                                </div>
+                                <div class="form-group field-container">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Número del Notario</label>
+                                    <input type="text" value="{{ $accionista['numero_notario'] ?? '' }}" class="block w-full px-3 py-2 text-gray-900 bg-gray-50 border border-gray-200 rounded-lg shadow-sm text-sm" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
             </div>
-            <div class="ml-3">
-                <h3 class="text-sm font-medium text-gray-800">
-                    No hay accionistas registrados
-                </h3>
-                <p class="text-gray-600">
-                    No se han registrado accionistas para este trámite.
-                </p>
+        @else
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-gray-400 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-gray-800">
+                            No hay accionistas registrados
+                        </h3>
+                        <p class="text-gray-600">
+                            No se han registrado accionistas para este trámite.
+                        </p>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+        @endif
     @endif
 </div>
 
 @if($editable)
 <script>
-let accionistaCount = {{ count($accionistasArray) }};
+let accionistaCount = {{ count($accionistasArray ?? []) }};
 
 const agregarAccionistaBtn = document.getElementById('agregarAccionista');
 if (agregarAccionistaBtn) {

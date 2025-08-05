@@ -13,6 +13,9 @@ class ApoderadoLegal extends Model
         'instrumento_notarial_id',
         'nombre_apoderado',
         'rfc',
+        'numero_escritura_constitutiva_poder',
+        'numero_registro_publico_poder',
+        'fecha_inscripcion_poder',
         'tramite_id',
         'proveedor_id',
         'status'

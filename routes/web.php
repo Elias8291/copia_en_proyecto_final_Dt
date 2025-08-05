@@ -8,7 +8,8 @@ use App\Http\Controllers\{
     RolesController,
     RoleController,
     ProfileController,
-    TramiteController
+    TramiteController,
+    RevisionController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,7 @@ Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
 // ============================================================================
 // RUTAS AUTENTICADAS
 // ============================================================================
+
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
@@ -98,8 +100,20 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/estado', [TramiteController::class, 'estado'])->name('estado');
         
         // Ruta de prueba temporal para depuración
-        Route::post('/test-store', [TramiteController::class, 'testStore'])->name('test-store');
+        
     });
+
+    // Rutas para revisiones
+    Route::prefix('revisiones')->name('revisiones.')->group(function () {
+        Route::get('/', [RevisionController::class, 'index'])->name('index');
+        Route::get('/{tramite}/seleccionar-tipo', [RevisionController::class, 'seleccionarTipoRevision'])->name('seleccionar-tipo');
+        Route::post('/{tramite}/iniciar', [RevisionController::class, 'iniciarRevision'])->name('iniciar');
+        Route::get('/{tramite}/revisar', [RevisionController::class, 'revisarTramite'])->name('revisar');
+        Route::post('/{tramite}/finalizar', [RevisionController::class, 'finalizarRevision'])->name('finalizar');
+    });
+
+    // Ruta para servir archivos de forma segura
+    Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('archivo.mostrar');
 });
 
 Route::prefix('api')->group(function () {

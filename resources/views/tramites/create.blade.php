@@ -65,8 +65,6 @@
             <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" class="space-y-8" id="tramite-form">
                 @csrf
                 
-
-
                 <!-- Datos Generales -->
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="0" id="section-0">
                     @include('components.forms.datos-generales', [
@@ -91,17 +89,26 @@
                 @if($tipoPersona === 'Moral')
                     <!-- Constitución -->
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="3" id="section-3">
-                        @include('components.forms.constitucion', ['editable' => true])
+                        @include('components.forms.constitucion', [
+                            'editable' => true,
+                            'datosConstitucion' => $viewModel ?? null
+                        ])
                     </div>
 
                     <!-- Accionistas -->
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="4" id="section-4">
-                        @include('components.forms.accionistas', ['editable' => true])
+                        @include('components.forms.accionistas', [
+                            'editable' => true,
+                            'accionistas' => $viewModel ?? null
+                        ])
                     </div>
 
                     <!-- Apoderado Legal -->
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="5" id="section-5">
-                        @include('components.forms.apoderado', ['editable' => true])
+                        @include('components.forms.apoderado', [
+                            'editable' => true,
+                            'datosApoderado' => $viewModel ?? null
+                        ])
                     </div>
 
                     <!-- Archivos -->
@@ -129,12 +136,6 @@
                         <i class="fas fa-paper-plane mr-2"></i>
                         Enviar Trámite
                     </button>
-                    
-                    <!-- Botón de prueba temporal -->
-                    <button type="button" onclick="enviarPrueba()" class="ml-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl">
-                        <i class="fas fa-flask mr-2"></i>
-                        Prueba Sin Validaciones
-                    </button>
                 </div>
             </form>
         </div>
@@ -153,11 +154,8 @@
 </div>
 
 <script>
-console.log('Create tramite script loaded v1.2'); // Debug log with version
-
 let currentSection = 0;
 const sections = document.querySelectorAll('[data-section]');
-const tipoPersona = '{{ $tipoPersona }}';
 
 function navigateSection(direction) {
     if (direction === 'prev' && currentSection > 0) {
@@ -171,30 +169,7 @@ function navigateSection(direction) {
 
 window.navigateSection = navigateSection;
 
-// Función para enviar formulario de prueba
-function enviarPrueba() {
-    console.log('Enviando formulario de prueba...');
-    
-    const form = document.getElementById('tramite-form');
-    const formData = new FormData(form);
-    
-    // Cambiar la acción del formulario
-    form.action = '{{ route("tramites.test-store") }}';
-    
-    // Enviar el formulario
-    form.submit();
-}
-
-// Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Create tramite: DOM loaded v1.2'); // Debug log with version
-    
-    // Mostrar errores de validación si existen
-    @if($errors->any())
-        console.error('Errores de validación encontrados:', @json($errors->all()));
-        alert('Errores de validación: ' + @json($errors->all()).join(', '));
-    @endif
-    
     // Cargar datos de la constancia si están disponibles
     @if(isset($viewModel))
         const razonSocial = document.getElementById('razon_social');
@@ -246,48 +221,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     @endif
 
-    // Solo mostrar estado de carga al enviar
-    try {
-        const tramiteForm = document.getElementById('tramite-form');
-        console.log('Tramite form found:', tramiteForm); // Debug log
-        
-        if (tramiteForm) {
-            tramiteForm.addEventListener('submit', function(e) {
-                console.log('Formulario enviado - validando datos...');
-                
-                // Validar que todos los archivos requeridos estén presentes
-                const fileInputs = document.querySelectorAll('input[type="file"]');
-                const requiredFiles = [];
-                
-                fileInputs.forEach(input => {
-                    if (input.hasAttribute('required') || input.name.includes('documentos')) {
-                        if (!input.files || input.files.length === 0) {
-                            requiredFiles.push(input.name);
-                        }
-                    }
-                });
-                
-                if (requiredFiles.length > 0) {
-                    e.preventDefault();
-                    alert('Faltan archivos requeridos: ' + requiredFiles.join(', '));
-                    return false;
-                }
-                
-                const btnEnviar = document.getElementById('btn-enviar-tramite');
-                if (btnEnviar) {
-                    btnEnviar.disabled = true;
-                    btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
-                }
-            });
-            console.log('Submit event listener added successfully'); // Debug log
-        } else {
-            console.warn('Tramite form not found - this might be expected if the form is not present on this page');
-        }
-    } catch (error) {
-        console.error('Error setting up form event listener:', error);
+    // Configurar el formulario
+    const tramiteForm = document.getElementById('tramite-form');
+    
+    if (tramiteForm) {
+        tramiteForm.addEventListener('submit', function(e) {
+            const btnEnviar = document.getElementById('btn-enviar-tramite');
+            if (btnEnviar) {
+                btnEnviar.disabled = true;
+                btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+            }
+        });
     }
 });
-
-
 </script>
 @endsection 

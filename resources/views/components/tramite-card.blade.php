@@ -4,13 +4,14 @@
     'icon' => '',
     'gradient' => 'from-[#9D2449] to-[#B91C1C]',
     'isActive' => false,
+    'isPending' => false,
     'actionText' => 'Comenzar',
     'actionUrl' => '#'
 ])
 
 <div class="group relative bg-white rounded-2xl shadow-lg border border-gray-200/70 overflow-hidden transition-all duration-300 {{ $isActive ? 'hover:shadow-xl hover:scale-[1.02]' : 'opacity-60' }}">
     
-    @if(!$isActive)
+    @if(!$isActive && !$isPending)
         <div class="absolute inset-0 bg-gray-50/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl p-4">
             <div>
                 <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -27,14 +28,34 @@
         </div>
     @endif
 
+    @if($isPending)
+        <div class="absolute inset-0 bg-yellow-50/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl p-4">
+            <div>
+                <div class="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-yellow-700 font-semibold text-sm text-center">En Proceso</p>
+                @if(isset($pendingReason))
+                    <p class="text-yellow-600 text-xs text-center mt-2 max-w-32">{{ $pendingReason }}</p>
+                @endif
+            </div>
+        </div>
+    @endif
+
     <div class="p-6 flex flex-col h-full">
         <div class="flex-shrink-0">
             <div class="flex items-center justify-between mb-4">
                 <div class="w-14 h-14 bg-gradient-to-br {{ $gradient }} rounded-xl flex items-center justify-center shadow-lg">
                     {!! $icon !!}
                 </div>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $isActive ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-600 border border-gray-200/80' }}">
-                    {{ $isActive ? 'Disponible' : 'Bloqueado' }}
+                <span class="px-3 py-1 rounded-full text-xs font-semibold 
+                    {{ $isPending ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : '' }}
+                    {{ $isActive && !$isPending ? 'bg-green-100 text-green-700 border border-green-200' : '' }}
+                    {{ !$isActive && !$isPending ? 'bg-gray-100 text-gray-600 border border-gray-200/80' : '' }}">
+                    {{ $isPending ? 'En Proceso' : ($isActive ? 'Disponible' : 'Bloqueado') }}
                 </span>
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">{{ $title }}</h3>
@@ -46,7 +67,7 @@
         <div class="mt-auto pt-6">
             @if($isActive)
                 <a href="{{ $actionUrl }}" 
-                   class="w-full bg-gradient-to-r {{ $gradient }} hover:from-[#8a1f40] hover:to-[#a51d1d] text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center group-hover:shadow-lg">
+                   class="w-full {{ $isPending ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600' : 'bg-gradient-to-r ' . $gradient . ' hover:from-[#8a1f40] hover:to-[#a51d1d]' }} text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center group-hover:shadow-lg">
                     <span>{{ $actionText }}</span>
                     <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
