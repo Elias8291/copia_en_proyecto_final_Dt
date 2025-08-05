@@ -1,4 +1,4 @@
-@props(['editable' => false, 'archivosRequeridos' => [], 'tipoPersona' => 'Física', 'archivosCargados' => null])
+@props(['editable' => false, 'archivosRequeridos' => [], 'tipoPersona' => 'Física', 'archivosCargados' => null, 'soloLectura' => false])
 
 @php
     // Asegurar que archivosRequeridos sea una colección
@@ -207,7 +207,7 @@
                             
                             <!-- Nombre del archivo -->
                             <h5 class="font-medium text-gray-900 mb-2 text-sm">
-                                {{ is_array($archivo) ? ($archivo['nombre'] ?? 'Archivo') : ($archivo->catalogoArchivo->nombre ?? $archivo->nombre_original) }}
+                                {{ is_array($archivo) ? ($archivo['nombre_catalogo'] ?? $archivo['nombre_original'] ?? 'Archivo') : ($archivo->catalogoArchivo->nombre ?? $archivo->nombre_original) }}
                             </h5>
                             
                             <!-- Nombre original -->
@@ -226,45 +226,47 @@
                             </p>
                             
                             <!-- Botón para ver/descargar -->
-                            <a href="{{ Storage::url(is_array($archivo) ? ($archivo['ruta'] ?? '') : ($archivo->ruta ?? '')) }}" 
+                            <a href="{{ route('revisiones.mostrar-archivo', is_array($archivo) ? ($archivo['id'] ?? '') : ($archivo->id ?? '')) }}" 
                                target="_blank"
-                               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors mb-4">
+                               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                 </svg>
                                 Ver Archivo
                             </a>
+                        </div>
+                        
+                        @if(!$soloLectura)
+                        <!-- Área de Decisión por Archivo -->
+                        <div class="border-t border-gray-200 pt-3 mt-3">
+                            <div class="mb-3">
+                                <label class="block text-xs font-medium text-gray-600 mb-2 text-left">
+                                    Revisión de archivo:
+                                </label>
+                                <textarea 
+                                    placeholder="Comentarios sobre este archivo..."
+                                    class="w-full text-xs px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
+                                    rows="2"></textarea>
+                            </div>
                             
-                            <!-- Área de Decisión por Archivo -->
-                            <div class="border-t border-gray-200 pt-4 mt-4">
-                                <div class="mb-3">
-                                    <label class="block text-xs font-medium text-gray-600 mb-2">
-                                        Revisión de archivo:
-                                    </label>
-                                    <textarea 
-                                        placeholder="Comentarios sobre este archivo..."
-                                        class="w-full text-xs px-2 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                                        rows="2"></textarea>
-                                </div>
+                            <div class="flex gap-1">
+                                <button type="button" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium py-1.5 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>Aprobar</span>
+                                </button>
                                 
-                                <div class="flex gap-1">
-                                    <button type="button" class="flex-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium py-1.5 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-1">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                        <span>Aprobar</span>
-                                    </button>
-                                    
-                                    <button type="button" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 font-medium py-1.5 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-1">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                        <span>Rechazar</span>
-                                    </button>
-                                </div>
+                                <button type="button" class="flex-1 bg-red-50 hover:bg-red-100 text-red-700 font-medium py-1.5 px-2 rounded-md transition-colors text-xs flex items-center justify-center space-x-1">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    <span>Rechazar</span>
+                                </button>
                             </div>
                         </div>
+                        @endif
                     </div>
                 @endforeach
             </div>

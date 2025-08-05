@@ -44,6 +44,19 @@ class FormDataViewModel
     {
         $domicilio = $this->getDatosDomicilio();
         
+        // Extraer coordenadas de la relación si existe
+        $latitud = '';
+        $longitud = '';
+        
+        if (isset($domicilio['coordenada'])) {
+            $latitud = $domicilio['coordenada']['latitud'] ?? '';
+            $longitud = $domicilio['coordenada']['longitud'] ?? '';
+        } elseif (isset($domicilio['latitud']) && isset($domicilio['longitud'])) {
+            // Fallback por si las coordenadas están directamente en el domicilio
+            $latitud = $domicilio['latitud'];
+            $longitud = $domicilio['longitud'];
+        }
+        
         return [
             'calle' => $domicilio['calle'] ?? '',
             'numero_exterior' => $domicilio['numero_exterior'] ?? '',
@@ -52,12 +65,12 @@ class FormDataViewModel
             'asentamiento' => $domicilio['asentamiento'] ?? '',
             'codigo_postal' => $domicilio['codigo_postal'] ?? '',
             'municipio' => $domicilio['municipio'] ?? '',
-            'estado' => $domicilio['estado'] ?? '',
+            'estado' => $domicilio['estado']['nombre'] ?? ($domicilio['estado'] ?? ''),
             'estado_id' => $domicilio['estado_id'] ?? '',
             'entre_calle' => $domicilio['entre_calle'] ?? '',
             'y_calle' => $domicilio['y_calle'] ?? '',
-            'latitud' => $domicilio['latitud'] ?? '',
-            'longitud' => $domicilio['longitud'] ?? '',
+            'latitud' => $latitud,
+            'longitud' => $longitud,
         ];
     }
 

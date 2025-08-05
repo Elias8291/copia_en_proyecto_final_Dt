@@ -12,8 +12,8 @@
     >
         <option value="">Seleccionar documento...</option>
         @foreach($archivosSubidos as $archivo)
-            <option value="{{ $archivo['id'] }}" data-nombre="{{ $archivo['nombre'] }}" data-original="{{ $archivo['nombre_original'] }}">
-                {{ $archivo['nombre'] }}
+            <option value="{{ $archivo['id'] }}" data-nombre="{{ $archivo['nombre_catalogo'] ?? $archivo['nombre_original'] }}" data-original="{{ $archivo['nombre_original'] }}">
+                {{ $archivo['nombre_catalogo'] ?? $archivo['nombre_original'] }}
             </option>
         @endforeach
     </select>
@@ -96,7 +96,7 @@ function mostrarArchivo(seccion, selectElement) {
         archivoInfo.innerHTML = `${nombreOriginal}`;
         
         // Cargar el PDF en el iframe usando la ruta segura
-        pdfViewer.src = `/archivo/${selectElement.value}`;
+        pdfViewer.src = `/revisiones/archivo/${selectElement.value}`;
         
         viewer.classList.remove('hidden');
     } else {

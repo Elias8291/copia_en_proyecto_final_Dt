@@ -104,6 +104,132 @@
             </div>
             @endif
 
+            <!-- Panel de Historial -->
+            <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Historial de Trámites</h3>
+                            <p class="text-sm text-gray-500">RFC: {{ $tramite->proveedor->rfc }}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="toggleHistorial()" 
+                            class="flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                        <span id="toggle_text_historial">Mostrar Historial</span>
+                    </button>
+                </div>
+
+                <!-- Estadísticas rápidas -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                    <div class="bg-gray-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-gray-900">{{ $estadisticasHistorial['total'] }}</div>
+                        <div class="text-xs text-gray-500">Total</div>
+                    </div>
+                    <div class="bg-green-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-green-600">{{ $estadisticasHistorial['aprobados'] }}</div>
+                        <div class="text-xs text-green-600">Aprobados</div>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-red-600">{{ $estadisticasHistorial['rechazados'] }}</div>
+                        <div class="text-xs text-red-600">Rechazados</div>
+                    </div>
+                    <div class="bg-yellow-50 p-3 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-yellow-600">{{ $estadisticasHistorial['pendientes'] }}</div>
+                        <div class="text-xs text-yellow-600">Pendientes</div>
+                    </div>
+                </div>
+
+                <!-- Lista de trámites históricos -->
+                <div id="contenido_historial" class="hidden">
+                    @if($historialTramites->count() > 0)
+                        <div class="space-y-3 max-h-96 overflow-y-auto">
+                            @foreach($historialTramites as $tramiteHistorico)
+                                <div class="border border-gray-200 rounded-lg p-4 {{ $tramiteHistorico['id'] == $tramite->id ? 'bg-blue-50 border-blue-300' : 'bg-gray-50' }}">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="flex-shrink-0">
+                                                    @switch($tramiteHistorico['status'])
+                                                        @case('Aprobado')
+                                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                                </svg>
+                                                            </div>
+                                                            @break
+                                                        @case('Rechazado')
+                                                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                                                <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                                </svg>
+                                                            </div>
+                                                            @break
+                                                        @default
+                                                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                                <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                                </svg>
+                                                            </div>
+                                                    @endswitch
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-center space-x-2">
+                                                        <h4 class="text-sm font-medium text-gray-900">
+                                                            Trámite #{{ $tramiteHistorico['id'] }}
+                                                            @if($tramiteHistorico['id'] == $tramite->id)
+                                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 ml-2">
+                                                                    Actual
+                                                                </span>
+                                                            @endif
+                                                        </h4>
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $tramiteHistorico['status'] == 'Aprobado' ? 'bg-green-100 text-green-800' : ($tramiteHistorico['status'] == 'Rechazado' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800') }}">
+                                                            {{ $tramiteHistorico['status'] }}
+                                                        </span>
+                                                    </div>
+                                                    <p class="text-sm text-gray-500 truncate">{{ $tramiteHistorico['razon_social'] }}</p>
+                                                    <div class="flex items-center text-xs text-gray-400 mt-1">
+                                                        <span>{{ $tramiteHistorico['tipo_tramite'] }}</span>
+                                                        <span class="mx-2">•</span>
+                                                        <span>{{ $tramiteHistorico['created_at']->format('d/m/Y') }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @if($tramiteHistorico['id'] != $tramite->id)
+                                            <div class="flex-shrink-0 ml-4">
+                                                <a href="{{ route('revisiones.ver-historico', $tramiteHistorico['id']) }}" 
+                                                   class="inline-flex items-center px-3 py-1.5 bg-white border border-gray-300 rounded-md text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                                                                                                         <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                                     </svg>
+                                                    Ver Trámite
+                                                </a>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-8">
+                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p class="text-gray-500">No hay trámites anteriores para este RFC</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Datos Generales -->
             <div class="mb-6" data-section="datos_generales">
                 <div class="flex items-center justify-between mb-4">
@@ -670,7 +796,21 @@ function toggleCotejo(seccion) {
     }
 }
 
+function toggleHistorial() {
+    const contenido = document.getElementById('contenido_historial');
+    const toggleText = document.getElementById('toggle_text_historial');
+    
+    if (contenido.classList.contains('hidden')) {
+        contenido.classList.remove('hidden');
+        toggleText.textContent = 'Ocultar Historial';
+    } else {
+        contenido.classList.add('hidden');
+        toggleText.textContent = 'Mostrar Historial';
+    }
+}
+
 window.navigateSection = navigateSection;
 window.toggleCotejo = toggleCotejo;
+window.toggleHistorial = toggleHistorial;
 </script>
 @endsection 

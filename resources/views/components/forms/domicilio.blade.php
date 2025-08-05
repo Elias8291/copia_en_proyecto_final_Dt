@@ -4,8 +4,8 @@
     if ($datosConstancia instanceof \App\ViewModels\TramiteViewModel) {
         $datosFinales = $datosConstancia->getDatosDomicilioForm($datos);
     } elseif ($datosConstancia instanceof \App\ViewModels\FormDataViewModel) {
-        // Para FormDataViewModel (datos de revisión)
-        $datosFinales = $datosConstancia->getDatosDomicilio();
+        // Para FormDataViewModel (datos de revisión) - usar getDatosDomicilioForm para incluir coordenadas
+        $datosFinales = $datosConstancia->getDatosDomicilioForm();
     } else {
         $datosFinales = $datosConstancia ? [
             'codigo_postal' => $datosConstancia['domicilio']['codigo_postal'] ?? ($datos['codigo_postal'] ?? ''),
@@ -15,6 +15,8 @@
             'calle' => $datosConstancia['domicilio']['calle'] ?? ($datos['calle'] ?? ''),
             'numero_exterior' => $datosConstancia['domicilio']['numero_exterior'] ?? ($datos['numero_exterior'] ?? ''),
             'numero_interior' => $datosConstancia['domicilio']['numero_interior'] ?? ($datos['numero_interior'] ?? ''),
+            'latitud' => $datosConstancia['domicilio']['latitud'] ?? ($datos['latitud'] ?? ''),
+            'longitud' => $datosConstancia['domicilio']['longitud'] ?? ($datos['longitud'] ?? ''),
             // Los campos entre_calle y y_calle SOLO vienen de los datos del formulario, no de la constancia
             'entre_calle' => !empty($datos['entre_calle']) ? $datos['entre_calle'] : '',
             'y_calle' => !empty($datos['y_calle']) ? $datos['y_calle'] : '',
@@ -22,8 +24,12 @@
     }
     
     // Asegurar que entre_calle y y_calle siempre vengan de los datos del formulario
-    $datosFinales['entre_calle'] = !empty($datos['entre_calle']) ? $datos['entre_calle'] : '';
-    $datosFinales['y_calle'] = !empty($datos['y_calle']) ? $datos['y_calle'] : '';
+    $datosFinales['entre_calle'] = !empty($datos['entre_calle']) ? $datos['entre_calle'] : ($datosFinales['entre_calle'] ?? '');
+    $datosFinales['y_calle'] = !empty($datos['y_calle']) ? $datos['y_calle'] : ($datosFinales['y_calle'] ?? '');
+    
+    // Asegurar que las coordenadas estén disponibles
+    $latitud = $datosFinales['latitud'] ?? $datos['latitud'] ?? null;
+    $longitud = $datosFinales['longitud'] ?? $datos['longitud'] ?? null;
 @endphp
 
 <div class="space-y-6" {{ $attributes }} data-seccion="domicilio">
@@ -255,7 +261,7 @@
                     <input type="number"
                         name="latitud"
                         id="latitud-manual"
-                        value="{{ $datos['latitud'] ?? old('latitud') ?? '19.4326' }}"
+                        value="{{ $latitud ?? old('latitud') ?? '19.4326' }}"
                         step="0.000001"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('latitud') ? 'border-red-500' : '' }}"
                         placeholder="19.4326">
@@ -277,7 +283,7 @@
                     <input type="number"
                         name="longitud"
                         id="longitud-manual"
-                        value="{{ $datos['longitud'] ?? old('longitud') ?? '-99.1332' }}"
+                        value="{{ $longitud ?? old('longitud') ?? '-99.1332' }}"
                         step="0.000001"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('longitud') ? 'border-red-500' : '' }}"
                         placeholder="-99.1332">
@@ -294,15 +300,195 @@
     @else
     <div>
         <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
-            Dirección Registrada
+            Información de Domicilio
         </h4>
-        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:gap-6">
+            <!-- Campo: Código Postal -->
+            <div class="form-group field-container">
+                <label class="block text-xs font-medium text-gray-700 mb-1.5 field-label sm:text-sm sm:mb-2">
+                    Código Postal
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none sm:pl-3">
+                        <i class="fas fa-mail-bulk text-gray-500 text-xs sm:text-sm"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['codigo_postal'] ?? '' }}"
+                        class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm cursor-not-allowed font-mono"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Estado -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Estado
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-map-marked-alt text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['estado'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Municipio -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Municipio/Delegación
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-city text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['municipio'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Asentamiento -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Asentamiento/Colonia
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-home text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['asentamiento'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Calle -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Calle
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-road text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['calle'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Entre Calle -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Entre Calle
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-road text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['entre_calle'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Y Calle -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Y Calle
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-road text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['y_calle'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Número Exterior -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Número Exterior
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-hashtag text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['numero_exterior'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Número Interior -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Número Interior
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-door-open text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $datosFinales['numero_interior'] ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Latitud -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Latitud
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-map-marker-alt text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $latitud ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+
+            <!-- Campo: Longitud -->
+            <div class="form-group field-container">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Longitud
+                </label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-map-marker-alt text-gray-500"></i>
+                    </div>
+                    <input type="text"
+                        value="{{ $longitud ?? '' }}"
+                        class="block w-full pl-10 pr-4 py-2.5 text-gray-900 bg-gray-100 border border-gray-300 rounded-lg shadow-sm cursor-not-allowed"
+                        readonly>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dirección concatenada como resumen -->
+        <div class="mt-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
             <div class="flex items-start space-x-3">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-map-marked-alt text-[#9d2449] text-lg mt-1"></i>
+                    <i class="fas fa-map-marked-alt text-blue-600 text-lg mt-1"></i>
                 </div>
                 <div class="flex-1">
-                    <p class="text-sm text-gray-800 leading-relaxed">
+                    <p class="text-xs text-blue-600 font-medium mb-1">Dirección Completa:</p>
+                    <p class="text-sm text-blue-800 leading-relaxed">
                         {{ $datosFinales['calle'] ?? '' }}
                         @if(!empty($datosFinales['numero_exterior'] ?? '')) #{{ $datosFinales['numero_exterior'] }} @endif
                         @if(!empty($datosFinales['numero_interior'] ?? '')) Int. {{ $datosFinales['numero_interior'] }} @endif
@@ -324,8 +510,8 @@
             Ubicación en Mapa
         </h4>
         <x-openstreet-map 
-            :lat="$datos['latitud'] ?? null" 
-            :lng="$datos['longitud'] ?? null" 
+            :lat="$latitud" 
+            :lng="$longitud" 
             :editable="$editable"
             height="300px"
         />
@@ -333,14 +519,55 @@
         @if($editable)
         <div class="mt-2 text-sm text-gray-600">
             <span id="coordenadas-display">
-                @if(!empty($datos['latitud']) && !empty($datos['longitud']))
-                    Coordenadas seleccionadas: {{ $datos['latitud'] }}, {{ $datos['longitud'] }}
+                @if(!empty($latitud) && !empty($longitud))
+                    Coordenadas seleccionadas: {{ $latitud }}, {{ $longitud }}
                 @else
                     Haz clic en el mapa o ingresa las coordenadas manualmente
                 @endif
             </span>
         </div>
+        
+        <!-- Enlace dinámico a Google Maps para modo editable -->
+        <div id="google-maps-link-container" class="mt-4 flex justify-center">
+            @if(!empty($latitud) && !empty($longitud))
+            <a id="google-maps-link" 
+               href="https://www.google.com/maps?q={{ $latitud }},{{ $longitud }}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Ver en Google Maps
+                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+            @endif
+        </div>
+        @else
+        <!-- Enlace a Google Maps para modo solo lectura -->
+        @if(!empty($latitud) && !empty($longitud))
+        <div class="mt-4 flex justify-center">
+            <a href="https://www.google.com/maps?q={{ $latitud }},{{ $longitud }}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Ver en Google Maps
+                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+        </div>
         @endif
+        @endif
+
+
     </div>
 </div>
 
@@ -457,6 +684,82 @@ document.addEventListener('DOMContentLoaded', () => {
         timeoutId = setTimeout(() => {
             buscarPorCodigoPostal(cp);
         }, 500);
+    });
+
+    // 📍 Actualizar enlace de Google Maps cuando cambien las coordenadas
+    const latitudInput = $('latitud-manual');
+    const longitudInput = $('longitud-manual');
+    const coordenadasDisplay = $('coordenadas-display');
+    const googleMapsLinkContainer = $('google-maps-link-container');
+
+    function actualizarGoogleMapsLink() {
+        const lat = latitudInput?.value;
+        const lng = longitudInput?.value;
+        
+        if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+            const latNum = parseFloat(lat);
+            const lngNum = parseFloat(lng);
+            
+            // Actualizar display de coordenadas
+            if (coordenadasDisplay) {
+                coordenadasDisplay.textContent = `Coordenadas seleccionadas: ${latNum.toFixed(6)}, ${lngNum.toFixed(6)}`;
+            }
+            
+            // Crear o actualizar enlace de Google Maps
+            const existingLink = $('google-maps-link');
+            const googleMapsUrl = `https://www.google.com/maps?q=${latNum},${lngNum}`;
+            
+            if (existingLink) {
+                existingLink.href = googleMapsUrl;
+                googleMapsLinkContainer.style.display = 'flex';
+            } else if (googleMapsLinkContainer) {
+                googleMapsLinkContainer.innerHTML = `
+                    <a id="google-maps-link" 
+                       href="${googleMapsUrl}" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Ver en Google Maps
+                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </a>
+                `;
+                googleMapsLinkContainer.style.display = 'flex';
+            }
+        } else {
+            // Ocultar enlace si no hay coordenadas válidas
+            if (googleMapsLinkContainer) {
+                googleMapsLinkContainer.style.display = 'none';
+            }
+            if (coordenadasDisplay) {
+                coordenadasDisplay.textContent = 'Haz clic en el mapa o ingresa las coordenadas manualmente';
+            }
+        }
+    }
+
+    // Actualizar enlace cuando cambien los inputs de coordenadas
+    if (latitudInput) {
+        latitudInput.addEventListener('input', actualizarGoogleMapsLink);
+    }
+    if (longitudInput) {
+        longitudInput.addEventListener('input', actualizarGoogleMapsLink);
+    }
+
+    // Actualizar enlace al cargar la página si ya hay coordenadas
+    actualizarGoogleMapsLink();
+
+    // Escuchar eventos del mapa OpenStreetMap si existe
+    window.addEventListener('coordenadasActualizadas', function(event) {
+        if (latitudInput && longitudInput) {
+            latitudInput.value = event.detail.lat.toFixed(6);
+            longitudInput.value = event.detail.lng.toFixed(6);
+            actualizarGoogleMapsLink();
+        }
     });
 });
 </script>

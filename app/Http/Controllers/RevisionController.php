@@ -4,18 +4,42 @@ namespace App\Http\Controllers;
 
 use App\Models\Tramite;
 use App\Models\RevisionTramite;
+use App\Models\Archivo;
 use App\Services\Tramites\DataRetrievalService;
+use App\Services\HistorialTramitesService;
+use App\Services\Revisiones\RevisionDigitalService;
+use App\Services\Revisiones\RevisionPresencialService;
+use App\Services\Revisiones\RevisionDomiciliariaService;
+use App\Services\Revisiones\RevisionService;
 use App\ViewModels\FormDataViewModel;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class RevisionController extends Controller
 {
     private DataRetrievalService $dataRetrievalService;
+    private HistorialTramitesService $historialService;
+    private RevisionService $revisionService;
+    private RevisionDigitalService $revisionDigitalService;
+    private RevisionPresencialService $revisionPresencialService;
+    private RevisionDomiciliariaService $revisionDomiciliariaService;
 
-    public function __construct(DataRetrievalService $dataRetrievalService)
-    {
+    public function __construct(
+        DataRetrievalService $dataRetrievalService,
+        HistorialTramitesService $historialService,
+        RevisionService $revisionService,
+        RevisionDigitalService $revisionDigitalService,
+        RevisionPresencialService $revisionPresencialService,
+        RevisionDomiciliariaService $revisionDomiciliariaService
+    ) {
         $this->dataRetrievalService = $dataRetrievalService;
+        $this->historialService = $historialService;
+        $this->revisionService = $revisionService;
+        $this->revisionDigitalService = $revisionDigitalService;
+        $this->revisionPresencialService = $revisionPresencialService;
+        $this->revisionDomiciliariaService = $revisionDomiciliariaService;
     }
 
     /**
@@ -103,36 +127,26 @@ class RevisionController extends Controller
      */
     public function revisarTramite(Request $request, int $tramiteId)
     {
-        // Obtener datos del trámite
-        $datosTramite = $this->dataRetrievalService->obtenerDatosTramiteHistorico($tramiteId);
+        // Obtener tipo de revisión del parámetro URL
+        $tipoRevision = $request->get('tipo_revision', 'Digital');
         
-        // Crear ViewModel con los datos
-        $viewModel = new FormDataViewModel($datosTramite);
+        // Seleccionar servicio según tipo de revisión
+        $datos = match($tipoRevision) {
+            'Digital' => $this->revisionDigitalService->obtenerDatosRevisionDigital($tramiteId),
+            'Presencial' => $this->revisionPresencialService->obtenerDatosRevisionPresencial($tramiteId),
+            'Domiciliaria' => $this->revisionDomiciliariaService->obtenerDatosRevisionDomiciliaria($tramiteId),
+            default => $this->revisionDigitalService->obtenerDatosRevisionDigital($tramiteId)
+        };
+
+        // Determinar vista según tipo de revisión
+        $vista = match($tipoRevision) {
+            'Digital' => 'revisiones.revision-digital',
+            'Presencial' => 'revisiones.revision-presencial', 
+            'Domiciliaria' => 'revisiones.revision-domiciliaria',
+            default => 'revisiones.revision-digital'
+        };
         
-        // Obtener el trámite para información adicional
-        $tramite = Tramite::findOrFail($tramiteId);
-        
-        // Obtener la revisión actual si existe
-        $revision = RevisionTramite::where('tramite_id', $tramiteId)
-            ->where('estado', '!=', 'Finalizada')
-            ->first();
-        
-        // Obtener tipo de revisión del parámetro URL si no hay revisión guardada
-        $tipoRevision = $request->get('tipo_revision', $revision?->tipo_revision ?? 'Digital');
-        
-        // Obtener archivos subidos para este trámite específico
-        $archivosSubidos = \App\Models\Archivo::where('tramite_id', $tramiteId)
-            ->with('catalogoArchivo:id,nombre')
-            ->get()
-            ->map(function($archivo) {
-                return [
-                    'id' => $archivo->id,
-                    'nombre' => $archivo->catalogoArchivo->nombre ?? $archivo->nombre_original,
-                    'nombre_original' => $archivo->nombre_original
-                ];
-            });
-        
-        return view('revisiones.revision-digital', compact('viewModel', 'tramite', 'revision', 'tipoRevision', 'archivosSubidos'));
+        return view($vista, $datos);
     }
 
     /**
@@ -146,35 +160,28 @@ class RevisionController extends Controller
             'tipo_revision' => 'nullable|string|in:Digital,Presencial,Domiciliaria'
         ]);
 
-        // Buscar revisión existente o crear una nueva
-        $revision = RevisionTramite::where('tramite_id', $tramiteId)
-            ->where('estado', '!=', 'Finalizada')
-            ->first();
+        $tipoRevision = $request->get('tipo_revision', 'Digital');
 
-        if (!$revision) {
-            // Crear la revisión al finalizar si no existe
-            $tipoRevision = $request->get('tipo_revision', 'Digital');
-            
-            $revision = RevisionTramite::create([
-                'tramite_id' => $tramiteId,
-                'tipo_revision' => $tipoRevision,
-                'revisor_id' => Auth::id(),
-                'estado' => 'Pendiente',
-                'fecha_inicio' => now(),
-                'intento' => 1
-            ]);
-        }
-
-        $revision->finalizarRevision($request->observaciones);
-
-        // Actualizar estado del trámite según la decisión
-        $tramite = Tramite::findOrFail($tramiteId);
-        $tramite->update([
-            'status' => $request->decision === 'aprobado' ? 'Aprobado' : 'Rechazado'
-        ]);
+        // Usar el servicio para finalizar la revisión
+        $this->revisionService->finalizarRevision(
+            $tramiteId,
+            $tipoRevision,
+            $request->decision,
+            $request->observaciones
+        );
 
         return redirect()->route('revisiones.index')
             ->with('success', 'Revisión finalizada correctamente.');
+    }
+
+    /**
+     * Muestra un trámite histórico (solo lectura, sin comentarios)
+     */
+    public function verTramiteHistorico(int $tramiteId)
+    {
+        $datos = $this->revisionService->obtenerDatosVistaSoloLectura($tramiteId);
+        
+        return view('revisiones.tramite-solo-lectura', $datos);
     }
 
     /**

@@ -110,10 +110,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{tramite}/iniciar', [RevisionController::class, 'iniciarRevision'])->name('iniciar');
         Route::get('/{tramite}/revisar', [RevisionController::class, 'revisarTramite'])->name('revisar');
         Route::post('/{tramite}/finalizar', [RevisionController::class, 'finalizarRevision'])->name('finalizar');
+        Route::get('/{tramite}/ver-historico', [RevisionController::class, 'verTramiteHistorico'])->name('ver-historico');
+        Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo');
     });
 
-    // Ruta para servir archivos de forma segura
-    Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('archivo.mostrar');
+
 });
 
 Route::prefix('api')->group(function () {

@@ -37,7 +37,7 @@ class DomicilioService
      */
     public function obtener(Tramite $tramite): ?array
     {
-        $domicilio = $tramite->direcciones()->with('coordenada')->latest()->first();
+        $domicilio = $tramite->direcciones()->with(['coordenada', 'estado'])->latest()->first();
         
         if (!$domicilio) {
             return null;

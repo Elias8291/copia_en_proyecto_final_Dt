@@ -114,7 +114,8 @@ class DataRetrievalService
     {
         $tramite = Tramite::with([
             'datosGenerales', 
-            'direcciones', 
+            'direcciones.coordenada', 
+            'direcciones.estado',
             'actividades', 
             'accionistas', 
             'apoderadosLegales.instrumentoNotarial.estado', 
