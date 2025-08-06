@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Tramite;
 use App\Models\RevisionTramite;
 use App\Models\Archivo;
+use App\Enums\TramiteStatus;
 use App\Services\Tramites\DataRetrievalService;
 use App\Services\HistorialTramitesService;
 use App\Services\Revisiones\RevisionDigitalService;
 use App\Services\Revisiones\RevisionPresencialService;
 use App\Services\Revisiones\RevisionDomiciliariaService;
 use App\Services\Revisiones\RevisionService;
+use App\Services\CitasService;
 use App\ViewModels\FormDataViewModel;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -25,6 +27,7 @@ class RevisionController extends Controller
     private RevisionDigitalService $revisionDigitalService;
     private RevisionPresencialService $revisionPresencialService;
     private RevisionDomiciliariaService $revisionDomiciliariaService;
+    private CitasService $citasService;
 
     public function __construct(
         DataRetrievalService $dataRetrievalService,
@@ -32,7 +35,8 @@ class RevisionController extends Controller
         RevisionService $revisionService,
         RevisionDigitalService $revisionDigitalService,
         RevisionPresencialService $revisionPresencialService,
-        RevisionDomiciliariaService $revisionDomiciliariaService
+        RevisionDomiciliariaService $revisionDomiciliariaService,
+        CitasService $citasService
     ) {
         $this->dataRetrievalService = $dataRetrievalService;
         $this->historialService = $historialService;
@@ -40,6 +44,7 @@ class RevisionController extends Controller
         $this->revisionDigitalService = $revisionDigitalService;
         $this->revisionPresencialService = $revisionPresencialService;
         $this->revisionDomiciliariaService = $revisionDomiciliariaService;
+        $this->citasService = $citasService;
     }
 
     /**
@@ -98,12 +103,126 @@ class RevisionController extends Controller
             ->where('estado', '!=', 'Finalizada')
             ->first();
 
-        // Siempre mostrar la página de selección de tipo
-        // Si hay una revisión existente, se pasará como información adicional
+        // Determinar qué tipos de revisión están disponibles según el estado del trámite
+        $tiposRevisionDisponibles = $this->determinarTiposRevisionDisponibles($tramite);
+
+        // Obtener información de cita si está en revisión presencial
+        $citaInfo = null;
+        if ($tramite->status === 'Revision_Presencial') {
+            $citaInfo = $this->obtenerInformacionCita($tramite->id);
+        }
+
         return view('revisiones.seleccionar-tipo', [
             'tramite' => $tramite,
-            'revisionExistente' => $revisionExistente
+            'revisionExistente' => $revisionExistente,
+            'tiposRevisionDisponibles' => $tiposRevisionDisponibles,
+            'citaInfo' => $citaInfo
         ]);
+    }
+
+    /**
+     * Determina qué tipos de revisión están disponibles según el estado del trámite
+     */
+    private function determinarTiposRevisionDisponibles(Tramite $tramite): array
+    {
+        $disponibles = [
+            'Digital' => false,
+            'Presencial' => false,
+            'Domiciliaria' => false
+        ];
+
+        // Si el trámite está pendiente, solo la revisión digital está disponible
+        if ($tramite->status === 'Pendiente') {
+            $disponibles = [
+                'Digital' => true,
+                'Presencial' => false,
+                'Domiciliaria' => false
+            ];
+        }
+        // Si el trámite está en algún tipo de revisión, solo esa revisión está disponible
+        elseif (in_array($tramite->status, ['Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria'])) {
+            switch ($tramite->status) {
+                case 'Revision_Digital':
+                    $disponibles['Digital'] = true;
+                    break;
+                case 'Revision_Presencial':
+                    $disponibles['Presencial'] = true;
+                    break;
+                case 'Revision_Domiciliaria':
+                    $disponibles['Domiciliaria'] = true;
+                    break;
+            }
+        }
+        // Si el trámite está aprobado, rechazado, para corrección o cancelado, ninguna revisión está disponible
+        else {
+            // Ninguna revisión disponible
+        }
+
+        return $disponibles;
+    }
+
+    /**
+     * Obtiene la información de la cita asignada para un trámite
+     */
+    private function obtenerInformacionCita(int $tramiteId): ?array
+    {
+        $cita = \App\Models\Cita::where('tramite_id', $tramiteId)
+            ->where('estado', 'Asignada')
+            ->with(['asignadoA'])
+            ->orderBy('fecha_cita', 'desc')
+            ->first();
+
+        if (!$cita) {
+            return null;
+        }
+
+        // Obtener información de quién debe presentarse (reutilizando lógica de estado.blade.php)
+        $personaResponsable = $this->obtenerPersonaResponsable($cita->tramite);
+
+        return [
+            'fecha' => $cita->fecha_cita->format('d/m/Y'),
+            'hora' => $cita->fecha_cita->format('H:i'),
+            'fecha_completa' => $cita->fecha_cita->format('d/m/Y H:i'),
+            'revisor' => $cita->asignadoA ? ($cita->asignadoA->nombre ?: 'No asignado') : 'No asignado',
+            'personaResponsable' => $personaResponsable,
+            'estado' => $cita->estado,
+            'intento' => $cita->intento
+        ];
+    }
+
+    /**
+     * Obtiene la información de quién debe presentarse (reutilizando lógica de TramiteController)
+     */
+    private function obtenerPersonaResponsable($tramite): ?array
+    {
+        $proveedor = $tramite->proveedor;
+        
+        if (!$proveedor) {
+            return null;
+        }
+
+        // Si es persona moral, obtener apoderado legal
+        if ($proveedor->tipo_persona === 'Moral') {
+            $apoderadoService = app(\App\Services\Tramites\ApoderadoService::class);
+            $apoderado = $apoderadoService->obtener($tramite);
+            
+            if ($apoderado && isset($apoderado['nombre_apoderado'])) {
+                return [
+                    'nombre' => $apoderado['nombre_apoderado'],
+                    'tipo' => 'Apoderado'
+                ];
+            }
+        }
+        
+        // Si es persona física, usar el usuario que inició el trámite
+        if ($proveedor->tipo_persona === 'Fisica' && $proveedor->usuario) {
+            return [
+                'nombre' => $proveedor->usuario->nombre,
+                'tipo' => 'La persona'
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -115,7 +234,18 @@ class RevisionController extends Controller
             'tipo_revision' => 'required|in:Digital,Presencial,Domiciliaria'
         ]);
 
-        // Solo redirigir con el tipo de revisión, sin crear registro en BD
+        // Actualizar el estado del trámite según el tipo de revisión
+        $tramite = Tramite::findOrFail($tramiteId);
+        $nuevoEstado = match($request->tipo_revision) {
+            'Digital' => TramiteStatus::REVISION_DIGITAL->value,
+            'Presencial' => TramiteStatus::REVISION_PRESENCIAL->value,
+            'Domiciliaria' => TramiteStatus::REVISION_DOMICILIARIA->value,
+            default => TramiteStatus::REVISION_DIGITAL->value
+        };
+        
+        $tramite->update(['status' => $nuevoEstado]);
+
+        // Redirigir con el tipo de revisión
         return redirect()->route('revisiones.revisar', [
             'tramite' => $tramiteId,
             'tipo_revision' => $request->tipo_revision
@@ -244,8 +374,19 @@ class RevisionController extends Controller
             ]);
             
             if ($resultado['success']) {
+                $mensaje = $resultado['message'];
+                $titulo = '¡Revisión Completada!';
+                
+                if ($request->decision_final === 'agendar_cita') {
+                    $mensaje = 'Trámite aprobado y cita presencial agendada automáticamente';
+                    $titulo = '¡Trámite Aprobado y Cita Presencial Agendada!';
+                }
+                
                 return redirect()->route('revisiones.index')
-                    ->with('success', $resultado['message'] . ' Estado: ' . $resultado['estado_tramite']);
+                    ->with('success', $mensaje . ' Estado: ' . $resultado['estado_tramite'])
+                    ->with('success_title', $titulo)
+                    ->with('success_message', $mensaje)
+                    ->with('success_redirect', route('revisiones.index'));
             } else {
                 return back()->with('error', 'Error al procesar la revisión: ' . $resultado['message']);
             }
@@ -295,6 +436,74 @@ class RevisionController extends Controller
             ]);
             
             return back()->with('error', 'Error interno al procesar la revisión. Por favor, intente nuevamente.');
+        }
+    }
+
+    public function agendarCita(Request $request, int $tramiteId)
+    {
+        try {
+            $resultado = $this->citasService->agendarCitaRevisionDigital($tramiteId);
+            
+            if ($resultado['success']) {
+                return redirect()->route('revisiones.index')->with('success', 
+                    "Cita agendada para el {$resultado['fecha_formateada']} con {$resultado['revisor']->name}"
+                );
+            } else {
+                return back()->with('error', $resultado['message']);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al agendar cita', [
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->with('error', 'Error al agendar la cita. Intente nuevamente.');
+        }
+    }
+
+    public function reagendarCita(Request $request, int $citaId)
+    {
+        try {
+            $resultado = $this->citasService->reagendarCita($citaId);
+            
+            if ($resultado['success']) {
+                return redirect()->route('revisiones.index')->with('success', 
+                    "Cita reagendada para el {$resultado['fecha_formateada']} con {$resultado['revisor']->name}"
+                );
+            } else {
+                return back()->with('error', $resultado['message']);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al reagendar cita', [
+                'cita_id' => $citaId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->with('error', 'Error al reagendar la cita. Intente nuevamente.');
+        }
+    }
+
+    public function obtenerHorariosDisponibles(Request $request)
+    {
+        $request->validate([
+            'fecha' => 'required|date|after_or_equal:today',
+            'tipo_cita' => 'required|in:Digital,Presencial,Domiciliaria'
+        ]);
+
+        try {
+            $fecha = \Carbon\Carbon::parse($request->fecha);
+            $horarios = $this->citasService->obtenerHorariosDisponibles($fecha, $request->tipo_cita);
+            
+            return response()->json([
+                'success' => true,
+                'horarios' => $horarios,
+                'fecha' => $fecha->format('d/m/Y')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener horarios disponibles'
+            ], 500);
         }
     }
 } 

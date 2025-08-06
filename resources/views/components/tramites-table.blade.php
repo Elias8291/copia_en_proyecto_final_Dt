@@ -84,12 +84,13 @@
                          class="appearance-none bg-white border border-gray-200 rounded-lg pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all duration-200 hover:bg-white hover:shadow-sm min-w-[110px]">
                          <option value="">Estado</option>
                          <option value="Pendiente">Pendiente</option>
-                         <option value="En_Revision">En Revisión</option>
-                         <option value="Aprobado">Aprobado</option>
-                         <option value="Rechazado">Rechazado</option>
-                         <option value="Por_Cotejar">Por Cotejar</option>
-                         <option value="Para_Correccion">Para Corrección</option>
-                         <option value="Cancelado">Cancelado</option>
+                                                 <option value="Revision_Digital">Revisión Digital</option>
+                        <option value="Revision_Presencial">Revisión Presencial</option>
+                        <option value="Revision_Domiciliaria">Revisión Domiciliaria</option>
+                        <option value="Aprobado">Aprobado</option>
+                        <option value="Rechazado">Rechazado</option>
+                        <option value="Para_Correccion">Para Corrección</option>
+                        <option value="Cancelado">Cancelado</option>
                      </select>
                      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                          <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,12 +181,17 @@
                                 @php
                                     $estadoColors = [
                                         'Pendiente' => 'bg-yellow-100 text-yellow-700 border-yellow-200',
-                                        'En_Revision' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                        'Aprobado' => 'bg-green-100 text-green-700 border-green-200',
-                                        'Rechazado' => 'bg-red-100 text-red-700 border-red-200',
-                                        'Por_Cotejar' => 'bg-orange-100 text-orange-700 border-orange-200',
-                                        'Para_Correccion' => 'bg-pink-100 text-pink-700 border-pink-200',
-                                        'Cancelado' => 'bg-gray-100 text-gray-700 border-gray-200'
+                                                    'Pendiente' => 'bg-gray-100 text-gray-700 border-gray-200',
+            'Revision_Digital' => 'bg-blue-100 text-blue-700 border-blue-200',
+            'Revision_Presencial' => 'bg-purple-100 text-purple-700 border-purple-200',
+            'Revision_Domiciliaria' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
+            'Aprobado' => 'bg-green-100 text-green-700 border-green-200',
+            'Rechazado' => 'bg-red-100 text-red-700 border-red-200',
+            'Para_Correccion' => 'bg-orange-100 text-orange-700 border-orange-200',
+            'Cancelado' => 'bg-gray-100 text-gray-700 border-gray-200',
+            // Estados antiguos (compatibilidad)
+            'En_Revision' => 'bg-blue-100 text-blue-700 border-blue-200',
+            'Por_Cotejar' => 'bg-purple-100 text-purple-700 border-purple-200'
                                     ];
                                     $color = $estadoColors[$tramite->estado] ?? 'bg-gray-100 text-gray-700 border-gray-200';
                                 @endphp

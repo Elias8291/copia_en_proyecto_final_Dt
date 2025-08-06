@@ -7,12 +7,23 @@ use App\Models\RevisionTramite;
 use App\Models\SeccionRevision;
 use App\Models\Archivo;
 use App\Models\User;
+use App\Enums\TramiteStatus;
+use App\Services\CitasService;
+use App\Services\NotificacionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class RevisionService
 {
+    protected CitasService $citasService;
+    protected NotificacionService $notificacionService;
+
+    public function __construct(CitasService $citasService, NotificacionService $notificacionService)
+    {
+        $this->citasService = $citasService;
+        $this->notificacionService = $notificacionService;
+    }
     /**
      * Procesar revisión digital con evaluación por secciones
      */
@@ -36,15 +47,21 @@ class RevisionService
             // 4. Determinar estado final del trámite
             $estadoFinal = $this->determinarEstadoFinal($data['decision_final'] ?? null, $estadosSecciones);
             
-            // 5. Actualizar trámite
-            $this->actualizarTramite($tramite, $estadoFinal, $data['observaciones_generales'] ?? null);
+            if (($data['decision_final'] ?? null) === 'agendar_cita') {
+                $resultadoCita = $this->citasService->agendarCitaRevisionDigital($tramite->id);
+                if (!$resultadoCita['success']) {
+                    throw new \Exception('Error al agendar la cita: ' . $resultadoCita['message']);
+                }
+            }
             
-            // 6. Finalizar revisión
+            $this->actualizarTramite($tramite, $estadoFinal, $data['observaciones_generales'] ?? null);
             $revision->update([
                 'estado' => 'Finalizada',
                 'fecha_fin' => Carbon::now(),
                 'observaciones' => $data['observaciones_generales'] ?? null
             ]);
+
+            $this->enviarNotificacionSegunDecision($tramite, $data['decision_final'] ?? null, $data['observaciones_generales'] ?? null);
             
             return [
                 'success' => true,
@@ -85,7 +102,9 @@ class RevisionService
             );
             
             // 4. Determinar estado final
-            $estadoFinal = $data['decision'] === 'aprobado' ? 'Aprobado' : 'Rechazado';
+            $estadoFinal = $data['decision'] === 'aprobado' ? 
+                Tramite::STATUS_APROBADO : 
+                Tramite::STATUS_RECHAZADO;
             
             // 5. Actualizar trámite
             $this->actualizarTramite($tramite, $estadoFinal, $data['observaciones'] ?? null);
@@ -181,11 +200,11 @@ class RevisionService
         // Si hay decisión final explícita
         if ($decisionFinal) {
             return match($decisionFinal) {
-                'aprobado' => 'Aprobado',
-                'rechazado' => 'Rechazado',
-                'agendar_cita' => 'Por_Cotejar',
-                'correcciones' => 'Para_Correccion',
-                default => 'En_Revision'
+                'aprobado' => TramiteStatus::APROBADO->value,
+                'rechazado' => TramiteStatus::RECHAZADO->value,
+                'agendar_cita' => TramiteStatus::REVISION_DIGITAL->value,
+                'correcciones' => TramiteStatus::PARA_CORRECCION->value,
+                default => TramiteStatus::REVISION_DIGITAL->value
             };
         }
         
@@ -193,21 +212,21 @@ class RevisionService
         $secciones = array_values($estadosSecciones);
         
         if (empty($secciones)) {
-            return 'En_Revision';
+            return TramiteStatus::REVISION_DIGITAL->value;
         }
         
         // Si todas las secciones están aprobadas
         if (array_filter($secciones, fn($estado) => $estado === 'Aprobado') === $secciones) {
-            return 'Aprobado';
+            return TramiteStatus::APROBADO->value;
         }
         
         // Si hay alguna sección rechazada
         if (in_array('Rechazado', $secciones)) {
-            return 'Para_Correccion';
+            return TramiteStatus::PARA_CORRECCION->value;
         }
         
-        // Por defecto, mantener en revisión
-        return 'En_Revision';
+        // Por defecto, mantener en revisión digital
+        return TramiteStatus::REVISION_DIGITAL->value;
     }
     
     /**
@@ -221,7 +240,7 @@ class RevisionService
         ];
         
         // Si se aprueba o rechaza, marcar fecha de finalización
-        if (in_array($estado, ['Aprobado', 'Rechazado'])) {
+        if (in_array($estado, [TramiteStatus::APROBADO->value, TramiteStatus::RECHAZADO->value])) {
             $updateData['fecha_finalizacion'] = Carbon::now();
         }
         
@@ -246,5 +265,15 @@ class RevisionService
             'detalle_secciones' => $secciones->toArray(),
             'detalle_archivos' => $archivos->toArray()
         ];
+    }
+
+    private function enviarNotificacionSegunDecision(Tramite $tramite, ?string $decision, ?string $observaciones): void
+    {
+        match($decision) {
+            'aprobado', 'agendar_cita' => $this->notificacionService->notificarTramiteAprobado($tramite),
+            'rechazado' => $this->notificacionService->notificarTramiteRechazado($tramite, $observaciones),
+            'correcciones' => $this->notificacionService->notificarCorrecciones($tramite, $observaciones),
+            default => null
+        };
     }
 } 

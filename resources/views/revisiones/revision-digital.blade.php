@@ -583,7 +583,7 @@
                 
                 <form id="formRevisionCompleta" action="{{ route('revisiones.procesar-digital', $tramite->id) }}" method="POST" class="space-y-4">
                     @csrf
-                    <input type="hidden" name="tipo_revision" value="{{ $tipoRevision }}">
+                    <input type="hidden" name="tipo_revision" value="Digital">
                     
                     <!-- Campos ocultos para las decisiones de cada sección -->
                     <div id="decisiones-secciones" class="hidden">
@@ -612,10 +612,10 @@
                         <button 
                             type="submit" 
                             name="decision_final" 
-                            value="aprobado"
+                            value="agendar_cita"
                             class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded text-sm"
                         >
-                            ✓ Aprobar / Agendar Cita
+                            ✓ Aprobar y Agendar Cita Presencial
                         </button>
                         
                         <button 

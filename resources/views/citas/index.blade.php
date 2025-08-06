@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-    <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
+    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-4">
@@ -83,7 +83,7 @@
                     </div>
                         
                     <div id="filtersContainer" class="hidden">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
                             <div>
                                 <label for="hoy" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Filtrar por fecha</label>
                                 <select name="hoy" 
@@ -95,11 +95,20 @@
                             </div>
 
                             <div>
-                                <label for="fecha" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Fecha específica</label>
+                                <label for="fecha_desde" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Fecha desde</label>
                                 <input type="date" 
-                                       name="fecha" 
-                                       id="fecha"
-                                       value="{{ request('fecha') }}"
+                                       name="fecha_desde" 
+                                       id="fecha_desde"
+                                       value="{{ request('fecha_desde') }}"
+                                       class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                            </div>
+
+                            <div>
+                                <label for="fecha_hasta" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Fecha hasta</label>
+                                <input type="date" 
+                                       name="fecha_hasta" 
+                                       id="fecha_hasta"
+                                       value="{{ request('fecha_hasta') }}"
                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
                             </div>
 
@@ -109,9 +118,9 @@
                                         id="tipo_cita" 
                                         class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
                                     <option value="">Todos los tipos</option>
-                                    <option value="Revisión" {{ request('tipo_cita') == 'Revisión' ? 'selected' : '' }}>Revisión</option>
-                                    <option value="Cotejo" {{ request('tipo_cita') == 'Cotejo' ? 'selected' : '' }}>Cotejo</option>
-                                    <option value="Otro" {{ request('tipo_cita') == 'Otro' ? 'selected' : '' }}>Otro</option>
+                                    @foreach($tiposCita as $tipo)
+                                        <option value="{{ $tipo }}" {{ request('tipo_cita') == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
+                                    @endforeach
                                 </select>
                             </div>
 
@@ -121,9 +130,9 @@
                                         id="estado" 
                                         class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
                                     <option value="">Todos los estados</option>
-                                    <option value="Programada" {{ request('estado') == 'Programada' ? 'selected' : '' }}>Programada</option>
-                                    <option value="Confirmada" {{ request('estado') == 'Confirmada' ? 'selected' : '' }}>Confirmada</option>
-                                    <option value="Cancelada" {{ request('estado') == 'Cancelada' ? 'selected' : '' }}>Cancelada</option>
+                                    @foreach($estados as $estado)
+                                        <option value="{{ $estado }}" {{ request('estado') == $estado ? 'selected' : '' }}>{{ $estado == 'No_Asistio' ? 'No Asistió' : $estado }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -254,9 +263,10 @@
                 <table class="w-full">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200">
-                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Usuario</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Usuario/Proveedor</th>
                             <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Tipo</th>
                             <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Trámite</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Asignado a</th>
                             <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Estado</th>
                             <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Fecha y Hora</th>
                             <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Acciones</th>
@@ -268,49 +278,63 @@
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
                                 <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
                                     <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <span class="text-white font-semibold text-xs sm:text-sm md:text-base">{{ substr($cita->user->nombre ?? $cita->user->name ?? 'U', 0, 1) }}</span>
+                                        <span class="text-white font-semibold text-xs sm:text-sm md:text-base">{{ substr($cita->usuario?->nombre ?? $cita->proveedor?->razon_social ?? 'U', 0, 1) }}</span>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <div class="font-semibold text-gray-900 truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl text-xs sm:text-sm md:text-base" title="{{ $cita->user->nombre ?? $cita->user->name ?? 'N/A' }}">
-                                            {{ $cita->user->nombre ?? $cita->user->name ?? 'N/A' }}
+                                        <div class="font-semibold text-gray-900 truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl text-xs sm:text-sm md:text-base" title="{{ $cita->usuario?->nombre ?? $cita->proveedor?->razon_social ?? 'N/A' }}">
+                                            {{ $cita->usuario?->nombre ?? $cita->proveedor?->razon_social ?? 'N/A' }}
                                         </div>
-                                        <div class="text-xs sm:text-sm text-gray-500">RFC: {{ $cita->user->rfc ?? 'N/A' }}</div>
+                                        <div class="text-xs sm:text-sm text-gray-500">RFC: {{ $cita->proveedor?->rfc ?? 'N/A' }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
                                 @php
-                                    $tipoClass = match($cita->tipo_cita ?? 'Otro') {
-                                        'Revisión' => 'bg-blue-100 text-blue-800',
-                                        'Cotejo' => 'bg-green-100 text-green-800',
-                                        'Otro' => 'bg-gray-100 text-gray-800',
+                                    $tipoClass = match($cita->tipo_cita ?? 'Digital') {
+                                        'Digital' => 'bg-blue-100 text-blue-800',
+                                        'Presencial' => 'bg-green-100 text-green-800',
+                                        'Domiciliaria' => 'bg-purple-100 text-purple-800',
                                         default => 'bg-gray-100 text-gray-800'
                                     };
                                 @endphp
                                 <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-sm font-medium {{ $tipoClass }}">
-                                    {{ $cita->tipo_cita ?? 'Otro' }}
+                                    {{ $cita->tipo_cita ?? 'Digital' }}
                                 </span>
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
-                                @if($cita->id_tramite)
-                                    <a href="{{ route('tramites.show', $cita->id_tramite) }}" class="text-[#9d2449] hover:text-[#8a1f40] font-medium text-xs sm:text-sm md:text-base">
-                                        #{{ $cita->id_tramite }}
+                                @if($cita->tramite_id)
+                                    <a href="{{ route('tramites.index', ['search' => $cita->tramite_id]) }}" class="text-[#9d2449] hover:text-[#8a1f40] font-medium text-xs sm:text-sm md:text-base">
+                                        #{{ $cita->tramite_id }}
                                     </a>
+                                    <div class="text-xs text-gray-500">{{ $cita->tramite?->tipo_tramite ?? '' }}</div>
                                 @else
                                     <span class="text-gray-500 text-xs sm:text-sm md:text-base">Sin trámite</span>
                                 @endif
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                @if($cita->asignadoA)
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white font-semibold text-xs">{{ substr($cita->asignadoA->nombre, 0, 1) }}</span>
+                                        </div>
+                                        <span class="text-xs sm:text-sm text-gray-900">{{ $cita->asignadoA->nombre }}</span>
+                                    </div>
+                                @else
+                                    <span class="text-gray-500 text-xs sm:text-sm">Sin asignar</span>
+                                @endif
+                            </td>
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
                                 @php
-                                    $statusClass = match($cita->estado ?? 'Programada') {
-                                        'Confirmada' => 'bg-green-100 text-green-800',
+                                    $statusClass = match($cita->estado ?? 'Asignada') {
+                                        'Asistida' => 'bg-green-100 text-green-800',
                                         'Cancelada' => 'bg-red-100 text-red-800',
-                                        'Programada' => 'bg-yellow-100 text-yellow-800',
+                                        'Asignada' => 'bg-blue-100 text-blue-800',
+                                        'No_Asistio' => 'bg-orange-100 text-orange-800',
                                         default => 'bg-gray-100 text-gray-800'
                                     };
                                 @endphp
                                 <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-sm font-medium {{ $statusClass }}">
-                                    {{ $cita->estado ?? 'Programada' }}
+                                    {{ $cita->estado_label ?? $cita->estado ?? 'Asignada' }}
                                 </span>
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
@@ -324,39 +348,69 @@
                                 @endif
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
-                                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                                <div class="flex items-center space-x-1 sm:space-x-2 md:space-x-3">
                                     <a href="{{ route('citas.show', $cita->id) }}" 
-                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-[#9d2449] hover:text-white hover:bg-[#9d2449] rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                       class="group inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 text-[#9d2449] hover:text-white hover:bg-[#9d2449] rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                                        title="Ver detalles">
-                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.639 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.639 0-8.573-3.007-9.963-7.178z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         </svg>
                                     </a>
+                                    
+                                    @if($cita->estado === 'Asignada')
+                                        <form action="{{ route('citas.marcar-asistida', $cita->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" 
+                                                   class="group inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 text-green-600 hover:text-white hover:bg-green-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                                   title="Marcar como asistida">
+                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                        
+                                        <form action="{{ route('citas.marcar-no-asistio', $cita->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" 
+                                                   class="group inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 text-orange-600 hover:text-white hover:bg-orange-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                                   title="Marcar como no asistió">
+                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
+
+                                    @if($cita->puedeSerCancelada())
+                                        <form action="{{ route('citas.cancelar', $cita->id) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Está seguro de que desea cancelar esta cita?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" 
+                                                   class="group inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                                   title="Cancelar cita">
+                                                <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
+                                    
                                     <a href="{{ route('citas.edit', $cita->id) }}" 
-                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-gray-600 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                       class="group inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 text-gray-600 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                                        title="Editar">
-                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                                         </svg>
                                     </a>
-                                    <form action="{{ route('citas.destroy', $cita->id) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Está seguro de que desea eliminar esta cita? Esta acción no se puede deshacer.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" 
-                                               class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                                               title="Eliminar">
-                                            <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
-                                        </button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-8 sm:py-10 md:py-12 lg:py-16 text-center">
+                            <td colspan="7" class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-8 sm:py-10 md:py-12 lg:py-16 text-center">
                                 <div class="text-gray-500">
                                     <svg class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-4 sm:mb-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
@@ -378,49 +432,50 @@
                 <div class="flex items-start justify-between mb-2 sm:mb-3 md:mb-4">
                     <div class="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 lg:space-x-4 min-w-0 flex-1">
                         <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span class="text-white font-semibold text-xs sm:text-sm md:text-base lg:text-lg">{{ substr($cita->user->nombre ?? $cita->user->name ?? 'U', 0, 1) }}</span>
+                            <span class="text-white font-semibold text-xs sm:text-sm md:text-base lg:text-lg">{{ substr($cita->usuario?->nombre ?? $cita->proveedor?->razon_social ?? 'U', 0, 1) }}</span>
                         </div>
                         <div class="min-w-0 flex-1">
                             <span class="text-gray-700 font-medium text-xs sm:text-sm md:text-base lg:text-lg block">ID: {{ $cita->id }}</span>
-                            <p class="text-xs sm:text-sm md:text-base text-gray-500 truncate">{{ $cita->user->rfc ?? 'N/A' }}</p>
+                            <p class="text-xs sm:text-sm md:text-base text-gray-500 truncate">{{ $cita->proveedor?->rfc ?? 'N/A' }}</p>
                         </div>
                     </div>
                     <div class="flex-shrink-0 ml-1 sm:ml-2 md:ml-3">
                         @php
-                            $statusClass = match($cita->estado ?? 'Programada') {
-                                'Confirmada' => 'text-green-800 bg-green-100',
+                            $statusClass = match($cita->estado ?? 'Asignada') {
+                                'Asistida' => 'text-green-800 bg-green-100',
                                 'Cancelada' => 'text-red-800 bg-red-100',
-                                'Programada' => 'text-yellow-800 bg-yellow-100',
+                                'Asignada' => 'text-blue-800 bg-blue-100',
+                                'No_Asistio' => 'text-orange-800 bg-orange-100',
                                 default => 'text-gray-800 bg-gray-100'
                             };
                         @endphp
                         <span class="px-1 sm:px-1.5 md:px-2 lg:px-2.5 py-0.5 sm:py-1 md:py-1.5 text-xs sm:text-sm md:text-base font-medium rounded-full {{ $statusClass }} whitespace-nowrap">
-                            {{ $cita->estado ?? 'Programada' }}
+                            {{ $cita->estado_label ?? $cita->estado ?? 'Asignada' }}
                         </span>
                     </div>
                 </div>
                 <div class="space-y-1 sm:space-y-1.5 md:space-y-2 lg:space-y-3">
-                    <div class="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-800 truncate" title="{{ $cita->user->nombre ?? $cita->user->name ?? 'N/A' }}">
-                        {{ $cita->user->nombre ?? $cita->user->name ?? 'N/A' }}
+                    <div class="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-800 truncate" title="{{ $cita->usuario?->nombre ?? $cita->proveedor?->razon_social ?? 'N/A' }}">
+                        {{ $cita->usuario?->nombre ?? $cita->proveedor?->razon_social ?? 'N/A' }}
                     </div>
                     <div class="flex items-center justify-between">
                         <div class="text-xs sm:text-sm md:text-base text-gray-600">
                             @php
-                                $tipoClass = match($cita->tipo_cita ?? 'Otro') {
-                                    'Revisión' => 'bg-blue-100 text-blue-800',
-                                    'Cotejo' => 'bg-green-100 text-green-800',
-                                    'Otro' => 'bg-gray-100 text-gray-800',
+                                $tipoClass = match($cita->tipo_cita ?? 'Digital') {
+                                    'Digital' => 'bg-blue-100 text-blue-800',
+                                    'Presencial' => 'bg-green-100 text-green-800',
+                                    'Domiciliaria' => 'bg-purple-100 text-purple-800',
                                     default => 'bg-gray-100 text-gray-800'
                                 };
                             @endphp
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $tipoClass }}">
-                                {{ $cita->tipo_cita ?? 'Otro' }}
+                                {{ $cita->tipo_cita ?? 'Digital' }}
                             </span>
                         </div>
                         <div class="text-xs sm:text-sm md:text-base text-gray-500">
-                            @if($cita->id_tramite)
-                                <a href="{{ route('tramites.show', $cita->id_tramite) }}" class="text-[#9d2449] hover:text-[#8a1f40] font-medium">
-                                    #{{ $cita->id_tramite }}
+                            @if($cita->tramite_id)
+                                <a href="{{ route('tramites.index', ['search' => $cita->tramite_id]) }}" class="text-[#9d2449] hover:text-[#8a1f40] font-medium">
+                                    #{{ $cita->tramite_id }}
                                 </a>
                             @else
                                 Sin trámite

@@ -111,7 +111,9 @@ class RevisionService
 
         // Actualizar estado del trámite
         $tramite->update([
-            'status' => $decision === 'aprobado' ? 'Aprobado' : 'Rechazado'
+            'status' => $decision === 'aprobado' ? 
+                Tramite::STATUS_APROBADO : 
+                Tramite::STATUS_RECHAZADO
         ]);
 
         return $revision;

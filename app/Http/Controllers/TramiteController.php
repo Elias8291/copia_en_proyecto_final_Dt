@@ -38,31 +38,64 @@ class TramiteController extends Controller
                 'actualizacion' => ['activo' => false, 'pendiente' => false, 'motivo' => 'Usuario sin RFC']
             ];
         } else {
-            // Usar la nueva lógica para cada tipo de trámite
-            $accionInscripcion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'inscripcion');
-            $accionRenovacion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'renovacion');
-            $accionActualizacion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'actualizacion');
+            // Verificar si tiene trámite pendiente
+            $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
             
-            $tramites = [
-                'inscripcion' => [
-                    'activo' => in_array($accionInscripcion['accion'], ['crear_nuevo']),
-                    'pendiente' => $accionInscripcion['accion'] === 'tramite_pendiente',
-                    'motivo' => $accionInscripcion['motivo'],
-                    'accion' => $accionInscripcion['accion']
-                ],
-                'renovacion' => [
-                    'activo' => in_array($accionRenovacion['accion'], ['renovar_vencido']),
-                    'pendiente' => $accionRenovacion['accion'] === 'tramite_pendiente',
-                    'motivo' => $accionRenovacion['motivo'],
-                    'accion' => $accionRenovacion['accion']
-                ],
-                'actualizacion' => [
-                    'activo' => $accionActualizacion['accion'] === 'actualizar_existente',
-                    'pendiente' => $accionActualizacion['accion'] === 'tramite_pendiente',
-                    'motivo' => $accionActualizacion['motivo'],
-                    'accion' => $accionActualizacion['accion']
-                ]
-            ];
+            if ($tramitePendiente) {
+                // Si tiene trámite pendiente, identificar el tipo específico
+                $tipoTramitePendiente = strtolower($tramitePendiente->tipo_tramite);
+                
+                // Configurar solo la tarjeta del tipo de trámite pendiente
+                $tramites = [
+                    'inscripcion' => [
+                        'activo' => false,
+                        'pendiente' => ($tipoTramitePendiente === 'inscripcion'),
+                        'motivo' => ($tipoTramitePendiente === 'inscripcion') ? 'Tiene un trámite de inscripción pendiente' : 'Tiene un trámite pendiente de otro tipo',
+                        'accion' => ($tipoTramitePendiente === 'inscripcion') ? 'tramite_pendiente' : 'no_disponible',
+                        'tramite_id' => ($tipoTramitePendiente === 'inscripcion') ? $tramitePendiente->id : null
+                    ],
+                    'renovacion' => [
+                        'activo' => false,
+                        'pendiente' => ($tipoTramitePendiente === 'renovacion'),
+                        'motivo' => ($tipoTramitePendiente === 'renovacion') ? 'Tiene un trámite de renovación pendiente' : 'Tiene un trámite pendiente de otro tipo',
+                        'accion' => ($tipoTramitePendiente === 'renovacion') ? 'tramite_pendiente' : 'no_disponible',
+                        'tramite_id' => ($tipoTramitePendiente === 'renovacion') ? $tramitePendiente->id : null
+                    ],
+                    'actualizacion' => [
+                        'activo' => false,
+                        'pendiente' => ($tipoTramitePendiente === 'actualizacion'),
+                        'motivo' => ($tipoTramitePendiente === 'actualizacion') ? 'Tiene un trámite de actualización pendiente' : 'Tiene un trámite pendiente de otro tipo',
+                        'accion' => ($tipoTramitePendiente === 'actualizacion') ? 'tramite_pendiente' : 'no_disponible',
+                        'tramite_id' => ($tipoTramitePendiente === 'actualizacion') ? $tramitePendiente->id : null
+                    ]
+                ];
+            } else {
+                // Usar la nueva lógica para cada tipo de trámite
+                $accionInscripcion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'inscripcion');
+                $accionRenovacion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'renovacion');
+                $accionActualizacion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'actualizacion');
+                
+                $tramites = [
+                    'inscripcion' => [
+                        'activo' => in_array($accionInscripcion['accion'], ['crear_nuevo']),
+                        'pendiente' => $accionInscripcion['accion'] === 'tramite_pendiente',
+                        'motivo' => $accionInscripcion['motivo'],
+                        'accion' => $accionInscripcion['accion']
+                    ],
+                    'renovacion' => [
+                        'activo' => in_array($accionRenovacion['accion'], ['renovar_vencido']),
+                        'pendiente' => $accionRenovacion['accion'] === 'tramite_pendiente',
+                        'motivo' => $accionRenovacion['motivo'],
+                        'accion' => $accionRenovacion['accion']
+                    ],
+                    'actualizacion' => [
+                        'activo' => $accionActualizacion['accion'] === 'actualizar_existente',
+                        'pendiente' => $accionActualizacion['accion'] === 'tramite_pendiente',
+                        'motivo' => $accionActualizacion['motivo'],
+                        'accion' => $accionActualizacion['accion']
+                    ]
+                ];
+            }
         }
         
         return view('tramites.index', compact('tramites'));
@@ -81,6 +114,19 @@ class TramiteController extends Controller
         if (!in_array($tipo, $tiposValidos)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'Tipo de trámite no válido');
+        }
+        
+        // Obtener RFC del usuario
+        $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
+        
+        if ($rfc) {
+            // Verificar si tiene trámite pendiente
+            $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
+            
+            if ($tramitePendiente) {
+                return redirect()->route('tramites.index')
+                    ->with('warning', 'Tiene un trámite en proceso. Consulte el estado de su trámite actual antes de iniciar uno nuevo.');
+            }
         }
         
         // Guardar el tipo de trámite en la sesión
@@ -157,13 +203,16 @@ class TramiteController extends Controller
                 ->with('error', 'Usuario sin RFC configurado');
         }
         
+        // Verificar si tiene trámite pendiente
+        $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
+        
+        if ($tramitePendiente) {
+            return redirect()->route('tramites.index')
+                ->with('warning', 'Tiene un trámite en proceso. Consulte el estado de su trámite actual antes de iniciar uno nuevo.');
+        }
+        
         // Verificar si puede realizar este tipo de trámite
         $accion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, $tipo);
-        
-        if ($accion['accion'] === 'tramite_pendiente') {
-            return redirect()->route('tramites.estado')
-                ->with('error', 'Tiene un trámite pendiente. Debe completarlo antes de iniciar uno nuevo.');
-        }
         
         // Verificar si el trámite está disponible
         $tramites = [
@@ -219,6 +268,17 @@ class TramiteController extends Controller
         ]);
         
         try {
+            // Verificar si tiene trámite pendiente
+            $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
+            if ($rfc) {
+                $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
+                
+                if ($tramitePendiente) {
+                    return redirect()->route('tramites.index')
+                        ->with('warning', 'Tiene un trámite en proceso. Consulte el estado de su trámite actual antes de iniciar uno nuevo.');
+                }
+            }
+            
             // Obtener el tipo de trámite de la sesión o del request
             $tipoTramite = session('tipo_tramite') ?? $request->tipo_tramite ?? 'Inscripcion';
             
@@ -259,13 +319,59 @@ class TramiteController extends Controller
         }
         
         $proveedores = $this->rfcProveedorService->buscarProveedoresPorRfc($rfc);
-        $tramitesPendientes = collect();
+        $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
         
-        foreach ($proveedores as $proveedor) {
-            $tramites = $proveedor->tramites()->where('status', 'Pendiente')->get();
-            $tramitesPendientes = $tramitesPendientes->merge($tramites);
+        // Obtener cita asignada si existe
+        $citaAsignada = null;
+        $personaResponsable = null;
+        $citaVencida = false;
+        $intentosRestantes = 2;
+        
+        if ($tramitePendiente) {
+            $citaAsignada = $tramitePendiente->citas()
+                ->where('estado', 'Asignada')
+                ->orderBy('fecha_cita', 'desc')
+                ->first();
+            
+            // Verificar si la cita ha vencido
+            if ($citaAsignada && $citaAsignada->fecha_cita < now()) {
+                $citaVencida = true;
+                
+                // Contar intentos previos
+                $intentosPrevios = $tramitePendiente->citas()
+                    ->where('estado', 'No Asistió')
+                    ->count();
+                
+                $intentosRestantes = max(0, 2 - $intentosPrevios);
+            }
+            
+            // Obtener información de la persona responsable
+            if ($tramitePendiente->proveedor) {
+                if ($tramitePendiente->proveedor->tipo_persona === 'Moral') {
+                    // Para persona moral, obtener el apoderado legal
+                    $apoderadoService = app(\App\Services\Tramites\ApoderadoService::class);
+                    $datosApoderado = $apoderadoService->obtener($tramitePendiente);
+                    
+                    if ($datosApoderado) {
+                        $personaResponsable = [
+                            'nombre' => $datosApoderado['nombre_apoderado'] ?? 'No especificado',
+                            'tipo' => 'Representante Legal',
+                            'rfc' => $datosApoderado['rfc'] ?? ''
+                        ];
+                    }
+                } else {
+                    // Para persona física, obtener el usuario
+                    if ($tramitePendiente->proveedor->usuario) {
+                        $personaResponsable = [
+                            'nombre' => $tramitePendiente->proveedor->usuario->nombre ?? 'No especificado',
+                            'tipo' => 'Titular del Trámite',
+                            'rfc' => $tramitePendiente->proveedor->usuario->rfc ?? ''
+                        ];
+                    }
+                }
+            }
         }
         
-        return view('tramites.estado', compact('proveedores', 'tramitesPendientes', 'rfc'));
+        return view('tramites.estado', compact('proveedores', 'tramitePendiente', 'citaAsignada', 'rfc', 'personaResponsable', 'citaVencida', 'intentosRestantes'));
     }
 } 

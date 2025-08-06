@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Models\Proveedor;
+use App\Models\Tramite;
 use App\Models\CatalogoArchivo;
 use Carbon\Carbon;
 
@@ -79,12 +80,9 @@ class RfcProveedorService
         // Convertir el tipo de trámite a minúsculas para la comparación
         $tipoTramiteLower = strtolower($tipoTramite);
         
-        // Verificar si hay trámite pendiente de este tipo específico
+        // Verificar si hay trámite pendiente (cualquier estado activo)
         if ($proveedorConTramitePendiente && $tramitePendiente) {
-            $tipoTramitePendiente = strtolower($tramitePendiente->tipo_tramite);
-            if ($tipoTramiteLower === $tipoTramitePendiente) {
-                return $this->crearRespuestaAccion('tramite_pendiente', 'Tiene un trámite pendiente', $proveedorConTramitePendiente, $proveedores->count());
-            }
+            return $this->crearRespuestaAccion('tramite_pendiente', 'Tiene un trámite en proceso', $proveedorConTramitePendiente, $proveedores->count());
         }
         
         switch ($tipoTramiteLower) {
@@ -127,7 +125,7 @@ class RfcProveedorService
     {
         return Proveedor::where('rfc', $rfc)
             ->whereHas('tramites', function($query) {
-                $query->where('status', 'Pendiente');
+                $query->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion']);
             })
             ->first();
     }
@@ -187,8 +185,10 @@ class RfcProveedorService
 
     public function obtenerTramitePendiente(string $rfc): ?\App\Models\Tramite
     {
-        return \App\Models\Tramite::whereHas('proveedor', function($query) use ($rfc) {
+        return Tramite::whereHas('proveedor', function($query) use ($rfc) {
             $query->where('rfc', $rfc);
-        })->where('status', 'Pendiente')->first();
+        })->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
+          ->orderBy('created_at', 'desc')
+          ->first();
     }
 } 

@@ -366,4 +366,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+
+<!-- Modal de éxito -->
+<x-modal-exito 
+    id="modal-revision-exito"
+    :title="session('success_title', '¡Operación Exitosa!')"
+    :message="session('success_message', 'La operación se realizó correctamente.')"
+    :redirectUrl="session('success_redirect', route('revisiones.index'))"
+/>
+
 @endsection 

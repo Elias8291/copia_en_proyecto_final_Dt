@@ -10,7 +10,8 @@ use App\Http\Controllers\{
     ProfileController,
     TramiteController,
     RevisionController,
-    NotificacionController
+    NotificacionController,
+    CitasController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -92,6 +93,22 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{role}', [RolesController::class, 'destroy'])->name('destroy');
     });
 
+    // Rutas para Citas
+    Route::prefix('citas')->name('citas.')->group(function () {
+        Route::get('/', [CitasController::class, 'index'])->name('index');
+        Route::get('/crear', [CitasController::class, 'create'])->name('create');
+        Route::post('/', [CitasController::class, 'store'])->name('store');
+        Route::get('/{cita}', [CitasController::class, 'show'])->name('show');
+        Route::get('/{cita}/editar', [CitasController::class, 'edit'])->name('edit');
+        Route::put('/{cita}', [CitasController::class, 'update'])->name('update');
+        Route::delete('/{cita}', [CitasController::class, 'destroy'])->name('destroy');
+        
+        // Acciones específicas
+        Route::patch('/{cita}/asistida', [CitasController::class, 'marcarAsistida'])->name('marcar-asistida');
+        Route::patch('/{cita}/no-asistio', [CitasController::class, 'marcarNoAsistio'])->name('marcar-no-asistio');
+        Route::patch('/{cita}/cancelar', [CitasController::class, 'cancelar'])->name('cancelar');
+    });
+
     Route::prefix('tramites')->name('tramites.')->group(function () {
         Route::get('/', [TramiteController::class, 'index'])->name('index');
         Route::get('/cargar-constancia/{tipo}', [TramiteController::class, 'cargarConstancia'])->name('cargar-constancia');
@@ -115,6 +132,11 @@ Route::middleware(['auth'])->group(function () {
         // Nuevas rutas para procesamiento estructurado
         Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
         Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
+        
+        // Rutas para gestión de citas
+        Route::post('/{tramite}/agendar-cita', [RevisionController::class, 'agendarCita'])->name('agendar-cita');
+        Route::post('/cita/{cita}/reagendar', [RevisionController::class, 'reagendarCita'])->name('reagendar-cita');
+        Route::get('/horarios-disponibles', [RevisionController::class, 'obtenerHorariosDisponibles'])->name('horarios-disponibles');
         
         Route::get('/{tramite}/ver-historico', [RevisionController::class, 'verTramiteHistorico'])->name('ver-historico');
         Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo');

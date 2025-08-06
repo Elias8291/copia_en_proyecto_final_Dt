@@ -15,7 +15,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
             $table->enum('tipo_tramite', ['Inscripcion', 'Renovacion', 'Actualizacion']);
-            $table->enum('status', ['Pendiente', 'En_Revision', 'Aprobado', 'Rechazado', 'Por_Cotejar', 'Para_Correccion', 'Cancelado'])->default('Pendiente');
+            $table->enum('status', [
+                'Pendiente',
+                'Revision_Digital',
+                'Revision_Presencial', 
+                'Revision_Domiciliaria',
+                'Aprobado',
+                'Rechazado',
+                'Para_Correccion',
+                'Cancelado'
+            ])->default('Pendiente');
             $table->timestamp('fecha_inicio');
             $table->timestamp('fecha_finalizacion')->nullable();
             $table->timestamp('fecha_cancelacion')->nullable();
