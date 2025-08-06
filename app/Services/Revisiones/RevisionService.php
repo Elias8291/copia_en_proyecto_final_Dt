@@ -94,18 +94,18 @@ class RevisionService
                 'tramite_id' => $tramiteId,
                 'tipo_revision' => $tipoRevision,
                 'estado' => 'Finalizada',
-                'decision' => $decision,
                 'observaciones' => $observaciones,
                 'fecha_inicio' => now(),
-                'fecha_finalizacion' => now(),
+                'fecha_fin' => now(),
+                'revisor_id' => auth()->id(),
+                'intento' => 1
             ]);
         } else {
             // Actualizar revisión existente
             $revision->update([
-                'decision' => $decision,
                 'observaciones' => $observaciones,
                 'estado' => 'Finalizada',
-                'fecha_finalizacion' => now(),
+                'fecha_fin' => now(),
             ]);
         }
 

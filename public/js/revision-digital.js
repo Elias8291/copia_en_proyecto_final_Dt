@@ -55,8 +55,16 @@ function evaluarSeccion(seccion, decision) {
     const comentario = textarea ? textarea.value.trim() : '';
     
     // Actualizar campos ocultos del formulario
-    document.getElementById(`decision_${seccion}`).value = decision;
-    document.getElementById(`comentario_${seccion}`).value = comentario;
+    const decisionInput = document.getElementById(`decision_${seccion}`);
+    const comentarioInput = document.getElementById(`comentario_${seccion}`);
+    
+    if (decisionInput) {
+        decisionInput.value = decision;
+    }
+    
+    if (comentarioInput) {
+        comentarioInput.value = comentario;
+    }
     
     // Actualizar resumen visual
     actualizarResumenSeccion(seccion, decision);
@@ -64,8 +72,32 @@ function evaluarSeccion(seccion, decision) {
     // Actualizar indicador de estado individual de la sección
     actualizarEstadoIndividual(seccion, decision);
     
-    // Feedback visual
-    mostrarNotificacion(`Sección ${seccion} evaluada como: ${decision}`, decision === 'Aprobado' ? 'success' : 'warning');
+    // Feedback visual mejorado
+    const seccionLabel = obtenerNombreSeccion(seccion);
+    const comentarioTexto = comentario ? ` (con comentarios)` : '';
+    mostrarNotificacion(`${seccionLabel} evaluada como: ${decision}${comentarioTexto}`, decision === 'Aprobado' ? 'success' : 'warning');
+    
+    // Debug: mostrar en consola los valores capturados
+    console.log(`Sección evaluada:`, {
+        seccion: seccion,
+        decision: decision,
+        comentario: comentario,
+        decisionInputValue: decisionInput?.value,
+        comentarioInputValue: comentarioInput?.value
+    });
+}
+
+function obtenerNombreSeccion(seccion) {
+    const nombres = {
+        'datos_generales': 'Datos Generales',
+        'actividades': 'Actividades Económicas', 
+        'domicilio': 'Domicilio',
+        'constitucion': 'Constitución',
+        'accionistas': 'Accionistas',
+        'apoderado': 'Apoderado Legal',
+        'archivos': 'Documentos'
+    };
+    return nombres[seccion] || seccion;
 }
 
 function actualizarResumenSeccion(seccion, decision) {
@@ -139,12 +171,44 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
     }, 3000);
 }
 
+// Sincronizar comentarios en tiempo real
+function sincronizarComentario(seccion) {
+    const textarea = document.getElementById(`textarea_${seccion}`);
+    const comentarioInput = document.getElementById(`comentario_${seccion}`);
+    
+    if (textarea && comentarioInput) {
+        comentarioInput.value = textarea.value.trim();
+    }
+}
+
 // Inicialización cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
+    // Agregar event listeners a todos los textareas de comentarios
+    const textareas = document.querySelectorAll('[id^="textarea_"]');
+    textareas.forEach(textarea => {
+        const seccion = textarea.id.replace('textarea_', '');
+        
+        // Sincronizar en tiempo real mientras el usuario escribe
+        textarea.addEventListener('input', function() {
+            sincronizarComentario(seccion);
+        });
+        
+        // Sincronizar cuando pierde el foco
+        textarea.addEventListener('blur', function() {
+            sincronizarComentario(seccion);
+        });
+    });
+    
     // Validar que al menos una sección haya sido evaluada antes de enviar
     const form = document.getElementById('formRevisionCompleta');
     if (form) {
         form.addEventListener('submit', function(e) {
+            // Sincronizar todos los comentarios antes de enviar
+            textareas.forEach(textarea => {
+                const seccion = textarea.id.replace('textarea_', '');
+                sincronizarComentario(seccion);
+            });
+            
             const decisiones = Array.from(document.querySelectorAll('[id^="decision_"]'));
             const hayEvaluaciones = decisiones.some(input => input.value !== 'Pendiente');
             
@@ -153,6 +217,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 mostrarNotificacion('Debe evaluar al menos una sección antes de finalizar la revisión', 'warning');
                 return false;
             }
+            
+            // Debug: mostrar todos los datos que se van a enviar
+            console.log('Datos del formulario a enviar:');
+            decisiones.forEach(input => {
+                const seccion = input.id.replace('decision_', '');
+                const comentarioInput = document.getElementById(`comentario_${seccion}`);
+                console.log(`- ${seccion}:`, {
+                    decision: input.value,
+                    comentario: comentarioInput?.value || ''
+                });
+            });
         });
     }
 });
@@ -161,4 +236,5 @@ document.addEventListener('DOMContentLoaded', function() {
 window.navigateSection = navigateSection;
 window.toggleCotejo = toggleCotejo;
 window.toggleHistorial = toggleHistorial;
-window.evaluarSeccion = evaluarSeccion; 
+window.evaluarSeccion = evaluarSeccion;
+window.sincronizarComentario = sincronizarComentario; 

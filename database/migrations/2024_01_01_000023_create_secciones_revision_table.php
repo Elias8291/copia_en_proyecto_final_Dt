@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('secciones_revision', function (Blueprint $table) {
             $table->id();
             $table->foreignId('tramite_id')->constrained('tramites')->onDelete('cascade');
-            $table->enum('seccion', ['datos_generales', 'actividades', 'domicilio', 'constitucion', 'accionistas', 'apoderado', 'documentos']);
+            $table->enum('seccion', ['datos_generales', 'actividades', 'domicilio', 'constitucion', 'accionistas', 'apoderado', 'archivos']);
             $table->enum('estado', ['Pendiente', 'Aprobado', 'Rechazado'])->default('Pendiente');
             $table->text('comentario')->nullable();
             $table->foreignId('revisado_por')->nullable()->constrained('users')->onDelete('set null');

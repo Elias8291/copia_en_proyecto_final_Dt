@@ -66,6 +66,7 @@ class SeccionRevision extends Model
             'constitucion' => 'Constitución',
             'accionistas' => 'Accionistas',
             'apoderado' => 'Apoderado Legal',
+            'archivos' => 'Archivos',
             'documentos' => 'Documentos',
             'documentos_presencial' => 'Documentos Presencial',
             default => ucfirst(str_replace('_', ' ', $this->seccion))

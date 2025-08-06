@@ -213,10 +213,35 @@ class RevisionController extends Controller
     public function procesarRevisionDigital(Request $request, Tramite $tramite)
     {
         try {
-            // Incluir el servicio de revisión principal en lugar del de revisiones específicas
+            // Log de datos recibidos para debugging
+            \Log::info('Iniciando procesamiento de revisión digital', [
+                'tramite_id' => $tramite->id,
+                'request_data' => $request->all(),
+                'user_id' => Auth::id()
+            ]);
+            
+            // Validar datos básicos
+            $request->validate([
+                'tipo_revision' => 'required|string',
+                'decision_final' => 'nullable|string',
+                'observaciones_generales' => 'nullable|string',
+                'secciones' => 'nullable|array'
+            ]);
+            
+            // Incluir el servicio de revisión principal
             $revisionService = app(\App\Services\RevisionService::class);
             
+            \Log::info('Llamando al servicio de revisión', [
+                'tramite_id' => $tramite->id,
+                'service' => 'RevisionService'
+            ]);
+            
             $resultado = $revisionService->procesarRevisionDigital($tramite, $request->all());
+            
+            \Log::info('Resultado del procesamiento', [
+                'tramite_id' => $tramite->id,
+                'resultado' => $resultado
+            ]);
             
             if ($resultado['success']) {
                 return redirect()->route('revisiones.index')
@@ -224,11 +249,22 @@ class RevisionController extends Controller
             } else {
                 return back()->with('error', 'Error al procesar la revisión: ' . $resultado['message']);
             }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Error de validación en revisión digital', [
+                'tramite_id' => $tramite->id,
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
+            
+            return back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             \Log::error('Error al procesar revisión digital', [
                 'tramite_id' => $tramite->id,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
             ]);
             
             return back()->with('error', 'Error interno al procesar la revisión. Por favor, intente nuevamente.');

@@ -41,10 +41,9 @@ class RevisionService
             
             // 6. Finalizar revisión
             $revision->update([
-                'estado' => 'Completada',
-                'fecha_finalizacion' => Carbon::now(),
-                'observaciones' => $data['observaciones_generales'] ?? null,
-                'decision_final' => $estadoFinal
+                'estado' => 'Finalizada',
+                'fecha_fin' => Carbon::now(),
+                'observaciones' => $data['observaciones_generales'] ?? null
             ]);
             
             return [
@@ -93,10 +92,9 @@ class RevisionService
             
             // 6. Finalizar revisión
             $revision->update([
-                'estado' => 'Completada',
-                'fecha_finalizacion' => Carbon::now(),
-                'observaciones' => $data['observaciones'] ?? null,
-                'decision_final' => $estadoFinal
+                'estado' => 'Finalizada',
+                'fecha_fin' => Carbon::now(),
+                'observaciones' => $data['observaciones'] ?? null
             ]);
             
             return [
@@ -121,7 +119,7 @@ class RevisionService
             [
                 'revisor_id' => $usuario->id,
                 'fecha_inicio' => Carbon::now(),
-                'estado' => 'En_Progreso'
+                'estado' => 'En_Proceso'
             ]
         );
     }
