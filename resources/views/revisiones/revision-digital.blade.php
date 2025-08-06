@@ -608,23 +608,14 @@
                     </div>
 
                     <!-- Botones de decisión final -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <button 
                             type="submit" 
                             name="decision_final" 
                             value="aprobado"
                             class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded text-sm"
                         >
-                            ✓ Aprobar
-                        </button>
-                        
-                        <button 
-                            type="submit" 
-                            name="decision_final" 
-                            value="agendar_cita"
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded text-sm"
-                        >
-                            📅 Agendar Cita
+                            ✓ Aprobar / Agendar Cita
                         </button>
                         
                         <button 
