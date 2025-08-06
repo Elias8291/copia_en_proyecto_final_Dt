@@ -110,6 +110,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{tramite}/iniciar', [RevisionController::class, 'iniciarRevision'])->name('iniciar');
         Route::get('/{tramite}/revisar', [RevisionController::class, 'revisarTramite'])->name('revisar');
         Route::post('/{tramite}/finalizar', [RevisionController::class, 'finalizarRevision'])->name('finalizar');
+        
+        // Nuevas rutas para procesamiento estructurado
+        Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
+        Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
+        
         Route::get('/{tramite}/ver-historico', [RevisionController::class, 'verTramiteHistorico'])->name('ver-historico');
         Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo');
     });

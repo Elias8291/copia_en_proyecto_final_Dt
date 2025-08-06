@@ -22,6 +22,8 @@ return new class extends Migration
             $table->bigInteger('tamaño');
             $table->foreignId('catalogo_archivo_id')->constrained('catalogo_archivos')->onDelete('cascade');
             $table->enum('status', ['Pendiente', 'Aprobado', 'Rechazado'])->default('Pendiente');
+            $table->text('comentario_revision')->nullable();
+            $table->foreignId('revisado_por')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
     }

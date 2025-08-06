@@ -133,20 +133,23 @@
                     <div class="mb-3">
                         <label class="block text-xs font-medium text-gray-600 mb-2">Comentarios del cotejo presencial:</label>
                         <textarea 
+                            id="textarea_documentos_presencial"
                             placeholder="Observaciones del cotejo presencial de documentos originales..."
                             class="w-full text-sm px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                             rows="3"></textarea>
                     </div>
                     
                     <div class="flex gap-2">
-                        <button type="button" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center space-x-1">
+                        <button type="button" onclick="evaluarDocumentosPresencial('Aprobado')" 
+                                class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center space-x-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
                             <span>Documentos Conformes</span>
                         </button>
                         
-                        <button type="button" class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center space-x-1">
+                        <button type="button" onclick="evaluarDocumentosPresencial('Rechazado')" 
+                                class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center space-x-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -160,20 +163,35 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 mb-6 border-t-4 border-orange-500">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Decisión de Revisión Presencial</h3>
                 
-                <form action="{{ route('revisiones.finalizar', $tramite->id) }}" method="POST" class="space-y-4">
+                <form id="formRevisionPresencial" action="{{ route('revisiones.procesar-presencial', $tramite->id) }}" method="POST" class="space-y-4">
                     @csrf
                     <input type="hidden" name="tipo_revision" value="Presencial">
+                    <input type="hidden" name="decision_documentos" id="decision_documentos" value="Pendiente">
+                    
+                    <!-- Campo para comentarios del cotejo presencial -->
+                    <div>
+                        <label for="comentarios_presencial" class="block text-sm font-medium text-gray-700 mb-2">
+                            Comentarios del Cotejo Presencial
+                        </label>
+                        <textarea 
+                            id="comentarios_presencial" 
+                            name="comentarios_presencial" 
+                            rows="3" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600"
+                            placeholder="Observaciones específicas del cotejo presencial de documentos originales..."
+                        ></textarea>
+                    </div>
                     
                     <div>
                         <label for="observaciones" class="block text-sm font-medium text-gray-700 mb-2">
-                            Observaciones (opcional)
+                            Observaciones Generales (opcional)
                         </label>
                         <textarea 
                             id="observaciones" 
                             name="observaciones" 
                             rows="4" 
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600"
-                            placeholder="Ingresa cualquier observación sobre la revisión presencial..."
+                            placeholder="Observaciones generales sobre la revisión presencial..."
                         ></textarea>
                     </div>
 
@@ -221,6 +239,58 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// Evaluación de documentos presenciales
+function evaluarDocumentosPresencial(decision) {
+    const textarea = document.getElementById('textarea_documentos_presencial');
+    const comentario = textarea ? textarea.value.trim() : '';
+    
+    // Actualizar campo oculto
+    document.getElementById('decision_documentos').value = decision;
+    
+    // Actualizar el campo de comentarios presencial
+    const comentariosPresencial = document.getElementById('comentarios_presencial');
+    if (comentariosPresencial && comentario) {
+        comentariosPresencial.value = comentario;
+    }
+    
+    // Feedback visual
+    mostrarNotificacion(`Documentos evaluados como: ${decision === 'Aprobado' ? 'Conformes' : 'No Conformes'}`, 
+                       decision === 'Aprobado' ? 'success' : 'warning');
+}
+
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    const div = document.createElement('div');
+    div.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 text-white transition-opacity duration-300 ${
+        tipo === 'success' ? 'bg-green-500' :
+        tipo === 'warning' ? 'bg-yellow-500' :
+        tipo === 'error' ? 'bg-red-500' : 'bg-blue-500'
+    }`;
+    div.textContent = mensaje;
+    
+    document.body.appendChild(div);
+    
+    // Mostrar notificación
+    setTimeout(() => div.classList.add('opacity-100'), 100);
+    
+    // Ocultar después de 3 segundos
+    setTimeout(() => {
+        div.classList.add('opacity-0');
+        setTimeout(() => document.body.removeChild(div), 300);
+    }, 3000);
+}
+
+// Validar que los documentos hayan sido evaluados antes de enviar
+document.getElementById('formRevisionPresencial').addEventListener('submit', function(e) {
+    const decisionDocumentos = document.getElementById('decision_documentos').value;
+    
+    if (decisionDocumentos === 'Pendiente') {
+        e.preventDefault();
+        mostrarNotificacion('Debe evaluar los documentos antes de finalizar la revisión presencial', 'warning');
+        return false;
+    }
+});
+
 window.scrollToTop = scrollToTop;
+window.evaluarDocumentosPresencial = evaluarDocumentosPresencial;
 </script>
 @endsection 

@@ -18,11 +18,16 @@ class Archivo extends Model
         'extension',
         'tamaño',
         'catalogo_archivo_id',
-        'status'
+        'status',
+        'comentario_revision',
+        'observaciones_documento',
+        'revisado_por',
+        'fecha_revision'
     ];
 
     protected $casts = [
-        'tamaño' => 'integer'
+        'tamaño' => 'integer',
+        'fecha_revision' => 'datetime'
     ];
 
     public function proveedor(): BelongsTo
@@ -38,5 +43,35 @@ class Archivo extends Model
     public function catalogoArchivo(): BelongsTo
     {
         return $this->belongsTo(CatalogoArchivo::class);
+    }
+
+    public function revisor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'revisado_por');
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return match($this->status) {
+            'Pendiente' => 'Pendiente',
+            'Aprobado' => 'Aprobado',
+            'Rechazado' => 'Rechazado',
+            default => 'Desconocido'
+        };
+    }
+
+    public function scopePendientes($query)
+    {
+        return $query->where('status', 'Pendiente');
+    }
+
+    public function scopeAprobados($query)
+    {
+        return $query->where('status', 'Aprobado');
+    }
+
+    public function scopeRechazados($query)
+    {
+        return $query->where('status', 'Rechazado');
     }
 } 

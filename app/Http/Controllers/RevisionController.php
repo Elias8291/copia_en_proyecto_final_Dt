@@ -206,4 +206,59 @@ class RevisionController extends Controller
             'Content-Disposition' => 'inline; filename="' . $archivo->nombre_original . '"'
         ]);
     }
+
+    /**
+     * Procesar revisión digital con evaluación por secciones
+     */
+    public function procesarRevisionDigital(Request $request, Tramite $tramite)
+    {
+        try {
+            // Incluir el servicio de revisión principal en lugar del de revisiones específicas
+            $revisionService = app(\App\Services\RevisionService::class);
+            
+            $resultado = $revisionService->procesarRevisionDigital($tramite, $request->all());
+            
+            if ($resultado['success']) {
+                return redirect()->route('revisiones.index')
+                    ->with('success', $resultado['message'] . ' Estado: ' . $resultado['estado_tramite']);
+            } else {
+                return back()->with('error', 'Error al procesar la revisión: ' . $resultado['message']);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al procesar revisión digital', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Error interno al procesar la revisión. Por favor, intente nuevamente.');
+        }
+    }
+
+    /**
+     * Procesar revisión presencial con enfoque en documentos
+     */
+    public function procesarRevisionPresencial(Request $request, Tramite $tramite)
+    {
+        try {
+            $revisionService = app(\App\Services\RevisionService::class);
+            
+            $resultado = $revisionService->procesarRevisionPresencial($tramite, $request->all());
+            
+            if ($resultado['success']) {
+                return redirect()->route('revisiones.index')
+                    ->with('success', $resultado['message'] . ' Estado: ' . $resultado['estado_tramite']);
+            } else {
+                return back()->with('error', 'Error al procesar la revisión: ' . $resultado['message']);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al procesar revisión presencial', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->with('error', 'Error interno al procesar la revisión. Por favor, intente nuevamente.');
+        }
+    }
 } 
