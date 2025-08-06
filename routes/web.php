@@ -9,7 +9,8 @@ use App\Http\Controllers\{
     RoleController,
     ProfileController,
     TramiteController,
-    RevisionController
+    RevisionController,
+    NotificacionController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -119,6 +120,33 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo');
     });
 
+    // Rutas para notificaciones
+    Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
+        Route::get('/', [NotificacionController::class, 'index'])->name('index');
+        Route::get('/{notificacion}', [NotificacionController::class, 'show'])->name('show');
+        Route::post('/{notificacion}/marcar-leida', [NotificacionController::class, 'marcarLeida'])->name('marcar-leida');
+        Route::delete('/{notificacion}', [NotificacionController::class, 'destroy'])->name('eliminar');
+        Route::post('/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasLeidas'])->name('marcar-todas-leidas');
+        
+        // Rutas AJAX
+        Route::get('/api/conteo-no-leidas', [NotificacionController::class, 'conteoNoLeidas'])->name('conteo-no-leidas');
+        Route::get('/api/recientes', [NotificacionController::class, 'recientes'])->name('recientes');
+        Route::get('/api/no-leidas', [NotificacionController::class, 'noLeidas'])->name('no-leidas');
+        Route::get('/api/recientes-dropdown', [NotificacionController::class, 'recientesParaDropdown'])->name('recientes-dropdown');
+        Route::post('/api/marcar-vistas-leidas', [NotificacionController::class, 'marcarVistasComoLeidas'])->name('marcar-vistas-leidas');
+        
+        // Rutas administrativas (requieren permisos especiales)
+        Route::middleware('permission:notificaciones.crear')->group(function () {
+            Route::get('/crear', [NotificacionController::class, 'create'])->name('create');
+            Route::post('/', [NotificacionController::class, 'store'])->name('store');
+        });
+        
+        Route::middleware('permission:notificaciones.gestionar')->group(function () {
+            Route::get('/{notificacion}/editar', [NotificacionController::class, 'edit'])->name('edit');
+            Route::put('/{notificacion}', [NotificacionController::class, 'update'])->name('update');
+            Route::post('/limpiar-antiguas', [NotificacionController::class, 'limpiarAntiguas'])->name('limpiar-antiguas');
+        });
+    });
 
 });
 
