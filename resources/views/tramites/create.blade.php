@@ -83,17 +83,6 @@
                 </div>
             @endif
 
-            <!-- Información de debug (solo en desarrollo) -->
-            @if(config('app.debug'))
-                <div class="debug-info">
-                    <strong>Debug Info:</strong><br>
-                    Tipo de persona: {{ $tipoPersona }}<br>
-                    Tipo de trámite: {{ session('tipo_tramite_seleccionado') }}<br>
-                    RFC: {{ $viewModel->getDatosGenerales()['rfc'] ?? 'N/A' }}<br>
-                    Errores de validación: {{ $errors->count() }}
-                </div>
-            @endif
-
             <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" class="space-y-8" id="tramite-form">
                 @csrf
                 
@@ -270,13 +259,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Debug: mostrar datos del formulario
-            if ({{ config('app.debug') ? 'true' : 'false' }}) {
-                console.log('Enviando formulario...');
-                const formData = new FormData(tramiteForm);
-                for (let [key, value] of formData.entries()) {
-                    console.log(key + ': ' + value);
-                }
-            }
+            // if ({{ config('app.debug') ? 'true' : 'false' }}) {
+            //     console.log('Enviando formulario...');
+            //     const formData = new FormData(tramiteForm);
+            //     for (let [key, value] of formData.entries()) {
+            //         console.log(key + ': ' + value);
+            //     }
+            // }
         });
     }
     

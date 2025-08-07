@@ -640,6 +640,15 @@
     cancelClass="bg-white border-gray-300 text-gray-700 hover:text-gray-500 focus:ring-emerald-500"
 />
 
+<!-- Modal de éxito -->
+<x-modal-exito 
+    id="modal-exito-revision"
+    title="¡Revisión Completada!"
+    message="La revisión digital se ha procesado correctamente."
+    acceptText="Aceptar"
+    redirectUrl="{{ route('revisiones.index') }}"
+/>
+
 <script>
 // Verificar que el modal esté disponible
 document.addEventListener('DOMContentLoaded', function() {
