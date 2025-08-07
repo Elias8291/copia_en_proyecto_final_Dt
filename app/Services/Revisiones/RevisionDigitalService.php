@@ -13,6 +13,7 @@ use App\Models\SeccionRevision;
 use App\Models\Archivo;
 use App\Models\User;
 use App\Enums\TramiteStatus;
+use App\ViewModels\FormDataViewModel;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -497,19 +498,99 @@ class RevisionDigitalService extends RevisionService
     /**
      * Obtener ViewModel para los formularios
      */
-    private function obtenerViewModel(int $tramiteId): array
+    private function obtenerViewModel(int $tramiteId): \App\ViewModels\FormDataViewModel
     {
-        $tramite = Tramite::with(['datosGenerales', 'actividades', 'direcciones', 'datosConstitutivos', 'accionistas', 'apoderadosLegales'])
-            ->findOrFail($tramiteId);
+        $tramite = Tramite::with([
+            'datosGenerales', 
+            'actividades', 
+            'direcciones.coordenada', 
+            'datosConstitutivos.instrumentoNotarial.estado', 
+            'accionistas', 
+            'apoderadosLegales.instrumentoNotarial.estado', 
+            'contactos',
+            'archivos.catalogoArchivo'
+        ])->findOrFail($tramiteId);
         
-        return [
-            'datosGenerales' => $tramite->datosGenerales->first(),
-            'actividades' => $tramite->actividades,
-            'domicilio' => $tramite->direcciones->first() ? $tramite->direcciones->first()->toArray() : [],
-            'constitucion' => $tramite->datosConstitutivos->first() ? $tramite->datosConstitutivos->first()->toArray() : [],
-            'accionistas' => $tramite->accionistas,
-            'apoderado' => $tramite->apoderadosLegales->first() ? $tramite->apoderadosLegales->first()->toArray() : [],
-            'proveedor' => $tramite->proveedor
+        // Obtener domicilio con coordenadas
+        $domicilio = $tramite->direcciones->first();
+        $domicilioData = [];
+        if ($domicilio) {
+            $domicilioData = $domicilio->toArray();
+            // Asegurar que las coordenadas estén disponibles
+            if ($domicilio->coordenada) {
+                $domicilioData['coordenada'] = $domicilio->coordenada->toArray();
+            }
+        }
+        
+        // Preparar datos en el formato que espera FormDataViewModel
+        $formData = [
+            'datos_generales' => [
+                'razon_social' => $tramite->datosGenerales->first() ? $tramite->datosGenerales->first()->razon_social : '',
+                'rfc' => $tramite->proveedor->rfc ?? '',
+                'tipo_persona' => $tramite->proveedor->tipo_persona ?? 'Física',
+                'curp' => $tramite->datosGenerales->first() ? $tramite->datosGenerales->first()->curp : '',
+                'pagina_web' => $tramite->datosGenerales->first() ? $tramite->datosGenerales->first()->pagina_web : '',
+                'telefono' => $tramite->datosGenerales->first() ? $tramite->datosGenerales->first()->telefono : '',
+            ],
+            'actividades' => $tramite->actividades->toArray(),
+            'domicilio' => $domicilioData,
+            'contacto' => $tramite->contactos->first() ? $tramite->contactos->first()->toArray() : [],
+            'archivos' => $tramite->archivos->toArray(),
         ];
+        
+        // Agregar datos específicos para persona moral
+        if ($tramite->proveedor->tipo_persona === 'Moral') {
+            $datosConstitutivos = $tramite->datosConstitutivos->first();
+            $constitucionData = [];
+            
+            if ($datosConstitutivos && $datosConstitutivos->instrumentoNotarial) {
+                $instrumentoNotarial = $datosConstitutivos->instrumentoNotarial;
+                $constitucionData = [
+                    'numero_escritura' => $instrumentoNotarial->numero_escritura ?? '',
+                    'numero_escritura_constitutiva' => $instrumentoNotarial->numero_escritura_constitutiva ?? '',
+                    'fecha_constitucion' => $instrumentoNotarial->fecha_constitucion ?? '',
+                    'nombre_notario' => $instrumentoNotarial->nombre_notario ?? '',
+                    'numero_notario' => $instrumentoNotarial->numero_notario ?? '',
+                    'estado_id' => $instrumentoNotarial->estado_id ?? '',
+                    'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
+                    'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
+                    'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
+                ];
+            }
+            
+            $formData['constitucion'] = $constitucionData;
+            
+
+            
+            $formData['accionistas'] = $tramite->accionistas->toArray();
+            
+            // Obtener datos del apoderado con instrumento notarial
+            $apoderado = $tramite->apoderadosLegales->first();
+            $apoderadoData = [];
+            
+            if ($apoderado) {
+                $apoderadoData = $apoderado->toArray();
+                
+                // Agregar datos del instrumento notarial si existe
+                if ($apoderado->instrumentoNotarial) {
+                    $instrumentoNotarial = $apoderado->instrumentoNotarial;
+                    $apoderadoData = array_merge($apoderadoData, [
+                        'numero_escritura' => $instrumentoNotarial->numero_escritura ?? '',
+                        'numero_escritura_poder' => $instrumentoNotarial->numero_escritura_constitutiva ?? '',
+                        'fecha_poder' => $instrumentoNotarial->fecha_constitucion ?? '',
+                        'nombre_notario_poder' => $instrumentoNotarial->nombre_notario ?? '',
+                        'numero_notario_poder' => $instrumentoNotarial->numero_notario ?? '',
+                        'estado_id' => $instrumentoNotarial->estado_id ?? '',
+                        'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
+                        'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
+                        'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
+                    ]);
+                }
+            }
+            
+            $formData['apoderado'] = $apoderadoData;
+        }
+        
+        return new \App\ViewModels\FormDataViewModel($formData);
     }
 } 

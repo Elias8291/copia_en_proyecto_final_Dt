@@ -219,7 +219,7 @@ window.scrollToTop = scrollToTop;
 </script>
 
 <!-- Modal de confirmación -->
-<x-modal-confirmacion 
+<x-ui.modals.modal-confirmacion 
     id="modal-confirmacion-decision"
     title="Confirmar Decisión"
     message="¿Está seguro que desea realizar esta acción?"

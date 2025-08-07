@@ -156,7 +156,7 @@
 </div>
 
 <!-- Modal de error -->
-<x-error-modal 
+<x-ui.modals.error-modal 
     id="error-modal"
     title="Error"
     message="Ha ocurrido un error. Por favor, inténtalo de nuevo."
@@ -164,7 +164,7 @@
 />
 
 <!-- Modal de éxito -->
-<x-modal-exito 
+<x-ui.modals.modal-exito 
     id="success-modal"
     title="¡Éxito!"
     message="La operación se realizó correctamente."

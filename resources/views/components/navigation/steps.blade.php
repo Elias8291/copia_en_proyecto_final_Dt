@@ -75,10 +75,23 @@ const steps = @json($steps);
 function navigateStep(direction) {
     console.log('navigateStep called with direction:', direction, 'currentStep:', currentStep, 'totalSteps:', totalSteps);
     
+    // Verificar si hay una función interceptada y llamarla primero
+    if (window.navigateStep !== navigateStep) {
+        const result = window.navigateStep(direction);
+        if (result === false) {
+            console.log('Navigation blocked by validation');
+            return false;
+        }
+    }
+    
+    // Si es retroceso, siempre permitir
     if (direction === 'prev' && currentStep > 0) {
         currentStep--;
     } else if (direction === 'next' && currentStep < totalSteps - 1) {
         currentStep++;
+    } else {
+        console.log('Navigation limits reached');
+        return false;
     }
     
     console.log('New currentStep:', currentStep);
@@ -87,6 +100,8 @@ function navigateStep(direction) {
     updateStepsComponent();
     updateNavigation();
     showFinalSubmitButton();
+    
+    return true;
 }
 
 /**
@@ -103,6 +118,11 @@ function updateStepDisplay() {
     if (currentStepElement) {
         currentStepElement.classList.add('active');
         currentStepElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Disparar evento personalizado para notificar cambio de step
+        window.dispatchEvent(new CustomEvent('stepChanged', { 
+            detail: { currentStep, totalSteps } 
+        }));
     }
 }
 
@@ -194,7 +214,16 @@ function showFinalSubmitButton() {
     if (currentStep === totalSteps - 1) {
         navigation.innerHTML = `
             <div class="bg-white border-t border-gray-200 mt-6 pt-4">
-                <div class="flex justify-center">
+                <div class="flex justify-between items-center">
+                    <button type="button" 
+                            onclick="navigateStep('prev')" 
+                            class="flex items-center px-4 py-2 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-300">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Anterior
+                    </button>
+
                     <button type="button" id="btn-enviar-tramite" 
                             class="flex items-center px-6 py-3 text-white bg-[#9d2449] rounded-lg hover:bg-[#8a1f40] transition-all duration-300 font-medium">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

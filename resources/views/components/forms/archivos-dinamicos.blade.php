@@ -134,14 +134,14 @@
             </div>
         @enderror
 
-        <!-- Mensaje de archivos requeridos -->
-        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <!-- Indicador de estado de archivos -->
+        <div id="estado-archivos" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div class="flex items-center">
                 <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <p class="text-sm text-blue-700">
-                    <strong>Importante:</strong> Todos los archivos marcados con <span class="text-red-500">*</span> son obligatorios para continuar con el trámite.
+                    <strong>Estado de Archivos:</strong> <span id="archivos-progreso">0 de 0</span> archivos obligatorios cargados.
                 </p>
             </div>
         </div>
@@ -319,5 +319,55 @@ function updateFileName(input, elementId) {
     } else {
         fileNameElement.classList.add('hidden');
     }
+    
+    // Actualizar estado de archivos
+    if (window.actualizarEstadoArchivos) {
+        window.actualizarEstadoArchivos();
+    }
 }
+
+// Actualizar estado inicial de archivos
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.actualizarEstadoArchivos) {
+        window.actualizarEstadoArchivos();
+    }
+    
+    // Agregar validación al envío del formulario
+    const form = document.querySelector('#tramite-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Validar archivos antes de enviar
+            if (window.validateArchivosOnSubmit) {
+                const archivosValidos = window.validateArchivosOnSubmit();
+                if (!archivosValidos) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Mostrar mensaje de error
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    errorMessage.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                            <span>Por favor, corrija los errores en los archivos antes de continuar.</span>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(errorMessage);
+                    
+                    // Remover mensaje después de 5 segundos
+                    setTimeout(() => {
+                        if (errorMessage.parentNode) {
+                            errorMessage.remove();
+                        }
+                    }, 5000);
+                    
+                    return false;
+                }
+            }
+        });
+    }
+});
 </script> 

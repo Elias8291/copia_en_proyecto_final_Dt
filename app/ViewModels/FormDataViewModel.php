@@ -48,13 +48,19 @@ class FormDataViewModel
         $latitud = '';
         $longitud = '';
         
-        if (isset($domicilio['coordenada'])) {
+        if (isset($domicilio['coordenada']) && is_array($domicilio['coordenada'])) {
             $latitud = $domicilio['coordenada']['latitud'] ?? '';
             $longitud = $domicilio['coordenada']['longitud'] ?? '';
         } elseif (isset($domicilio['latitud']) && isset($domicilio['longitud'])) {
             // Fallback por si las coordenadas están directamente en el domicilio
             $latitud = $domicilio['latitud'];
             $longitud = $domicilio['longitud'];
+        }
+        
+        // Si no hay coordenadas, usar coordenadas por defecto (Centro de CDMX)
+        if (empty($latitud) || empty($longitud)) {
+            $latitud = '19.4326';
+            $longitud = '-99.1332';
         }
         
         return [
@@ -168,23 +174,45 @@ class FormDataViewModel
     {
         $apoderado = $this->getApoderado();
         
+        // Formatear fechas
+        $fechaInscripcionPoder = '';
+        if (!empty($apoderado['fecha_inscripcion_poder'])) {
+            $fechaInscripcionPoder = is_string($apoderado['fecha_inscripcion_poder']) 
+                ? $apoderado['fecha_inscripcion_poder'] 
+                : \Carbon\Carbon::parse($apoderado['fecha_inscripcion_poder'])->format('Y-m-d');
+        }
+        
+        $fechaPoder = '';
+        if (!empty($apoderado['fecha_poder'])) {
+            $fechaPoder = is_string($apoderado['fecha_poder']) 
+                ? $apoderado['fecha_poder'] 
+                : \Carbon\Carbon::parse($apoderado['fecha_poder'])->format('Y-m-d');
+        }
+        
+        $fechaInscripcion = '';
+        if (!empty($apoderado['fecha_inscripcion'])) {
+            $fechaInscripcion = is_string($apoderado['fecha_inscripcion']) 
+                ? $apoderado['fecha_inscripcion'] 
+                : \Carbon\Carbon::parse($apoderado['fecha_inscripcion'])->format('Y-m-d');
+        }
+        
         return [
             'nombre_apoderado' => $apoderado['nombre_apoderado'] ?? $apoderado['nombre'] ?? '',
             'rfc' => $apoderado['rfc'] ?? '',
             'rfc_apoderado' => $apoderado['rfc'] ?? '',
             'numero_escritura_constitutiva_poder' => $apoderado['numero_escritura_constitutiva_poder'] ?? '',
             'numero_registro_publico_poder' => $apoderado['numero_registro_publico_poder'] ?? '',
-            'fecha_inscripcion_poder' => $apoderado['fecha_inscripcion_poder'] ?? '',
+            'fecha_inscripcion_poder' => $fechaInscripcionPoder,
             // Datos del instrumento notarial
             'numero_escritura' => $apoderado['numero_escritura'] ?? '',
             'numero_escritura_poder' => $apoderado['numero_escritura_poder'] ?? '',
-            'fecha_poder' => $apoderado['fecha_poder'] ?? '',
+            'fecha_poder' => $fechaPoder,
             'nombre_notario_poder' => $apoderado['nombre_notario_poder'] ?? '',
             'numero_notario_poder' => $apoderado['numero_notario_poder'] ?? '',
             'estado_id' => $apoderado['estado_id'] ?? '',
             'estado_nombre' => $apoderado['estado_nombre'] ?? '',
             'numero_registro_publico' => $apoderado['numero_registro_publico'] ?? '',
-            'fecha_inscripcion' => $apoderado['fecha_inscripcion'] ?? '',
+            'fecha_inscripcion' => $fechaInscripcion,
         ];
     }
 
@@ -203,16 +231,33 @@ class FormDataViewModel
     {
         $constitucion = $this->getConstitucion();
         
+
+        
+        // Formatear fechas
+        $fechaConstitucion = '';
+        if (!empty($constitucion['fecha_constitucion'])) {
+            $fechaConstitucion = is_string($constitucion['fecha_constitucion']) 
+                ? $constitucion['fecha_constitucion'] 
+                : \Carbon\Carbon::parse($constitucion['fecha_constitucion'])->format('Y-m-d');
+        }
+        
+        $fechaInscripcion = '';
+        if (!empty($constitucion['fecha_inscripcion'])) {
+            $fechaInscripcion = is_string($constitucion['fecha_inscripcion']) 
+                ? $constitucion['fecha_inscripcion'] 
+                : \Carbon\Carbon::parse($constitucion['fecha_inscripcion'])->format('Y-m-d');
+        }
+        
         return [
             'numero_escritura' => $constitucion['numero_escritura'] ?? '',
             'numero_escritura_constitutiva' => $constitucion['numero_escritura_constitutiva'] ?? '',
-            'fecha_constitucion' => $constitucion['fecha_constitucion'] ?? '',
+            'fecha_constitucion' => $fechaConstitucion,
             'nombre_notario' => $constitucion['nombre_notario'] ?? '',
             'numero_notario' => $constitucion['numero_notario'] ?? '',
             'estado_id' => $constitucion['estado_id'] ?? '',
             'estado_nombre' => $constitucion['estado_nombre'] ?? '',
             'numero_registro_publico' => $constitucion['numero_registro_publico'] ?? '',
-            'fecha_inscripcion' => $constitucion['fecha_inscripcion'] ?? '',
+            'fecha_inscripcion' => $fechaInscripcion,
         ];
     }
 

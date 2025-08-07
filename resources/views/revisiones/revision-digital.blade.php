@@ -166,7 +166,7 @@
             </div>
 
             <!-- Separador Inicial -->
-            <x-separador-simple margin="my-8" color="border-indigo-300" />
+            <x-ui.separador-simple margin="my-8" color="border-indigo-300" />
 
             <!-- Datos Generales -->
             <div class="mb-8" data-section="datos_generales">
@@ -190,7 +190,7 @@
                     </div>
                     <div id="cotejo_datos_generales" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                         <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Datos Generales</h3>
-                        @include('components.cotejo-selector', [
+                        @include('components.tramites.cotejo-selector', [
                             'archivosSubidos' => $archivosSubidos,
                             'seccion' => 'datos_generales'
                         ])
@@ -224,7 +224,7 @@
                 </div>
             </div>
 
-            <x-separador-simple margin="my-8" color="border-emerald-300" />
+            <x-ui.separador-simple margin="my-8" color="border-emerald-300" />
 
             <!-- Actividades Económicas -->
             <div class="mb-8" data-section="actividades">
@@ -243,12 +243,12 @@
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                         @include('components.forms.actividades-economicas', [
                             'editable' => false,
-                            'datos' => $viewModel['actividades']
+                            'datos' => $viewModel->getActividadesForm()
                         ])
                     </div>
                     <div id="cotejo_actividades" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                         <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Actividades</h3>
-                        @include('components.cotejo-selector', [
+                        @include('components.tramites.cotejo-selector', [
                             'archivosSubidos' => $archivosSubidos,
                             'seccion' => 'actividades'
                         ])
@@ -282,7 +282,7 @@
                 </div>
             </div>
 
-            <x-separador-simple margin="my-8" color="border-amber-300" />
+            <x-ui.separador-simple margin="my-8" color="border-amber-300" />
 
             <!-- Domicilio -->
             <div class="mb-8" data-section="domicilio">
@@ -306,7 +306,7 @@
                     </div>
                     <div id="cotejo_domicilio" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                         <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Domicilio</h3>
-                        @include('components.cotejo-selector', [
+                        @include('components.tramites.cotejo-selector', [
                             'archivosSubidos' => $archivosSubidos,
                             'seccion' => 'domicilio'
                         ])
@@ -340,8 +340,8 @@
                 </div>
             </div>
 
-                                    @if($viewModel['proveedor'] && $viewModel['proveedor']->tipo_persona === 'Moral')
-                <x-separador-simple margin="my-8" color="border-purple-300" />
+                                    @if($viewModel->isPersonaMoral())
+                <x-ui.separador-simple margin="my-8" color="border-purple-300" />
 
                 <!-- Constitución -->
                 <div class="mb-8" data-section="constitucion">
@@ -360,15 +360,15 @@
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                             @include('components.forms.constitucion', [
                                 'editable' => false,
-                                'datos' => $viewModel['constitucion']
+                                'datos' => $viewModel->getConstitucionForm()
                             ])
                         </div>
                         <div id="cotejo_constitucion" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                             <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Constitución</h3>
-                            @include('components.cotejo-selector', [
-                                'archivosSubidos' => $archivosSubidos,
-                                'seccion' => 'constitucion'
-                            ])
+                                                    @include('components.tramites.cotejo-selector', [
+                            'archivosSubidos' => $archivosSubidos,
+                            'seccion' => 'constitucion'
+                        ])
                         </div>
                     </div>
                     
@@ -399,7 +399,7 @@
                     </div>
                 </div>
 
-                <x-separador-simple margin="my-8" color="border-rose-300" />
+                <x-ui.separador-simple margin="my-8" color="border-rose-300" />
 
                 <!-- Accionistas -->
                 <div class="mb-8" data-section="accionistas">
@@ -418,15 +418,15 @@
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                             @include('components.forms.accionistas', [
                                 'editable' => false,
-                                'datos' => $viewModel['accionistas']
+                                'datos' => $viewModel->getAccionistasForm()
                             ])
                         </div>
                         <div id="cotejo_accionistas" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                             <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Accionistas</h3>
-                            @include('components.cotejo-selector', [
-                                'archivosSubidos' => $archivosSubidos,
-                                'seccion' => 'accionistas'
-                            ])
+                                                    @include('components.tramites.cotejo-selector', [
+                            'archivosSubidos' => $archivosSubidos,
+                            'seccion' => 'accionistas'
+                        ])
                         </div>
                     </div>
                     
@@ -457,7 +457,7 @@
                     </div>
                 </div>
 
-                <x-separador-simple margin="my-8" color="border-cyan-300" />
+                <x-ui.separador-simple margin="my-8" color="border-cyan-300" />
 
                 <!-- Apoderado Legal -->
                 <div class="mb-8" data-section="apoderado">
@@ -476,15 +476,15 @@
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                             @include('components.forms.apoderado', [
                                 'editable' => false,
-                                'datos' => $viewModel['apoderado']
+                                'datos' => $viewModel->getApoderadoForm()
                             ])
                         </div>
                         <div id="cotejo_apoderado" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                             <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Apoderado</h3>
-                            @include('components.cotejo-selector', [
-                                'archivosSubidos' => $archivosSubidos,
-                                'seccion' => 'apoderado'
-                            ])
+                                                    @include('components.tramites.cotejo-selector', [
+                            'archivosSubidos' => $archivosSubidos,
+                            'seccion' => 'apoderado'
+                        ])
                         </div>
                     </div>
                     
@@ -515,7 +515,7 @@
                     </div>
                 </div>
 
-                <x-separador-simple margin="my-8" color="border-slate-400" />
+                <x-ui.separador-simple margin="my-8" color="border-slate-400" />
 
                 <!-- Archivos -->
                 <div class="mb-6" data-section="archivos">
@@ -558,7 +558,7 @@
                     </div>
                 </div>
             @else
-                <x-separador-simple margin="my-8" color="border-slate-400" />
+                <x-ui.separador-simple margin="my-8" color="border-slate-400" />
 
                 <!-- Archivos -->
                 <div class="mb-6" data-section="archivos">
@@ -599,12 +599,12 @@
                 </div>
             @endif
 
-            <x-separador-simple margin="my-12" color="border-blue-400" />
+            <x-ui.separador-simple margin="my-12" color="border-blue-400" />
 
             <!-- Panel de decisión final -->
             @php
                 $secciones = ['datos_generales', 'actividades', 'domicilio'];
-                if($viewModel['proveedor'] && $viewModel['proveedor']->tipo_persona === 'Moral') {
+                if($viewModel->isPersonaMoral()) {
                     $secciones = array_merge($secciones, ['constitucion', 'accionistas', 'apoderado']);
                 }
                 $secciones[] = 'archivos';
@@ -630,7 +630,7 @@
 <script src="{{ asset('js/revision-digital.js') }}"></script>
 
 <!-- Modal de confirmación global -->
-<x-modal-confirmacion 
+<x-ui.modals.modal-confirmacion 
     id="modal-confirmacion-decision"
     title="Confirmar Decisión"
     message="¿Está seguro que desea realizar esta acción?"
@@ -641,7 +641,7 @@
 />
 
 <!-- Modal de éxito -->
-<x-modal-exito 
+<x-ui.modals.modal-exito 
     id="modal-exito-revision" 
     :title="session('success_title', '¡Revisión enviada!')"
     :message="session('success_message', 'La revisión digital se envió correctamente.')"
@@ -665,6 +665,22 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('showConfirmModal está disponible');
     } else {
         console.error('showConfirmModal no está disponible');
+    }
+    
+    // Limpiar sesiones de éxito al cargar la página de revisión
+    // Esto es una medida adicional para evitar modales automáticos
+    if (window.location.pathname.includes('/revisiones/revisar')) {
+        console.log('Página de revisión detectada, limpiando sesiones de éxito...');
+        // Enviar una petición AJAX para limpiar las sesiones
+        fetch('/revisiones/limpiar-sesiones', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => {
+            console.log('Error al limpiar sesiones:', error);
+        });
     }
 });
 </script>

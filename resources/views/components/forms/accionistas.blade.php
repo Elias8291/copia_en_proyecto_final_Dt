@@ -160,6 +160,17 @@
             </button>
         </div>
         
+        <!-- Indicador del total de porcentajes -->
+        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center justify-between">
+                <span class="text-sm font-medium text-blue-800">Total de Participación:</span>
+                <span id="total-porcentaje" class="text-lg font-bold text-blue-900">0%</span>
+            </div>
+            <div id="porcentaje-status" class="mt-1 text-xs">
+                <span id="porcentaje-message" class="text-blue-600">Debe sumar exactamente 100%</span>
+            </div>
+        </div>
+        
         @error('accionistas')
             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -345,6 +356,73 @@ function actualizarNumeracion() {
         }
     });
     accionistaCount = accionistas.length;
+    actualizarTotalPorcentaje();
 }
+
+function actualizarTotalPorcentaje() {
+    const totalElement = document.getElementById('total-porcentaje');
+    const messageElement = document.getElementById('porcentaje-message');
+    const statusElement = document.getElementById('porcentaje-status');
+    
+    if (!totalElement || !messageElement || !statusElement) return;
+    
+    const porcentajeFields = document.querySelectorAll('[name$="[porcentaje_participacion]"]');
+    let total = 0;
+    
+    porcentajeFields.forEach(field => {
+        const value = parseFloat(field.value) || 0;
+        total += value;
+    });
+    
+    totalElement.textContent = `${total.toFixed(2)}%`;
+    
+    if (total === 100) {
+        totalElement.className = 'text-lg font-bold text-green-600';
+        messageElement.className = 'text-green-600';
+        messageElement.textContent = '✅ Total correcto (100%)';
+        statusElement.className = 'mt-1 text-xs';
+    } else if (total > 100) {
+        totalElement.className = 'text-lg font-bold text-red-600';
+        messageElement.className = 'text-red-600';
+        messageElement.textContent = `❌ Excede 100% (${(total - 100).toFixed(2)}% de más)`;
+        statusElement.className = 'mt-1 text-xs';
+    } else {
+        totalElement.className = 'text-lg font-bold text-orange-600';
+        messageElement.className = 'text-orange-600';
+        messageElement.textContent = `⚠️ Falta ${(100 - total).toFixed(2)}% para completar`;
+        statusElement.className = 'mt-1 text-xs';
+    }
+}
+
+// Configurar eventos para actualizar el total cuando cambien los porcentajes
+document.addEventListener('DOMContentLoaded', function() {
+    const porcentajeFields = document.querySelectorAll('[name$="[porcentaje_participacion]"]');
+    porcentajeFields.forEach(field => {
+        field.addEventListener('input', actualizarTotalPorcentaje);
+        field.addEventListener('blur', actualizarTotalPorcentaje);
+    });
+    
+    // Actualizar total inicial
+    actualizarTotalPorcentaje();
+    
+    // Observar cambios en el contenedor de accionistas para nuevos campos
+    const container = document.getElementById('accionistas-container');
+    if (container) {
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList') {
+                    const newPorcentajeFields = container.querySelectorAll('[name$="[porcentaje_participacion]"]');
+                    newPorcentajeFields.forEach(field => {
+                        field.addEventListener('input', actualizarTotalPorcentaje);
+                        field.addEventListener('blur', actualizarTotalPorcentaje);
+                    });
+                    actualizarTotalPorcentaje();
+                }
+            });
+        });
+        
+        observer.observe(container, { childList: true, subtree: true });
+    }
+});
 </script>
 @endif 

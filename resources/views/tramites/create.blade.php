@@ -1,27 +1,9 @@
 @extends('layouts.app')
 
+
+
 @section('content')
 <style>
-    .border-red-500 {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-    }
-    
-    .btn-loading {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-    
-    .field-error {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-    }
-    
-    .field-error:focus {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
-    }
-    
     .step-content {
         display: none;
     }
@@ -115,7 +97,7 @@
                 @endphp
 
                 <!-- Componente de Steps -->
-                <x-steps :steps="$steps" :current-step="0" :total-steps="$totalSteps" />
+                <x-navigation.steps :steps="$steps" :current-step="0" :total-steps="$totalSteps" />
 
                 <!-- Contenido de los pasos -->
                 <div class="step-content active" data-step="0">
@@ -177,6 +159,11 @@
                                 'archivosRequeridos' => $archivosRequeridos,
                                 'tipoPersona' => $tipoPersona
                             ])
+                            
+                            <!-- Sección de Términos y Condiciones -->
+                            <div class="mt-8">
+                                @include('components.forms.seccion-terminos', ['editable' => true])
+                            </div>
                         </div>
                     </div>
                 @else
@@ -187,6 +174,11 @@
                                 'archivosRequeridos' => $archivosRequeridos,
                                 'tipoPersona' => $tipoPersona
                             ])
+                            
+                            <!-- Sección de Términos y Condiciones -->
+                            <div class="mt-8">
+                                @include('components.forms.seccion-terminos', ['editable' => true])
+                            </div>
                         </div>
                     </div>
                 @endif
@@ -198,12 +190,18 @@
     </div>
 </div>
 
-<x-modal-confirmacion id="modal-confirmacion-tramite"
+<x-ui.modals.modal-confirmacion id="modal-confirmacion-tramite"
     title="Confirmar envío"
     message="¿Está seguro que desea enviar el trámite?"
     confirmText="Sí, enviar"
     cancelText="Cancelar"
 />
+
+<!-- Modal de Términos de Servicio -->
+@include('components.modals.terminos-servicio', ['id' => 'modal-terminos-servicio'])
+
+<!-- Sistema de validación -->
+<script type="module" src="{{ asset('js/validations/index.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -278,10 +276,28 @@ document.addEventListener('DOMContentLoaded', function() {
         @foreach($errors->keys() as $field)
             var field = document.querySelector('[name="{{ $field }}"]');
             if (field) {
-                field.classList.add('field-error');
+                field.classList.add('border-red-500');
             }
         @endforeach
     @endif
+    
+    // Asegurar que el mapa se redimensione correctamente cuando se navegue al step de domicilio
+    window.addEventListener('stepChanged', function(event) {
+        const currentStep = event.detail?.currentStep;
+        // El step de domicilio es el step 2 (índice 2)
+        if (currentStep === 2) {
+            setTimeout(() => {
+                const mapContainer = document.getElementById('mapa');
+                if (mapContainer) {
+                    // Forzar un redimensionamiento del mapa
+                    const map = mapContainer._leaflet_map;
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }
+            }, 200);
+        }
+    });
 });
 </script>
 @endsection 

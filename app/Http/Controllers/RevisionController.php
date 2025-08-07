@@ -72,6 +72,9 @@ class RevisionController extends Controller
     {
         $tipoRevision = $request->get('tipo_revision', 'Digital');
         
+        // Limpiar sesiones de éxito anteriores para evitar que aparezcan modales automáticamente
+        $request->session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
+        
         // Usar el servicio específico según el tipo de revisión
         if ($tipoRevision === 'Digital') {
             $datos = $this->revisionDigitalService->obtenerDatosRevisionDigital($tramiteId);
@@ -217,6 +220,16 @@ class RevisionController extends Controller
             
             return back()->with('error', 'Error interno al procesar la revisión presencial. Por favor, intente nuevamente.');
         }
+    }
+
+    /**
+     * Limpiar sesiones de éxito (para evitar modales automáticos)
+     */
+    public function limpiarSesiones(Request $request)
+    {
+        $request->session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
+        
+        return response()->json(['success' => true, 'message' => 'Sesiones limpiadas']);
     }
 
     /**

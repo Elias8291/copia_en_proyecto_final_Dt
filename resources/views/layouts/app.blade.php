@@ -49,7 +49,7 @@
         </div>
     </div>
 
-    <x-alert />
+    <x-ui.alerts.alert />
     @stack('scripts')
 
 </body>

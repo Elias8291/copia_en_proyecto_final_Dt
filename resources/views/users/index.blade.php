@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-    <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
+    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-4">
@@ -418,7 +418,7 @@
 </div>
 
 <!-- Modal de error -->
-<x-error-modal 
+<x-ui.modals.error-modal 
     id="error-modal"
     title="Error"
     message="Ha ocurrido un error. Por favor, inténtalo de nuevo."
@@ -426,7 +426,7 @@
 />
 
 <!-- Modal de éxito -->
-<x-modal-exito 
+<x-ui.modals.modal-exito 
     id="success-modal"
     title="¡Éxito!"
     message="La operación se realizó correctamente."

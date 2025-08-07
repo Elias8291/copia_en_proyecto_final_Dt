@@ -145,6 +145,9 @@ Route::middleware(['auth'])->group(function () {
         
         Route::get('/{tramite}/ver-historico', [RevisionController::class, 'verTramiteHistorico'])->name('ver-historico');
         Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo');
+        
+        // Ruta para limpiar sesiones de éxito
+        Route::post('/limpiar-sesiones', [RevisionController::class, 'limpiarSesiones'])->name('limpiar-sesiones');
     });
 
     // Rutas para notificaciones

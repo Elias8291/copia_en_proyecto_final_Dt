@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <x-data-table 
+    <x-data-display.data-table 
         title="Catálogo de Productos"
         description="Gestiona el inventario de productos"
         :data="$products"

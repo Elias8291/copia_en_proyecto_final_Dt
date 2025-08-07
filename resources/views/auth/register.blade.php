@@ -3,10 +3,10 @@
 @section('title', 'Registro - Padrón de Proveedores de Oaxaca')
 
 @section('content')
-    @include('components.loading-modal')
+    @include('components.ui.modals.loading-modal')
     @include('components.modals.auth.registration-success')
     @include('components.modals.general.error')
-    @include('components.sat-data-modal')
+    @include('components.ui.modals.sat-data-modal')
 
     @php
         $mostrarFormulario = old('sat_rfc') || $errors->any();
@@ -177,8 +177,8 @@
                 @enderror
             </div>
 
-            <x-password-input name="password" label="Contraseña" placeholder="••••••••" />
-            <x-password-input name="password_confirmation" label="Confirmar Contraseña" placeholder="••••••••" />
+            <x-ui.forms.password-input name="password" label="Contraseña" placeholder="••••••••" />
+<x-ui.forms.password-input name="password_confirmation" label="Confirmar Contraseña" placeholder="••••••••" />
         </div>
 
         <div class="space-y-2 pt-3">

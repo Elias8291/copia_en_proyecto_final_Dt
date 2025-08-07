@@ -379,7 +379,7 @@
         document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', setupCarousel) : setupCarousel();
     </script>
     
-    @include('components.loading-modal')
+    @include('components.ui.modals.loading-modal')
     <script src="{{ asset('js/components/global-loading.js') }}"></script>
     @stack('scripts')
 </body>

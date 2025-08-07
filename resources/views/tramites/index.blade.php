@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-full mx-auto">
         
         @php
             // Verificar si hay trámite pendiente
@@ -174,7 +174,7 @@
     </div>
 
     <!-- Historial de Trámites -->
-    <div class="mt-8 max-w-7xl mx-auto">
+    <div class="mt-8 max-w-full mx-auto">
         <div class="bg-white shadow-sm rounded-lg border border-gray-200">
                 <div class="p-6 border-b border-gray-200/70">
                                             <div class="flex items-center space-x-4">

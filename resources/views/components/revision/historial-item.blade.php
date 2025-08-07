@@ -41,7 +41,7 @@
                                 </span>
                             @endif
                         </h4>
-                        <x-status-badge 
+                        <x-data-display.status-badge 
                             :estado="strtolower(str_replace(' ', '_', $tramiteHistorico['status']))"
                             :texto="$tramiteHistorico['status']"
                             size="sm"
@@ -58,7 +58,7 @@
         </div>
         @if($tramiteHistorico['id'] != $tramiteActual->id)
             <div class="flex-shrink-0 ml-4">
-                <x-action-button 
+                <x-ui.buttons.action-button 
                     tipo="outline-secondary"
                     size="sm"
                     :url="route('revisiones.ver-historico', $tramiteHistorico['id'])"
@@ -68,7 +68,7 @@
                     </svg>'"
                 >
                     Ver Trámite
-                </x-action-button>
+                </x-ui.buttons.action-button>
             </div>
         @endif
     </div>

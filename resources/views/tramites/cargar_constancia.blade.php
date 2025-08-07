@@ -3,9 +3,9 @@
 @section('title', 'Cargar Constancia')
 
 @section('content')
-    @include('components.loading-modal')
+    @include('components.ui.modals.loading-modal')
     @include('components.modals.general.error')
-    @include('components.sat-data-modal')
+    @include('components.ui.modals.sat-data-modal')
 
     @php
         $mostrarFormulario = old('sat_rfc') || $errors->any();

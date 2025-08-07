@@ -38,7 +38,7 @@
     }
 @endphp
 
-<x-tramite-card
+<x-data-display.tramite-card
     :title="$title"
     :description="$description"
     :isActive="$isActive"
@@ -64,4 +64,4 @@
             {{ $tramite['motivo'] }}
         </x-slot>
     @endif
-</x-tramite-card> 
+</x-data-display.tramite-card> 

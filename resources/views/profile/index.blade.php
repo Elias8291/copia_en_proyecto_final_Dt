@@ -113,14 +113,14 @@
         </div>
 
         <!-- Modals -->
-        <x-error-modal
+        <x-ui.modals.error-modal
             id="error-modal"
             title="Error"
             message="Ha ocurrido un error. Por favor, inténtalo de nuevo."
             buttonText="OK"
         />
 
-        <x-modal-exito
+        <x-ui.modals.modal-exito
             id="success-modal"
             title="¡Éxito!"
             message="La operación se realizó correctamente."

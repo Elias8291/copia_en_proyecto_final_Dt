@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-    <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
+    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-4">
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 
 <!-- Modal de éxito -->
-<x-modal-exito 
+<x-ui.modals.modal-exito 
     id="modal-revision-exito"
     :title="session('success_title', '¡Operación Exitosa!')"
     :message="session('success_message', 'La operación se realizó correctamente.')"

@@ -6,7 +6,7 @@
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <!-- Header de Revisión -->
-        <x-section-header 
+        <x-ui.section-header 
             :titulo="$tipoRevisionLabel . ' - Trámite #' . $tramite->id"
             :descripcion="strtolower($tipoRevisionLabel) . ' de documentos y datos del trámite'"
             color-icono="blue"
@@ -15,7 +15,7 @@
             </svg>'"
         >
             <x-slot name="actions">
-                <x-action-button 
+                <x-ui.buttons.action-button 
                     tipo="secondary" 
                     :url="route('revisiones.index')"
                     :icono="'<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">
@@ -23,9 +23,9 @@
                     </svg>'"
                 >
                     Volver
-                </x-action-button>
+                </x-ui.buttons.action-button>
             </x-slot>
-        </x-section-header>
+        </x-ui.section-header>
 
         <div class="p-6">
             <!-- Información del trámite -->

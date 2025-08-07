@@ -232,6 +232,8 @@
                 
                 if (actividadesJson) {
                     actividadesJson.value = JSON.stringify(actividadesSeleccionadasArray);
+                    // Disparar evento de cambio para activar validación
+                    actividadesJson.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 
                 // Verificar actividades seleccionadas solo si es editable y existe el elemento de error

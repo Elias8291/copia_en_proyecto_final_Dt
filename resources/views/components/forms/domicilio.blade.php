@@ -169,7 +169,7 @@
             <!-- Campo: Entre Calle -->
             <div class="form-group field-container">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Entre Calle
+                    Entre Calle <span class="text-red-500">*</span>
                 </label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -190,7 +190,7 @@
             <!-- Campo: Y Calle -->
             <div class="form-group field-container">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Y Calle
+                    Y Calle <span class="text-red-500">*</span>
                 </label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -253,7 +253,7 @@
             <!-- Campo: Latitud -->
             <div class="form-group field-container">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Latitud
+                    Latitud <span class="text-red-500">*</span>
                 </label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -275,7 +275,7 @@
             <!-- Campo: Longitud -->
             <div class="form-group field-container">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Longitud
+                    Longitud <span class="text-red-500">*</span>
                 </label>
                 <div class="relative group">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -510,7 +510,7 @@
         <h4 class="text-sm font-semibold text-gray-800 mb-3 pb-2 border-b-2 border-gray-200 sm:text-base sm:mb-4 sm:pb-3">
             Ubicación en Mapa
         </h4>
-        <x-openstreet-map 
+        <x-ui.forms.openstreet-map 
             :lat="$latitud" 
             :lng="$longitud" 
             :editable="$editable"
@@ -519,7 +519,7 @@
         
         @if($editable)
         <div class="mt-2 text-sm text-gray-600">
-            <span id="coordenadas-display">
+            <span id="coordenadas-display-domicilio">
                 @if(!empty($latitud) && !empty($longitud))
                     Coordenadas seleccionadas: {{ $latitud }}, {{ $longitud }}
                 @else
@@ -693,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 📍 Actualizar enlace de Google Maps cuando cambien las coordenadas
     const latitudInput = $('latitud-manual');
     const longitudInput = $('longitud-manual');
-    const coordenadasDisplay = $('coordenadas-display');
+    const coordenadasDisplay = $('coordenadas-display-domicilio');
     const googleMapsLinkContainer = $('google-maps-link-container');
 
     function actualizarGoogleMapsLink() {
@@ -748,10 +748,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Actualizar enlace cuando cambien los inputs de coordenadas
     if (latitudInput) {
-        latitudInput.addEventListener('input', actualizarGoogleMapsLink);
+        latitudInput.addEventListener('input', function() {
+            console.log('Input latitud cambiado:', this.value);
+            actualizarGoogleMapsLink();
+        });
     }
     if (longitudInput) {
-        longitudInput.addEventListener('input', actualizarGoogleMapsLink);
+        longitudInput.addEventListener('input', function() {
+            console.log('Input longitud cambiado:', this.value);
+            actualizarGoogleMapsLink();
+        });
     }
 
     // Actualizar enlace al cargar la página si ya hay coordenadas
@@ -765,14 +771,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Escuchar eventos del mapa OpenStreetMap si existe
-    window.addEventListener('coordenadasActualizadas', function(event) {
-        if (latitudInput && longitudInput) {
-            latitudInput.value = event.detail.lat.toFixed(6);
-            longitudInput.value = event.detail.lng.toFixed(6);
-            actualizarGoogleMapsLink();
+    // Asegurar que el mapa se inicialice correctamente cuando se cargue este componente
+    setTimeout(() => {
+        const mapContainer = document.getElementById('mapa');
+        if (mapContainer && !mapContainer._leaflet_map) {
+            // Si el mapa no está inicializado, disparar un evento para forzar la inicialización
+            window.dispatchEvent(new CustomEvent('forceMapInitialization'));
         }
-    });
+    }, 500);
+});
+
+// Escuchar eventos del mapa OpenStreetMap - FUERA del DOMContentLoaded para asegurar que se registre
+window.addEventListener('coordenadasActualizadas', function(event) {
+    console.log('Evento coordenadasActualizadas recibido:', event.detail);
+    
+    const latitudInput = document.getElementById('latitud-manual');
+    const longitudInput = document.getElementById('longitud-manual');
+    const coordenadasDisplay = document.getElementById('coordenadas-display-domicilio');
+    const googleMapsLinkContainer = document.getElementById('google-maps-link-container');
+    
+    if (latitudInput && longitudInput) {
+        latitudInput.value = event.detail.lat.toFixed(6);
+        longitudInput.value = event.detail.lng.toFixed(6);
+        console.log('Coordenadas actualizadas en inputs:', latitudInput.value, longitudInput.value);
+        
+        // Actualizar display de coordenadas
+        if (coordenadasDisplay) {
+            coordenadasDisplay.textContent = `Coordenadas seleccionadas: ${event.detail.lat.toFixed(6)}, ${event.detail.lng.toFixed(6)}`;
+        }
+        
+        // Actualizar enlace de Google Maps inmediatamente
+        setTimeout(() => {
+            const existingLink = document.getElementById('google-maps-link');
+            const googleMapsUrl = `https://www.google.com/maps?q=${event.detail.lat},${event.detail.lng}`;
+            
+            console.log('Actualizando enlace de Google Maps:', googleMapsUrl);
+            
+            if (existingLink) {
+                existingLink.href = googleMapsUrl;
+                if (googleMapsLinkContainer) {
+                    googleMapsLinkContainer.style.display = 'flex';
+                }
+                console.log('Enlace de Google Maps actualizado');
+            } else if (googleMapsLinkContainer) {
+                googleMapsLinkContainer.innerHTML = `
+                    <a id="google-maps-link" 
+                       href="${googleMapsUrl}" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Ver en Google Maps
+                        <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </a>
+                `;
+                googleMapsLinkContainer.style.display = 'flex';
+                console.log('Nuevo enlace de Google Maps creado');
+            }
+        }, 100);
+    }
 });
 </script>
 @endif
