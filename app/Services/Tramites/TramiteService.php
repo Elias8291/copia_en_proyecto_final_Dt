@@ -88,12 +88,12 @@ class TramiteService
         if (!$proveedor) {
             $proveedor = Proveedor::create([
                 'usuario_id' => auth()->id(),
-                'pv_numero' => 'PV-' . time(),
+                'pv_numero' => null,
                 'rfc' => $rfc,
                 'tipo_persona' => $tipoPersona,
                 'estado_padron' => 'pendiente',
-                'fecha_alta_padron' => now(),
-                'fecha_vencimiento_padron' => now()->addYear(),
+                'fecha_alta_padron' => null,
+                'fecha_vencimiento_padron' => null,
             ]);
             
             Log::info('TramiteService: Proveedor creado', [

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('apoderado_legal', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('instrumento_notarial_id')->constrained('instrumentos_notariales')->onDelete('cascade');
+            $table->foreignId('instrumento_notarial_id')->nullable()->constrained('instrumentos_notariales')->onDelete('set null');
             $table->string('nombre_apoderado', 255);
             $table->string('rfc', 255);
             $table->string('numero_escritura_constitutiva_poder', 255)->nullable();

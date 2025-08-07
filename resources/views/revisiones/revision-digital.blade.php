@@ -641,7 +641,13 @@
 />
 
 <!-- Modal de éxito -->
-<x-modal-exito />
+<x-modal-exito 
+    id="modal-exito-revision" 
+    :title="session('success_title', '¡Revisión enviada!')"
+    :message="session('success_message', 'La revisión digital se envió correctamente.')"
+    :acceptText="session('success_accept_text', 'Aceptar')"
+    :redirectUrl="session('success_redirect', route('revisiones.index'))"
+/>
 
 <script>
 // Verificar que el modal esté disponible

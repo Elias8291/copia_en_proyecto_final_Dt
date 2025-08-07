@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('proveedores', function (Blueprint $table) {
             $table->id();
             $table->foreignId('usuario_id')->constrained('users')->onDelete('cascade');
-            $table->string('pv_numero', 20);
+            $table->string('pv_numero', 20)->nullable();
             $table->string('rfc', 13);
             $table->enum('tipo_persona', ['Física', 'Moral']);
             $table->enum('estado_padron', ['Activo', 'Inactivo', 'Vencido', 'Pendiente', 'Cancelado']);
-            $table->date('fecha_alta_padron');
-            $table->date('fecha_vencimiento_padron');
+            $table->date('fecha_alta_padron')->nullable();
+            $table->date('fecha_vencimiento_padron')->nullable();
             $table->timestamps();
         });
     }

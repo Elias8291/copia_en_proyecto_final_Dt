@@ -60,25 +60,7 @@ class RolesAndPermissionsSeeder extends Seeder
             ]);
         }
 
-        $recepcionista = Role::where('name', 'Recepcionista')->first();
-        if ($recepcionista) {
-            $recepcionista->givePermissionTo([
-                'usuarios.ver_propio',
-                'usuarios.editar_propio',
-                'usuarios.cambiar_password',
-                'roles.ver',
-            ]);
-        }
 
-        $consultor = Role::where('name', 'Consultor')->first();
-        if ($consultor) {
-            $consultor->givePermissionTo([
-                'usuarios.ver_propio',
-                'usuarios.editar_propio',
-                'usuarios.cambiar_password',
-                'roles.ver',
-            ]);
-        }
 
         $proveedor = Role::where('name', 'Proveedor')->first();
         if ($proveedor) {

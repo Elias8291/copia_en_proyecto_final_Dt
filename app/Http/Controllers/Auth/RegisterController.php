@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Enums\UserRole;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -32,6 +33,9 @@ class RegisterController extends Controller
                 'verification' => false,
                 'verification_token' => Str::random(60),
             ]);
+
+            // Asignar rol de Solicitante por defecto
+            $user->assignRole(UserRole::SOLICITANTE->value);
 
             $verificationUrl = url('/verify-email/' . $user->verification_token);
 
@@ -150,6 +154,11 @@ class RegisterController extends Controller
                 'verification_token' => Str::random(60), // Generar nuevo token
                 'updated_at' => now()
             ]);
+
+            // Asegurar que tenga el rol de Solicitante
+            if (!$user->hasRole(UserRole::SOLICITANTE->value)) {
+                $user->assignRole(UserRole::SOLICITANTE->value);
+            }
 
             // Reenviar correo de verificación con nuevo token
             $verificationUrl = url('/verify-email/' . $user->verification_token);

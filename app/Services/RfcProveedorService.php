@@ -51,6 +51,7 @@ class RfcProveedorService
     public function proveedorEstaActivo(Proveedor $proveedor): bool
     {
         return $proveedor->estado_padron === 'activo' && 
+               $proveedor->fecha_vencimiento_padron && 
                $proveedor->fecha_vencimiento_padron > Carbon::now();
     }
 
@@ -148,10 +149,11 @@ class RfcProveedorService
     public function generarNumeroProveedor(string $rfc): string
     {
         $ultimoProveedor = Proveedor::where('rfc', $rfc)
+            ->whereNotNull('pv_numero')
             ->orderBy('pv_numero', 'desc')
             ->first();
         
-        if (!$ultimoProveedor) {
+        if (!$ultimoProveedor || !$ultimoProveedor->pv_numero) {
             return '001';
         }
         

@@ -156,7 +156,7 @@
 
                 <!-- Botón de envío -->
                 <div class="flex justify-center bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <button type="submit" id="btn-enviar-tramite" class="bg-[#9d2449] hover:bg-[#8a1f40] text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl">
+                    <button type="button" id="btn-enviar-tramite" class="bg-[#9d2449] hover:bg-[#8a1f40] text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Enviar Trámite
                     </button>
@@ -165,6 +165,13 @@
         </div>
     </div>
 </div>
+
+<x-modal-confirmacion id="modal-confirmacion-tramite"
+    title="Confirmar envío"
+    message="¿Está seguro que desea enviar el trámite?"
+    confirmText="Sí, enviar"
+    cancelText="Cancelar"
+/>
 
 <div class="fixed bottom-6 right-6 space-y-2 z-40">
     <button type="button" id="btn-prev" onclick="navigateSection('prev')" 
@@ -272,12 +279,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mostrar errores de validación en campos específicos
     @if($errors->any())
         @foreach($errors->keys() as $field)
-            const field = document.querySelector('[name="{{ $field }}"]');
+            var field = document.querySelector('[name="{{ $field }}"]');
             if (field) {
                 field.classList.add('field-error');
             }
         @endforeach
     @endif
+
+    const btnEnviar = document.getElementById('btn-enviar-tramite');
+    if (btnEnviar && tramiteForm) {
+        btnEnviar.addEventListener('click', function(e) {
+            showConfirmModal(
+                'Confirmar envío',
+                '¿Está seguro que desea enviar el trámite?',
+                'tramite-form',
+                function() {
+                    tramiteForm.submit();
+                }
+            );
+        });
+    }
 });
 </script>
 @endsection 
