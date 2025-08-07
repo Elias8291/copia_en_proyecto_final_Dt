@@ -641,13 +641,7 @@
 />
 
 <!-- Modal de éxito -->
-<x-modal-exito 
-    id="modal-exito-revision"
-    title="¡Revisión Completada!"
-    message="La revisión digital se ha procesado correctamente."
-    acceptText="Aceptar"
-    redirectUrl="{{ route('revisiones.index') }}"
-/>
+<x-modal-exito />
 
 <script>
 // Verificar que el modal esté disponible
