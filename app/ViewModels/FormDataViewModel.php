@@ -230,6 +230,37 @@ class FormDataViewModel
     }
 
     /**
+     * Obtiene archivos formateados para formularios
+     */
+    public function getArchivosForm(): array
+    {
+        $archivos = $this->getArchivos();
+        $formateados = [];
+        
+        foreach ($archivos as $archivo) {
+            $formateados[] = [
+                'id' => $archivo['id'] ?? null,
+                'nombre_original' => $archivo['nombre_original'] ?? '',
+                'nombre_archivo' => $archivo['nombre_archivo'] ?? '',
+                'ruta' => $archivo['ruta'] ?? '',
+                'extension' => $archivo['extension'] ?? '',
+                'tamaño' => $archivo['tamaño'] ?? 0,
+                'status' => $archivo['status'] ?? 'Pendiente',
+                'catalogo_archivo_id' => $archivo['catalogo_archivo_id'] ?? null,
+                'nombre_catalogo' => $archivo['catalogo_archivo']['nombre'] ?? '',
+                'catalogoArchivo' => [
+                    'nombre' => $archivo['catalogo_archivo']['nombre'] ?? '',
+                    'descripcion' => $archivo['catalogo_archivo']['descripcion'] ?? '',
+                    'tipo_archivo' => $archivo['catalogo_archivo']['tipo_archivo'] ?? '',
+                    'obligatorio' => $archivo['catalogo_archivo']['obligatorio'] ?? false,
+                ]
+            ];
+        }
+        
+        return $formateados;
+    }
+
+    /**
      * Obtiene datos de contacto
      */
     public function getContacto(): array

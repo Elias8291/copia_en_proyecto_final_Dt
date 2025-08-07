@@ -54,7 +54,7 @@
                     </div>
                     <input type="text"
                         name="nombre_apoderado"
-                        value="{{ $datos['nombre_apoderado'] ?? old('nombre_apoderado') }}"
+                        value="{{ old('nombre_apoderado', $datos['nombre_apoderado'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('nombre_apoderado') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese nombre completo">
                 </div>
@@ -73,7 +73,7 @@
                     </div>
                     <input type="text"
                         name="rfc_apoderado"
-                        value="{{ $datos['rfc'] ?? old('rfc_apoderado') }}"
+                        value="{{ old('rfc_apoderado', $datos['rfc'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ $errors->has('rfc_apoderado') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese RFC">
                 </div>
@@ -92,7 +92,7 @@
                     </div>
                     <input type="text"
                         name="numero_escritura_poder"
-                        value="{{ $datos['numero_escritura_poder'] ?? old('numero_escritura_poder') }}"
+                        value="{{ old('numero_escritura_poder', $datos['numero_escritura_poder'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_escritura_poder') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número de escritura">
                 </div>
@@ -111,7 +111,7 @@
                     </div>
                     <input type="date"
                         name="fecha_poder"
-                        value="{{ $datos['fecha_poder'] ?? old('fecha_poder') }}"
+                        value="{{ old('fecha_poder', $datos['fecha_poder'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('fecha_poder') ? 'border-red-500' : '' }}">
                 </div>
                 @error('fecha_poder')
@@ -129,7 +129,7 @@
                     </div>
                     <input type="text"
                         name="nombre_notario_poder"
-                        value="{{ $datos['nombre_notario_poder'] ?? old('nombre_notario_poder') }}"
+                        value="{{ old('nombre_notario_poder', $datos['nombre_notario_poder'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('nombre_notario_poder') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese nombre del notario">
                 </div>
@@ -148,7 +148,7 @@
                     </div>
                     <input type="text"
                         name="numero_notario_poder"
-                        value="{{ $datos['numero_notario_poder'] ?? old('numero_notario_poder') }}"
+                        value="{{ old('numero_notario_poder', $datos['numero_notario_poder'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_notario_poder') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número de notario">
                 </div>
@@ -167,7 +167,7 @@
                     </div>
                     <input type="text"
                         name="numero_escritura_constitutiva_poder"
-                        value="{{ $datos['numero_escritura_constitutiva_poder'] ?? old('numero_escritura_constitutiva_poder') }}"
+                        value="{{ old('numero_escritura_constitutiva_poder', $datos['numero_escritura_constitutiva_poder'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_escritura_constitutiva_poder') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número constitutivo">
                 </div>
@@ -186,7 +186,7 @@
                     </div>
                     <input type="text"
                         name="numero_registro_publico_poder"
-                        value="{{ $datos['numero_registro_publico_poder'] ?? old('numero_registro_publico_poder') }}"
+                        value="{{ old('numero_registro_publico_poder', $datos['numero_registro_publico_poder'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_registro_publico_poder') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número de registro">
                 </div>
@@ -205,7 +205,7 @@
                     </div>
                     <input type="date"
                         name="fecha_inscripcion_poder"
-                        value="{{ $datos['fecha_inscripcion_poder'] ?? old('fecha_inscripcion_poder') }}"
+                        value="{{ old('fecha_inscripcion_poder', $datos['fecha_inscripcion_poder'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('fecha_inscripcion_poder') ? 'border-red-500' : '' }}">
                 </div>
                 @error('fecha_inscripcion_poder')

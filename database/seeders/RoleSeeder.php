@@ -17,6 +17,8 @@ class RoleSeeder extends Seeder
             'Revisor Digital',
             'Revisor Presencial',
             'Revisor Domiciliario',
+            'Recepcionista',
+            'Consultor',
             'Proveedor',
             'Solicitante'
         ];

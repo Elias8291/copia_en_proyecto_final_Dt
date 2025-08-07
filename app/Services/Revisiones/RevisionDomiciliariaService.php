@@ -2,25 +2,27 @@
 
 namespace App\Services\Revisiones;
 
-use App\Services\HistorialTramitesService;
-use App\Services\Tramites\DataRetrievalService;
+use App\Services\RevisionService;
+use App\Services\CitasService;
+use App\Services\NotificacionService;
 
 class RevisionDomiciliariaService extends RevisionService
 {
+    public function __construct(CitasService $citasService, NotificacionService $notificacionService)
+    {
+        parent::__construct($citasService, $notificacionService);
+    }
+
     /**
      * Obtiene datos específicos para revisión domiciliaria
      */
     public function obtenerDatosRevisionDomiciliaria(int $tramiteId): array
     {
-        $datos = $this->obtenerDatosRevision($tramiteId);
+        $datos = $this->obtenerDatosRevisionBase($tramiteId);
         
         // Agregar datos específicos para revisión domiciliaria
         $datos['tipoRevision'] = 'Domiciliaria';
         $datos['vistaRevision'] = 'revisiones.revision-domiciliaria';
-        
-        // Para revisión domiciliaria no se requiere historial ni archivos completos
-        unset($datos['historialTramites']);
-        unset($datos['estadisticasHistorial']);
         
         return $datos;
     }

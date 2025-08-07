@@ -42,4 +42,24 @@ class ActividadesService
     {
         return $tramite->actividades()->with('actividad')->get();
     }
+
+    /**
+     * Actualizar actividades económicas de un trámite existente
+     */
+    public function actualizar(Tramite $tramite, Request $request): void
+    {
+        if ($request->filled('actividades')) {
+            // Eliminar actividades existentes
+            $tramite->actividades()->delete();
+            
+            // Agregar nuevas actividades
+            foreach ($request->actividades as $actividadId) {
+                $tramite->actividades()->create([
+                    'actividad_id' => $actividadId,
+                    'proveedor_id' => $tramite->proveedor_id,
+                    'status' => 'pendiente'
+                ]);
+            }
+        }
+    }
 } 

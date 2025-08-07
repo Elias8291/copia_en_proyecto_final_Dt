@@ -2,8 +2,17 @@
     'seccion' => '',
     'titulo' => '',
     'numeroSeccion' => '',
-    'placeholder' => ''
+    'placeholder' => '',
+    'size' => 'default' // sm, default, lg
 ])
+
+@php
+    $iconClasses = match($size) {
+        'sm' => 'w-3 h-3',
+        'lg' => 'w-5 h-5',
+        default => 'w-4 h-4'
+    };
+@endphp
 
 <!-- Área de Decisión por Sección -->
 <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="{{ $seccion }}">
@@ -28,16 +37,16 @@
     
     <div class="flex gap-2">
         <button type="button" onclick="evaluarSeccion('{{ $seccion }}', 'Aprobado')" 
-                class="btn-evaluar flex-1 bg-green-100 hover:bg-green-200 text-green-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center space-x-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors text-sm flex items-center justify-center space-x-2">
+            <svg class="{{ $iconClasses }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
             </svg>
             <span>Aprobar Sección</span>
         </button>
         
         <button type="button" onclick="evaluarSeccion('{{ $seccion }}', 'Rechazado')" 
-                class="btn-evaluar flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center space-x-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors text-sm flex items-center justify-center space-x-2">
+            <svg class="{{ $iconClasses }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
             <span>Rechazar Sección</span>

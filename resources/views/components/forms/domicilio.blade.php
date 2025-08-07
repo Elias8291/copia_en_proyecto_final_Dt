@@ -65,7 +65,7 @@
                     <input type="text"
                         name="codigo_postal"
                         id="codigo_postal"
-                        value="{{ $datosFinales['codigo_postal'] ?? old('codigo_postal') }}"
+                        value="{{ old('codigo_postal', $datosFinales['codigo_postal'] ?? '') }}"
                         class="block w-full pl-8 pr-3 py-2 text-xs text-gray-900 border border-gray-200 rounded-lg shadow-sm sm:pl-10 sm:pr-4 sm:py-2.5 sm:text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary font-mono {{ $errors->has('codigo_postal') ? 'border-red-500' : '' }}"
                         placeholder="12345"
                         maxlength="5">
@@ -93,6 +93,7 @@
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('estado_id') ? 'border-red-500' : '' }}">
                         <option value="">Cargando estados...</option>
                     </select>
+                    <input type="hidden" name="estado_id_old" value="{{ old('estado_id', $datosFinales['estado_id'] ?? '') }}">
                     <div id="loading-estados" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                         <i class="fas fa-spinner fa-spin text-gray-400"></i>
                     </div>
@@ -114,7 +115,7 @@
                     <input type="text"
                         name="municipio"
                         id="municipio"
-                        value="{{ $datosFinales['municipio'] ?? old('municipio') }}"
+                        value="{{ old('municipio', $datosFinales['municipio'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('municipio') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese municipio o delegación">
                 </div>
@@ -135,7 +136,7 @@
                     <input type="text"
                         name="asentamiento"
                         id="asentamiento"
-                        value="{{ $datosFinales['asentamiento'] ?? old('asentamiento') }}"
+                        value="{{ old('asentamiento', $datosFinales['asentamiento'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('asentamiento') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese colonia o asentamiento">
                 </div>
@@ -156,7 +157,7 @@
                     <input type="text"
                         name="calle"
                         id="calle"
-                        value="{{ $datosFinales['calle'] ?? old('calle') }}"
+                        value="{{ old('calle', $datosFinales['calle'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('calle') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese nombre de la calle">
                 </div>
@@ -219,7 +220,7 @@
                     <input type="text"
                         name="numero_exterior"
                         id="numero_exterior"
-                        value="{{ $datosFinales['numero_exterior'] ?? old('numero_exterior') }}"
+                        value="{{ old('numero_exterior', $datosFinales['numero_exterior'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_exterior') ? 'border-red-500' : '' }}"
                         placeholder="123 o A-1">
                 </div>
@@ -240,7 +241,7 @@
                     <input type="text"
                         name="numero_interior"
                         id="numero_interior"
-                        value="{{ $datosFinales['numero_interior'] ?? old('numero_interior') }}"
+                        value="{{ old('numero_interior', $datosFinales['numero_interior'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_interior') ? 'border-red-500' : '' }}"
                         placeholder="Apto 5 o Local 2">
                 </div>
@@ -261,7 +262,7 @@
                     <input type="number"
                         name="latitud"
                         id="latitud-manual"
-                        value="{{ $latitud ?? old('latitud') ?? '19.4326' }}"
+                        value="{{ old('latitud', $latitud ?? '') }}"
                         step="0.000001"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('latitud') ? 'border-red-500' : '' }}"
                         placeholder="19.4326">
@@ -283,7 +284,7 @@
                     <input type="number"
                         name="longitud"
                         id="longitud-manual"
-                        value="{{ $longitud ?? old('longitud') ?? '-99.1332' }}"
+                        value="{{ old('longitud', $longitud ?? '') }}"
                         step="0.000001"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('longitud') ? 'border-red-500' : '' }}"
                         placeholder="-99.1332">
@@ -294,7 +295,7 @@
             </div>
 
             <!-- Campo oculto para colonia (usa el valor de asentamiento) -->
-            <input type="hidden" name="colonia" value="{{ $datosFinales['asentamiento'] ?? old('asentamiento') }}">
+                            <input type="hidden" name="colonia" value="{{ old('asentamiento', $datosFinales['asentamiento'] ?? '') }}">
         </div>
     </div>
     @else
@@ -607,9 +608,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 elements.estado.innerHTML = `<option value="">Seleccione estado</option>` +
                     data.data.map(e => `<option value="${e.id}">${e.nombre}</option>`).join('');
                 
-                // Si no hay valor seleccionado, usar el primer estado como valor por defecto
-                if (!elements.estado.value && data.data.length > 0) {
-                    elements.estado.value = data.data[0].id;
+                // Restaurar valor old si existe
+                const estadoIdOld = document.querySelector('input[name="estado_id_old"]').value;
+                if (estadoIdOld) {
+                    elements.estado.value = estadoIdOld;
                 }
                 
                 if (elements.cp.value.trim().length === 5) {
@@ -622,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch((error) => {
             console.error('Error cargando estados:', error);
             elements.loadingEstados.classList.add('hidden');
-            elements.estado.innerHTML = `<option value="1">Error al cargar - usando valor por defecto</option>`;
+            elements.estado.innerHTML = `<option value="">Error al cargar estados</option>`;
         });
 
     // 🔍 Función para buscar por código postal
@@ -657,7 +659,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const estadoOption = [...elements.estado.options]
                     .find(o => o.text.toLowerCase() === u.estado.toLowerCase());
 
-                if (estadoOption && !elements.estado.value) {
+                // Solo llenar el estado si no hay valor old y no hay valor seleccionado
+                const estadoIdOld = document.querySelector('input[name="estado_id_old"]').value;
+                if (estadoOption && !elements.estado.value && !estadoIdOld) {
                     elements.estado.value = estadoOption.value;
                 }
 
@@ -696,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const lat = latitudInput?.value;
         const lng = longitudInput?.value;
         
-        if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+        if (lat && lng && !isNaN(lat) && !isNaN(lng) && lat.trim() !== '' && lng.trim() !== '') {
             const latNum = parseFloat(lat);
             const lngNum = parseFloat(lng);
             
@@ -752,6 +756,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Actualizar enlace al cargar la página si ya hay coordenadas
     actualizarGoogleMapsLink();
+
+    // Sincronizar campo oculto del estado cuando cambie la selección
+    elements.estado.addEventListener('change', function() {
+        const hiddenInput = document.querySelector('input[name="estado_id_old"]');
+        if (hiddenInput) {
+            hiddenInput.value = this.value;
+        }
+    });
 
     // Escuchar eventos del mapa OpenStreetMap si existe
     window.addEventListener('coordenadasActualizadas', function(event) {

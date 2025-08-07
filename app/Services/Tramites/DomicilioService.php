@@ -68,4 +68,30 @@ class DomicilioService
         
         return $coordenada->id;
     }
+
+    /**
+     * Actualizar domicilio de un trámite existente
+     */
+    public function actualizar(Tramite $tramite, Request $request): void
+    {
+        if ($request->filled('domicilio')) {
+            $domicilioData = $request->domicilio;
+            $domicilio = $tramite->direcciones->first();
+            
+            if ($domicilio) {
+                $domicilio->update([
+                    'estado_id' => $domicilioData['estado_id'] ?? null,
+                    'municipio' => $domicilioData['municipio'] ?? null,
+                    'asentamiento' => $domicilioData['asentamiento'] ?? null,
+                    'codigo_postal' => $domicilioData['codigo_postal'] ?? null,
+                    'calle' => $domicilioData['calle'] ?? null,
+                    'numero_exterior' => $domicilioData['numero_exterior'] ?? null,
+                    'numero_interior' => $domicilioData['numero_interior'] ?? null,
+                    'entre_calle' => $domicilioData['entre_calle'] ?? null,
+                    'y_calle' => $domicilioData['y_calle'] ?? null,
+                    'colonia' => $domicilioData['colonia'] ?? null,
+                ]);
+            }
+        }
+    }
 } 

@@ -181,6 +181,27 @@ function sincronizarComentario(seccion) {
     }
 }
 
+// Capturar datos de archivos antes del envío del formulario
+function capturarDatosArchivos() {
+    const archivosInputs = document.querySelectorAll('[id^="decision_archivo_"]');
+    
+    archivosInputs.forEach(input => {
+        const archivoId = input.id.replace('decision_archivo_', '');
+        const comentarioInput = document.getElementById(`comentario_archivo_${archivoId}`);
+        const textareaEl = document.getElementById(`textarea_archivo_${archivoId}`);
+        
+        // Sincronizar comentario del textarea al campo hidden
+        if (textareaEl && comentarioInput) {
+            comentarioInput.value = textareaEl.value.trim();
+        }
+        
+        console.log(`Archivo ${archivoId} sincronizado:`, {
+            decision: input.value,
+            comentario: comentarioInput?.value || ''
+        });
+    });
+}
+
 // Inicialización cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     // Agregar event listeners a todos los textareas de comentarios
@@ -209,6 +230,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 sincronizarComentario(seccion);
             });
             
+            // Capturar datos de archivos antes del envío
+            capturarDatosArchivos();
+            
             const decisiones = Array.from(document.querySelectorAll('[id^="decision_"]'));
             const hayEvaluaciones = decisiones.some(input => input.value !== 'Pendiente');
             
@@ -228,6 +252,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     comentario: comentarioInput?.value || ''
                 });
             });
+            
+            // Debug: mostrar datos de archivos
+            console.log('Datos de archivos a enviar:');
+            const archivosInputs = document.querySelectorAll('[id^="decision_archivo_"]');
+            archivosInputs.forEach(input => {
+                const archivoId = input.id.replace('decision_archivo_', '');
+                const comentarioInput = document.getElementById(`comentario_archivo_${archivoId}`);
+                console.log(`- Archivo ${archivoId}:`, {
+                    decision: input.value,
+                    comentario: comentarioInput?.value || ''
+                });
+            });
         });
     }
 });
@@ -237,4 +273,5 @@ window.navigateSection = navigateSection;
 window.toggleCotejo = toggleCotejo;
 window.toggleHistorial = toggleHistorial;
 window.evaluarSeccion = evaluarSeccion;
-window.sincronizarComentario = sincronizarComentario; 
+window.sincronizarComentario = sincronizarComentario;
+window.capturarDatosArchivos = capturarDatosArchivos; 

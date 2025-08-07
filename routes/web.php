@@ -11,7 +11,8 @@ use App\Http\Controllers\{
     TramiteController,
     RevisionController,
     NotificacionController,
-    CitasController
+    CitasController,
+    ArchivoController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -116,9 +117,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [TramiteController::class, 'create'])->name('create');
         Route::post('/', [TramiteController::class, 'store'])->name('store');
         Route::get('/estado', [TramiteController::class, 'estado'])->name('estado');
+        Route::get('/{tramite}/edit', [TramiteController::class, 'edit'])->name('edit');
+        Route::put('/{tramite}', [TramiteController::class, 'update'])->name('update');
         
-        // Ruta de prueba temporal para depuración
-        
+
     });
 
     // Rutas para revisiones
@@ -170,6 +172,18 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
+    // Rutas para archivos
+    Route::prefix('archivos')->name('archivos.')->group(function () {
+        Route::get('/', [ArchivoController::class, 'index'])->name('index');
+        Route::get('/create', [ArchivoController::class, 'create'])->name('create');
+        Route::post('/', [ArchivoController::class, 'store'])->name('store');
+        Route::get('/{archivo}', [ArchivoController::class, 'show'])->name('show');
+        Route::get('/{archivo}/edit', [ArchivoController::class, 'edit'])->name('edit');
+        Route::put('/{archivo}', [ArchivoController::class, 'update'])->name('update');
+        Route::delete('/{archivo}', [ArchivoController::class, 'destroy'])->name('destroy');
+        Route::get('/{archivo}/download', [ArchivoController::class, 'download'])->name('download');
+    });
+
 });
 
 Route::prefix('api')->group(function () {
@@ -180,3 +194,4 @@ Route::prefix('api')->group(function () {
 Route::post('/extract-qr-url-web', [QRExtractorController::class, 'extractQrFromPdf'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
     ->name('extract.qr.web');
+

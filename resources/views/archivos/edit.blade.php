@@ -1,213 +1,277 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8 -mt-4">
-
-    <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
-        <div class="p-4 border-b border-gray-100">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light rounded-xl p-2 shadow-lg">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-bold text-gray-800">Editar Archivo</h1>
-                        <p class="text-base text-gray-500 mt-1">Modifique la información del archivo</p>
-                    </div>
+<div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">
+        <div class="p-6 border-b border-gray-200/70">
+            <div class="flex items-center space-x-4">
+                <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                    </svg>
                 </div>
-                
-                <div class="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-3">
-                    <a href="{{ route('archivos.index') }}" 
-                       class="px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                        </svg>
-                        Volver
-                    </a>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Editar Archivo</h1>
+                    <p class="text-base text-gray-500 mt-1">Modifica la información del archivo</p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
-        <form action="{{ route('archivos.update', $archivo) }}" method="POST" class="space-y-4 p-4">
+        <form method="POST" action="{{ route('archivos.update', $archivo) }}" enctype="multipart/form-data" class="p-6">
             @csrf
             @method('PUT')
             
-            <div class="border-b border-gray-100 pb-4">
-                <div class="flex items-center mb-3">
-                    <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
-                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Información del Archivo</h3>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="space-y-1">
-                        <label for="nombre" class="block text-base font-medium text-gray-700">
-                            Nombre del Archivo <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <input type="text" 
-                                   name="nombre" 
-                                   id="nombre" 
-                                   value="{{ old('nombre', $archivo->nombre) }}"
-                                   class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('nombre') border-red-300 ring-red-100 @enderror"
-                                   placeholder="Ingrese el nombre del archivo">
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        @error('nombre')
-                            <p class="text-sm text-red-500 flex items-center">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <div class="space-y-1">
-                        <label for="tipo_archivo" class="block text-base font-medium text-gray-700">
-                            Tipo de Archivo <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <select name="tipo_archivo" 
-                                    id="tipo_archivo" 
-                                    class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('tipo_archivo') border-red-300 ring-red-100 @enderror">
-                                <option value="">Seleccione el tipo</option>
-                                <option value="pdf" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'pdf' ? 'selected' : '' }}>PDF</option>
-                                <option value="png" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'png' ? 'selected' : '' }}>PNG</option>
-                                <option value="mp3" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp3' ? 'selected' : '' }}>MP3</option>
-                                <option value="mp4" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp4' ? 'selected' : '' }}>MP4</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        @error('tipo_archivo')
-                            <p class="text-sm text-red-500 flex items-center">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="mt-3 space-y-1">
-                    <label for="descripcion" class="block text-base font-medium text-gray-700">
-                        Descripción
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Nombre Original -->
+                <div class="md:col-span-2">
+                    <label for="nombre_original" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre del Archivo <span class="text-red-500">*</span>
                     </label>
-                    <textarea name="descripcion" 
-                              id="descripcion" 
-                              rows="3"
-                              class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('descripcion') border-red-300 ring-red-100 @enderror"
-                              placeholder="Descripción del archivo">{{ old('descripcion', $archivo->descripcion) }}</textarea>
-                    @error('descripcion')
-                        <p class="text-sm text-red-500 flex items-center">
-                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <input type="text" 
+                           name="nombre_original" 
+                           id="nombre_original" 
+                           value="{{ old('nombre_original', $archivo->nombre_original) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200"
+                           placeholder="Ingresa el nombre del archivo"
+                           required>
+                    @error('nombre_original')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Proveedor -->
+                <div>
+                    <label for="proveedor_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Proveedor <span class="text-red-500">*</span>
+                    </label>
+                    <select name="proveedor_id" 
+                            id="proveedor_id" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200"
+                            required>
+                        <option value="">Selecciona un proveedor</option>
+                        @foreach($proveedores as $proveedor)
+                            <option value="{{ $proveedor->id }}" {{ old('proveedor_id', $archivo->proveedor_id) == $proveedor->id ? 'selected' : '' }}>
+                                {{ $proveedor->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('proveedor_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Trámite -->
+                <div>
+                    <label for="tramite_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Trámite
+                    </label>
+                    <select name="tramite_id" 
+                            id="tramite_id" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                        <option value="">Selecciona un trámite (opcional)</option>
+                        @foreach($tramites as $tramite)
+                            <option value="{{ $tramite->id }}" {{ old('tramite_id', $archivo->tramite_id) == $tramite->id ? 'selected' : '' }}>
+                                {{ $tramite->folio }} - {{ $tramite->proveedor->nombre ?? 'Sin proveedor' }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('tramite_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tipo de Archivo -->
+                <div>
+                    <label for="catalogo_archivo_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Tipo de Archivo <span class="text-red-500">*</span>
+                    </label>
+                    <select name="catalogo_archivo_id" 
+                            id="catalogo_archivo_id" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200"
+                            required>
+                        <option value="">Selecciona el tipo de archivo</option>
+                        @foreach($catalogoArchivos as $catalogo)
+                            <option value="{{ $catalogo->id }}" {{ old('catalogo_archivo_id', $archivo->catalogo_archivo_id) == $catalogo->id ? 'selected' : '' }}>
+                                {{ $catalogo->nombre }} ({{ $catalogo->tipo_archivo }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('catalogo_archivo_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Estado -->
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                        Estado <span class="text-red-500">*</span>
+                    </label>
+                    <select name="status" 
+                            id="status" 
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200"
+                            required>
+                        <option value="">Selecciona el estado</option>
+                        <option value="Pendiente" {{ old('status', $archivo->status) == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                        <option value="Aprobado" {{ old('status', $archivo->status) == 'Aprobado' ? 'selected' : '' }}>Aprobado</option>
+                        <option value="Rechazado" {{ old('status', $archivo->status) == 'Rechazado' ? 'selected' : '' }}>Rechazado</option>
+                    </select>
+                    @error('status')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Archivo Actual -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Archivo Actual
+                    </label>
+                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-md">
+                        <div class="flex-shrink-0">
+                            @php
+                                $extension = strtoupper($archivo->extension ?? 'DOC');
+                                $icon = match($extension) {
+                                    'PDF' => '📄',
+                                    'DOC', 'DOCX' => '📝',
+                                    'JPG', 'JPEG', 'PNG' => '🖼️',
+                                    'XLS', 'XLSX' => '📊',
+                                    default => '📁'
+                                };
+                            @endphp
+                            <span class="text-2xl">{{ $icon }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">{{ $archivo->nombre_original }}</p>
+                            <p class="text-sm text-gray-500">{{ strtoupper($archivo->extension ?? 'DOC') }} • {{ number_format($archivo->tamaño / 1024, 1) }} KB</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <a href="{{ route('archivos.download', $archivo) }}" 
+                               class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9d2449]">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Descargar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nuevo Archivo -->
+                <div class="md:col-span-2">
+                    <label for="archivo" class="block text-sm font-medium text-gray-700 mb-2">
+                        Reemplazar Archivo
+                    </label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-[#9d2449] transition-colors duration-200">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ $message }}
-                        </p>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="archivo" class="relative cursor-pointer bg-white rounded-md font-medium text-[#9d2449] hover:text-[#8a1f40] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#9d2449]">
+                                    <span>Subir nuevo archivo</span>
+                                    <input id="archivo" name="archivo" type="file" class="sr-only" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx">
+                                </label>
+                                <p class="pl-1">o arrastra y suelta</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                PDF, DOC, DOCX, JPG, PNG, XLS, XLSX hasta 10MB (opcional)
+                            </p>
+                        </div>
+                    </div>
+                    @error('archivo')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Observaciones -->
+                <div class="md:col-span-2">
+                    <label for="observaciones_documento" class="block text-sm font-medium text-gray-700 mb-2">
+                        Observaciones
+                    </label>
+                    <textarea name="observaciones_documento" 
+                              id="observaciones_documento" 
+                              rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200"
+                              placeholder="Observaciones adicionales sobre el archivo">{{ old('observaciones_documento', $archivo->observaciones_documento) }}</textarea>
+                    @error('observaciones_documento')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Comentario de Revisión -->
+                <div class="md:col-span-2">
+                    <label for="comentario_revision" class="block text-sm font-medium text-gray-700 mb-2">
+                        Comentario de Revisión
+                    </label>
+                    <textarea name="comentario_revision" 
+                              id="comentario_revision" 
+                              rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200"
+                              placeholder="Comentarios sobre la revisión del archivo">{{ old('comentario_revision', $archivo->comentario_revision) }}</textarea>
+                    @error('comentario_revision')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
-            <div class="border-b border-gray-100 pb-4">
-                <div class="flex items-center mb-3">
-                    <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
-                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Configuración</h3>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div class="space-y-1">
-                        <label for="tipo_persona" class="block text-base font-medium text-gray-700">
-                            Tipo de Persona <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <select name="tipo_persona" 
-                                    id="tipo_persona" 
-                                    class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('tipo_persona') border-red-300 ring-red-100 @enderror">
-                                <option value="">Seleccione el tipo</option>
-                                <option value="Física" {{ old('tipo_persona', $archivo->tipo_persona) == 'Física' ? 'selected' : '' }}>Física</option>
-                                <option value="Moral" {{ old('tipo_persona', $archivo->tipo_persona) == 'Moral' ? 'selected' : '' }}>Moral</option>
-                                <option value="Ambas" {{ old('tipo_persona', $archivo->tipo_persona) == 'Ambas' ? 'selected' : '' }}>Ambas</option>
-                            </select>
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <svg class="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        @error('tipo_persona')
-                            <p class="text-sm text-red-500 flex items-center">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <div class="space-y-1">
-                        <label class="block text-base font-medium text-gray-700">
-                            Estado de Visibilidad
-                        </label>
-                        <div class="flex items-center space-x-4">
-                            <label class="flex items-center">
-                                <input type="checkbox" 
-                                       name="es_visible" 
-                                       value="1" 
-                                       {{ old('es_visible', $archivo->es_visible) ? 'checked' : '' }}
-                                       class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary/30">
-                                <span class="ml-2 text-sm text-gray-700">Archivo visible</span>
-                            </label>
-                        </div>
-                        @error('es_visible')
-                            <p class="text-sm text-red-500 flex items-center">
-                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-100">
+            <div class="flex items-center justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
                 <a href="{{ route('archivos.index') }}" 
-                   class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9d2449] transition-all duration-200">
                     Cancelar
                 </a>
                 <button type="submit" 
-                        class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 transform hover:scale-105">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+                        class="px-4 py-2 text-sm font-medium text-white bg-[#9d2449] border border-transparent rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#9d2449] transition-all duration-200">
                     Actualizar Archivo
                 </button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('archivo');
+    const dropZone = document.querySelector('.border-dashed');
+    
+    // Prevenir comportamiento por defecto del navegador
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Resaltar zona de drop
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    // Manejar archivos soltados
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight(e) {
+        dropZone.classList.add('border-[#9d2449]');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('border-[#9d2449]');
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+    }
+});
+</script>
 @endsection 

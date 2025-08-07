@@ -93,4 +93,26 @@ class AccionistasService
         
         return $resultado;
     }
+
+    /**
+     * Actualizar accionistas de un trámite existente
+     */
+    public function actualizar(Tramite $tramite, Request $request): void
+    {
+        if ($request->filled('accionistas')) {
+            // Eliminar accionistas existentes
+            $tramite->accionistas()->delete();
+            
+            // Agregar nuevos accionistas
+            foreach ($request->accionistas as $accionistaData) {
+                $tramite->accionistas()->create([
+                    'nombre' => $accionistaData['nombre'] ?? '',
+                    'rfc' => $accionistaData['rfc'] ?? '',
+                    'porcentaje_participacion' => $accionistaData['porcentaje_participacion'] ?? 0,
+                    'proveedor_id' => $tramite->proveedor_id,
+                    'status' => 'pendiente'
+                ]);
+            }
+        }
+    }
 } 

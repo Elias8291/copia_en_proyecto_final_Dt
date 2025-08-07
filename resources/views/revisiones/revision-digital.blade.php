@@ -197,12 +197,31 @@
                     </div>
                 </div>
                 
-                <x-revision.area-decision 
-                    seccion="datos_generales" 
-                    titulo="Decisión - Datos Generales"
-                    numero-seccion="Sección 1/6"
-                    placeholder="Agregar observaciones específicas para datos generales..." 
-                />
+                <!-- Área de Decisión por Sección -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="datos_generales">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <h4 class="text-sm font-medium text-gray-700">Decisión - Datos Generales</h4>
+                            <span id="estado_datos_generales" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                Pendiente
+                            </span>
+                        </div>
+                        <span class="text-xs text-gray-500">Sección 1/6</span>
+                    </div>
+                    
+                    <x-revision.textarea-comentarios 
+                        seccion="datos_generales"
+                        placeholder="Agregar observaciones específicas para datos generales..."
+                        label-text="Comentarios de esta sección:"
+                        :rows="2"
+                    />
+                    
+                    <x-revision.botones-evaluacion 
+                        seccion="datos_generales"
+                        titulo="Sección"
+                        style="compact"
+                    />
+                </div>
             </div>
 
             <x-separador-simple margin="my-8" color="border-emerald-300" />
@@ -224,7 +243,7 @@
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                         @include('components.forms.actividades-economicas', [
                             'editable' => false,
-                            'datos' => $viewModel->getActividades()
+                            'datos' => $viewModel['actividades']
                         ])
                     </div>
                     <div id="cotejo_actividades" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
@@ -236,12 +255,31 @@
                     </div>
                 </div>
                 
-                <x-revision.area-decision 
-                    seccion="actividades" 
-                    titulo="Decisión - Actividades Económicas"
-                    numero-seccion="Sección 2/6"
-                    placeholder="Agregar observaciones específicas para actividades económicas..." 
-                />
+                <!-- Área de Decisión por Sección -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="actividades">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-3">
+                            <h4 class="text-sm font-medium text-gray-700">Decisión - Actividades Económicas</h4>
+                            <span id="estado_actividades" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                Pendiente
+                            </span>
+                        </div>
+                        <span class="text-xs text-gray-500">Sección 2/6</span>
+                    </div>
+                    
+                    <x-revision.textarea-comentarios 
+                        seccion="actividades"
+                        placeholder="Agregar observaciones específicas para actividades económicas..."
+                        label-text="Comentarios de esta sección:"
+                        :rows="2"
+                    />
+                    
+                    <x-revision.botones-evaluacion 
+                        seccion="actividades"
+                        titulo="Sección"
+                        style="compact"
+                    />
+                </div>
             </div>
 
             <x-separador-simple margin="my-8" color="border-amber-300" />
@@ -298,12 +336,11 @@
                         seccion="domicilio"
                         titulo="Sección"
                         style="compact"
-                        size="sm"
                     />
                 </div>
             </div>
 
-            @if($viewModel->isPersonaMoral())
+                                    @if($viewModel['proveedor'] && $viewModel['proveedor']->tipo_persona === 'Moral')
                 <x-separador-simple margin="my-8" color="border-purple-300" />
 
                 <!-- Constitución -->
@@ -323,7 +360,7 @@
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                             @include('components.forms.constitucion', [
                                 'editable' => false,
-                                'datos' => $viewModel->getConstitucion()
+                                'datos' => $viewModel['constitucion']
                             ])
                         </div>
                         <div id="cotejo_constitucion" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
@@ -358,7 +395,6 @@
                             seccion="constitucion"
                             titulo="Sección"
                             style="compact"
-                            size="sm"
                         />
                     </div>
                 </div>
@@ -382,7 +418,7 @@
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                             @include('components.forms.accionistas', [
                                 'editable' => false,
-                                'datos' => $viewModel->getAccionistas()
+                                'datos' => $viewModel['accionistas']
                             ])
                         </div>
                         <div id="cotejo_accionistas" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
@@ -417,7 +453,6 @@
                             seccion="accionistas"
                             titulo="Sección"
                             style="compact"
-                            size="sm"
                         />
                     </div>
                 </div>
@@ -441,7 +476,7 @@
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
                             @include('components.forms.apoderado', [
                                 'editable' => false,
-                                'datos' => $viewModel->getApoderado()
+                                'datos' => $viewModel['apoderado']
                             ])
                         </div>
                         <div id="cotejo_apoderado" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
@@ -476,7 +511,6 @@
                             seccion="apoderado"
                             titulo="Sección"
                             style="compact"
-                            size="sm"
                         />
                     </div>
                 </div>
@@ -493,7 +527,7 @@
                             'editable' => false, 
                             'archivosRequeridos' => [],
                             'tipoPersona' => 'Moral',
-                            'archivosCargados' => $viewModel->getArchivos()
+                            'archivosCargados' => $archivos
                         ])
                     </div>
                     
@@ -520,7 +554,6 @@
                             seccion="archivos"
                             titulo="Sección"
                             style="compact"
-                            size="sm"
                         />
                     </div>
                 </div>
@@ -534,7 +567,7 @@
                             'editable' => false, 
                             'archivosRequeridos' => [],
                             'tipoPersona' => 'Física',
-                            'archivosCargados' => $viewModel->getArchivos()
+                            'archivosCargados' => $archivos
                         ])
                     </div>
                     
@@ -543,15 +576,15 @@
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex items-center space-x-3">
                                 <h4 class="text-sm font-medium text-gray-700">Decisión - Archivos</h4>
-                                <span id="estado_archivos_fisica" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                    Pendiente
-                                </span>
+                                                            <span id="estado_archivos" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                                Pendiente
+                            </span>
                             </div>
                             <span class="text-xs text-gray-500">Sección Final</span>
                         </div>
                         
                         <x-revision.textarea-comentarios 
-                            seccion="archivos_fisica"
+                            seccion="archivos"
                             placeholder="Agregar observaciones específicas para archivos..."
                             label-text="Comentarios de esta sección:"
                             :rows="2"
@@ -561,7 +594,6 @@
                             seccion="archivos"
                             titulo="Sección"
                             style="compact"
-                            size="sm"
                         />
                     </div>
                 </div>
@@ -572,76 +604,59 @@
             <!-- Panel de decisión final -->
             @php
                 $secciones = ['datos_generales', 'actividades', 'domicilio'];
-                if($viewModel->isPersonaMoral()) {
+                if($viewModel['proveedor'] && $viewModel['proveedor']->tipo_persona === 'Moral') {
                     $secciones = array_merge($secciones, ['constitucion', 'accionistas', 'apoderado']);
                 }
                 $secciones[] = 'archivos';
             @endphp
             
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-6">Decisión Final</h3>
-                
-                <form id="formRevisionCompleta" action="{{ route('revisiones.procesar-digital', $tramite->id) }}" method="POST" class="space-y-4">
-                    @csrf
-                    <input type="hidden" name="tipo_revision" value="Digital">
-                    
-                    <!-- Campos ocultos para las decisiones de cada sección -->
-                    <div id="decisiones-secciones" class="hidden">
-                        @foreach($secciones as $seccion)
-                        <input type="hidden" name="secciones[{{ $seccion }}][decision]" id="decision_{{ $seccion }}" value="Pendiente">
-                        <input type="hidden" name="secciones[{{ $seccion }}][comentario]" id="comentario_{{ $seccion }}" value="">
-                        @endforeach
-                    </div>
-                    
-                    <!-- Observaciones generales -->
-                    <div>
-                        <label for="observaciones_generales" class="block text-sm font-medium text-gray-700 mb-2">
-                            Comentarios generales
-                        </label>
-                        <textarea 
-                            id="observaciones_generales" 
-                            name="observaciones_generales" 
-                            rows="3" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Comentarios sobre la revisión..."
-                        ></textarea>
-                    </div>
-
-                    <!-- Botones de decisión final -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <button 
-                            type="submit" 
-                            name="decision_final" 
-                            value="agendar_cita"
-                            class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-3 rounded text-sm"
-                        >
-                            ✓ Aprobar y Agendar Cita Presencial
-                        </button>
-                        
-                        <button 
-                            type="submit" 
-                            name="decision_final" 
-                            value="correcciones"
-                            class="bg-orange-600 hover:bg-orange-700 text-white font-medium py-2 px-3 rounded text-sm"
-                        >
-                            📝 Correcciones
-                        </button>
-                        
-                        <button 
-                            type="submit" 
-                            name="decision_final" 
-                            value="rechazado"
-                            class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded text-sm"
-                        >
-                            ✗ Rechazar
-                        </button>
-                    </div>
-                </form>
-            </div>
+            <x-revision.panel-decision-final 
+                :tramite="$tramite"
+                :tipoRevision="$tipoRevision"
+                :secciones="$secciones"
+                :actionUrl="route('revisiones.procesar-digital', $tramite->id)"
+            />
         </div>
     </div>
 
 
+<!-- ID del trámite para el JavaScript -->
+<meta name="tramite-id" content="{{ $tramite->id }}">
+
+<!-- JavaScript para cargar estados y comentarios de secciones evaluadas -->
+<script src="{{ asset('js/revision/cargar-estados.js') }}"></script>
+
 <!-- JavaScript externo para funciones de revisión -->
 <script src="{{ asset('js/revision-digital.js') }}"></script>
+
+<!-- Modal de confirmación global -->
+<x-modal-confirmacion 
+    id="modal-confirmacion-decision"
+    title="Confirmar Decisión"
+    message="¿Está seguro que desea realizar esta acción?"
+    confirmText="Confirmar"
+    cancelText="Cancelar"
+    confirmClass="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
+    cancelClass="bg-white border-gray-300 text-gray-700 hover:text-gray-500 focus:ring-emerald-500"
+/>
+
+<script>
+// Verificar que el modal esté disponible
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Verificando modal de confirmación...');
+    const modal = document.getElementById('modal-confirmacion-decision');
+    if (modal) {
+        console.log('Modal encontrado:', modal);
+    } else {
+        console.error('Modal no encontrado');
+    }
+    
+    // Verificar que showConfirmModal esté disponible
+    if (typeof showConfirmModal === 'function') {
+        console.log('showConfirmModal está disponible');
+    } else {
+        console.error('showConfirmModal no está disponible');
+    }
+});
+</script>
 @endsection 

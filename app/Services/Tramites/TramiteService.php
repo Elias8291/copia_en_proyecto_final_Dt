@@ -72,8 +72,14 @@ class TramiteService
 
     private function crearObtenerProveedor(Request $request): Proveedor
     {
-        $rfc = $request->rfc ?: $request->rfc_hidden;
-        $tipoPersona = $request->tipo_persona ?: $request->tipo_persona_hidden;
+        $rfc = $request->rfc ?: $request->rfc_hidden ?: $request->rfc_fallback;
+        $tipoPersona = $request->tipo_persona ?: $request->tipo_persona_hidden ?: $request->tipo_persona_fallback;
+
+        Log::info('TramiteService: Creando/obteniendo proveedor', [
+            'rfc' => $rfc,
+            'tipo_persona' => $tipoPersona,
+            'user_id' => auth()->id()
+        ]);
 
         $proveedor = Proveedor::where('usuario_id', auth()->id())
             ->where('rfc', $rfc)
@@ -88,6 +94,16 @@ class TramiteService
                 'estado_padron' => 'pendiente',
                 'fecha_alta_padron' => now(),
                 'fecha_vencimiento_padron' => now()->addYear(),
+            ]);
+            
+            Log::info('TramiteService: Proveedor creado', [
+                'proveedor_id' => $proveedor->id,
+                'rfc' => $rfc
+            ]);
+        } else {
+            Log::info('TramiteService: Proveedor existente encontrado', [
+                'proveedor_id' => $proveedor->id,
+                'rfc' => $rfc
             ]);
         }
 
@@ -147,4 +163,54 @@ class TramiteService
     {
         return $this->constanciaService->obtenerDatos();
     }
+
+    /**
+     * Actualizar un trámite existente con correcciones
+     */
+    public function actualizarTramite(Tramite $tramite, Request $request): Tramite
+    {
+        return DB::transaction(function () use ($tramite, $request) {
+            Log::info('TramiteService: Iniciando actualización de trámite', [
+                'tramite_id' => $tramite->id,
+                'user_id' => auth()->id()
+            ]);
+
+            // 1. Actualizar datos generales usando el servicio específico
+            $this->datosGeneralesService->actualizar($tramite, $request);
+            
+            // 2. Actualizar domicilio usando el servicio específico
+            $this->domicilioService->actualizar($tramite, $request);
+            
+            // 3. Actualizar actividades económicas usando el servicio específico
+            $this->actividadesService->actualizar($tramite, $request);
+            
+            // 4. Actualizar datos específicos según tipo de persona
+            if ($tramite->proveedor->tipo_persona === 'Moral') {
+                $this->constitucionService->actualizar($tramite, $request);
+                $this->accionistasService->actualizar($tramite, $request);
+                $this->apoderadoService->actualizar($tramite, $request);
+            }
+            
+            // 5. Actualizar archivos si se proporcionaron nuevos
+            if ($request->hasFile('archivos')) {
+                $this->archivosService->actualizar($tramite, $request);
+            }
+
+            // 6. Cambiar estado del trámite a pendiente para nueva revisión
+            $tramite->update([
+                'status' => 'Pendiente',
+                'observaciones' => null, // Limpiar observaciones anteriores
+                'correcciones_count' => $tramite->correcciones_count + 1
+            ]);
+
+            Log::info('TramiteService: Trámite actualizado exitosamente', [
+                'tramite_id' => $tramite->id,
+                'correcciones_count' => $tramite->correcciones_count
+            ]);
+
+            return $tramite->fresh();
+        });
+    }
+
+
 } 

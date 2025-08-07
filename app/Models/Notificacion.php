@@ -31,6 +31,19 @@ class Notificacion extends Model
         'updated_at' => 'datetime'
     ];
 
+    /**
+     * Boot del modelo para establecer ordenamiento por defecto
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Ordenar por defecto por las más recientes primero
+        static::addGlobalScope('order', function ($query) {
+            $query->orderBy('created_at', 'desc');
+        });
+    }
+
     // Relación con el usuario
     public function usuario()
     {

@@ -53,6 +53,7 @@
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('estado_id') ? 'border-red-500' : '' }}">
                         <option value="">Cargando estados...</option>
                     </select>
+                    <input type="hidden" name="estado_id_old" value="{{ old('estado_id', $datos['estado_id'] ?? '') }}">
                     <div id="loading-estados-constitucion" class="absolute inset-y-0 right-0 pr-3 flex items-center">
                         <i class="fas fa-spinner fa-spin text-gray-400"></i>
                     </div>
@@ -72,7 +73,7 @@
                     </div>
                     <input type="text"
                         name="numero_escritura"
-                        value="{{ $datos['numero_escritura'] ?? old('numero_escritura') }}"
+                        value="{{ old('numero_escritura', $datos['numero_escritura'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_escritura') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número de escritura">
                 </div>
@@ -91,7 +92,7 @@
                     </div>
                     <input type="text"
                         name="numero_escritura_constitutiva"
-                        value="{{ $datos['numero_escritura_constitutiva'] ?? old('numero_escritura_constitutiva') }}"
+                        value="{{ old('numero_escritura_constitutiva', $datos['numero_escritura_constitutiva'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_escritura_constitutiva') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número constitutivo">
                 </div>
@@ -110,7 +111,7 @@
                     </div>
                     <input type="date"
                         name="fecha_constitucion"
-                        value="{{ $datos['fecha_constitucion'] ?? old('fecha_constitucion') }}"
+                        value="{{ old('fecha_constitucion', $datos['fecha_constitucion'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('fecha_constitucion') ? 'border-red-500' : '' }}">
                 </div>
                 @error('fecha_constitucion')
@@ -128,7 +129,7 @@
                     </div>
                     <input type="text"
                         name="nombre_notario"
-                        value="{{ $datos['nombre_notario'] ?? old('nombre_notario') }}"
+                        value="{{ old('nombre_notario', $datos['nombre_notario'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('nombre_notario') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese nombre del notario">
                 </div>
@@ -147,7 +148,7 @@
                     </div>
                     <input type="text"
                         name="numero_notario"
-                        value="{{ $datos['numero_notario'] ?? old('numero_notario') }}"
+                        value="{{ old('numero_notario', $datos['numero_notario'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_notario') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número de notario">
                 </div>
@@ -166,7 +167,7 @@
                     </div>
                     <input type="text"
                         name="numero_registro_publico"
-                        value="{{ $datos['numero_registro_publico'] ?? old('numero_registro_publico') }}"
+                        value="{{ old('numero_registro_publico', $datos['numero_registro_publico'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('numero_registro_publico') ? 'border-red-500' : '' }}"
                         placeholder="Ingrese número de registro">
                 </div>
@@ -185,7 +186,7 @@
                     </div>
                     <input type="date"
                         name="fecha_inscripcion"
-                        value="{{ $datos['fecha_inscripcion'] ?? old('fecha_inscripcion') }}"
+                        value="{{ old('fecha_inscripcion', $datos['fecha_inscripcion'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('fecha_inscripcion') ? 'border-red-500' : '' }}">
                 </div>
                 @error('fecha_inscripcion')
@@ -347,6 +348,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         option.textContent = estado.nombre;
                         estadoSelect.appendChild(option);
                     });
+                    
+                    // Restaurar valor old si existe
+                    const estadoIdOld = document.querySelector('input[name="estado_id_old"]').value;
+                    if (estadoIdOld) {
+                        estadoSelect.value = estadoIdOld;
+                    }
                 } else {
                     estadoSelect.innerHTML = '<option value="">Error al cargar estados</option>';
                 }

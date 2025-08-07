@@ -11,22 +11,22 @@
         $mostrarFormulario = old('sat_rfc') || $errors->any();
     @endphp
 
-    <div class="min-h-screen bg-white">
+    <div class="min-h-screen">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 
             <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl overflow-hidden border border-gray-200/70">
-                <div class="p-4 sm:p-6 border-b border-gray-200/70">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div class="flex items-center space-x-3 sm:space-x-4">
-                            <div class="bg-gradient-to-br from-[#9D2449] via-[#B91C1C] to-[#7a1d37] rounded-lg sm:rounded-xl p-2 sm:p-3 shadow-md">
-                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-6 border-b border-gray-200/70">
+                    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Cargar Constancia</h1>
-                                <p class="text-xs sm:text-sm text-gray-500">
+                                <h1 class="text-2xl font-bold text-gray-800">Cargar Constancia</h1>
+                                <p class="text-base text-gray-500 mt-1">
                                     Sube tu constancia de situación fiscal para continuar con el trámite de 
                                     <strong>{{ ucfirst($tipo) }}</strong>
                                 </p>

@@ -42,7 +42,6 @@ class DatosGeneralesService extends BaseService
             'curp' => $datos->curp,
             'pagina_web' => $datos->pagina_web,
             'telefono' => $datos->telefono,
-            'correo_electronico' => $datos->correo_electronico ?? '',
         ];
     }
 
@@ -56,5 +55,22 @@ class DatosGeneralesService extends BaseService
             'pagina_web' => $request->pagina_web,
             'telefono' => $request->telefono,
         ];
+    }
+
+    /**
+     * Actualizar datos generales de un trámite existente
+     */
+    public function actualizar(Tramite $tramite, Request $request): void
+    {
+        $datosGenerales = $tramite->datosGenerales->first();
+        
+        if ($datosGenerales) {
+            $datosGenerales->update([
+                'razon_social' => $request->razon_social,
+                'curp' => $request->curp,
+                'telefono' => $request->telefono,
+                'pagina_web' => $request->pagina_web,
+            ]);
+        }
     }
 } 

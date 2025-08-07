@@ -27,6 +27,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\CheckSessionExpiry::class,
             \App\Http\Middleware\NoCacheHeaders::class,
             \App\Http\Middleware\HandleLargeUploads::class,
+            \App\Http\Middleware\SetTimezone::class,
         ],
 
         'api' => [

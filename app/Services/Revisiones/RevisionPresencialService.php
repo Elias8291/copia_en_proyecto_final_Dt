@@ -2,25 +2,27 @@
 
 namespace App\Services\Revisiones;
 
-use App\Services\HistorialTramitesService;
-use App\Services\Tramites\DataRetrievalService;
+use App\Services\RevisionService;
+use App\Services\CitasService;
+use App\Services\NotificacionService;
 
 class RevisionPresencialService extends RevisionService
 {
+    public function __construct(CitasService $citasService, NotificacionService $notificacionService)
+    {
+        parent::__construct($citasService, $notificacionService);
+    }
+
     /**
      * Obtiene datos específicos para revisión presencial
      */
     public function obtenerDatosRevisionPresencial(int $tramiteId): array
     {
-        $datos = $this->obtenerDatosRevision($tramiteId);
+        $datos = $this->obtenerDatosRevisionBase($tramiteId);
         
         // Agregar datos específicos para revisión presencial
         $datos['tipoRevision'] = 'Presencial';
         $datos['vistaRevision'] = 'revisiones.revision-presencial';
-        
-        // Para revisión presencial no se requiere historial
-        unset($datos['historialTramites']);
-        unset($datos['estadisticasHistorial']);
         
         return $datos;
     }

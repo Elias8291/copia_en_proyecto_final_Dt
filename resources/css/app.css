@@ -303,3 +303,78 @@
         transition: none;
     }
 }
+
+/* Corrección de bordes de inputs - Usar color primario sutil */
+@layer utilities {
+    /* Mantener focus:border-primary pero con opacidad reducida */
+    .focus\:border-primary:focus {
+        border-color: rgba(157, 36, 73, 0.3) !important; /* primary con 30% opacidad */
+    }
+    
+    /* Para inputs con focus:border-primary/50 */
+    .focus\:border-primary\/50:focus {
+        border-color: rgba(157, 36, 73, 0.5) !important; /* primary con 50% opacidad */
+    }
+    
+    /* Para inputs con focus:border-primary/20 */
+    .focus\:border-primary\/20:focus {
+        border-color: rgba(157, 36, 73, 0.2) !important; /* primary con 20% opacidad */
+    }
+    
+    /* Mantener el ring de focus con color primario sutil */
+    .focus\:ring-primary\/30:focus {
+        --tw-ring-color: rgba(157, 36, 73, 0.3) !important; /* primary con 30% opacidad */
+    }
+    
+    .focus\:ring-primary\/20:focus {
+        --tw-ring-color: rgba(157, 36, 73, 0.2) !important; /* primary con 20% opacidad */
+    }
+    
+    /* Para inputs que usan focus:ring-primary sin opacidad */
+    .focus\:ring-primary:focus {
+        --tw-ring-color: rgba(157, 36, 73, 0.4) !important; /* primary con 40% opacidad */
+    }
+    
+    /* Asegurar que los inputs tengan bordes grises por defecto */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="number"],
+    input[type="date"],
+    input[type="search"],
+    select,
+    textarea {
+        border-color: #e5e7eb !important; /* gray-200 */
+    }
+    
+    /* Hover state con color primario sutil */
+    input[type="text"]:hover,
+    input[type="email"]:hover,
+    input[type="password"]:hover,
+    input[type="tel"]:hover,
+    input[type="url"]:hover,
+    input[type="number"]:hover,
+    input[type="date"]:hover,
+    input[type="search"]:hover,
+    select:hover,
+    textarea:hover {
+        border-color: rgba(157, 36, 73, 0.1) !important; /* primary con 10% opacidad */
+    }
+    
+    /* Focus state con color primario sutil */
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus,
+    input[type="tel"]:focus,
+    input[type="url"]:focus,
+    input[type="number"]:focus,
+    input[type="date"]:focus,
+    input[type="search"]:focus,
+    select:focus,
+    textarea:focus {
+        border-color: rgba(157, 36, 73, 0.4) !important; /* primary con 40% opacidad */
+        box-shadow: 0 0 0 3px rgba(157, 36, 73, 0.1) !important; /* primary con 10% opacidad */
+    }
+}

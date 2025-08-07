@@ -30,11 +30,11 @@
         $camposNoEditables = $datosConstancia ? true : false;
     }
     
-    // Obtener valores para los campos, priorizando los valores de constancia cuando están bloqueados
-    $razonSocial = $camposNoEditables ? ($datosFinales['razon_social'] ?? '') : (old('razon_social') ?: ($datosFinales['razon_social'] ?? ''));
-    $rfc = $camposNoEditables ? ($datosFinales['rfc'] ?? '') : (old('rfc') ?: ($datosFinales['rfc'] ?? ''));
-    $curp = $camposNoEditables ? ($datosFinales['curp'] ?? '') : (old('curp') ?: ($datosFinales['curp'] ?? ''));
-    $tipoPersonaValue = $camposNoEditables ? $tipoPersona : (old('tipo_persona') ?: $tipoPersona);
+    // Obtener valores para los campos, priorizando old() sobre los valores de constancia
+    $razonSocial = $camposNoEditables ? ($datosFinales['razon_social'] ?? '') : (old('razon_social', $datosFinales['razon_social'] ?? ''));
+    $rfc = $camposNoEditables ? ($datosFinales['rfc'] ?? '') : (old('rfc', $datosFinales['rfc'] ?? ''));
+    $curp = $camposNoEditables ? ($datosFinales['curp'] ?? '') : (old('curp', $datosFinales['curp'] ?? ''));
+    $tipoPersonaValue = $camposNoEditables ? $tipoPersona : (old('tipo_persona', $tipoPersona));
 @endphp
 
 <div class="space-y-6" {{ $attributes }}>
@@ -94,6 +94,8 @@
                     @if($camposNoEditables)
                         <input type="hidden" name="rfc_hidden" value="{{ $rfc }}">
                     @endif
+                    <!-- Campo oculto adicional para asegurar que el RFC se envíe -->
+                    <input type="hidden" name="rfc_fallback" value="{{ $rfc }}">
                 </div>
                 @error('rfc')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -118,6 +120,8 @@
                     @if($camposNoEditables)
                         <input type="hidden" name="tipo_persona_hidden" value="{{ $tipoPersonaValue }}">
                     @endif
+                    <!-- Campo oculto adicional para asegurar que el tipo de persona se envíe -->
+                    <input type="hidden" name="tipo_persona_fallback" value="{{ $tipoPersonaValue }}">
                 </div>
                 @error('tipo_persona')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -141,6 +145,8 @@
                     @if($camposNoEditables)
                         <input type="hidden" name="curp_hidden" value="{{ $curp }}">
                     @endif
+                    <!-- Campo oculto adicional para asegurar que la CURP se envíe -->
+                    <input type="hidden" name="curp_fallback" value="{{ $curp }}">
                 </div>
                 @error('curp')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -155,7 +161,7 @@
                     </div>
                     <input type="url"
                         name="pagina_web"
-                        value="{{ $datos['pagina_web'] ?? old('pagina_web') }}"
+                        value="{{ old('pagina_web', $datosFinales['pagina_web'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('pagina_web') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="https://ejemplo.com">
@@ -182,10 +188,12 @@
                     </div>
                     <input type="tel"
                         name="telefono"
-                        value="{{ $datosFinales['telefono'] ?? old('telefono') }}"
+                        value="{{ old('telefono', $datosFinales['telefono'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('telefono') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="(55) 1234-5678">
+                    <!-- Campo oculto adicional para asegurar que el teléfono se envíe -->
+                    <input type="hidden" name="telefono_fallback" value="{{ old('telefono', $datosFinales['telefono'] ?? '') }}">
                 </div>
                 @error('telefono')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -209,7 +217,7 @@
                     </div>
                     <input type="text"
                         name="nombre_contacto"
-                        value="{{ $datosFinales['nombre_contacto'] ?? old('nombre_contacto') }}"
+                        value="{{ old('nombre_contacto', $datosFinales['nombre_contacto'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('nombre_contacto') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="Nombre completo del contacto">
@@ -229,7 +237,7 @@
                     </div>
                     <input type="text"
                         name="cargo"
-                        value="{{ $datosFinales['cargo'] ?? old('cargo') }}"
+                        value="{{ old('cargo', $datosFinales['cargo'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('cargo') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="Ej: Gerente, Director, etc.">
@@ -249,7 +257,7 @@
                     </div>
                     <input type="tel"
                         name="telefono_contacto"
-                        value="{{ $datosFinales['telefono_contacto'] ?? old('telefono_contacto') }}"
+                        value="{{ old('telefono_contacto', $datosFinales['telefono_contacto'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('telefono_contacto') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="(55) 1234-5678">
@@ -269,7 +277,7 @@
                     </div>
                     <input type="email"
                         name="correo_contacto"
-                        value="{{ $datosFinales['correo_contacto'] ?? old('correo_contacto') }}"
+                        value="{{ old('correo_contacto', $datosFinales['correo_contacto'] ?? '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $editable ? 'bg-white' : 'bg-gray-50 cursor-not-allowed' }} {{ $errors->has('correo_contacto') ? 'border-red-500' : '' }}"
                         {{ !$editable ? 'disabled' : '' }}
                         placeholder="contacto@ejemplo.com">

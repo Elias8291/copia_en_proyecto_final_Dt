@@ -19,14 +19,12 @@ class TramiteFormRequest extends FormRequest
         $datosGeneralesRequest = new DatosGeneralesRequest();
         $domicilioRequest = new DomicilioRequest();
         $actividadesRequest = new ActividadesRequest();
-        // $archivosRequest = new ArchivosRequest();
 
         $rules = array_merge(
             $rules,
             $datosGeneralesRequest->rules(),
             $domicilioRequest->rules(),
             $actividadesRequest->rules()
-            // $archivosRequest->rules()
         );
 
         if ($this->esPersonaMoral()) {
@@ -42,6 +40,10 @@ class TramiteFormRequest extends FormRequest
             );
         }
 
+        // Obtener reglas de validación dinámicas para archivos basadas en el catálogo
+        $archivosRules = $this->obtenerReglasArchivosDinamicas();
+        $rules = array_merge($rules, $archivosRules);
+
         return $rules;
     }
 
@@ -52,14 +54,12 @@ class TramiteFormRequest extends FormRequest
         $datosGeneralesRequest = new DatosGeneralesRequest();
         $domicilioRequest = new DomicilioRequest();
         $actividadesRequest = new ActividadesRequest();
-        // $archivosRequest = new ArchivosRequest();
 
         $messages = array_merge(
             $messages,
             $datosGeneralesRequest->messages(),
             $domicilioRequest->messages(),
             $actividadesRequest->messages()
-            // $archivosRequest->messages()
         );
 
         if ($this->esPersonaMoral()) {
@@ -74,6 +74,10 @@ class TramiteFormRequest extends FormRequest
                 $apoderadoRequest->messages()
             );
         }
+
+        // Obtener mensajes de validación dinámicos para archivos
+        $archivosMessages = $this->obtenerMensajesArchivosDinamicos();
+        $messages = array_merge($messages, $archivosMessages);
 
         return $messages;
     }
@@ -93,40 +97,134 @@ class TramiteFormRequest extends FormRequest
                 ]);
             }
             
-            // Comentar temporalmente la validación de archivos para pruebas
-            // $this->validarArchivosRequeridos($validator);
+            // Validar archivos requeridos solo si no hay errores de validación básica
+            if ($validator->errors()->count() === 0) {
+                $this->validarArchivosRequeridos($validator);
+            }
         });
+    }
+
+    private function obtenerReglasArchivosDinamicas(): array
+    {
+        $rules = [];
+        
+        try {
+            $tipoPersona = $this->esPersonaMoral() ? 'Moral' : 'Física';
+            $archivosRequeridos = CatalogoArchivo::where('es_visible', true)
+                ->where(function($query) use ($tipoPersona) {
+                    $query->where('tipo_persona', 'Ambas')
+                          ->orWhere('tipo_persona', $tipoPersona);
+                })
+                ->get();
+
+            foreach ($archivosRequeridos as $archivo) {
+                $nombreCampo = 'documentos.' . \Str::slug($archivo->nombre);
+                
+                // Obtener tipos MIME permitidos según el tipo de archivo del catálogo
+                $tiposMime = $this->obtenerTiposMimePorTipoArchivo($archivo->tipo_archivo);
+                
+                $rules[$nombreCampo] = 'nullable|file|mimes:' . $tiposMime . '|max:102400'; // 100MB max
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener reglas de archivos dinámicas', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+        
+        return $rules;
+    }
+
+    private function obtenerMensajesArchivosDinamicos(): array
+    {
+        $messages = [];
+        
+        try {
+            $tipoPersona = $this->esPersonaMoral() ? 'Moral' : 'Física';
+            $archivosRequeridos = CatalogoArchivo::where('es_visible', true)
+                ->where(function($query) use ($tipoPersona) {
+                    $query->where('tipo_persona', 'Ambas')
+                          ->orWhere('tipo_persona', $tipoPersona);
+                })
+                ->get();
+
+            foreach ($archivosRequeridos as $archivo) {
+                $nombreCampo = 'documentos.' . \Str::slug($archivo->nombre);
+                $tiposPermitidos = $this->obtenerTiposPermitidosPorTipoArchivo($archivo->tipo_archivo);
+                
+                $messages[$nombreCampo . '.file'] = "El archivo '{$archivo->nombre}' debe ser un archivo válido.";
+                $messages[$nombreCampo . '.mimes'] = "El archivo '{$archivo->nombre}' debe ser de tipo: {$tiposPermitidos}.";
+                $messages[$nombreCampo . '.max'] = "El archivo '{$archivo->nombre}' no puede ser mayor a 100MB.";
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al obtener mensajes de archivos dinámicos', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+        
+        return $messages;
+    }
+
+    private function obtenerTiposMimePorTipoArchivo(string $tipoArchivo): string
+    {
+        return match($tipoArchivo) {
+            'pdf' => 'pdf',
+            'png' => 'png,jpg,jpeg,gif,webp',
+            'mp3' => 'mp3,wav,ogg',
+            'mp4' => 'mp4,avi,mov,wmv,flv,webm',
+            default => 'pdf,png,jpg,jpeg,gif,webp,mp3,wav,ogg,mp4,avi,mov,wmv,flv,webm'
+        };
+    }
+
+    private function obtenerTiposPermitidosPorTipoArchivo(string $tipoArchivo): string
+    {
+        return match($tipoArchivo) {
+            'pdf' => 'PDF',
+            'png' => 'PNG, JPG, JPEG, GIF, WEBP',
+            'mp3' => 'MP3, WAV, OGG',
+            'mp4' => 'MP4, AVI, MOV, WMV, FLV, WEBM',
+            default => 'PDF, PNG, JPG, JPEG, GIF, WEBP, MP3, WAV, OGG, MP4, AVI, MOV, WMV, FLV, WEBM'
+        };
     }
 
     private function validarArchivosRequeridos($validator)
     {
-        $tipoPersona = $this->esPersonaMoral() ? 'Moral' : 'Física';
-        $archivosRequeridos = CatalogoArchivo::where('es_visible', true)
-            ->where(function($query) use ($tipoPersona) {
-                $query->where('tipo_persona', 'Ambas')
-                      ->orWhere('tipo_persona', $tipoPersona);
-            })
-            ->get();
+        try {
+            $tipoPersona = $this->esPersonaMoral() ? 'Moral' : 'Física';
+            $archivosRequeridos = CatalogoArchivo::where('es_visible', true)
+                ->where(function($query) use ($tipoPersona) {
+                    $query->where('tipo_persona', 'Ambas')
+                          ->orWhere('tipo_persona', $tipoPersona);
+                })
+                ->get();
 
-        $documentos = $this->file('documentos', []);
-        $archivosFaltantes = [];
+            $documentos = $this->file('documentos', []);
+            $archivosFaltantes = [];
 
-        foreach ($archivosRequeridos as $archivo) {
-            $nombreCampo = \Str::slug($archivo->nombre);
-            if (!isset($documentos[$nombreCampo]) || !$documentos[$nombreCampo]) {
-                $archivosFaltantes[] = $archivo->nombre;
+            foreach ($archivosRequeridos as $archivo) {
+                $nombreCampo = \Str::slug($archivo->nombre);
+                if (!isset($documentos[$nombreCampo]) || !$documentos[$nombreCampo]) {
+                    $archivosFaltantes[] = $archivo->nombre;
+                }
             }
-        }
 
-        if (!empty($archivosFaltantes)) {
-            $validator->errors()->add('archivos_faltantes', 'Los siguientes archivos son obligatorios: ' . implode(', ', $archivosFaltantes));
+            if (!empty($archivosFaltantes)) {
+                $validator->errors()->add('archivos_faltantes', 'Los siguientes archivos son obligatorios: ' . implode(', ', $archivosFaltantes));
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al validar archivos requeridos', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $validator->errors()->add('archivos_error', 'Error al validar archivos: ' . $e->getMessage());
         }
     }
 
     private function esPersonaMoral(): bool
     {
-        $rfc = $this->input('rfc') ?: $this->input('rfc_hidden');
-        $tipoPersona = $this->input('tipo_persona') ?: $this->input('tipo_persona_hidden');
+        $rfc = $this->input('rfc') ?: $this->input('rfc_hidden') ?: $this->input('rfc_fallback');
+        $tipoPersona = $this->input('tipo_persona') ?: $this->input('tipo_persona_hidden') ?: $this->input('tipo_persona_fallback');
         
         // Si tenemos tipo_persona, usarlo directamente
         if ($tipoPersona === 'Moral') {
@@ -135,8 +233,16 @@ class TramiteFormRequest extends FormRequest
         
         // Si no, usar el RFC con la lógica del servicio
         if ($rfc) {
-            $rfcService = app(\App\Services\RfcProveedorService::class);
-            return $rfcService->determinarTipoPersona($rfc) === 'Moral';
+            try {
+                $rfcService = app(\App\Services\RfcProveedorService::class);
+                return $rfcService->determinarTipoPersona($rfc) === 'Moral';
+            } catch (\Exception $e) {
+                \Log::error('Error al determinar tipo de persona', [
+                    'rfc' => $rfc,
+                    'error' => $e->getMessage()
+                ]);
+                return false;
+            }
         }
         
         return false;

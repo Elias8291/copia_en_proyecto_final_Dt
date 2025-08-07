@@ -111,4 +111,25 @@ class ConstitucionService
             'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
         ];
     }
+
+    /**
+     * Actualizar datos constitutivos de un trámite existente
+     */
+    public function actualizar(Tramite $tramite, Request $request): void
+    {
+        if ($request->filled('constitucion')) {
+            $constitucionData = $request->constitucion;
+            $datosConstitutivos = $tramite->datosConstitutivos->first();
+            
+            if ($datosConstitutivos && $datosConstitutivos->instrumentoNotarial) {
+                $datosConstitutivos->instrumentoNotarial->update([
+                    'fecha_constitucion' => $constitucionData['fecha_constitucion'] ?? null,
+                    'numero_escritura' => $constitucionData['numero_escritura'] ?? null,
+                    'nombre_notario' => $constitucionData['nombre_notario'] ?? null,
+                    'numero_notario' => $constitucionData['numero_notario'] ?? null,
+                    'estado_id' => $constitucionData['estado_id'] ?? null,
+                ]);
+            }
+        }
+    }
 } 

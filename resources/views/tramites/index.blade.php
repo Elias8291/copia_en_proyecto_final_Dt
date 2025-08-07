@@ -172,5 +172,115 @@
             </div>
         </div>
     </div>
+
+    <!-- Historial de Trámites -->
+    <div class="mt-8 max-w-7xl mx-auto">
+        <div class="bg-white shadow-sm rounded-lg border border-gray-200">
+                <div class="p-6 border-b border-gray-200/70">
+                                            <div class="flex items-center space-x-4">
+                            <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                </svg>
+                            </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">Historial de Trámites</h2>
+                            <p class="text-base text-gray-500 mt-1">Registro de todos sus trámites realizados</p>
+                        </div>
+                    </div>
+                </div>
+
+                @if($historialTramites->isNotEmpty())
+                    <div class="p-6">
+                        <ol class="relative border-s border-gray-200">
+                            @foreach($historialTramites as $index => $tramite)
+                                <li class="{{ $index < count($historialTramites) - 1 ? 'mb-10' : '' }} ms-6">
+                                    <span class="absolute flex items-center justify-center w-6 h-6 bg-[#9d2449]/10 rounded-full -start-3 ring-8 ring-white border-2 border-[#9d2449]/20">
+                                        <svg class="w-3 h-3 text-[#9d2449]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
+                                        </svg>
+                                    </span>
+                                    
+                                    <div class="flex items-center mb-1">
+                                        <h3 class="text-lg font-semibold text-gray-900">{{ $tramite['razon_social'] }}</h3>
+                                        <span class="bg-[#9d2449]/10 text-[#9d2449] text-sm font-medium me-2 px-2.5 py-0.5 rounded-sm ms-3">
+                                            {{ ucfirst($tramite['tipo_tramite']) }}
+                                        </span>
+                                        @php
+                                            $estadoColors = [
+                                                'Pendiente' => 'bg-yellow-100 text-yellow-800',
+                                                'Revision_Digital' => 'bg-blue-100 text-blue-800',
+                                                'Revision_Presencial' => 'bg-purple-100 text-purple-800',
+                                                'Revision_Domiciliaria' => 'bg-indigo-100 text-indigo-800',
+                                                'Para_Correccion' => 'bg-orange-100 text-orange-800',
+                                                'Aprobado' => 'bg-green-100 text-green-800',
+                                                'Rechazado' => 'bg-red-100 text-red-800',
+                                                'Cancelado' => 'bg-gray-100 text-gray-800'
+                                            ];
+                                            $estadoColor = $estadoColors[$tramite['status']] ?? 'bg-gray-100 text-gray-800';
+                                            $estadoLabels = [
+                                                'Pendiente' => 'Pendiente',
+                                                'Revision_Digital' => 'Revisión Digital',
+                                                'Revision_Presencial' => 'Revisión Presencial',
+                                                'Revision_Domiciliaria' => 'Revisión Domiciliaria',
+                                                'Para_Correccion' => 'Para Corrección',
+                                                'Aprobado' => 'Aprobado',
+                                                'Rechazado' => 'Rechazado',
+                                                'Cancelado' => 'Cancelado'
+                                            ];
+                                            $estadoLabel = $estadoLabels[$tramite['status']] ?? $tramite['status'];
+                                        @endphp
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $estadoColor }} ms-2">
+                                            {{ $estadoLabel }}
+                                        </span>
+                                    </div>
+                                    
+                                    <time class="block mb-2 text-sm font-normal leading-none text-gray-400">
+                                        {{ $tramite['created_at']->format('d/m/Y H:i') }}
+                                    </time>
+                                    
+                                    @if(isset($tramite['observaciones']) && !empty(trim($tramite['observaciones'])))
+                                        <p class="mb-4 text-base font-normal text-gray-500">
+                                            {{ $tramite['observaciones'] }}
+                                        </p>
+                                    @endif
+                                    
+                                    <a href="{{ route('tramites.estado', $tramite['id']) }}" 
+                                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#9d2449] bg-white border border-[#9d2449]/20 rounded-lg hover:bg-[#9d2449]/5 hover:text-[#8a1f40] focus:z-10 focus:ring-4 focus:outline-none focus:ring-[#9d2449]/20 focus:text-[#8a1f40] transition-all duration-200">
+                                        <svg class="w-3.5 h-3.5 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+                                            <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+                                        </svg>
+                                        Ver detalles
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </div>
+                @else
+                    <!-- Mensaje cuando no hay historial -->
+                    <div class="p-6 text-center">
+                        <div class="flex items-center justify-center">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-medium text-gray-800">
+                                        Sin historial de trámites
+                                    </h3>
+                                    <p class="text-gray-600">
+                                        Aún no ha realizado ningún trámite. Comience seleccionando uno de los tipos disponibles arriba.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

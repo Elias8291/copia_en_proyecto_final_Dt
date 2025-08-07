@@ -1,244 +1,338 @@
-<div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50/80">
-            <tr>
-                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+<!-- Vista móvil -->
+<div class="block lg:hidden">
+    <div class="divide-y divide-gray-200">
+        @forelse($archivos as $archivo)
+        <div class="archivo-row p-6 hover:bg-gray-50/50 transition-all duration-200" 
+             data-name="{{ strtolower($archivo->nombre_original) }}" 
+             data-proveedor="{{ strtolower($archivo->proveedor->nombre ?? '') }}" 
+             data-status="{{ strtolower($archivo->status) }}" 
+             data-tipo="{{ strtolower($archivo->catalogoArchivo->tipo_archivo ?? '') }}">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <div class="flex-shrink-0 h-14 w-14 bg-gradient-to-br from-[#B4325E] to-[#93264B] text-white rounded-2xl shadow-lg flex items-center justify-center font-bold text-lg">
+                            @php
+                                $extension = strtoupper($archivo->extension ?? 'DOC');
+                                $icon = match($extension) {
+                                    'PDF' => '📄',
+                                    'DOC', 'DOCX' => '📝',
+                                    'JPG', 'JPEG', 'PNG' => '🖼️',
+                                    'XLS', 'XLSX' => '📊',
+                                    default => '📁'
+                                };
+                            @endphp
+                            <span class="text-xl">{{ $icon }}</span>
+                        </div>
+                        @if($archivo->status === 'Aprobado')
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                        @elseif($archivo->status === 'Rechazado')
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
-                        <span>Archivo</span>
+                            </div>
+                        @endif
                     </div>
-                </th>
-                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <div>
+                        <div class="font-semibold text-gray-900 text-lg">{{ $archivo->nombre_original }}</div>
+                        <div class="text-sm text-gray-600 flex items-center mt-1">
+                            <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            {{ $archivo->proveedor->nombre ?? 'Sin proveedor' }}
+                        </div>
+                        @if($archivo->tramite)
+                        <div class="text-xs text-gray-500 flex items-center mt-1">
+                            <svg class="w-3 h-3 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <span>Tipo de Persona</span>
+                            Trámite: {{ $archivo->tramite->folio }}
+                        </div>
+                        @endif
                     </div>
-                </th>
-                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <a href="{{ route('archivos.download', $archivo) }}" 
+                       class="p-2.5 text-blue-600 hover:text-white hover:bg-blue-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                       title="Descargar archivo">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        <span>Tipo</span>
-                    </div>
-                </th>
-                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </a>
+
+                    <a href="{{ route('archivos.show', $archivo) }}" 
+                       class="p-2.5 text-[#B4325E] hover:text-white hover:bg-[#B4325E] rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                       title="Ver detalles">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
-                        <span>Estado</span>
-                    </div>
-                </th>
-                <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </a>
+
+                    <a href="{{ route('archivos.edit', $archivo) }}" 
+                       class="p-2.5 text-[#B4325E] hover:text-white hover:bg-[#B4325E] rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                       title="Editar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                         </svg>
-                        <span>Fecha</span>
+                    </a>
+
+                    <button type="button"
+                            @click="$dispatch('open-modal', 'confirm-archivo-deletion-{{ $archivo->id }}')"
+                            class="p-2.5 text-red-600 hover:text-white hover:bg-red-600 rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                            title="Eliminar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </button>
+                </div>
                     </div>
+            
+            <!-- Información adicional -->
+            <div class="flex flex-wrap items-center gap-3 mt-4">
+                @if($archivo->catalogoArchivo)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    {{ $archivo->catalogoArchivo->nombre }}
+                </span>
+                @endif
+                
+                @if($archivo->status === 'Aprobado')
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Aprobado
+                    </span>
+                @elseif($archivo->status === 'Rechazado')
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Rechazado
+                    </span>
+                @else
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Pendiente
+                    </span>
+                @endif
+
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                    {{ strtoupper($archivo->extension ?? 'DOC') }}
+                </span>
+
+                @if($archivo->tamaño)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                    </svg>
+                    {{ number_format($archivo->tamaño / 1024, 1) }} KB
+                </span>
+                @endif
+            </div>
+        </div>
+        @empty
+        <div class="p-12 text-center">
+            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No se encontraron archivos</h3>
+            <p class="text-gray-500 mb-6">No hay archivos que coincidan con los criterios de búsqueda.</p>
+            <a href="{{ route('archivos.create') }}" 
+               class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Crear primer archivo
+            </a>
+        </div>
+        @endforelse
+    </div>
+                    </div>
+
+<!-- Vista desktop -->
+<div class="hidden lg:block">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Archivo
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Proveedor
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Trámite
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tipo
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Estado
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Tamaño
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Fecha
                 </th>
-                <th scope="col"
-                    class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Acciones
+                    <th scope="col" class="relative px-6 py-3">
+                        <span class="sr-only">Acciones</span>
                 </th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($archivos as $archivo)
-                <tr class="hover:bg-gray-50/50 transition-colors duration-200">
-                    <!-- Información del Archivo -->
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0">
-                                @if ($archivo->tipo_archivo === 'pdf')
-                                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                        </svg>
-                                    </div>
-                                @elseif($archivo->tipo_archivo === 'png')
-                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M4 3a1 1 0 00-1 1v16a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H4zm12 4a2 2 0 11-4 0 2 2 0 014 0zm-8 8l2-6 3 4 3-2 3 4H8z" />
-                                        </svg>
-                                    </div>
-                                @else
-                                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                                            <path
-                                                d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                                        </svg>
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="text-sm font-medium text-gray-900 truncate">
-                                    {{ $archivo->nombre }}
-                                </div>
-                                <div class="text-sm text-gray-500 line-clamp-2">
-                                    {{ $archivo->descripcion ?: 'Sin descripción' }}
-                                </div>
-                            </div>
-                        </div>
-                    </td>
-
-                    <!-- Tipo de Persona -->
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                        {{ $archivo->tipo_persona === 'Física'
-                            ? 'bg-blue-100 text-blue-800'
-                            : ($archivo->tipo_persona === 'Moral'
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-gray-100 text-gray-800') }}">
-                            {{ $archivo->tipo_persona_label }}
-                        </span>
-                    </td>
-
-                    <!-- Tipo de Archivo -->
+                <tr class="hover:bg-gray-50 transition-colors duration-200">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            @if ($archivo->tipo_archivo === 'pdf')
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                    </svg>
-                                    PDF
-                                </span>
-                            @elseif($archivo->tipo_archivo === 'png')
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M4 3a1 1 0 00-1 1v16a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H4zm12 4a2 2 0 11-4 0 2 2 0 014 0zm-8 8l2-6 3 4 3-2 3 4H8z" />
-                                    </svg>
-                                    PNG
-                                </span>
-                            @elseif($archivo->tipo_archivo === 'mp3')
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                                    </svg>
-                                    MP3
-                                </span>
-                            @elseif($archivo->tipo_archivo === 'mp4')
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M4 3a1 1 0 00-1 1v16a1 1 0 001 1h16a1 1 0 001-1V4a1 1 0 00-1-1H4zm12 4a2 2 0 11-4 0 2 2 0 014 0zm-8 8l2-6 3 4 3-2 3 4H8z" />
-                                    </svg>
-                                    MP4
-                                </span>
-                            @else
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                        <path
-                                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                    </svg>
-                                    {{ strtoupper($archivo->tipo_archivo) }}
-                                </span>
-                            @endif
+                            <div class="flex-shrink-0 h-10 w-10">
+                                <div class="h-10 w-10 bg-gradient-to-br from-[#B4325E] to-[#93264B] text-white rounded-lg flex items-center justify-center font-bold text-sm">
+                                    @php
+                                        $extension = strtoupper($archivo->extension ?? 'DOC');
+                                        $icon = match($extension) {
+                                            'PDF' => '📄',
+                                            'DOC', 'DOCX' => '📝',
+                                            'JPG', 'JPEG', 'PNG' => '🖼️',
+                                            'XLS', 'XLSX' => '📊',
+                                            default => '📁'
+                                        };
+                                    @endphp
+                                    <span class="text-sm">{{ $icon }}</span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ $archivo->nombre_original }}</div>
+                                <div class="text-sm text-gray-500">{{ strtoupper($archivo->extension ?? 'DOC') }}</div>
+                            </div>
                         </div>
                     </td>
-
-                    <!-- Estado -->
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <button onclick="toggleVisibility({{ $archivo->id }})"
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 cursor-pointer
-                            {{ $archivo->es_visible ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-red-100 text-red-800 hover:bg-red-200' }}">
-                            @if ($archivo->es_visible)
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                                </svg>
-                                Visible
-                            @else
-                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
-                                </svg>
-                                Oculto
-                            @endif
-                        </button>
+                        <div class="text-sm text-gray-900">{{ $archivo->proveedor->nombre ?? 'Sin proveedor' }}</div>
                     </td>
-
-                    <!-- Fecha -->
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div class="flex flex-col">
-                            <span class="font-medium">{{ $archivo->created_at->format('d/m/Y') }}</span>
-                            <span class="text-xs text-gray-400">{{ $archivo->created_at->format('H:i') }}</span>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">
+                            @if($archivo->tramite)
+                                {{ $archivo->tramite->folio }}
+                            @else
+                                <span class="text-gray-400">Sin trámite</span>
+                            @endif
                         </div>
                     </td>
-
-                    <!-- Acciones -->
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                        <div class="flex items-center justify-center space-x-2">
-                            <!-- Editar -->
-                            <a href="{{ route('archivos.edit', $archivo) }}"
-                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:text-blue-900 hover:bg-blue-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                title="Editar archivo">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        @if($archivo->catalogoArchivo)
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {{ $archivo->catalogoArchivo->nombre }}
+                        </span>
+                        @else
+                        <span class="text-gray-400 text-sm">Sin tipo</span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        @if($archivo->status === 'Aprobado')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Aprobado
+                            </span>
+                        @elseif($archivo->status === 'Rechazado')
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                                Rechazado
+                            </span>
+                            @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Pendiente
+                            </span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        @if($archivo->tamaño)
+                            {{ number_format($archivo->tamaño / 1024, 1) }} KB
+                        @else
+                            <span class="text-gray-400">-</span>
+                            @endif
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ $archivo->created_at->format('d/m/Y H:i') }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div class="flex items-center justify-end space-x-2">
+                            <a href="{{ route('archivos.download', $archivo) }}" 
+                               class="text-blue-600 hover:text-blue-900 p-1 rounded transition-colors"
+                               title="Descargar archivo">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                             </a>
 
-                            <!-- Eliminar -->
-                            <button type="button" x-data=""
-                                x-on:click.prevent="$dispatch('open-modal', 'confirm-archivo-deletion-{{ $archivo->id }}')"
-                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:text-red-900 hover:bg-red-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                                title="Eliminar archivo">
+                            <a href="{{ route('archivos.show', $archivo) }}" 
+                               class="text-[#B4325E] hover:text-[#8a1f40] p-1 rounded transition-colors"
+                               title="Ver detalles">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </a>
+
+                            <a href="{{ route('archivos.edit', $archivo) }}"
+                               class="text-[#B4325E] hover:text-[#8a1f40] p-1 rounded transition-colors"
+                               title="Editar">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                            </a>
+
+                            <button type="button"
+                                    @click="$dispatch('open-modal', 'confirm-archivo-deletion-{{ $archivo->id }}')"
+                                    class="text-red-600 hover:text-red-900 p-1 rounded transition-colors"
+                                    title="Eliminar">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
                             </button>
                         </div>
                     </td>
                 </tr>
             @empty
-                <tr class="empty-row">
-                    <td colspan="6" class="px-6 py-12 text-center">
-                        <div class="flex flex-col items-center justify-center space-y-3">
-                            <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <tr>
+                    <td colspan="8" class="px-6 py-12 text-center">
+                        <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                             </svg>
-                            <div class="text-gray-500 text-sm">
-                                <p class="font-medium">No se encontraron archivos</p>
-                                <p class="mt-1">Ajusta tus filtros o crea un nuevo archivo.</p>
-                            </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No se encontraron archivos</h3>
+                        <p class="text-gray-500 mb-6">No hay archivos que coincidan con los criterios de búsqueda.</p>
                             <a href="{{ route('archivos.create') }}"
-                                class="inline-flex items-center px-4 py-2 bg-[#B4325E] text-white text-sm font-medium rounded-lg hover:bg-[#93264B] focus:outline-none focus:ring-2 focus:ring-[#B4325E] focus:ring-offset-2 transition-colors duration-200">
+                           class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
                                 Crear primer archivo
                             </a>
-                        </div>
                     </td>
                 </tr>
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>

@@ -121,4 +121,25 @@ class ApoderadoService
             'fecha_inscripcion' => $request->fecha_inscripcion_poder,
         ]);
     }
+
+    /**
+     * Actualizar apoderado legal de un trámite existente
+     */
+    public function actualizar(Tramite $tramite, Request $request): void
+    {
+        if ($request->filled('apoderado')) {
+            $apoderadoData = $request->apoderado;
+            $apoderado = $tramite->apoderadosLegales->first();
+            
+            if ($apoderado) {
+                $apoderado->update([
+                    'nombre_apoderado' => $apoderadoData['nombre_apoderado'] ?? '',
+                    'rfc' => $apoderadoData['rfc'] ?? '',
+                    'numero_escritura_constitutiva_poder' => $apoderadoData['numero_escritura_constitutiva_poder'] ?? '',
+                    'numero_registro_publico_poder' => $apoderadoData['numero_registro_publico_poder'] ?? '',
+                    'fecha_inscripcion_poder' => $apoderadoData['fecha_inscripcion_poder'] ?? '',
+                ]);
+            }
+        }
+    }
 }

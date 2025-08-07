@@ -23,44 +23,12 @@ class NotificacionController extends Controller
     {
         $user = Auth::user();
         
-        // Consulta base para las notificaciones del usuario
-        $query = Notificacion::delUsuario($user->id)
-            ->orderBy('created_at', 'desc');
+        // Consulta simple: obtener todas las notificaciones del usuario ordenadas por las más recientes
+        $notificaciones = Notificacion::delUsuario($user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
-        // Aplicar filtros si existen
-        if ($request->filled('status')) {
-            if ($request->status === 'no_leidas') {
-                $query->noLeidas();
-            } elseif ($request->status === 'leidas') {
-                $query->leidas();
-            }
-        }
-
-        if ($request->filled('type')) {
-            $query->porTipo($request->type);
-        }
-
-        // Buscar en título y mensaje
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('titulo', 'like', "%{$search}%")
-                  ->orWhere('mensaje', 'like', "%{$search}%");
-            });
-        }
-
-        // Paginación
-        $notificaciones = $query->paginate(15);
-
-        // Estadísticas para el dashboard
-        $estadisticas = [
-            'total' => Notificacion::delUsuario($user->id)->count(),
-            'no_leidas' => Notificacion::delUsuario($user->id)->noLeidas()->count(),
-            'leidas' => Notificacion::delUsuario($user->id)->leidas()->count(),
-            'recientes' => Notificacion::delUsuario($user->id)->recientes(7)->count()
-        ];
-
-        return view('notificaciones.index', compact('notificaciones', 'estadisticas'));
+        return view('notificaciones.index', compact('notificaciones'));
     }
 
     /**
@@ -267,6 +235,12 @@ class NotificacionController extends Controller
             ->limit(8) // Aumentamos el límite para mostrar más
             ->get();
 
+        // Formatear las fechas en el servidor
+        $notificaciones->transform(function ($notificacion) {
+            $notificacion = $this->formatearFechaNotificacion($notificacion);
+            return $notificacion;
+        });
+
         // Contar solo las no leídas para el badge
         $conteoNoLeidas = Notificacion::delUsuario($user->id)->noLeidas()->count();
 
@@ -274,6 +248,22 @@ class NotificacionController extends Controller
             'notificaciones' => $notificaciones,
             'conteo_no_leidas' => $conteoNoLeidas
         ]);
+    }
+
+    /**
+     * Método helper para formatear la fecha de una notificación
+     */
+    private function formatearFechaNotificacion($notificacion)
+    {
+        // Forzar zona horaria de México
+        date_default_timezone_set('America/Mexico_City');
+        
+        $fecha = $notificacion->created_at;
+        
+        // Usar diffForHumans para mostrar tiempo relativo
+        $notificacion->fecha_formateada = $fecha->diffForHumans();
+        
+        return $notificacion;
     }
 
     /**

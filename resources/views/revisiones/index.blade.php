@@ -74,6 +74,23 @@
                     <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
                             <div>
+                                <label for="estado" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estado del Trámite</label>
+                                <select name="estado" 
+                                        id="estado" 
+                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                    <option value="">Todos los estados</option>
+                                    <option value="Pendiente" {{ request('estado') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                    <option value="Revision_Digital" {{ request('estado') == 'Revision_Digital' ? 'selected' : '' }}>Revisión Digital</option>
+                                    <option value="Revision_Presencial" {{ request('estado') == 'Revision_Presencial' ? 'selected' : '' }}>Revisión Presencial</option>
+                                    <option value="Revision_Domiciliaria" {{ request('estado') == 'Revision_Domiciliaria' ? 'selected' : '' }}>Revisión Domiciliaria</option>
+                                    <option value="Para_Correccion" {{ request('estado') == 'Para_Correccion' ? 'selected' : '' }}>Para Corrección</option>
+                                    <option value="Aprobado" {{ request('estado') == 'Aprobado' ? 'selected' : '' }}>Aprobado</option>
+                                    <option value="Rechazado" {{ request('estado') == 'Rechazado' ? 'selected' : '' }}>Rechazado</option>
+                                    <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
+                                </select>
+                            </div>
+
+                            <div>
                                 <label for="tipo_tramite" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Tipo de Trámite</label>
                                 <select name="tipo_tramite" 
                                         id="tipo_tramite" 
@@ -101,6 +118,18 @@
                                        id="fecha_hasta" 
                                        value="{{ request('fecha_hasta') }}"
                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                            </div>
+
+                            <div class="sm:col-span-2 lg:col-span-1">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="checkbox" 
+                                           name="mis_tramites" 
+                                           id="mis_tramites" 
+                                           value="1" 
+                                           {{ request('mis_tramites') ? 'checked' : '' }}
+                                           class="rounded border-gray-300 text-[#9d2449] focus:ring-[#9d2449]">
+                                    <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Solo mis trámites asignados</span>
+                                </label>
                             </div>
                         </div>
                         
@@ -162,6 +191,83 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Filtros activos -->
+            @if(request()->hasAny(['search', 'estado', 'tipo_tramite', 'fecha_desde', 'fecha_hasta', 'mis_tramites']))
+            <div class="mt-3 sm:mt-4 md:mt-5 pt-3 sm:pt-4 border-t border-gray-100">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
+                    <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
+                    
+                    @if(request('search'))
+                    <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449] text-white">
+                        Búsqueda: "{{ request('search') }}"
+                        <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 sm:ml-1.5 text-white hover:text-gray-200">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </span>
+                    @endif
+
+                    @if(request('estado'))
+                    @php
+                        $estadoLabels = [
+                            'Pendiente' => 'Pendiente',
+                            'Revision_Digital' => 'Revisión Digital',
+                            'Revision_Presencial' => 'Revisión Presencial',
+                            'Revision_Domiciliaria' => 'Revisión Domiciliaria',
+                            'Para_Correccion' => 'Para Corrección',
+                            'Aprobado' => 'Aprobado',
+                            'Rechazado' => 'Rechazado',
+                            'Cancelado' => 'Cancelado'
+                        ];
+                        $estadoLabel = $estadoLabels[request('estado')] ?? request('estado');
+                    @endphp
+                    <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
+                        Estado: {{ $estadoLabel }}
+                        <a href="{{ request()->fullUrlWithQuery(['estado' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </span>
+                    @endif
+
+                    @if(request('tipo_tramite'))
+                    <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
+                        Tipo: {{ ucfirst(request('tipo_tramite')) }}
+                        <a href="{{ request()->fullUrlWithQuery(['tipo_tramite' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </span>
+                    @endif
+
+                    @if(request('fecha_desde') || request('fecha_hasta'))
+                    <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
+                        Fecha: {{ request('fecha_desde', 'Inicio') }} - {{ request('fecha_hasta', 'Fin') }}
+                        <a href="{{ request()->fullUrlWithQuery(['fecha_desde' => null, 'fecha_hasta' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </span>
+                    @endif
+
+                    @if(request('mis_tramites'))
+                    <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
+                        Mis trámites asignados
+                        <a href="{{ request()->fullUrlWithQuery(['mis_tramites' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </span>
+                    @endif
+                </div>
+            </div>
+            @endif
         </div>
 
         <!-- Tabla de trámites para desktop -->
@@ -210,8 +316,32 @@
                                 </span>
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
-                                <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 bg-yellow-100 text-yellow-800 rounded-full text-xs sm:text-sm font-medium">
-                                    Pendiente
+                                @php
+                                    $estadoColors = [
+                                        'Pendiente' => 'bg-yellow-100 text-yellow-800',
+                                        'Revision_Digital' => 'bg-blue-100 text-blue-800',
+                                        'Revision_Presencial' => 'bg-purple-100 text-purple-800',
+                                        'Revision_Domiciliaria' => 'bg-indigo-100 text-indigo-800',
+                                        'Para_Correccion' => 'bg-orange-100 text-orange-800',
+                                        'Aprobado' => 'bg-green-100 text-green-800',
+                                        'Rechazado' => 'bg-red-100 text-red-800',
+                                        'Cancelado' => 'bg-gray-100 text-gray-800'
+                                    ];
+                                    $estadoColor = $estadoColors[$tramite->status] ?? 'bg-gray-100 text-gray-800';
+                                    $estadoLabels = [
+                                        'Pendiente' => 'Pendiente',
+                                        'Revision_Digital' => 'Revisión Digital',
+                                        'Revision_Presencial' => 'Revisión Presencial',
+                                        'Revision_Domiciliaria' => 'Revisión Domiciliaria',
+                                        'Para_Correccion' => 'Para Corrección',
+                                        'Aprobado' => 'Aprobado',
+                                        'Rechazado' => 'Rechazado',
+                                        'Cancelado' => 'Cancelado'
+                                    ];
+                                    $estadoLabel = $estadoLabels[$tramite->status] ?? $tramite->status;
+                                @endphp
+                                <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-sm font-medium {{ $estadoColor }}">
+                                    {{ $estadoLabel }}
                                 </span>
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
@@ -223,9 +353,9 @@
                                 <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
                                     <a href="{{ route('revisiones.seleccionar-tipo', $tramite->id) }}" 
                                        class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-[#9d2449] hover:text-white hover:bg-[#9d2449] rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                                       title="Revisar trámite">
+                                       title="Iniciar revisión">
                                         <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                     </a>
                                 </div>
@@ -264,8 +394,32 @@
                         </div>
                     </div>
                     <div class="flex-shrink-0 ml-1 sm:ml-2 md:ml-3">
-                        <span class="px-1 sm:px-1.5 md:px-2 lg:px-2.5 py-0.5 sm:py-1 md:py-1.5 text-xs sm:text-sm md:text-base font-medium rounded-full bg-yellow-100 text-yellow-800 whitespace-nowrap">
-                            Pendiente
+                        @php
+                            $estadoColors = [
+                                'Pendiente' => 'bg-yellow-100 text-yellow-800',
+                                'Revision_Digital' => 'bg-blue-100 text-blue-800',
+                                'Revision_Presencial' => 'bg-purple-100 text-purple-800',
+                                'Revision_Domiciliaria' => 'bg-indigo-100 text-indigo-800',
+                                'Para_Correccion' => 'bg-orange-100 text-orange-800',
+                                'Aprobado' => 'bg-green-100 text-green-800',
+                                'Rechazado' => 'bg-red-100 text-red-800',
+                                'Cancelado' => 'bg-gray-100 text-gray-800'
+                            ];
+                            $estadoColor = $estadoColors[$tramite->status] ?? 'bg-gray-100 text-gray-800';
+                            $estadoLabels = [
+                                'Pendiente' => 'Pendiente',
+                                'Revision_Digital' => 'Revisión Digital',
+                                'Revision_Presencial' => 'Revisión Presencial',
+                                'Revision_Domiciliaria' => 'Revisión Domiciliaria',
+                                'Para_Correccion' => 'Para Corrección',
+                                'Aprobado' => 'Aprobado',
+                                'Rechazado' => 'Rechazado',
+                                'Cancelado' => 'Cancelado'
+                            ];
+                            $estadoLabel = $estadoLabels[$tramite->status] ?? $tramite->status;
+                        @endphp
+                        <span class="px-1 sm:px-1.5 md:px-2 lg:px-2.5 py-0.5 sm:py-1 md:py-1.5 text-xs sm:text-sm md:text-base font-medium rounded-full {{ $estadoColor }} whitespace-nowrap">
+                            {{ $estadoLabel }}
                         </span>
                     </div>
                 </div>
@@ -285,9 +439,9 @@
                        class="flex-1 text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-[#9d2449] bg-[#9d2449]/5 border border-[#9d2449]/20 rounded-lg hover:bg-[#9d2449] hover:text-white transition-all duration-200 truncate shadow-sm">
                         <span class="flex items-center justify-center gap-1.5 sm:gap-2">
                             <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Revisar
+                            Iniciar
                         </span>
                     </a>
                 </div>

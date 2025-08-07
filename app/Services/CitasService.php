@@ -28,39 +28,73 @@ class CitasService
 
     public function agendarCitaRevisionDigital(int $tramiteId): array
     {
+        \Log::info('Iniciando agendamiento de cita para trámite', ['tramite_id' => $tramiteId]);
+        
         $tramite = Tramite::findOrFail($tramiteId);
         $revisores = $this->obtenerRevisoresPresenciales();
         
+        \Log::info('Revisores presenciales encontrados', [
+            'tramite_id' => $tramiteId,
+            'cantidad_revisores' => $revisores->count(),
+            'revisores' => $revisores->pluck('name', 'id')->toArray()
+        ]);
+        
         if ($revisores->isEmpty()) {
+            \Log::warning('No hay revisores presenciales disponibles', ['tramite_id' => $tramiteId]);
             return ['success' => false, 'message' => 'No hay revisores presenciales disponibles'];
         }
 
         $fechaHora = $this->buscarPrimerHorarioDisponible($revisores);
         
+        \Log::info('Horario encontrado', [
+            'tramite_id' => $tramiteId,
+            'fecha_hora' => $fechaHora ? $fechaHora['datetime'] : null,
+            'revisor_id' => $fechaHora ? $fechaHora['revisor_id'] : null
+        ]);
+        
         if (!$fechaHora) {
+            \Log::warning('No hay horarios disponibles', ['tramite_id' => $tramiteId]);
             return ['success' => false, 'message' => 'No hay horarios disponibles en los próximos 30 días'];
         }
 
-        $cita = Cita::create([
-            'tramite_id' => $tramiteId,
-            'tipo_cita' => 'Presencial',
-            'fecha_cita' => $fechaHora['datetime'],
-            'estado' => 'Asignada',
-            'asignado_a' => $fechaHora['revisor_id'],
-            'intento' => 1
-        ]);
+        try {
+            $cita = Cita::create([
+                'tramite_id' => $tramiteId,
+                'tipo_cita' => 'Presencial',
+                'fecha_cita' => $fechaHora['datetime'],
+                'estado' => 'Asignada',
+                'asignado_a' => $fechaHora['revisor_id'],
+                'intento' => 1
+            ]);
 
-        $tramite->update(['status' => TramiteStatus::REVISION_PRESENCIAL->value]);
+            \Log::info('Cita creada exitosamente', [
+                'tramite_id' => $tramiteId,
+                'cita_id' => $cita->id,
+                'fecha_cita' => $cita->fecha_cita,
+                'revisor_id' => $cita->asignado_a
+            ]);
 
-        $this->notificacionService->notificarCitaAgendada($cita);
+            // Mantener el estado en revisión digital, no cambiar a presencial
+            // $tramite->update(['status' => TramiteStatus::REVISION_PRESENCIAL->value]);
 
-        return [
-            'success' => true,
-            'cita' => $cita,
-            'revisor' => User::find($fechaHora['revisor_id']),
-            'fecha_formateada' => Carbon::parse($fechaHora['datetime'])->format('d/m/Y H:i'),
-            'message' => 'Cita agendada exitosamente'
-        ];
+            $this->notificacionService->notificarCitaAgendada($cita);
+
+            return [
+                'success' => true,
+                'cita' => $cita,
+                'revisor' => User::find($fechaHora['revisor_id']),
+                'fecha_formateada' => Carbon::parse($fechaHora['datetime'])->format('d/m/Y H:i'),
+                'message' => 'Cita agendada exitosamente'
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error al crear cita', [
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return ['success' => false, 'message' => 'Error al crear la cita: ' . $e->getMessage()];
+        }
     }
 
     public function reagendarCita(int $citaId): array

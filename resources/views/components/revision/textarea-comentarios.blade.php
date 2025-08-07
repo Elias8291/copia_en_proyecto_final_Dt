@@ -5,7 +5,8 @@
     'label' => true,
     'labelText' => 'Comentarios y observaciones',
     'required' => false,
-    'maxlength' => null
+    'maxlength' => null,
+    'soloLectura' => false
 ])
 
 @php
@@ -29,7 +30,8 @@
         rows="{{ $rows }}"
         @if($maxlength) maxlength="{{ $maxlength }}" @endif
         @if($required) required @endif
-        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 resize-none"
+        @if($soloLectura) readonly @endif
+        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 resize-none @if($soloLectura) bg-gray-50 cursor-not-allowed @endif"
     ></textarea>
     
     @if($maxlength)

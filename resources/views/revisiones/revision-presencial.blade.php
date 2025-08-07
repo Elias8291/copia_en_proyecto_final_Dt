@@ -195,31 +195,13 @@
                         ></textarea>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <button 
-                            type="submit" 
-                            name="decision" 
-                            value="aprobado"
-                            class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            <span>Aprobar Trámite</span>
-                        </button>
-                        
-                        <button 
-                            type="submit" 
-                            name="decision" 
-                            value="rechazado"
-                            class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
-                        >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            <span>Rechazar Trámite</span>
-                        </button>
-                    </div>
+                    <x-revision.botones-decision-final 
+                        :showAprobar="true"
+                        :showAgendarCita="false"
+                        :showCorrecciones="false"
+                        :showRechazar="true"
+                        layout="flex"
+                    />
                 </form>
             </div>
         </div>
@@ -293,4 +275,15 @@ document.getElementById('formRevisionPresencial').addEventListener('submit', fun
 window.scrollToTop = scrollToTop;
 window.evaluarDocumentosPresencial = evaluarDocumentosPresencial;
 </script>
+
+<!-- Modal de confirmación -->
+<x-modal-confirmacion 
+    id="modal-confirmacion-decision"
+    title="Confirmar Decisión"
+    message="¿Está seguro que desea realizar esta acción?"
+    confirmText="Confirmar"
+    cancelText="Cancelar"
+    confirmClass="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
+    cancelClass="bg-white border-gray-300 text-gray-700 hover:text-gray-500 focus:ring-emerald-500"
+/>
 @endsection 

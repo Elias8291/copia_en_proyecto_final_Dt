@@ -233,8 +233,14 @@
                 if (actividadesJson) {
                     actividadesJson.value = JSON.stringify(actividadesSeleccionadasArray);
                 }
-                if (esEditable) {
-                    verificarActividadesSeleccionadas();
+                
+                // Verificar actividades seleccionadas solo si es editable y existe el elemento de error
+                if (esEditable && errorActividadesVacias) {
+                    if (actividadesSeleccionadasArray.length === 0) {
+                        errorActividadesVacias.classList.remove('hidden');
+                    } else {
+                        errorActividadesVacias.classList.add('hidden');
+                    }
                 }
             }
             
@@ -247,16 +253,6 @@
                     });
                     actualizarActividadesSeleccionadas();
                 };
-
-                function verificarActividadesSeleccionadas() {
-                    if (errorActividadesVacias) {
-                        if (actividadesSeleccionadasArray.length === 0) {
-                            errorActividadesVacias.classList.remove('hidden');
-                        } else {
-                            errorActividadesVacias.classList.add('hidden');
-                        }
-                    }
-                }
             }
         });
         </script>

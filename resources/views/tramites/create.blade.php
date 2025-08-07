@@ -21,6 +21,16 @@
         border-color: #ef4444 !important;
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
     }
+    
+    .debug-info {
+        background-color: #f3f4f6;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        font-family: monospace;
+        font-size: 0.875rem;
+    }
 </style>
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
@@ -62,8 +72,33 @@
                 </div>
             @endif
 
+            @if ($errors->any())
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <h3 class="text-red-800 font-semibold mb-2">Errores de validación:</h3>
+                    <ul class="text-red-700 text-sm space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>• {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <!-- Información de debug (solo en desarrollo) -->
+            @if(config('app.debug'))
+                <div class="debug-info">
+                    <strong>Debug Info:</strong><br>
+                    Tipo de persona: {{ $tipoPersona }}<br>
+                    Tipo de trámite: {{ session('tipo_tramite_seleccionado') }}<br>
+                    RFC: {{ $viewModel->getDatosGenerales()['rfc'] ?? 'N/A' }}<br>
+                    Errores de validación: {{ $errors->count() }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" class="space-y-8" id="tramite-form">
                 @csrf
+                
+                <!-- Campo oculto para tipo de trámite -->
+                <input type="hidden" name="tipo_tramite" value="{{ session('tipo_tramite_seleccionado') }}">
                 
                 <!-- Datos Generales -->
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="0" id="section-0">
@@ -170,19 +205,20 @@ function navigateSection(direction) {
 window.navigateSection = navigateSection;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar datos de la constancia si están disponibles
+    // Cargar datos de la constancia solo si no hay valores old() (errores de validación)
     @if(isset($viewModel))
         const razonSocial = document.getElementById('razon_social');
         const rfc = document.getElementById('rfc');
         const curp = document.getElementById('curp');
         
-        if (razonSocial) {
+        // Solo cargar datos de constancia si no hay valores old() (errores de validación)
+        if (razonSocial && !razonSocial.value) {
             razonSocial.value = '{{ $viewModel->getDatosGenerales()["razon_social"] ?? "" }}';
         }
-        if (rfc) {
+        if (rfc && !rfc.value) {
             rfc.value = '{{ $viewModel->getDatosGenerales()["rfc"] ?? "" }}';
         }
-        if (curp) {
+        if (curp && !curp.value) {
             curp.value = '{{ $viewModel->getDatosGenerales()["curp"] ?? "" }}';
         }
         
@@ -198,25 +234,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const municipio = document.getElementById('municipio');
         const estado = document.getElementById('estado');
         
-        if (calle) {
+        // Solo cargar datos de constancia si no hay valores old() (errores de validación)
+        if (calle && !calle.value) {
             calle.value = '{{ $datosDomicilio["calle"] ?? "" }}';
         }
-        if (numeroExterior) {
+        if (numeroExterior && !numeroExterior.value) {
             numeroExterior.value = '{{ $datosDomicilio["numero_exterior"] ?? "" }}';
         }
-        if (numeroInterior) {
+        if (numeroInterior && !numeroInterior.value) {
             numeroInterior.value = '{{ $datosDomicilio["numero_interior"] ?? "" }}';
         }
-        if (colonia) {
+        if (colonia && !colonia.value) {
             colonia.value = '{{ $datosDomicilio["asentamiento"] ?? "" }}';
         }
-        if (codigoPostal) {
+        if (codigoPostal && !codigoPostal.value) {
             codigoPostal.value = '{{ $datosDomicilio["codigo_postal"] ?? "" }}';
         }
-        if (municipio) {
+        if (municipio && !municipio.value) {
             municipio.value = '{{ $datosDomicilio["municipio"] ?? "" }}';
         }
-        if (estado) {
+        if (estado && !estado.value) {
             estado.value = '{{ $datosDomicilio["estado"] ?? "" }}';
         }
     @endif
@@ -231,8 +268,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnEnviar.disabled = true;
                 btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
             }
+            
+            // Debug: mostrar datos del formulario
+            if ({{ config('app.debug') ? 'true' : 'false' }}) {
+                console.log('Enviando formulario...');
+                const formData = new FormData(tramiteForm);
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ': ' + value);
+                }
+            }
         });
     }
+    
+    // Mostrar errores de validación en campos específicos
+    @if($errors->any())
+        @foreach($errors->keys() as $field)
+            const field = document.querySelector('[name="{{ $field }}"]');
+            if (field) {
+                field.classList.add('field-error');
+            }
+        @endforeach
+    @endif
 });
 </script>
 @endsection 

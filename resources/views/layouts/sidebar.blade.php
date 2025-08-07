@@ -65,28 +65,195 @@
                         <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Citas</span>
                     </a>
 
+                    <!-- Archivos -->
+                    <a href="{{ route('archivos.index') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
+                        {{ request()->routeIs('archivos.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
+                        <svg class="{{ request()->routeIs('archivos.*') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-transform duration-200 group-hover/item:scale-110" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Archivos</span>
+                    </a>
+
                   
 
-              <!-- Notificaciones -->
-<a href="{{ route('notificaciones.index') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
-    {{ request()->routeIs('notificaciones.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
-    <div class="relative">
-        <!-- Ícono de campana (Heroicons Bell Outline) -->
-        <svg class="{{ request()->routeIs('notificaciones.*') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-all duration-200 group-hover/item:scale-110"
-             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
-        </svg>
-
-        <!-- Badge de notificaciones no leídas -->
-        <span id="notification-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold hidden">
-            0
+              <!-- Notificaciones con Dropdown -->
+<div class="relative" x-data="{ 
+    open: false, 
+    notificaciones: [], 
+    count: 0,
+    loading: false,
+    async loadNotifications() {
+        this.loading = true;
+        try {
+            const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
+            const data = await response.json();
+            this.notificaciones = data.notificaciones;
+            this.count = data.conteo_no_leidas;
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+        } finally {
+            this.loading = false;
+        }
+    },
+    async markAsReadAndOpen() {
+        if (!this.open) {
+            await this.loadNotifications();
+            const unreadNotifications = this.notificaciones.filter(n => !n.leida);
+            if (unreadNotifications.length > 0) {
+                try {
+                    const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                        }
+                    });
+                    const result = await response.json();
+                    this.count = result.conteo_restante;
+                    this.notificaciones.forEach(notif => {
+                        if (!notif.leida) notif.leida = true;
+                    });
+                } catch (error) {
+                    console.error('Error marking notifications as read:', error);
+                }
+            }
+        }
+        this.open = !this.open;
+    }
+}">
+    <!-- Botón principal de notificaciones (va a la página) -->
+    <a href="{{ route('notificaciones.index') }}" 
+       class="group/item flex items-center w-full min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
+       {{ request()->routeIs('notificaciones.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
+        <div class="relative">
+            <svg class="{{ request()->routeIs('notificaciones.*') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-all duration-200 group-hover/item:scale-110"
+                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+            </svg>
+            <!-- Badge de notificaciones no leídas -->
+            <span x-show="count > 0" x-text="count > 99 ? '99+' : count" 
+                  class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+            </span>
+        </div>
+        <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+            Notificaciones
         </span>
+    </a>
+
+    <!-- Botón para abrir dropdown (pequeño, solo visible al hacer hover) -->
+    <button @click="markAsReadAndOpen()" 
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-all duration-200"
+            title="Ver notificaciones recientes">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+    </button>
+
+    <!-- Dropdown de notificaciones -->
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95"
+         @click.away="open = false"
+         class="absolute left-full top-0 ml-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
+        
+        <!-- Header del dropdown -->
+        <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-gray-900">Notificaciones Recientes</h3>
+                <a href="{{ route('notificaciones.index') }}" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                    Ver todas
+                </a>
+            </div>
+        </div>
+
+        <!-- Contenido del dropdown -->
+        <div class="max-h-80 overflow-y-auto">
+            <!-- Loading state -->
+            <div x-show="loading" class="p-4 text-center">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+                <p class="text-sm text-gray-500 mt-2">Cargando notificaciones...</p>
+            </div>
+
+            <!-- Lista de notificaciones -->
+            <template x-if="!loading && notificaciones.length > 0">
+                <div>
+                    <template x-for="notificacion in notificaciones" :key="notificacion.id">
+                        <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150">
+                            <div class="flex items-start space-x-3">
+                                <!-- Icono según tipo -->
+                                <div class="flex-shrink-0 mt-1">
+                                    <template x-if="notificacion.tipo === 'Tramite'">
+                                        <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </template>
+                                    <template x-if="notificacion.tipo === 'Cita'">
+                                        <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                                        </svg>
+                                    </template>
+                                    <template x-if="notificacion.tipo === 'exito'">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </template>
+                                    <template x-if="notificacion.tipo === 'error'">
+                                        <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </template>
+                                    <template x-if="notificacion.tipo === 'advertencia'">
+                                        <svg class="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                        </svg>
+                                    </template>
+                                    <template x-if="notificacion.tipo === 'informativo'">
+                                        <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </template>
+                                </div>
+
+                                <!-- Contenido de la notificación -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-sm font-medium text-gray-900" x-text="notificacion.titulo"></p>
+                                        <div class="flex items-center space-x-2">
+                                            <!-- Indicador de no leída -->
+                                            <div x-show="!notificacion.leida" class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                            <!-- Fecha -->
+                                            <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada"></span>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2" x-text="notificacion.mensaje"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Estado vacío -->
+            <template x-if="!loading && notificaciones.length === 0">
+                <div class="p-4 text-center">
+                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+                    </svg>
+                    <p class="text-sm text-gray-500">No hay notificaciones recientes</p>
+                </div>
+            </template>
+        </div>
     </div>
-    <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-        Notificaciones
-    </span>
-</a>
+</div>
 
 
                     <!-- Mi Perfil -->
@@ -120,3 +287,27 @@
         </div>
     </div>
 </div> 
+
+<!-- Script para actualizar automáticamente el contador de notificaciones -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar contador de notificaciones cada 30 segundos
+    setInterval(async function() {
+        try {
+            // Obtener conteo actualizado de notificaciones no leídas
+            const response = await fetch('{{ route('notificaciones.conteo-no-leidas') }}');
+            const data = await response.json();
+            const unreadCount = data.count;
+            
+            // Actualizar el contador en el sidebar usando Alpine.js
+            document.querySelectorAll('[x-data]').forEach(element => {
+                if (element._x_dataStack && element._x_dataStack[0] && typeof element._x_dataStack[0].count !== 'undefined') {
+                    element._x_dataStack[0].count = unreadCount;
+                }
+            });
+        } catch (error) {
+            console.error('Error updating notification count:', error);
+        }
+    }, 30000); // 30 segundos
+});
+</script> 

@@ -157,12 +157,7 @@
                                             </div>
                                             <p class="text-xs text-gray-600 line-clamp-1 mt-0.5" x-text="notificacion.mensaje"></p>
                                             <div class="flex items-center mt-1 space-x-2">
-                                                <span class="text-xs text-gray-500" x-text="new Date(notificacion.created_at).toLocaleDateString('es-ES', { 
-                                                    month: 'short', 
-                                                    day: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })"></span>
+                                                <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada"></span>
                                                 <span x-show="notificacion.leida" class="text-xs text-gray-400">• Leída</span>
                                             </div>
                                         </div>
@@ -350,13 +345,7 @@
                                                         </div>
                                                         <p class="text-xs text-gray-600 line-clamp-2 mt-1" x-text="notificacion.mensaje"></p>
                                                         <div class="flex items-center mt-2 space-x-2">
-                                                            <span class="text-xs text-gray-500" x-text="new Date(notificacion.created_at).toLocaleDateString('es-ES', { 
-                                                                year: 'numeric', 
-                                                                month: 'short', 
-                                                                day: 'numeric',
-                                                                hour: '2-digit',
-                                                                minute: '2-digit'
-                                                            })"></span>
+                                                            <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada"></span>
                                                             <span x-show="notificacion.leida" class="text-xs text-gray-400">• Leída</span>
                                                         </div>
                                                     </div>
