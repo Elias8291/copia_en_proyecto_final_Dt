@@ -71,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/update', [ProfileController::class, 'update'])->name('update');
     });
 
+    // Mi Estado
+    Route::get('/mi-estado', [\App\Http\Controllers\MiEstadoController::class, 'index'])->name('mi-estado');
+
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/create', [UserController::class, 'create'])->name('create');
