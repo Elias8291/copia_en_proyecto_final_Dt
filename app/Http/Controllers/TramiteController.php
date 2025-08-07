@@ -500,13 +500,13 @@ class TramiteController extends Controller
             Log::info('TramiteController: Cargando relaciones adicionales');
             $tramite->load([
                 'datosGenerales', 
-                'apoderadosLegales', 
+                'apoderadosLegales.instrumentoNotarial.estado', 
                 'accionistas', 
                 'contactos', 
                 'actividades', 
-                'direcciones', 
+                'direcciones.coordenada', 
                 'archivos.catalogoArchivo',
-                'datosConstitutivos'
+                'datosConstitutivos.instrumentoNotarial.estado'
             ]);
             
             // Preparar los datos para la vista de edición
@@ -553,12 +553,61 @@ class TramiteController extends Controller
             
             // Agregar datos específicos para persona moral
             if ($tramite->proveedor->tipo_persona === 'Moral') {
-                $formData['constitucion'] = $tramite->datosConstitutivos->first() ? $tramite->datosConstitutivos->first()->toArray() : [];
+                // Preparar datos de constitución con instrumento notarial
+                $datosConstitutivos = $tramite->datosConstitutivos->first();
+                $constitucionData = [];
+                
+                if ($datosConstitutivos) {
+                    $constitucionData = $datosConstitutivos->toArray();
+                    
+                    // Agregar datos del instrumento notarial si existe
+                    if ($datosConstitutivos->instrumentoNotarial) {
+                        $instrumentoNotarial = $datosConstitutivos->instrumentoNotarial;
+                        $constitucionData = array_merge($constitucionData, [
+                            'numero_escritura' => $instrumentoNotarial->numero_escritura ?? '',
+                            'numero_escritura_constitutiva' => $instrumentoNotarial->numero_escritura_constitutiva ?? '',
+                            'fecha_constitucion' => $instrumentoNotarial->fecha_constitucion ?? '',
+                            'nombre_notario' => $instrumentoNotarial->nombre_notario ?? '',
+                            'numero_notario' => $instrumentoNotarial->numero_notario ?? '',
+                            'estado_id' => $instrumentoNotarial->estado_id ?? '',
+                            'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
+                            'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
+                            'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
+                        ]);
+                    }
+                }
+                
+                $formData['constitucion'] = $constitucionData;
                 $formData['accionistas'] = $tramite->accionistas->toArray();
-                $formData['apoderado'] = $tramite->apoderadosLegales->first() ? $tramite->apoderadosLegales->first()->toArray() : [];
+                
+                // Preparar datos del apoderado con instrumento notarial
+                $apoderado = $tramite->apoderadosLegales->first();
+                $apoderadoData = [];
+                
+                if ($apoderado) {
+                    $apoderadoData = $apoderado->toArray();
+                    
+                    // Agregar datos del instrumento notarial si existe
+                    if ($apoderado->instrumentoNotarial) {
+                        $instrumentoNotarial = $apoderado->instrumentoNotarial;
+                        $apoderadoData = array_merge($apoderadoData, [
+                            'numero_escritura' => $instrumentoNotarial->numero_escritura ?? '',
+                            'numero_escritura_poder' => $instrumentoNotarial->numero_escritura_constitutiva ?? '',
+                            'fecha_poder' => $instrumentoNotarial->fecha_constitucion ?? '',
+                            'nombre_notario_poder' => $instrumentoNotarial->nombre_notario ?? '',
+                            'numero_notario_poder' => $instrumentoNotarial->numero_notario ?? '',
+                            'estado_id' => $instrumentoNotarial->estado_id ?? '',
+                            'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
+                            'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
+                            'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
+                        ]);
+                    }
+                }
+                
+                $formData['apoderado'] = $apoderadoData;
             }
             
-                                $viewModel = new FormDataViewModel($formData);
+            $viewModel = new FormDataViewModel($formData);
                     
                     // Cargar estados de las secciones para determinar cuáles son editables
                     $estadosSecciones = [];
@@ -594,8 +643,17 @@ class TramiteController extends Controller
                         'tramite_id' => $tramite->id,
                         'tipo_persona' => $tipoPersona,
                         'archivos_requeridos_count' => $archivosRequeridos->count(),
-                        'estados_secciones' => $estadosSecciones
+                        'estados_secciones' => $estadosSecciones,
+                        'datos_constitutivos_existe' => $tramite->datosConstitutivos->count() > 0,
+                        'apoderados_existe' => $tramite->apoderadosLegales->count() > 0,
+                        'accionistas_count' => $tramite->accionistas->count(),
+                        'form_data_keys' => array_keys($formData),
+                        'constitucion_data' => $formData['constitucion'] ?? 'no_data',
+                        'apoderado_data' => $formData['apoderado'] ?? 'no_data'
                     ]);
+                    
+                    // Preparar archivos para el componente de evaluación usando el método reutilizable
+                    $archivosSubidos = $this->prepararArchivosParaCotejo($tramite->archivos);
                     
                     return view('tramites.edit', compact(
                         'tramite', 
@@ -610,7 +668,8 @@ class TramiteController extends Controller
                         'paises',
                         'estadosSecciones',
                         'estadosArchivos',
-                        'comentariosArchivos'
+                        'comentariosArchivos',
+                        'archivosSubidos'
                     ));
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -634,6 +693,28 @@ class TramiteController extends Controller
             return redirect()->route('tramites.index')
                 ->with('error', 'Error al cargar el formulario de edición: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Prepara los datos de archivos para el cotejo, incluyendo el nombre del catálogo
+     * Método reutilizable para preparar archivos
+     */
+    protected function prepararArchivosParaCotejo($archivos): array
+    {
+        return $archivos->map(function($archivo) {
+            return [
+                'id' => $archivo->id,
+                'nombre_original' => $archivo->nombre_original,
+                'nombre_catalogo' => $archivo->catalogoArchivo ? $archivo->catalogoArchivo->nombre : null,
+                'extension' => $archivo->extension,
+                'tamaño' => $archivo->tamaño,
+                'status' => $archivo->status,
+                'comentario_revision' => $archivo->comentario_revision,
+                'fecha_revision' => $archivo->fecha_revision,
+                'revisor' => $archivo->revisor ? $archivo->revisor->name : null,
+                'catalogo_archivo_id' => $archivo->catalogo_archivo_id
+            ];
+        })->toArray();
     }
 
     /**

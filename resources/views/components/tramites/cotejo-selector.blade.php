@@ -19,7 +19,6 @@
     </select>
 </div>
 
-<!-- Visor de PDF integrado -->
 <div id="archivo_viewer_{{ $seccion }}" class="hidden mb-4">
     <div class="border border-gray-300 rounded-lg overflow-hidden bg-white">
         <div class="flex items-center justify-between p-2 bg-gray-50 border-b">
@@ -32,57 +31,13 @@
         </div>
         <iframe 
             id="pdf_viewer_{{ $seccion }}" 
-            class="w-full h-96" 
-            frameborder="0"
-            style="min-height: 400px;">
+            class="w-full h-auto aspect-[4/3] min-h-[500px] max-h-[80vh]" 
+            frameborder="0">
         </iframe>
     </div>
 </div>
 
-<div class="space-y-3">
-    <div>
-        <label class="block text-sm font-medium text-gray-600 mb-1">Estado de Verificación</label>
-        <div class="flex space-x-4">
-            <label class="inline-flex items-center">
-                <input type="radio" name="estado_{{ $seccion }}" value="conforme" class="form-radio text-green-600" onchange="toggleObservaciones('{{ $seccion }}', false)">
-                <span class="ml-2 text-sm text-green-700">✓ Conforme</span>
-            </label>
-            <label class="inline-flex items-center">
-                <input type="radio" name="estado_{{ $seccion }}" value="no_conforme" class="form-radio text-red-600" onchange="toggleObservaciones('{{ $seccion }}', true)">
-                <span class="ml-2 text-sm text-red-700">✗ No Conforme</span>
-            </label>
-        </div>
-    </div>
-    
-    <div id="observaciones_container_{{ $seccion }}" class="hidden">
-        <label for="observaciones_{{ $seccion }}" class="block text-sm font-medium text-gray-600 mb-1">
-            Observaciones <span class="text-red-500">*</span>
-        </label>
-        <textarea 
-            id="observaciones_{{ $seccion }}" 
-            name="observaciones_{{ $seccion }}" 
-            rows="3" 
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
-            placeholder="Especifica las observaciones del documento no conforme..."
-        ></textarea>
-    </div>
-</div>
-
 <script>
-function toggleObservaciones(seccion, mostrar) {
-    const container = document.getElementById(`observaciones_container_${seccion}`);
-    const textarea = document.getElementById(`observaciones_${seccion}`);
-    
-    if (mostrar) {
-        container.classList.remove('hidden');
-        textarea.setAttribute('required', 'required');
-    } else {
-        container.classList.add('hidden');
-        textarea.removeAttribute('required');
-        textarea.value = ''; // Limpiar observaciones si se cambia a conforme
-    }
-}
-
 function mostrarArchivo(seccion, selectElement) {
     const viewer = document.getElementById(`archivo_viewer_${seccion}`);
     const archivoInfo = document.getElementById(`archivo_info_${seccion}`);
@@ -95,8 +50,8 @@ function mostrarArchivo(seccion, selectElement) {
         
         archivoInfo.innerHTML = `${nombreOriginal}`;
         
-        // Cargar el PDF en el iframe usando la ruta segura
-        pdfViewer.src = `/revisiones/archivo/${selectElement.value}`;
+        const baseUrl = '{{ route("revisiones.mostrar-archivo", ":id") }}';
+        pdfViewer.src = baseUrl.replace(':id', selectElement.value);
         
         viewer.classList.remove('hidden');
     } else {

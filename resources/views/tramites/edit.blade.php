@@ -158,7 +158,6 @@
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
                         @include('components.forms.datos-generales', [
                             'editable' => $esEditable, 
-                            'datos' => $viewModel->getDatosGenerales(),
                             'datosConstancia' => $viewModel
                         ])
                     </div>
@@ -192,9 +191,7 @@
                     </div>
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
                         @include('components.forms.actividades-economicas', [
-                            'editable' => $esEditable,
-                            'datos' => $viewModel->getActividades(),
-                            'actividadesSeleccionadas' => $viewModel
+                            'editable' => $esEditable
                         ])
                     </div>
                     
@@ -230,7 +227,6 @@
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
                         @include('components.forms.domicilio', [
                             'editable' => $esEditable, 
-                            'datos' => $viewModel->getDatosDomicilioForm(),
                             'datosConstancia' => $viewModel
                         ])
                     </div>
@@ -266,11 +262,10 @@
                             </span>
                         </div>
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
-                            @include('components.forms.constitucion', [
-                                'editable' => $esEditable,
-                                'datos' => $viewModel->getConstitucion(),
-                                'datosConstitucion' => $viewModel
-                            ])
+                                                    @include('components.forms.constitucion', [
+                            'editable' => $esEditable,
+                            'datosConstitucion' => $viewModel
+                        ])
                         </div>
                         
                         <!-- Comentarios del Revisor -->
@@ -301,11 +296,10 @@
                             </span>
                         </div>
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
-                            @include('components.forms.accionistas', [
-                                'editable' => $esEditable,
-                                'datos' => $viewModel->getAccionistas(),
-                                'accionistas' => $viewModel
-                            ])
+                                                    @include('components.forms.accionistas', [
+                            'editable' => $esEditable,
+                            'accionistas' => $viewModel
+                        ])
                         </div>
                         
                         <!-- Comentarios del Revisor -->
@@ -336,11 +330,10 @@
                             </span>
                         </div>
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
-                            @include('components.forms.apoderado', [
-                                'editable' => $esEditable,
-                                'datos' => $viewModel->getApoderado(),
-                                'datosApoderado' => $viewModel
-                            ])
+                                                    @include('components.forms.apoderado', [
+                            'editable' => $esEditable,
+                            'datosApoderado' => $viewModel
+                        ])
                         </div>
                         
                         <!-- Comentarios del Revisor -->
@@ -379,14 +372,11 @@
                     </div>
                     
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                        @include('components.forms.archivos-correccion', [
-                            'editable' => true, 
-                            'archivosRequeridos' => $archivosRequeridos,
-                            'tipoPersona' => $tramite->proveedor->tipo_persona,
-                            'archivosCargados' => $viewModel->getArchivosForm(),
-                            'estadosArchivos' => $estadosArchivos,
-                            'comentariosArchivos' => $comentariosArchivos ?? []
-                        ])
+                        <x-revision.evaluacion-archivos 
+                            :archivosSubidos="$archivosSubidos"
+                            seccion="archivos_correccion"
+                            :modoCorreccion="true"
+                        />
                     </div>
                     
                     <!-- Comentarios del Revisor -->

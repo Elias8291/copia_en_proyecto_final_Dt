@@ -91,12 +91,15 @@
                         </div>
                         
                         <!-- Botón de carga -->
-                        <label class="cursor-pointer group">
+                        <label class="cursor-pointer group archivo-container">
                             <input type="file"
                                 name="documentos[{{ Str::slug($archivo->nombre) }}]"
+                                data-archivo-id="{{ $archivo->id }}"
+                                data-catalogo-id="{{ $archivo->id }}"
                                 accept=".{{ $archivo->tipo_archivo }}"
                                 class="hidden {{ $errors->has('documentos.' . Str::slug($archivo->nombre)) ? 'border-red-500' : '' }}"
-                                onchange="updateFileName(this, '{{ Str::slug($archivo->nombre) }}-name')">
+                                onchange="updateFileName(this, '{{ Str::slug($archivo->nombre) }}-name')"
+                                required>
                             <span class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-gray-800 text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -330,6 +333,11 @@ function updateFileName(input, elementId) {
 document.addEventListener('DOMContentLoaded', function() {
     if (window.actualizarEstadoArchivos) {
         window.actualizarEstadoArchivos();
+    }
+    
+    // Inicializar sistema de archivos en tiempo real
+    if (window.ArchivosController) {
+        window.archivosController = new ArchivosController();
     }
     
     // Agregar validación al envío del formulario

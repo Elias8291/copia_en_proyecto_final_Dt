@@ -38,9 +38,22 @@ class ActividadesService
     /**
      * Obtiene las actividades de un trámite
      */
-    public function obtener(Tramite $tramite): Collection
+    public function obtener(Tramite $tramite): array
     {
-        return $tramite->actividades()->with('actividad')->get();
+        $actividades = $tramite->actividades()->with('actividad')->get();
+        
+        $resultado = [];
+        foreach ($actividades as $actividadProveedor) {
+            if ($actividadProveedor->actividad) {
+                $resultado[] = [
+                    'id' => $actividadProveedor->actividad->id,
+                    'nombre' => $actividadProveedor->actividad->nombre,
+                    'codigo' => $actividadProveedor->actividad->codigo,
+                ];
+            }
+        }
+        
+        return $resultado;
     }
 
     /**

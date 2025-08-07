@@ -132,11 +132,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{tramite}/seleccionar-tipo', [RevisionController::class, 'seleccionarTipoRevision'])->name('seleccionar-tipo');
         Route::post('/{tramite}/iniciar', [RevisionController::class, 'iniciarRevision'])->name('iniciar');
         Route::get('/{tramite}/revisar', [RevisionController::class, 'revisarTramite'])->name('revisar');
-        Route::post('/{tramite}/finalizar', [RevisionController::class, 'finalizarRevision'])->name('finalizar');
-        
-        // Nuevas rutas para procesamiento estructurado
-        Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
-        Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
         
         // Rutas para gestión de citas
         Route::post('/{tramite}/agendar-cita', [RevisionController::class, 'agendarCita'])->name('agendar-cita');
@@ -144,9 +139,14 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/horarios-disponibles', [RevisionController::class, 'obtenerHorariosDisponibles'])->name('horarios-disponibles');
         
         Route::get('/{tramite}/ver-historico', [RevisionController::class, 'verTramiteHistorico'])->name('ver-historico');
-        Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo');
+        Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo')->where('id', '[0-9]+');
         
-        // Ruta para limpiar sesiones de éxito
+        // Rutas para evaluación de secciones
+        Route::get('/{tramite}/seccion/estado', [RevisionController::class, 'obtenerEstadoSeccion'])->name('seccion.estado');
+        Route::post('/{tramite}/seccion/evaluar', [RevisionController::class, 'evaluarSeccion'])->name('seccion.evaluar');
+        Route::get('/{tramite}/estado-general', [RevisionController::class, 'obtenerEstadoGeneral'])->name('estado.general');
+        
+        // Ruta para limpiar sesiones
         Route::post('/limpiar-sesiones', [RevisionController::class, 'limpiarSesiones'])->name('limpiar-sesiones');
     });
 
@@ -188,6 +188,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{archivo}', [ArchivoController::class, 'update'])->name('update');
         Route::delete('/{archivo}', [ArchivoController::class, 'destroy'])->name('destroy');
         Route::get('/{archivo}/download', [ArchivoController::class, 'download'])->name('download');
+        Route::patch('/{archivo}/status', [ArchivoController::class, 'updateStatus'])->name('update-status');
+        Route::get('/tramite/{tramite}', [ArchivoController::class, 'getArchivosFromTramite'])->name('by-tramite');
+        Route::post('/guardar-individual', [ArchivoController::class, 'guardarIndividual'])->name('guardar-individual');
     });
 
 });

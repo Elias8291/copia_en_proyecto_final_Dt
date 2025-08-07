@@ -224,8 +224,9 @@ function showFinalSubmitButton() {
                         Anterior
                     </button>
 
-                    <button type="button" id="btn-enviar-tramite" 
-                            class="flex items-center px-6 py-3 text-white bg-[#9d2449] rounded-lg hover:bg-[#8a1f40] transition-all duration-300 font-medium">
+                    <button type="button" id="btn-enviar-tramite-final" 
+                            class="flex items-center px-6 py-3 text-white bg-gray-400 rounded-lg transition-all duration-300 font-medium cursor-not-allowed"
+                            disabled>
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
@@ -235,9 +236,11 @@ function showFinalSubmitButton() {
             </div>
         `;
         
-        const btnEnviar = document.getElementById('btn-enviar-tramite');
+        const btnEnviar = document.getElementById('btn-enviar-tramite-final');
         if (btnEnviar) {
             btnEnviar.addEventListener('click', handleFormSubmit);
+            // Validar términos y condiciones al mostrar el botón
+            validarTerminosYCondicionesFinal();
         }
     } else {
         navigation.innerHTML = `
@@ -270,6 +273,28 @@ function showFinalSubmitButton() {
                 </div>
             </div>
         `;
+    }
+}
+
+/**
+ * Valida términos y condiciones para el botón final
+ */
+function validarTerminosYCondicionesFinal() {
+    const checkboxTerminos = document.getElementById('acepto_terminos');
+    const btnEnviar = document.getElementById('btn-enviar-tramite-final');
+    
+    if (checkboxTerminos && btnEnviar) {
+        if (checkboxTerminos.checked) {
+            // Habilitar botón
+            btnEnviar.disabled = false;
+            btnEnviar.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            btnEnviar.classList.add('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
+        } else {
+            // Deshabilitar botón
+            btnEnviar.disabled = true;
+            btnEnviar.classList.remove('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
+            btnEnviar.classList.add('bg-gray-400', 'cursor-not-allowed');
+        }
     }
 }
 

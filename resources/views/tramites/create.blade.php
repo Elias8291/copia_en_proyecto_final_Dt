@@ -71,7 +71,7 @@
                 <input type="hidden" name="tipo_tramite" value="{{ session('tipo_tramite_seleccionado') }}">
                 
                 @php
-                    $totalSteps = $tipoPersona === 'Moral' ? 7 : 4;
+                    $totalSteps = $tipoPersona === 'Moral' ? 8 : 5;
                     $steps = [
                         [
                             'title' => 'Datos Generales',
@@ -94,6 +94,7 @@
                     }
                     
                     $steps[] = ['title' => 'Documentos', 'description' => 'Archivos requeridos'];
+                    $steps[] = ['title' => 'Términos y Condiciones', 'description' => 'Confirmación final'];
                 @endphp
 
                 <!-- Componente de Steps -->
@@ -159,10 +160,48 @@
                                 'archivosRequeridos' => $archivosRequeridos,
                                 'tipoPersona' => $tipoPersona
                             ])
-                            
+                        </div>
+                    </div>
+
+                    <div class="step-content" data-step="7">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                             <!-- Sección de Términos y Condiciones -->
-                            <div class="mt-8">
-                                @include('components.forms.seccion-terminos', ['editable' => true])
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Términos y Condiciones</h3>
+                                <p class="text-gray-600 mb-4">Antes de enviar su trámite, por favor lea y acepte los siguientes términos y condiciones:</p>
+                                
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 max-h-64 overflow-y-auto">
+                                    <div class="text-sm text-gray-700 space-y-3">
+                                        <p><strong>1. Veracidad de la Información:</strong> Declaro bajo protesta de decir verdad que toda la información proporcionada en este trámite es veraz, completa y actualizada.</p>
+                                        
+                                        <p><strong>2. Documentación:</strong> Me comprometo a proporcionar toda la documentación requerida y a mantenerla actualizada durante el proceso de trámite.</p>
+                                        
+                                        <p><strong>3. Responsabilidad:</strong> Entiendo que soy responsable de la veracidad y completitud de toda la información proporcionada.</p>
+                                        
+                                        <p><strong>4. Confidencialidad:</strong> Autorizo el tratamiento de mis datos personales conforme a la Ley de Protección de Datos Personales.</p>
+                                        
+                                        <p><strong>5. Notificaciones:</strong> Acepto recibir notificaciones relacionadas con este trámite a través de los medios proporcionados.</p>
+                                        
+                                        <p><strong>6. Cumplimiento Normativo:</strong> Me comprometo a cumplir con todas las disposiciones legales y reglamentarias aplicables.</p>
+                                        
+                                        <p><strong>7. Revisión:</strong> Entiendo que el trámite será revisado y puedo ser contactado para aclaraciones o correcciones.</p>
+                                        
+                                        <p><strong>8. Finalización:</strong> El trámite se considerará completo una vez que toda la información y documentación sea validada.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3">
+                                    <input type="checkbox" id="acepto_terminos" name="acepto_terminos" value="1" 
+                                           class="mt-1 h-4 w-4 text-[#9d2449] border-gray-300 rounded focus:ring-[#9d2449] focus:ring-2"
+                                           {{ old('acepto_terminos') ? 'checked' : '' }}>
+                                    <label for="acepto_terminos" class="text-sm text-gray-700">
+                                        He leído y acepto los <a href="#" onclick="abrirModalTerminos()" class="text-[#9d2449] hover:underline">términos y condiciones</a> del trámite
+                                    </label>
+                                </div>
+                                
+                                @error('acepto_terminos')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -174,10 +213,48 @@
                                 'archivosRequeridos' => $archivosRequeridos,
                                 'tipoPersona' => $tipoPersona
                             ])
-                            
+                        </div>
+                    </div>
+
+                    <div class="step-content" data-step="4">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                             <!-- Sección de Términos y Condiciones -->
-                            <div class="mt-8">
-                                @include('components.forms.seccion-terminos', ['editable' => true])
+                            <div class="mb-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Términos y Condiciones</h3>
+                                <p class="text-gray-600 mb-4">Antes de enviar su trámite, por favor lea y acepte los siguientes términos y condiciones:</p>
+                                
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 max-h-64 overflow-y-auto">
+                                    <div class="text-sm text-gray-700 space-y-3">
+                                        <p><strong>1. Veracidad de la Información:</strong> Declaro bajo protesta de decir verdad que toda la información proporcionada en este trámite es veraz, completa y actualizada.</p>
+                                        
+                                        <p><strong>2. Documentación:</strong> Me comprometo a proporcionar toda la documentación requerida y a mantenerla actualizada durante el proceso de trámite.</p>
+                                        
+                                        <p><strong>3. Responsabilidad:</strong> Entiendo que soy responsable de la veracidad y completitud de toda la información proporcionada.</p>
+                                        
+                                        <p><strong>4. Confidencialidad:</strong> Autorizo el tratamiento de mis datos personales conforme a la Ley de Protección de Datos Personales.</p>
+                                        
+                                        <p><strong>5. Notificaciones:</strong> Acepto recibir notificaciones relacionadas con este trámite a través de los medios proporcionados.</p>
+                                        
+                                        <p><strong>6. Cumplimiento Normativo:</strong> Me comprometo a cumplir con todas las disposiciones legales y reglamentarias aplicables.</p>
+                                        
+                                        <p><strong>7. Revisión:</strong> Entiendo que el trámite será revisado y puedo ser contactado para aclaraciones o correcciones.</p>
+                                        
+                                        <p><strong>8. Finalización:</strong> El trámite se considerará completo una vez que toda la información y documentación sea validada.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-start space-x-3">
+                                    <input type="checkbox" id="acepto_terminos" name="acepto_terminos" value="1" 
+                                           class="mt-1 h-4 w-4 text-[#9d2449] border-gray-300 rounded focus:ring-[#9d2449] focus:ring-2"
+                                           {{ old('acepto_terminos') ? 'checked' : '' }}>
+                                    <label for="acepto_terminos" class="text-sm text-gray-700">
+                                        He leído y acepto los <a href="#" onclick="abrirModalTerminos()" class="text-[#9d2449] hover:underline">términos y condiciones</a> del trámite
+                                    </label>
+                                </div>
+                                
+                                @error('acepto_terminos')
+                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -299,5 +376,89 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Función para abrir el modal de términos
+function abrirModalTerminos() {
+    const modal = document.getElementById('modal-terminos-servicio');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+// Función global para validar términos y condiciones (usada por steps.blade.php)
+window.validarTerminosYCondicionesFinal = function() {
+    const checkboxTerminos = document.getElementById('acepto_terminos');
+    const btnEnviarFinal = document.getElementById('btn-enviar-tramite-final');
+    
+    if (checkboxTerminos && btnEnviarFinal) {
+        if (checkboxTerminos.checked) {
+            // Habilitar botón
+            btnEnviarFinal.disabled = false;
+            btnEnviarFinal.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            btnEnviarFinal.classList.add('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
+        } else {
+            // Deshabilitar botón
+            btnEnviarFinal.disabled = true;
+            btnEnviarFinal.classList.remove('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
+            btnEnviarFinal.classList.add('bg-gray-400', 'cursor-not-allowed');
+        }
+    }
+};
+
+// Función para validar términos y condiciones (para el botón dinámico)
+function validarTerminosYCondiciones() {
+    const checkboxTerminos = document.getElementById('acepto_terminos');
+    const btnEnviarFinal = document.getElementById('btn-enviar-tramite-final');
+    
+    if (checkboxTerminos && btnEnviarFinal) {
+        if (checkboxTerminos.checked) {
+            // Habilitar botón dinámico
+            btnEnviarFinal.disabled = false;
+            btnEnviarFinal.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            btnEnviarFinal.classList.add('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
+        } else {
+            // Deshabilitar botón dinámico
+            btnEnviarFinal.disabled = true;
+            btnEnviarFinal.classList.remove('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
+            btnEnviarFinal.classList.add('bg-gray-400', 'cursor-not-allowed');
+        }
+    }
+}
+
+// Agregar event listener para el checkbox de términos
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxTerminos = document.getElementById('acepto_terminos');
+    if (checkboxTerminos) {
+        checkboxTerminos.addEventListener('change', validarTerminosYCondiciones);
+        // Validar estado inicial
+        validarTerminosYCondiciones();
+    }
+    
+    // Observar cambios en el DOM para detectar cuando se agrega el botón dinámico
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                const btnEnviarFinal = document.getElementById('btn-enviar-tramite-final');
+                if (btnEnviarFinal) {
+                    validarTerminosYCondiciones();
+                }
+            }
+        });
+    });
+    
+    // Observar cambios en el contenedor de navegación
+    const navigationContainer = document.querySelector('[data-step-navigation]');
+    if (navigationContainer) {
+        observer.observe(navigationContainer, { childList: true, subtree: true });
+    }
+});
+
+// Script para archivos en tiempo real
+document.addEventListener('DOMContentLoaded', function() {
+    // Simular tramite ID (en creación será null, pero funciona para editar)
+    window.tramiteId = null; // Será null al crear, se asignará después del envío
+});
 </script>
+
+<script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 @endsection 

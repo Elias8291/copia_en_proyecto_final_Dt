@@ -2,6 +2,8 @@
 
 @section('title', 'Revisión Digital')
 
+<meta name="tramite-id" content="{{ $tramite->id }}">
+
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
@@ -44,7 +46,7 @@
         <div class="p-6">
             <!-- Información del trámite -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                     <div>
                         <span class="text-sm font-medium text-blue-800">Tipo de Trámite:</span>
                         <p class="text-blue-900">{{ $tramite->tipo_tramite }}</p>
@@ -60,6 +62,22 @@
                     <div>
                         <span class="text-sm font-medium text-blue-800">Tipo de Revisión:</span>
                         <p class="text-blue-900">{{ $tipoRevisionLabel }}</p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-800">Tipo de Persona:</span>
+                        <p class="text-blue-900 font-semibold">
+                            @if($viewModel->isPersonaMoral())
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded">Moral (7 secciones)</span>
+                            @else
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded">Física (4 secciones)</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div>
+                        <span class="text-sm font-medium text-blue-800">Estado de Revisión:</span>
+                        <p class="text-blue-900 font-semibold">
+                            <span id="estado-tramite-indicador" class="px-2 py-1 bg-gray-100 text-gray-800 rounded">Cargando...</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -197,30 +215,37 @@
                     </div>
                 </div>
                 
-                <!-- Área de Decisión por Sección -->
-                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="datos_generales">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-3">
-                            <h4 class="text-sm font-medium text-gray-700">Decisión - Datos Generales</h4>
-                            <span id="estado_datos_generales" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                Pendiente
-                            </span>
-                        </div>
-                        <span class="text-xs text-gray-500">Sección 1/6</span>
+                <!-- Área de comentarios -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                    <div class="mb-3">
+                        <h4 class="text-sm font-medium text-gray-700">Comentarios - Datos Generales</h4>
                     </div>
+                    <textarea 
+                        id="comentario_datos_generales"
+                        placeholder="Agregar observaciones sobre los datos generales..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                        rows="3"
+                    ></textarea>
+                </div>
                     
-                    <x-revision.textarea-comentarios 
-                        seccion="datos_generales"
-                        placeholder="Agregar observaciones específicas para datos generales..."
-                        label-text="Comentarios de esta sección:"
-                        :rows="2"
-                    />
-                    
-                    <x-revision.botones-evaluacion 
-                        seccion="datos_generales"
-                        titulo="Sección"
-                        style="compact"
-                    />
+                <!-- Botones de decisión -->
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" 
+                            onclick="evaluarSeccion('datos_generales', 'Rechazado')"
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Rechazar Sección
+                    </button>
+                    <button type="button" 
+                            onclick="evaluarSeccion('datos_generales', 'Aprobado')"
+                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Aprobar Sección
+                    </button>
                 </div>
             </div>
 
@@ -255,30 +280,37 @@
                     </div>
                 </div>
                 
-                <!-- Área de Decisión por Sección -->
-                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="actividades">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-3">
-                            <h4 class="text-sm font-medium text-gray-700">Decisión - Actividades Económicas</h4>
-                            <span id="estado_actividades" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                Pendiente
-                            </span>
-                        </div>
-                        <span class="text-xs text-gray-500">Sección 2/6</span>
+                <!-- Área de comentarios -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                    <div class="mb-3">
+                        <h4 class="text-sm font-medium text-gray-700">Comentarios - Actividades</h4>
                     </div>
+                    <textarea 
+                        id="comentario_actividades"
+                        placeholder="Agregar observaciones sobre las actividades económicas..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                        rows="3"
+                    ></textarea>
+                </div>
                     
-                    <x-revision.textarea-comentarios 
-                        seccion="actividades"
-                        placeholder="Agregar observaciones específicas para actividades económicas..."
-                        label-text="Comentarios de esta sección:"
-                        :rows="2"
-                    />
-                    
-                    <x-revision.botones-evaluacion 
-                        seccion="actividades"
-                        titulo="Sección"
-                        style="compact"
-                    />
+                <!-- Botones de decisión -->
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" 
+                            onclick="evaluarSeccion('actividades', 'Rechazado')"
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Rechazar Sección
+                    </button>
+                    <button type="button" 
+                            onclick="evaluarSeccion('actividades', 'Aprobado')"
+                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Aprobar Sección
+                    </button>
                 </div>
             </div>
 
@@ -313,34 +345,41 @@
                     </div>
                 </div>
                 
-                <!-- Área de Decisión por Sección -->
-                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="domicilio">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="flex items-center space-x-3">
-                            <h4 class="text-sm font-medium text-gray-700">Decisión - Domicilio</h4>
-                            <span id="estado_domicilio" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                Pendiente
-                            </span>
-                        </div>
-                        <span class="text-xs text-gray-500">Sección 3/6</span>
+                <!-- Área de comentarios -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                    <div class="mb-3">
+                        <h4 class="text-sm font-medium text-gray-700">Comentarios - Domicilio</h4>
                     </div>
+                    <textarea 
+                        id="comentario_domicilio"
+                        placeholder="Agregar observaciones sobre el domicilio..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                        rows="3"
+                    ></textarea>
+                </div>
                     
-                    <x-revision.textarea-comentarios 
-                        seccion="domicilio"
-                        placeholder="Agregar observaciones específicas para domicilio..."
-                        label-text="Comentarios de esta sección:"
-                        :rows="2"
-                    />
-                    
-                    <x-revision.botones-evaluacion 
-                        seccion="domicilio"
-                        titulo="Sección"
-                        style="compact"
-                    />
+                <!-- Botones de decisión -->
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" 
+                            onclick="evaluarSeccion('domicilio', 'Rechazado')"
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Rechazar Sección
+                    </button>
+                    <button type="button" 
+                            onclick="evaluarSeccion('domicilio', 'Aprobado')"
+                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Aprobar Sección
+                    </button>
                 </div>
             </div>
 
-                                    @if($viewModel->isPersonaMoral())
+            @if($viewModel->isPersonaMoral())
                 <x-ui.separador-simple margin="my-8" color="border-purple-300" />
 
                 <!-- Constitución -->
@@ -365,37 +404,44 @@
                         </div>
                         <div id="cotejo_constitucion" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                             <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Constitución</h3>
-                                                    @include('components.tramites.cotejo-selector', [
-                            'archivosSubidos' => $archivosSubidos,
-                            'seccion' => 'constitucion'
-                        ])
+                            @include('components.tramites.cotejo-selector', [
+                                'archivosSubidos' => $archivosSubidos,
+                                'seccion' => 'constitucion'
+                            ])
                         </div>
                     </div>
                     
-                    <!-- Área de Decisión por Sección -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="constitucion">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center space-x-3">
-                                <h4 class="text-sm font-medium text-gray-700">Decisión - Constitución</h4>
-                                <span id="estado_constitucion" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                    Pendiente
-                                </span>
-                            </div>
-                            <span class="text-xs text-gray-500">Sección 4/6</span>
+                    <!-- Área de comentarios -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                        <div class="mb-3">
+                            <h4 class="text-sm font-medium text-gray-700">Comentarios - Constitución</h4>
                         </div>
+                        <textarea 
+                            id="comentario_constitucion"
+                            placeholder="Agregar observaciones sobre la constitución..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                            rows="3"
+                        ></textarea>
+                    </div>
                         
-                        <x-revision.textarea-comentarios 
-                            seccion="constitucion"
-                            placeholder="Agregar observaciones específicas para constitución..."
-                            label-text="Comentarios de esta sección:"
-                            :rows="2"
-                        />
-                        
-                        <x-revision.botones-evaluacion 
-                            seccion="constitucion"
-                            titulo="Sección"
-                            style="compact"
-                        />
+                    <!-- Botones de decisión -->
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button type="button" 
+                                onclick="evaluarSeccion('constitucion', 'Rechazado')"
+                                class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Rechazar Sección
+                        </button>
+                        <button type="button" 
+                                onclick="evaluarSeccion('constitucion', 'Aprobado')"
+                                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Aprobar Sección
+                        </button>
                     </div>
                 </div>
 
@@ -423,37 +469,44 @@
                         </div>
                         <div id="cotejo_accionistas" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                             <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Accionistas</h3>
-                                                    @include('components.tramites.cotejo-selector', [
-                            'archivosSubidos' => $archivosSubidos,
-                            'seccion' => 'accionistas'
-                        ])
+                            @include('components.tramites.cotejo-selector', [
+                                'archivosSubidos' => $archivosSubidos,
+                                'seccion' => 'accionistas'
+                            ])
                         </div>
                     </div>
                     
-                    <!-- Área de Decisión por Sección -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="accionistas">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center space-x-3">
-                                <h4 class="text-sm font-medium text-gray-700">Decisión - Accionistas</h4>
-                                <span id="estado_accionistas" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                    Pendiente
-                                </span>
-                            </div>
-                            <span class="text-xs text-gray-500">Sección 5/6</span>
+                    <!-- Área de comentarios -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                        <div class="mb-3">
+                            <h4 class="text-sm font-medium text-gray-700">Comentarios - Accionistas</h4>
                         </div>
+                        <textarea 
+                            id="comentario_accionistas"
+                            placeholder="Agregar observaciones sobre los accionistas..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                            rows="3"
+                        ></textarea>
+                    </div>
                         
-                        <x-revision.textarea-comentarios 
-                            seccion="accionistas"
-                            placeholder="Agregar observaciones específicas para accionistas..."
-                            label-text="Comentarios de esta sección:"
-                            :rows="2"
-                        />
-                        
-                        <x-revision.botones-evaluacion 
-                            seccion="accionistas"
-                            titulo="Sección"
-                            style="compact"
-                        />
+                    <!-- Botones de decisión -->
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button type="button" 
+                                onclick="evaluarSeccion('accionistas', 'Rechazado')"
+                                class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Rechazar Sección
+                        </button>
+                        <button type="button" 
+                                onclick="evaluarSeccion('accionistas', 'Aprobado')"
+                                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Aprobar Sección
+                        </button>
                     </div>
                 </div>
 
@@ -481,207 +534,179 @@
                         </div>
                         <div id="cotejo_apoderado" class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[600px] hidden">
                             <h3 class="text-lg font-semibold text-gray-600 mb-4 border-b pb-2">Cotejo - Apoderado</h3>
-                                                    @include('components.tramites.cotejo-selector', [
-                            'archivosSubidos' => $archivosSubidos,
-                            'seccion' => 'apoderado'
-                        ])
+                            @include('components.tramites.cotejo-selector', [
+                                'archivosSubidos' => $archivosSubidos,
+                                'seccion' => 'apoderado'
+                            ])
                         </div>
                     </div>
                     
-                    <!-- Área de Decisión por Sección -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="apoderado">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center space-x-3">
-                                <h4 class="text-sm font-medium text-gray-700">Decisión - Apoderado Legal</h4>
-                                <span id="estado_apoderado" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                    Pendiente
-                                </span>
-                            </div>
-                            <span class="text-xs text-gray-500">Sección 6/6</span>
+                    <!-- Área de comentarios -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                        <div class="mb-3">
+                            <h4 class="text-sm font-medium text-gray-700">Comentarios - Apoderado</h4>
                         </div>
-                        
-                        <x-revision.textarea-comentarios 
-                            seccion="apoderado"
-                            placeholder="Agregar observaciones específicas para apoderado legal..."
-                            label-text="Comentarios de esta sección:"
-                            :rows="2"
-                        />
-                        
-                        <x-revision.botones-evaluacion 
-                            seccion="apoderado"
-                            titulo="Sección"
-                            style="compact"
-                        />
+                        <textarea 
+                            id="comentario_apoderado"
+                            placeholder="Agregar observaciones sobre el apoderado legal..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                            rows="3"
+                        ></textarea>
                     </div>
-                </div>
-
-                <x-ui.separador-simple margin="my-8" color="border-slate-400" />
-
-                <!-- Archivos -->
-                <div class="mb-6" data-section="archivos">
-                    <div class="mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Archivos</h2>
-                    </div>
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
-                        @include('components.forms.archivos-dinamicos', [
-                            'editable' => false, 
-                            'archivosRequeridos' => [],
-                            'tipoPersona' => 'Moral',
-                            'archivosCargados' => $archivos
-                        ])
-                    </div>
-                    
-                    <!-- Área de Decisión por Sección -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="archivos">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center space-x-3">
-                                <h4 class="text-sm font-medium text-gray-700">Decisión - Archivos</h4>
-                                <span id="estado_archivos" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                    Pendiente
-                                </span>
-                            </div>
-                            <span class="text-xs text-gray-500">Sección Final</span>
-                        </div>
                         
-                        <x-revision.textarea-comentarios 
-                            seccion="archivos"
-                            placeholder="Agregar observaciones específicas para archivos..."
-                            label-text="Comentarios de esta sección:"
-                            :rows="2"
-                        />
-                        
-                        <x-revision.botones-evaluacion 
-                            seccion="archivos"
-                            titulo="Sección"
-                            style="compact"
-                        />
-                    </div>
-                </div>
-            @else
-                <x-ui.separador-simple margin="my-8" color="border-slate-400" />
-
-                <!-- Archivos -->
-                <div class="mb-6" data-section="archivos">
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 min-h-[600px]">
-                        @include('components.forms.archivos-dinamicos', [
-                            'editable' => false, 
-                            'archivosRequeridos' => [],
-                            'tipoPersona' => 'Física',
-                            'archivosCargados' => $archivos
-                        ])
-                    </div>
-                    
-                    <!-- Área de Decisión por Sección -->
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4" data-seccion="archivos">
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="flex items-center space-x-3">
-                                <h4 class="text-sm font-medium text-gray-700">Decisión - Archivos</h4>
-                                                            <span id="estado_archivos" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                Pendiente
-                            </span>
-                            </div>
-                            <span class="text-xs text-gray-500">Sección Final</span>
-                        </div>
-                        
-                        <x-revision.textarea-comentarios 
-                            seccion="archivos"
-                            placeholder="Agregar observaciones específicas para archivos..."
-                            label-text="Comentarios de esta sección:"
-                            :rows="2"
-                        />
-                        
-                        <x-revision.botones-evaluacion 
-                            seccion="archivos"
-                            titulo="Sección"
-                            style="compact"
-                        />
+                    <!-- Botones de decisión -->
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button type="button" 
+                                onclick="evaluarSeccion('apoderado', 'Rechazado')"
+                                class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Rechazar Sección
+                        </button>
+                        <button type="button" 
+                                onclick="evaluarSeccion('apoderado', 'Aprobado')"
+                                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Aprobar Sección
+                        </button>
                     </div>
                 </div>
             @endif
 
-            <x-ui.separador-simple margin="my-12" color="border-blue-400" />
+            <x-ui.separador-simple margin="my-8" color="border-slate-400" />
 
-            <!-- Panel de decisión final -->
-            @php
-                $secciones = ['datos_generales', 'actividades', 'domicilio'];
-                if($viewModel->isPersonaMoral()) {
-                    $secciones = array_merge($secciones, ['constitucion', 'accionistas', 'apoderado']);
-                }
-                $secciones[] = 'archivos';
-            @endphp
-            
-            <x-revision.panel-decision-final 
-                :tramite="$tramite"
-                :tipoRevision="$tipoRevision"
-                :secciones="$secciones"
-                :actionUrl="route('revisiones.procesar-digital', $tramite->id)"
-            />
+            <!-- Archivos -->
+            <div class="mb-6" data-section="archivos">
+                <div class="mb-4">
+                    <h2 class="text-xl font-bold text-gray-800">Archivos</h2>
+                </div>
+                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                    <x-revision.evaluacion-archivos 
+                        :archivosSubidos="$archivosSubidos"
+                        seccion="archivos"
+                    />
+                </div>
+                
+                <!-- Área de comentarios -->
+                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                    <div class="mb-3">
+                        <h4 class="text-sm font-medium text-gray-700">Comentarios - Archivos</h4>
+                    </div>
+                    <textarea 
+                        id="comentario_archivos"
+                        placeholder="Agregar observaciones sobre los archivos..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                        rows="3"
+                    ></textarea>
+                </div>
+                    
+                <!-- Botones de decisión -->
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" 
+                            onclick="evaluarSeccion('archivos', 'Rechazado')"
+                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Rechazar Sección
+                    </button>
+                    <button type="button" 
+                            onclick="evaluarSeccion('archivos', 'Aprobado')"
+                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Aprobar Sección
+                    </button>
+                </div>
+            </div>
+
+            <!-- Comentarios Generales -->
+            <div class="mt-8">
+                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Comentarios Generales</h3>
+                        <p class="text-sm text-gray-600">Observaciones generales sobre toda la revisión</p>
+                    </div>
+                    <textarea 
+                        id="comentario_general"
+                        placeholder="Agregar observaciones generales sobre el trámite..."
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                        rows="4"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Botones de Decisión Final -->
+            <div class="mt-8">
+                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Decisión Final</h3>
+                        <p class="text-sm text-gray-600">Tomar decisión final sobre el trámite</p>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <!-- Botón Agendar Cita -->
+                        <button type="button" 
+                                class="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Agendar Cita
+                        </button>
+                        
+                        <!-- Botón Rechazar Trámite -->
+                        <button type="button" 
+                                class="inline-flex items-center px-6 py-3 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Rechazar Trámite
+                        </button>
+                        
+                        <!-- Botón Aprobar Trámite -->
+                        <button type="button" 
+                                class="inline-flex items-center px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Aprobar Trámite
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         </div>
     </div>
 
+<!-- CSS para estados de sección -->
+<style>
+.seccion-aprobada {
+    border-left: 4px solid #10b981;
+    background-color: #f0fdf4;
+}
 
-<!-- ID del trámite para el JavaScript -->
-<meta name="tramite-id" content="{{ $tramite->id }}">
+.seccion-rechazada {
+    border-left: 4px solid #ef4444;
+    background-color: #fef2f2;
+}
+</style>
 
-<!-- JavaScript para cargar estados y comentarios de secciones evaluadas -->
-<script src="{{ asset('js/revision/cargar-estados.js') }}"></script>
-
-<!-- JavaScript externo para funciones de revisión -->
-<script src="{{ asset('js/revision-digital.js') }}"></script>
-
-<!-- Modal de confirmación global -->
-<x-ui.modals.modal-confirmacion 
-    id="modal-confirmacion-decision"
-    title="Confirmar Decisión"
-    message="¿Está seguro que desea realizar esta acción?"
-    confirmText="Confirmar"
-    cancelText="Cancelar"
-    confirmClass="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"
-    cancelClass="bg-white border-gray-300 text-gray-700 hover:text-gray-500 focus:ring-emerald-500"
-/>
-
-<!-- Modal de éxito -->
-<x-ui.modals.modal-exito 
-    id="modal-exito-revision" 
-    :title="session('success_title', '¡Revisión enviada!')"
-    :message="session('success_message', 'La revisión digital se envió correctamente.')"
-    :acceptText="session('success_accept_text', 'Aceptar')"
-    :redirectUrl="session('success_redirect', route('revisiones.index'))"
-/>
-
+<!-- JavaScript para evaluación de secciones -->
 <script>
-// Verificar que el modal esté disponible
+// Variables globales
+window.esPersonaMoral = @json($viewModel->isPersonaMoral());
+
+// Inicializar evaluador cuando cargue la página
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Verificando modal de confirmación...');
-    const modal = document.getElementById('modal-confirmacion-decision');
-    if (modal) {
-        console.log('Modal encontrado:', modal);
-    } else {
-        console.error('Modal no encontrado');
-    }
-    
-    // Verificar que showConfirmModal esté disponible
-    if (typeof showConfirmModal === 'function') {
-        console.log('showConfirmModal está disponible');
-    } else {
-        console.error('showConfirmModal no está disponible');
-    }
-    
-    // Limpiar sesiones de éxito al cargar la página de revisión
-    // Esto es una medida adicional para evitar modales automáticos
-    if (window.location.pathname.includes('/revisiones/revisar')) {
-        console.log('Página de revisión detectada, limpiando sesiones de éxito...');
-        // Enviar una petición AJAX para limpiar las sesiones
-        fetch('/revisiones/limpiar-sesiones', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Content-Type': 'application/json',
-            }
-        }).catch(error => {
-            console.log('Error al limpiar sesiones:', error);
-        });
-    }
+    window.evaluadorSecciones = new EvaluacionSecciones({{ $tramite->id }});
 });
 </script>
+
+<!-- JavaScript SUPER SIMPLE - Solo para cargar datos y ver documentos -->
+<script src="{{ asset('js/revision-digital.js') }}"></script>
+<script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
 @endsection 

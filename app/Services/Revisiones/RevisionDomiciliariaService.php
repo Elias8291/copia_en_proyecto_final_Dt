@@ -8,7 +8,7 @@ use App\Services\NotificacionService;
 
 class RevisionDomiciliariaService extends RevisionService
 {
-    public function __construct(CitasService $citasService, NotificacionService $notificacionService)
+    public function __construct(CitasService $citasService, NotificacionService $notificacionService = null)
     {
         parent::__construct($citasService, $notificacionService);
     }

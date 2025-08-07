@@ -21,12 +21,12 @@ class CitasService
 
     protected NotificacionService $notificacionService;
 
-    public function __construct(NotificacionService $notificacionService)
+    public function __construct(NotificacionService $notificacionService = null)
     {
         $this->notificacionService = $notificacionService;
     }
 
-    public function agendarCitaRevisionDigital(int $tramiteId): array
+    public function agendarCitaRevisionDigital(int $tramiteId, array $datos = []): array
     {
         \Log::info('Iniciando agendamiento de cita para trámite', ['tramite_id' => $tramiteId]);
         
@@ -77,7 +77,9 @@ class CitasService
             // Mantener el estado en revisión digital, no cambiar a presencial
             // $tramite->update(['status' => TramiteStatus::REVISION_PRESENCIAL->value]);
 
-            $this->notificacionService->notificarCitaAgendada($cita);
+            if ($this->notificacionService) {
+                $this->notificacionService->notificarCitaAgendada($cita);
+            }
 
             return [
                 'success' => true,
@@ -97,177 +99,190 @@ class CitasService
         }
     }
 
-    public function reagendarCita(int $citaId): array
+    public function reagendarCita(int $citaId, array $datos = []): array
     {
-        $cita = Cita::findOrFail($citaId);
-        $revisores = $this->obtenerRevisoresPorTipo($cita->tipo_cita);
-        $fechaHora = $this->buscarPrimerHorarioDisponible($revisores, $cita->fecha_cita);
+        \Log::info('Iniciando reagendamiento de cita', ['cita_id' => $citaId]);
         
-        if (!$fechaHora) {
-            return ['success' => false, 'message' => 'No hay horarios disponibles para reagendar'];
+        $cita = Cita::findOrFail($citaId);
+        $revisores = $this->obtenerRevisoresPresenciales();
+        
+        if ($revisores->isEmpty()) {
+            return ['success' => false, 'message' => 'No hay revisores presenciales disponibles'];
         }
 
-        $cita->update([
-            'fecha_cita' => $fechaHora['datetime'],
-            'asignado_a' => $fechaHora['revisor_id'],
-            'intento' => $cita->intento + 1,
-            'estado' => 'Asignada'
-        ]);
+        $fechaHora = $this->buscarPrimerHorarioDisponible($revisores);
+        
+        if (!$fechaHora) {
+            return ['success' => false, 'message' => 'No hay horarios disponibles en los próximos 30 días'];
+        }
 
-        $citaActualizada = $cita->fresh();
-        $this->notificacionService->notificarCitaReagendada($citaActualizada);
+        try {
+            $cita->update([
+                'fecha_cita' => $fechaHora['datetime'],
+                'asignado_a' => $fechaHora['revisor_id'],
+                'intento' => $cita->intento + 1,
+                'estado' => 'Reagendada'
+            ]);
 
-        return [
-            'success' => true,
-            'cita' => $citaActualizada,
-            'revisor' => User::find($fechaHora['revisor_id']),
-            'fecha_formateada' => Carbon::parse($fechaHora['datetime'])->format('d/m/Y H:i'),
-            'message' => 'Cita reagendada exitosamente'
-        ];
+            if ($this->notificacionService) {
+                $this->notificacionService->notificarCitaReagendada($cita);
+            }
+
+            return [
+                'success' => true,
+                'cita' => $cita,
+                'revisor' => User::find($fechaHora['revisor_id']),
+                'fecha_formateada' => Carbon::parse($fechaHora['datetime'])->format('d/m/Y H:i'),
+                'message' => 'Cita reagendada exitosamente'
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error al reagendar cita', [
+                'cita_id' => $citaId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return ['success' => false, 'message' => 'Error al reagendar la cita: ' . $e->getMessage()];
+        }
     }
 
+    /**
+     * Obtener revisores digitales
+     */
     private function obtenerRevisoresDigitales(): Collection
     {
-        return User::whereHas('roles', function($query) {
-            $query->where('name', UserRole::REVISOR_DIGITAL->value);
-        })->get();
+        return User::where('role', UserRole::REVISOR_DIGITAL->value)
+            ->where('activo', true)
+            ->get();
     }
 
+    /**
+     * Obtener revisores presenciales
+     */
     private function obtenerRevisoresPresenciales(): Collection
     {
-        return User::whereHas('roles', function($query) {
-            $query->where('name', UserRole::REVISOR_PRESENCIAL->value);
-        })->get();
+        return User::where('role', UserRole::REVISOR_PRESENCIAL->value)
+            ->where('activo', true)
+            ->get();
     }
 
+    /**
+     * Obtener revisores según tipo de cita
+     */
     private function obtenerRevisoresPorTipo(string $tipoCita): Collection
     {
-        $rol = match($tipoCita) {
-            'Digital' => UserRole::REVISOR_DIGITAL->value,
-            'Presencial' => UserRole::REVISOR_PRESENCIAL->value,
-            'Domiciliaria' => UserRole::REVISOR_DOMICILIARIO->value,
-            default => UserRole::REVISOR_DIGITAL->value
+        return match($tipoCita) {
+            'Digital' => $this->obtenerRevisoresDigitales(),
+            'Presencial', 'Domiciliaria' => $this->obtenerRevisoresPresenciales(),
+            default => collect()
         };
-
-        return User::whereHas('roles', function($query) use ($rol) {
-            $query->where('name', $rol);
-        })->get();
     }
 
+    /**
+     * Buscar primer horario disponible
+     */
     private function buscarPrimerHorarioDisponible(Collection $revisores, Carbon $fechaInicio = null): ?array
     {
-        $fechaActual = $fechaInicio ? $fechaInicio->copy()->addDay() : Carbon::now();
-        $fechaLimite = Carbon::now()->addDays(30);
+        $fechaInicio = $fechaInicio ?? Carbon::now()->addDay();
+        $fechaFin = $fechaInicio->copy()->addDays(30);
 
-        while ($fechaActual->lte($fechaLimite)) {
-            if (!in_array($fechaActual->dayOfWeek, self::DIAS_LABORALES)) {
-                $fechaActual->addDay();
+        for ($fecha = $fechaInicio->copy(); $fecha->lte($fechaFin); $fecha->addDay()) {
+            if ($this->esDiaInhabil($fecha)) {
                 continue;
             }
 
-            if ($this->esDiaInhabil($fechaActual)) {
-                $fechaActual->addDay();
-                continue;
-            }
-
-            $horario = $this->buscarHorarioEnDia($fechaActual, $revisores);
+            $horario = $this->buscarHorarioEnDia($fecha, $revisores);
             if ($horario) {
                 return $horario;
             }
-
-            $fechaActual->addDay();
         }
 
         return null;
     }
 
+    /**
+     * Buscar horario disponible en un día específico
+     */
     private function buscarHorarioEnDia(Carbon $fecha, Collection $revisores): ?array
     {
-        $horaActual = self::HORA_INICIO;
-        
-        while ($horaActual < self::HORA_FIN) {
-            $fechaHora = $fecha->copy()->setTime($horaActual, 0, 0);
-            
-            if ($fecha->isToday() && $fechaHora->lt(Carbon::now())) {
-                $horaActual++;
-                continue;
-            }
+        $horaInicio = $fecha->copy()->setTime(self::HORA_INICIO, 0);
+        $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0);
 
+        for ($hora = $horaInicio->copy(); $hora->lt($horaFin); $hora->addMinutes(self::DURACION_CITA_MINUTOS)) {
             foreach ($revisores as $revisor) {
-                if ($this->revisorDisponibleEnHorario($revisor->id, $fechaHora)) {
-                    return ['datetime' => $fechaHora, 'revisor_id' => $revisor->id];
+                if ($this->revisorDisponibleEnHorario($revisor->id, $hora)) {
+                    return [
+                        'datetime' => $hora->copy(),
+                        'revisor_id' => $revisor->id
+                    ];
                 }
             }
-
-            $horaActual++;
         }
 
         return null;
     }
 
+    /**
+     * Verificar si un revisor está disponible en un horario específico
+     */
     private function revisorDisponibleEnHorario(int $revisorId, Carbon $fechaHora): bool
     {
-        $horaInicio = $fechaHora->copy();
-        $horaFin = $fechaHora->copy()->addMinutes(self::DURACION_CITA_MINUTOS);
+        $citasExistentes = Cita::where('asignado_a', $revisorId)
+            ->where('fecha_cita', '>=', $fechaHora->copy()->subMinutes(self::DURACION_CITA_MINUTOS))
+            ->where('fecha_cita', '<=', $fechaHora->copy()->addMinutes(self::DURACION_CITA_MINUTOS))
+            ->whereIn('estado', ['Asignada', 'Confirmada'])
+            ->count();
 
-        return !Cita::where('asignado_a', $revisorId)
-            ->where('estado', 'Asignada')
-            ->where(function($query) use ($horaInicio, $horaFin) {
-                $query->whereBetween('fecha_cita', [$horaInicio, $horaFin])
-                      ->orWhere(function($q) use ($horaInicio, $horaFin) {
-                          $q->where('fecha_cita', '<=', $horaInicio)
-                            ->whereRaw('DATE_ADD(fecha_cita, INTERVAL ? MINUTE) > ?', 
-                                [self::DURACION_CITA_MINUTOS, $horaInicio]);
-                      });
-            })
-            ->exists();
+        return $citasExistentes === 0;
     }
 
+    /**
+     * Verificar si un día es inhábil
+     */
     private function esDiaInhabil(Carbon $fecha): bool
     {
-        if (in_array($fecha->dayOfWeek, [0, 6])) {
-            return true;
-        }
-
-        return DiaInhabil::where('fecha', $fecha->format('Y-m-d'))->exists();
+        return DiaInhabil::where('fecha', $fecha->format('Y-m-d'))->exists() ||
+               !in_array($fecha->dayOfWeek, self::DIAS_LABORALES);
     }
 
-    public function obtenerHorariosDisponibles(Carbon $fecha, string $tipoCita = 'Digital'): array
+    /**
+     * Obtener horarios disponibles para una fecha específica
+     */
+    public function obtenerHorariosDisponibles($fecha, string $tipoCita = 'Digital'): array
     {
-        if (!in_array($fecha->dayOfWeek, self::DIAS_LABORALES) || $this->esDiaInhabil($fecha)) {
+        $fecha = $fecha instanceof Carbon ? $fecha : Carbon::parse($fecha);
+        
+        if ($this->esDiaInhabil($fecha)) {
             return [];
         }
 
         $revisores = $this->obtenerRevisoresPorTipo($tipoCita);
         $horarios = [];
 
-        for ($hora = self::HORA_INICIO; $hora < self::HORA_FIN; $hora++) {
-            $fechaHora = $fecha->copy()->setTime($hora, 0, 0);
-            
-            if ($fecha->isToday() && $fechaHora->lt(Carbon::now())) {
-                continue;
-            }
+        $horaInicio = $fecha->copy()->setTime(self::HORA_INICIO, 0);
+        $horaFin = $fecha->copy()->setTime(self::HORA_FIN, 0);
 
-            foreach ($revisores as $revisor) {
-                if ($this->revisorDisponibleEnHorario($revisor->id, $fechaHora)) {
-                    $horarios[] = [
-                        'hora' => $fechaHora->format('H:i'),
-                        'datetime' => $fechaHora,
-                        'revisor_id' => $revisor->id,
-                        'revisor_nombre' => $revisor->name
-                    ];
-                    break;
-                }
+        for ($hora = $horaInicio->copy(); $hora->lt($horaFin); $hora->addMinutes(self::DURACION_CITA_MINUTOS)) {
+            $revisoresDisponibles = $revisores->filter(function($revisor) use ($hora) {
+                return $this->revisorDisponibleEnHorario($revisor->id, $hora);
+            });
+
+            if ($revisoresDisponibles->isNotEmpty()) {
+                $horarios[] = [
+                    'hora' => $hora->format('H:i'),
+                    'revisores_disponibles' => $revisoresDisponibles->count()
+                ];
             }
         }
 
         return $horarios;
     }
 
+    /**
+     * Obtener citas por revisor
+     */
     public function obtenerCitasPorRevisor(int $revisorId, Carbon $fechaInicio = null, Carbon $fechaFin = null): Collection
     {
-        $query = Cita::where('asignado_a', $revisorId)
-                     ->with(['tramite.proveedor']);
+        $query = Cita::where('asignado_a', $revisorId);
 
         if ($fechaInicio) {
             $query->where('fecha_cita', '>=', $fechaInicio);
@@ -277,6 +292,6 @@ class CitasService
             $query->where('fecha_cita', '<=', $fechaFin);
         }
 
-        return $query->orderBy('fecha_cita')->get();
+        return $query->with(['tramite.proveedor'])->orderBy('fecha_cita')->get();
     }
 } 
