@@ -1,37 +1,54 @@
 @extends('layouts.app')
 
-@section('title', 'Crear Catálogo de Archivo')
-
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                        Crear Catálogo de Archivo
-                    </h1>
-                    <p class="text-sm sm:text-base text-gray-600">
-                        Define un nuevo tipo de archivo para el sistema
-                    </p>
+<div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8 -mt-4">
+
+    <!-- Header mejorado -->
+    <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
+        <div class="p-4 border-b border-gray-100">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-br from-primary via-primary-dark to-primary-light rounded-xl p-2 shadow-lg">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold text-gray-800">Crear Catálogo de Archivo</h1>
+                        <p class="text-base text-gray-500 mt-1">Define un nuevo tipo de archivo para el sistema</p>
+                    </div>
                 </div>
+                
+                <div class="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-3">
                 <a href="{{ route('archivos.index') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:border-blue-300 focus:ring focus:ring-blue-200 active:text-gray-800 active:bg-gray-50 transition ease-in-out duration-150">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                       class="px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
-                    Volver
+                        Volver
                 </a>
+                </div>
             </div>
         </div>
+    </div>
 
-        <!-- Formulario -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <form method="POST" action="{{ route('archivos.store') }}" class="p-6">
-                @csrf
-
-                <div class="grid grid-cols-1 gap-6">
+    <!-- Form Compacto -->
+    <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
+        <form action="{{ route('archivos.store') }}" method="POST" class="space-y-4 p-4">
+            @csrf
+            
+            <!-- Información del Catálogo -->
+            <div class="border-b border-gray-100 pb-4">
+                <div class="flex items-center mb-3">
+                    <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Información del Catálogo</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-3">
                     <!-- Nombre -->
                     <div>
                         <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">

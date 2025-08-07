@@ -1,140 +1,315 @@
 @extends('layouts.app')
 
-@section('title', 'Editar Catálogo de Archivo')
-
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                        Editar Catálogo de Archivo
-                    </h1>
-                    <p class="text-sm sm:text-base text-gray-600">
-                        Modifica la información del catálogo de archivo
-                    </p>
+    <div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8 -mt-4">
+        <!-- Header mejorado -->
+        <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
+            <div class="p-4 border-b border-gray-100">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div
+                            class="bg-gradient-to-br from-primary via-primary-dark to-primary-light rounded-xl p-2 shadow-lg">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl md:text-2xl font-bold text-gray-800">Editar Catálogo de Archivo</h1>
+                            <p class="text-base text-gray-500 mt-1">Modifique la información requerida</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-3">
+                        <a href="{{ route('archivos.index') }}"
+                            class="px-4 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-300 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Volver
+                        </a>
+                    </div>
                 </div>
-                <a href="{{ route('archivos.index') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:border-blue-300 focus:ring focus:ring-blue-200 active:text-gray-800 active:bg-gray-50 transition ease-in-out duration-150">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                    </svg>
-                    Volver
-                </a>
             </div>
         </div>
 
-        <!-- Formulario -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <form method="POST" action="{{ route('archivos.update', $archivo) }}" class="p-6">
+        <!-- Form Compacto -->
+        <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
+            <form action="{{ route('archivos.update', $archivo) }}" method="POST" class="space-y-4 p-4">
                 @csrf
                 @method('PUT')
 
-                <div class="grid grid-cols-1 gap-6">
-                    <!-- Nombre -->
-                    <div>
-                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nombre del Catálogo <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" 
-                               name="nombre" 
-                               id="nombre" 
-                               value="{{ old('nombre', $archivo->nombre) }}"
-                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#9d2449] focus:border-[#9d2449] sm:text-sm @error('nombre') border-red-300 @enderror"
-                               placeholder="Ej: Acta Constitutiva"
-                               maxlength="100"
-                               required>
-                        @error('nombre')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                <!-- Información del Catálogo -->
+                <div class="border-b border-gray-100 pb-4">
+                    <div class="flex items-center mb-3">
+                        <div
+                            class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Información del Catálogo
+                        </h3>
                     </div>
 
-                    <!-- Descripción -->
-                    <div>
-                        <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-2">
-                            Descripción <span class="text-red-500">*</span>
-                        </label>
-                        <textarea name="descripcion" 
-                                  id="descripcion" 
-                                  rows="4"
-                                  class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#9d2449] focus:border-[#9d2449] sm:text-sm @error('descripcion') border-red-300 @enderror"
-                                  placeholder="Describe el propósito y uso de este tipo de archivo"
-                                  required>{{ old('descripcion', $archivo->descripcion) }}</textarea>
-                        @error('descripcion')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                    <div class="grid grid-cols-1 gap-3">
+                        <!-- Nombre -->
+                        <div class="space-y-1">
+                            <label for="nombre" class="block text-base font-medium text-gray-700">
+                                Nombre del Catálogo <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input type="text" name="nombre" id="nombre"
+                                    value="{{ old('nombre', $archivo->nombre) }}"
+                                    class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('nombre') border-red-300 ring-red-100 @enderror"
+                                    placeholder="Ej: Acta Constitutiva" maxlength="100" required>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-gray-300" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                            @error('nombre')
+                                <p class="text-sm text-red-500 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="space-y-1">
+                            <label for="descripcion" class="block text-base font-medium text-gray-700">
+                                Descripción <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <textarea name="descripcion" id="descripcion" rows="4"
+                                    class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('descripcion') border-red-300 ring-red-100 @enderror"
+                                    placeholder="Describe el propósito y uso de este tipo de archivo" required>{{ old('descripcion', $archivo->descripcion) }}</textarea>
+                            </div>
+                            @error('descripcion')
+                                <p class="text-sm text-red-500 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración -->
+                <div class="border-b border-gray-100 pb-4">
+                    <div class="flex items-center mb-3">
+                        <div
+                            class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Configuración</h3>
                     </div>
 
-                    <!-- Tipo de Persona -->
-                    <div>
-                        <label for="tipo_persona" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tipo de Persona <span class="text-red-500">*</span>
-                        </label>
-                        <select name="tipo_persona" 
-                                id="tipo_persona" 
-                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#9d2449] focus:border-[#9d2449] sm:text-sm @error('tipo_persona') border-red-300 @enderror"
-                                required>
-                            <option value="">Selecciona un tipo</option>
-                            <option value="Física" {{ old('tipo_persona', $archivo->tipo_persona) == 'Física' ? 'selected' : '' }}>Física</option>
-                            <option value="Moral" {{ old('tipo_persona', $archivo->tipo_persona) == 'Moral' ? 'selected' : '' }}>Moral</option>
-                            <option value="Ambas" {{ old('tipo_persona', $archivo->tipo_persona) == 'Ambas' ? 'selected' : '' }}>Ambas</option>
-                        </select>
-                        @error('tipo_persona')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Tipo de Persona -->
+                        <div class="space-y-1">
+                            <label for="tipo_persona" class="block text-base font-medium text-gray-700">
+                                Tipo de Persona <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select name="tipo_persona" id="tipo_persona"
+                                    class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('tipo_persona') border-red-300 ring-red-100 @enderror"
+                                    required>
+                                    <option value="">Selecciona un tipo</option>
+                                    <option value="Física"
+                                        {{ old('tipo_persona', $archivo->tipo_persona) == 'Física' ? 'selected' : '' }}>
+                                        Física</option>
+                                    <option value="Moral"
+                                        {{ old('tipo_persona', $archivo->tipo_persona) == 'Moral' ? 'selected' : '' }}>Moral
+                                    </option>
+                                    <option value="Ambas"
+                                        {{ old('tipo_persona', $archivo->tipo_persona) == 'Ambas' ? 'selected' : '' }}>Ambas
+                                    </option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-gray-300" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            @error('tipo_persona')
+                                <p class="text-sm text-red-500 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+
+                        <!-- Tipo de Archivo -->
+                        <div class="space-y-1">
+                            <label for="tipo_archivo" class="block text-base font-medium text-gray-700">
+                                Formato de Archivo <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <select name="tipo_archivo" id="tipo_archivo"
+                                    class="w-full px-3 py-2.5 text-base border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all duration-200 @error('tipo_archivo') border-red-300 ring-red-100 @enderror"
+                                    required>
+                                    <option value="">Selecciona un formato</option>
+                                    <option value="png"
+                                        {{ old('tipo_archivo', $archivo->tipo_archivo) == 'png' ? 'selected' : '' }}>PNG -
+                                        Imagen</option>
+                                    <option value="pdf"
+                                        {{ old('tipo_archivo', $archivo->tipo_archivo) == 'pdf' ? 'selected' : '' }}>PDF -
+                                        Documento</option>
+                                    <option value="mp3"
+                                        {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp3' ? 'selected' : '' }}>MP3 -
+                                        Audio</option>
+                                    <option value="mp4"
+                                        {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp4' ? 'selected' : '' }}>MP4 -
+                                        Video</option>
+                                </select>
+                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-gray-300" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            </div>
+                            @error('tipo_archivo')
+                                <p class="text-sm text-red-500 flex items-center">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visibilidad -->
+                <div class="pb-4">
+                    <div class="flex items-center mb-3">
+                        <div
+                            class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 uppercase tracking-wide">Visibilidad</h3>
                     </div>
 
-                    <!-- Tipo de Archivo -->
-                    <div>
-                        <label for="tipo_archivo" class="block text-sm font-medium text-gray-700 mb-2">
-                            Formato de Archivo <span class="text-red-500">*</span>
-                        </label>
-                        <select name="tipo_archivo" 
-                                id="tipo_archivo" 
-                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#9d2449] focus:border-[#9d2449] sm:text-sm @error('tipo_archivo') border-red-300 @enderror"
-                                required>
-                            <option value="">Selecciona un formato</option>
-                            <option value="png" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'png' ? 'selected' : '' }}>PNG - Imagen</option>
-                            <option value="pdf" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'pdf' ? 'selected' : '' }}>PDF - Documento</option>
-                            <option value="mp3" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp3' ? 'selected' : '' }}>MP3 - Audio</option>
-                            <option value="mp4" {{ old('tipo_archivo', $archivo->tipo_archivo) == 'mp4' ? 'selected' : '' }}>MP4 - Video</option>
-                        </select>
-                        @error('tipo_archivo')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Estado Visible -->
-                    <div>
-                        <div class="flex items-center">
-                            <input type="checkbox" 
-                                   name="es_visible" 
-                                   id="es_visible" 
-                                   value="1"
-                                   {{ old('es_visible', $archivo->es_visible) ? 'checked' : '' }}
-                                   class="h-4 w-4 text-[#9d2449] focus:ring-[#9d2449] border-gray-300 rounded">
-                            <label for="es_visible" class="ml-2 block text-sm text-gray-700">
-                                Visible en el sistema
+                    <div class="space-y-3">
+                        <div class="visibility-checkbox-container">
+                            <input type="checkbox" name="es_visible" id="es_visible" value="1"
+                                {{ old('es_visible', $archivo->es_visible) ? 'checked' : '' }}
+                                class="visibility-checkbox hidden">
+                            <label for="es_visible"
+                                class="visibility-label flex items-center p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:border-gray-300 hover:bg-gray-50 transition-all duration-200">
+                                <div
+                                    class="w-4 h-4 border-2 border-gray-300 rounded flex items-center justify-center mr-2 visibility-checkbox-visual">
+                                    <svg class="w-2.5 h-2.5 text-white hidden visibility-check-icon" fill="currentColor"
+                                        viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                            clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <span class="text-base font-medium text-gray-700">Visible en el sistema</span>
+                                    <span class="block text-xs text-gray-400">Disponible para seleccionar al subir
+                                        archivos</span>
+                                </div>
                             </label>
                         </div>
-                        <p class="mt-1 text-xs text-gray-500">
-                            Si está marcado, este catálogo estará disponible para seleccionar al subir archivos
+                        <p class="text-base text-gray-400 flex items-center">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Si está marcado, este catálogo estará disponible para los usuarios
                         </p>
                     </div>
                 </div>
 
+                <!-- Información del Catálogo -->
+                <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200/60">
+                    <div class="flex items-center mb-2">
+                        <div
+                            class="w-4 h-4 bg-gradient-to-br from-primary to-primary-dark rounded-md flex items-center justify-center mr-2">
+                            <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-base font-semibold text-gray-900 uppercase tracking-wide">Información del Catálogo
+                        </h4>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                        <div class="bg-white/60 rounded-md p-2">
+                            <span class="text-gray-500 font-medium">ID:</span>
+                            <span class="ml-1 font-semibold text-gray-900">#{{ $archivo->id }}</span>
+                        </div>
+                        <div class="bg-white/60 rounded-md p-2">
+                            <span class="text-gray-500 font-medium">Estado:</span>
+                            <span
+                                class="ml-1 font-semibold {{ $archivo->es_visible ? 'text-green-600' : 'text-red-600' }}">
+                                {{ $archivo->es_visible ? 'Visible' : 'Oculto' }}
+                            </span>
+                        </div>
+                        <div class="bg-white/60 rounded-md p-2">
+                            <span class="text-gray-500 font-medium">Creado:</span>
+                            <span
+                                class="ml-1 font-semibold text-gray-900">{{ $archivo->created_at->format('d/m/Y H:i') }}</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Botones -->
-                <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-                    <a href="{{ route('archivos.index') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:border-blue-300 focus:ring focus:ring-blue-200 active:text-gray-800 active:bg-gray-50 transition ease-in-out duration-150">
+                <div
+                    class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-100">
+                    <a href="{{ route('archivos.index') }}"
+                        class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                         Cancelar
                     </a>
-                    <button type="submit" 
-                            class="inline-flex items-center px-4 py-2 bg-[#9d2449] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#8a1f40] active:bg-[#7a1b38] focus:outline-none focus:border-[#7a1b38] focus:ring ring-[#9d2449]/30 disabled:opacity-25 transition ease-in-out duration-150">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    <button type="submit"
+                        class="inline-flex items-center justify-center px-4 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 transform hover:scale-105">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
                         </svg>
                         Actualizar Catálogo
                     </button>
@@ -142,5 +317,54 @@
             </form>
         </div>
     </div>
-</div>
-@endsection 
+
+    <script>
+        // Función para mejorar la funcionalidad del checkbox de visibilidad
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener el checkbox de visibilidad
+            const visibilityCheckbox = document.querySelector('.visibility-checkbox');
+
+            // Función para actualizar el estado visual del checkbox
+            function updateCheckboxVisual(checkbox) {
+                const label = checkbox.nextElementSibling;
+                const checkboxDiv = label.querySelector('.visibility-checkbox-visual');
+                const checkIcon = checkboxDiv.querySelector('.visibility-check-icon');
+
+                if (checkbox.checked) {
+                    // Marcar como seleccionado
+                    label.classList.add('border-gray-400', 'bg-gray-100', 'ring-1', 'ring-gray-300');
+                    checkboxDiv.classList.add('border-gray-500', 'bg-gray-500');
+                    checkIcon.classList.remove('hidden');
+                } else {
+                    // Desmarcar
+                    label.classList.remove('border-gray-400', 'bg-gray-100', 'ring-1', 'ring-gray-300');
+                    checkboxDiv.classList.remove('border-gray-500', 'bg-gray-500');
+                    checkIcon.classList.add('hidden');
+                }
+            }
+
+            // Agregar event listener al checkbox
+            if (visibilityCheckbox) {
+                visibilityCheckbox.addEventListener('change', function() {
+                    updateCheckboxVisual(this);
+                });
+
+                // Inicializar el estado visual
+                updateCheckboxVisual(visibilityCheckbox);
+            }
+
+            // Agregar funcionalidad de click en la etiqueta
+            const visibilityLabel = document.querySelector('.visibility-label');
+            if (visibilityLabel) {
+                visibilityLabel.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const checkbox = document.getElementById(this.getAttribute('for'));
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        updateCheckboxVisual(checkbox);
+                    }
+                });
+            }
+        });
+    </script>
+@endsection
