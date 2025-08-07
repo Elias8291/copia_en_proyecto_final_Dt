@@ -22,16 +22,15 @@
         box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
     }
     
-    .debug-info {
-        background-color: #f3f4f6;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        font-family: monospace;
-        font-size: 0.875rem;
+    .step-content {
+        display: none;
+    }
+    
+    .step-content.active {
+        display: block;
     }
 </style>
+
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-6 border-b border-gray-200/70">
@@ -83,84 +82,117 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" class="space-y-8" id="tramite-form">
+            <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" id="tramite-form">
                 @csrf
                 
                 <!-- Campo oculto para tipo de trámite -->
                 <input type="hidden" name="tipo_tramite" value="{{ session('tipo_tramite_seleccionado') }}">
                 
-                <!-- Datos Generales -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="0" id="section-0">
-                    @include('components.forms.datos-generales', [
-                        'editable' => true, 
-                        'datosConstancia' => $viewModel
-                    ])
+                @php
+                    $totalSteps = $tipoPersona === 'Moral' ? 7 : 4;
+                    $steps = [
+                        [
+                            'title' => 'Datos Generales',
+                            'description' => 'Información básica del proveedor'
+                        ],
+                        [
+                            'title' => 'Actividades',
+                            'description' => 'Actividades económicas'
+                        ],
+                        [
+                            'title' => 'Domicilio',
+                            'description' => 'Dirección fiscal'
+                        ]
+                    ];
+                    
+                    if ($tipoPersona === 'Moral') {
+                        $steps[] = ['title' => 'Constitución', 'description' => 'Datos de constitución'];
+                        $steps[] = ['title' => 'Accionistas', 'description' => 'Información de accionistas'];
+                        $steps[] = ['title' => 'Apoderado', 'description' => 'Apoderado legal'];
+                    }
+                    
+                    $steps[] = ['title' => 'Documentos', 'description' => 'Archivos requeridos'];
+                @endphp
+
+                <!-- Componente de Steps -->
+                <x-steps :steps="$steps" :current-step="0" :total-steps="$totalSteps" />
+
+                <!-- Contenido de los pasos -->
+                <div class="step-content active" data-step="0">
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                        @include('components.forms.datos-generales', [
+                            'editable' => true, 
+                            'datosConstancia' => $viewModel
+                        ])
+                    </div>
                 </div>
 
-                <!-- Actividades Económicas -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="1" id="section-1">
-                    @include('components.forms.actividades-economicas', ['editable' => true])
+                <div class="step-content" data-step="1">
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                        @include('components.forms.actividades-economicas', ['editable' => true])
+                    </div>
                 </div>
 
-                <!-- Domicilio -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="2" id="section-2">
-                    @include('components.forms.domicilio', [
-                        'editable' => true, 
-                        'datosConstancia' => $viewModel
-                    ])
+                <div class="step-content" data-step="2">
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                        @include('components.forms.domicilio', [
+                            'editable' => true, 
+                            'datosConstancia' => $viewModel
+                        ])
+                    </div>
                 </div>
 
                 @if($tipoPersona === 'Moral')
-                    <!-- Constitución -->
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="3" id="section-3">
-                        @include('components.forms.constitucion', [
-                            'editable' => true,
-                            'datosConstitucion' => $viewModel ?? null
-                        ])
+                    <div class="step-content" data-step="3">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.constitucion', [
+                                'editable' => true,
+                                'datosConstitucion' => $viewModel ?? null
+                            ])
+                        </div>
                     </div>
 
-                    <!-- Accionistas -->
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="4" id="section-4">
-                        @include('components.forms.accionistas', [
-                            'editable' => true,
-                            'accionistas' => $viewModel ?? null
-                        ])
+                    <div class="step-content" data-step="4">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.accionistas', [
+                                'editable' => true,
+                                'accionistas' => $viewModel ?? null
+                            ])
+                        </div>
                     </div>
 
-                    <!-- Apoderado Legal -->
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="5" id="section-5">
-                        @include('components.forms.apoderado', [
-                            'editable' => true,
-                            'datosApoderado' => $viewModel ?? null
-                        ])
+                    <div class="step-content" data-step="5">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.apoderado', [
+                                'editable' => true,
+                                'datosApoderado' => $viewModel ?? null
+                            ])
+                        </div>
                     </div>
 
-                    <!-- Archivos -->
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="6" id="section-6">
-                        @include('components.forms.archivos-dinamicos', [
-                            'editable' => true, 
-                            'archivosRequeridos' => $archivosRequeridos,
-                            'tipoPersona' => $tipoPersona
-                        ])
+                    <div class="step-content" data-step="6">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.archivos-dinamicos', [
+                                'editable' => true, 
+                                'archivosRequeridos' => $archivosRequeridos,
+                                'tipoPersona' => $tipoPersona
+                            ])
+                        </div>
                     </div>
                 @else
-                    <!-- Archivos -->
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6" data-section="3" id="section-3">
-                        @include('components.forms.archivos-dinamicos', [
-                            'editable' => true, 
-                            'archivosRequeridos' => $archivosRequeridos,
-                            'tipoPersona' => $tipoPersona
-                        ])
+                    <div class="step-content" data-step="3">
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.archivos-dinamicos', [
+                                'editable' => true, 
+                                'archivosRequeridos' => $archivosRequeridos,
+                                'tipoPersona' => $tipoPersona
+                            ])
+                        </div>
                     </div>
                 @endif
 
-                <!-- Botón de envío -->
-                <div class="flex justify-center bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                    <button type="button" id="btn-enviar-tramite" class="bg-[#9d2449] hover:bg-[#8a1f40] text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200 text-lg shadow-lg hover:shadow-xl">
-                        <i class="fas fa-paper-plane mr-2"></i>
-                        Enviar Trámite
-                    </button>
-                </div>
+                <!-- Navegación entre pasos -->
+                <div data-step-navigation></div>
             </form>
         </div>
     </div>
@@ -173,33 +205,7 @@
     cancelText="Cancelar"
 />
 
-<div class="fixed bottom-6 right-6 space-y-2 z-40">
-    <button type="button" id="btn-prev" onclick="navigateSection('prev')" 
-            class="w-12 h-12 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors">
-        <i class="fas fa-chevron-up"></i>
-    </button>
-    <button type="button" id="btn-next" onclick="navigateSection('next')" 
-            class="w-12 h-12 bg-[#9d2449] hover:bg-[#8a1f40] text-white rounded-full shadow-lg flex items-center justify-center transition-colors">
-        <i class="fas fa-chevron-down"></i>
-    </button>
-</div>
-
 <script>
-let currentSection = 0;
-const sections = document.querySelectorAll('[data-section]');
-
-function navigateSection(direction) {
-    if (direction === 'prev' && currentSection > 0) {
-        currentSection--;
-    } else if (direction === 'next' && currentSection < sections.length - 1) {
-        currentSection++;
-    }
-    
-    sections[currentSection].scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-window.navigateSection = navigateSection;
-
 document.addEventListener('DOMContentLoaded', function() {
     // Cargar datos de la constancia solo si no hay valores old() (errores de validación)
     @if(isset($viewModel))
@@ -264,15 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 btnEnviar.disabled = true;
                 btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
             }
-            
-            // Debug: mostrar datos del formulario
-            // if ({{ config('app.debug') ? 'true' : 'false' }}) {
-            //     console.log('Enviando formulario...');
-            //     const formData = new FormData(tramiteForm);
-            //     for (let [key, value] of formData.entries()) {
-            //         console.log(key + ': ' + value);
-            //     }
-            // }
         });
     }
     
@@ -285,20 +282,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         @endforeach
     @endif
-
-    const btnEnviar = document.getElementById('btn-enviar-tramite');
-    if (btnEnviar && tramiteForm) {
-        btnEnviar.addEventListener('click', function(e) {
-            showConfirmModal(
-                'Confirmar envío',
-                '¿Está seguro que desea enviar el trámite?',
-                'tramite-form',
-                function() {
-                    tramiteForm.submit();
-                }
-            );
-        });
-    }
 });
 </script>
 @endsection 

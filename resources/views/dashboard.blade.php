@@ -45,7 +45,7 @@
                                     <span id="currentDate"></span>
                                 </div>
 
-                                <!-- Badge de Proveedor -->
+                                <!-- Badge de Rol -->
                                 @if (auth()->user()->hasRole('Proveedor'))
                                     <div
                                         class="bg-gradient-to-r from-yellow-400 to-yellow-500 px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
@@ -53,7 +53,34 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
-                                        <span>Proveedor Oficial</span>
+                                        <span>Proveedor</span>
+                                    </div>
+                                @elseif (auth()->user()->hasRole('Solicitante'))
+                                    <div
+                                        class="bg-gradient-to-r from-blue-400 to-blue-500 px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                        </svg>
+                                        <span>Solicitante</span>
+                                    </div>
+                                @elseif (auth()->user()->hasRole(['Administrador', 'Super Administrador']))
+                                    <div
+                                        class="bg-gradient-to-r from-red-400 to-red-500 px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                        </svg>
+                                        <span>Administrador</span>
+                                    </div>
+                                @elseif (auth()->user()->hasRole(['Revisor Digital', 'Revisor Presencial', 'Revisor Domiciliario']))
+                                    <div
+                                        class="bg-gradient-to-r from-green-400 to-green-500 px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                                        </svg>
+                                        <span>Revisor</span>
                                     </div>
                                 @endif
                             </div>
@@ -69,9 +96,25 @@
                                 </h2>
                                 @if (auth()->user()->hasRole('Proveedor'))
                                     <p class="text-gray-600">
-                                        <span class="text-yellow-600 font-semibold">¡Proveedor Oficial!</span> -
+                                            <span class="text-yellow-600 font-semibold">¡Proveedor!</span> -
+                                            Bienvenido al <span class="text-[#9d2449] font-semibold">Padrón de Proveedores del
+                                                Estado de Oaxaca</span>
+                                        </p>
+                                    @elseif (auth()->user()->hasRole('Solicitante'))
+                                        <p class="text-gray-600">
+                                            <span class="text-blue-600 font-semibold">¡Solicitante!</span> -
                                         Bienvenido al <span class="text-[#9d2449] font-semibold">Padrón de Proveedores del
                                             Estado de Oaxaca</span>
+                                    </p>
+                                    @elseif (auth()->user()->hasRole(['Administrador', 'Super Administrador']))
+                                        <p class="text-gray-600">
+                                            <span class="text-red-600 font-semibold">¡Administrador!</span> -
+                                            Bienvenido al <span class="text-[#9d2449] font-semibold">Sistema de Gestión de Proveedores</span>
+                                        </p>
+                                    @elseif (auth()->user()->hasRole(['Revisor Digital', 'Revisor Presencial', 'Revisor Domiciliario']))
+                                        <p class="text-gray-600">
+                                            <span class="text-green-600 font-semibold">¡Revisor!</span> -
+                                            Bienvenido al <span class="text-[#9d2449] font-semibold">Sistema de Revisión de Trámites</span>
                                     </p>
                                 @else
                                     <p class="text-gray-600">
@@ -301,7 +344,7 @@
 
                                                 <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
                                                     ¡Bienvenido,
-                                                    <span class="text-yellow-600">Proveedor Oficial</span>!
+                                                    <span class="text-yellow-600">Proveedor</span>!
                                                 </h2>
 
                                                 <p class="text-lg text-gray-600 mb-6">
@@ -309,9 +352,8 @@
                                                     <span class="font-semibold text-[#9d2449]">Padrón de Proveedores</span>
                                                 </p>
 
-                                                @can('mi-estado-proveedor.ver')
                                                     <div class="flex justify-center lg:justify-start">
-                                                        <a
+                                                    <a href="{{ route('mi-estado') }}"
                                                             class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#be185d] text-white font-semibold rounded-xl hover:from-[#be185d] hover:to-[#9d2449] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                                                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
                                                                 viewBox="0 0 24 24">
@@ -323,12 +365,11 @@
                                                             Mi Estado de Proveedor
                                                         </a>
                                                     </div>
-                                                @endcan
                                             </div>
-                                        @else
+                                        @elseif (auth()->user()->hasRole('Solicitante'))
                                             <div class="space-y-6">
                                                 <div
-                                                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-full text-sm font-semibold text-yellow-700 border border-yellow-200">
+                                                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full text-sm font-semibold text-blue-700 border border-blue-200">
                                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -336,12 +377,12 @@
                                                             d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976-2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z">
                                                         </path>
                                                     </svg>
-                                                    ¡Únete al Padrón Oficial!
+                                                    ¡Conviértete en Proveedor!
                                                 </div>
 
                                                 <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
                                                     Conviértete en
-                                                    <span class="text-[#9d2449]">Proveedor Oficial</span>
+                                                    <span class="text-[#9d2449]">Proveedor</span>
                                                 </h2>
 
                                                 <p class="text-lg text-gray-600 mb-6">
@@ -350,9 +391,8 @@
                                                     del Estado de Oaxaca
                                                 </p>
 
-                                                @can('tramites-solicitante.inscripcion')
                                                     <div class="flex justify-center lg:justify-start">
-                                                        <a
+                                                    <a href="{{ route('tramites.index') }}"
                                                             class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#be185d] text-white font-semibold rounded-xl hover:from-[#be185d] hover:to-[#9d2449] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                                                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
                                                                 viewBox="0 0 24 24">
@@ -362,7 +402,119 @@
                                                             Iniciar Mi Trámite
                                                         </a>
                                                     </div>
-                                                @endcan
+                                            </div>
+                                        @elseif (auth()->user()->hasRole(['Administrador', 'Super Administrador']))
+                                            <div class="space-y-6">
+                                                <div
+                                                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-100 to-red-200 rounded-full text-sm font-semibold text-red-700 border border-red-200">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                                        </path>
+                                                    </svg>
+                                                    Panel de Administración
+                                                </div>
+
+                                                <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
+                                                    ¡Bienvenido,
+                                                    <span class="text-red-600">Administrador</span>!
+                                                </h2>
+
+                                                <p class="text-lg text-gray-600 mb-6">
+                                                    Gestiona el
+                                                    <span class="font-semibold text-[#9d2449]">Sistema de Proveedores</span>
+                                                    del Estado de Oaxaca
+                                                </p>
+
+                                                <div class="flex justify-center lg:justify-start space-x-4">
+                                                    <a href="{{ route('users.index') }}"
+                                                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#be185d] text-white font-semibold rounded-xl hover:from-[#be185d] hover:to-[#9d2449] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z">
+                                                            </path>
+                                                        </svg>
+                                                        Gestionar Usuarios
+                                                    </a>
+                                                    <a href="{{ route('tramites.index') }}"
+                                                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-semibold rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                                            </path>
+                                                        </svg>
+                                                        Ver Trámites
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @elseif (auth()->user()->hasRole(['Revisor Digital', 'Revisor Presencial', 'Revisor Domiciliario']))
+                                            <div class="space-y-6">
+                                                <div
+                                                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-green-100 to-green-200 rounded-full text-sm font-semibold text-green-700 border border-green-200">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+                                                        </path>
+                                                    </svg>
+                                                    Panel de Revisión
+                                                </div>
+
+                                                <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
+                                                    ¡Bienvenido,
+                                                    <span class="text-green-600">Revisor</span>!
+                                                </h2>
+
+                                                <p class="text-lg text-gray-600 mb-6">
+                                                    Revisa los trámites del
+                                                    <span class="font-semibold text-[#9d2449]">Padrón de Proveedores</span>
+                                                </p>
+
+                                                <div class="flex justify-center lg:justify-start">
+                                                    <a href="{{ route('revisiones.index') }}"
+                                                        class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-[#9d2449] to-[#be185d] text-white font-semibold rounded-xl hover:from-[#be185d] hover:to-[#9d2449] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+                                                            </path>
+                                                        </svg>
+                                                        Revisar Trámites
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="space-y-6">
+                                                <div
+                                                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-gray-100 to-gray-200 rounded-full text-sm font-semibold text-gray-700 border border-gray-200">
+                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                                        </path>
+                                                    </svg>
+                                                    ¡Bienvenido!
+                                                </div>
+
+                                                <h2 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-4">
+                                                    Bienvenido al
+                                                    <span class="text-[#9d2449]">Sistema</span>
+                                                </h2>
+
+                                                <p class="text-lg text-gray-600 mb-6">
+                                                    Sistema de gestión del
+                                                    <span class="font-semibold text-[#9d2449]">Padrón de Proveedores</span>
+                                                    del Estado de Oaxaca
+                                                </p>
                                             </div>
                                         @endif
                                     </div>
