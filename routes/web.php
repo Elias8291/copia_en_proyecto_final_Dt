@@ -133,6 +133,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{tramite}/iniciar', [RevisionController::class, 'iniciarRevision'])->name('iniciar');
         Route::get('/{tramite}/revisar', [RevisionController::class, 'revisarTramite'])->name('revisar');
         
+        // Ruta para procesar revisión digital
+        Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
+        
         // Rutas para gestión de citas
         Route::post('/{tramite}/agendar-cita', [RevisionController::class, 'agendarCita'])->name('agendar-cita');
         Route::post('/cita/{cita}/reagendar', [RevisionController::class, 'reagendarCita'])->name('reagendar-cita');

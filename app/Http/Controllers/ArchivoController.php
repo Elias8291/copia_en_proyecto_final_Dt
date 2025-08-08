@@ -201,7 +201,8 @@ class ArchivoController extends Controller
             $archivo->update([
                 'status' => $request->status,
                 'comentario_revision' => $request->comentario_revision,
-                'revisado_por' => auth()->id()
+                'revisado_por' => auth()->id(),
+                'fecha_revision' => now()
             ]);
 
             return response()->json([
@@ -209,7 +210,8 @@ class ArchivoController extends Controller
                 'message' => 'Status del archivo actualizado correctamente',
                 'data' => [
                     'status' => $archivo->status,
-                    'comentario_revision' => $archivo->comentario_revision
+                    'comentario_revision' => $archivo->comentario_revision,
+                    'fecha_revision' => $archivo->fecha_revision
                 ]
             ]);
 

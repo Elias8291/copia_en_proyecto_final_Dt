@@ -3,6 +3,7 @@
 @section('title', 'Revisión Digital')
 
 <meta name="tramite-id" content="{{ $tramite->id }}">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
@@ -709,4 +710,5 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- JavaScript SUPER SIMPLE - Solo para cargar datos y ver documentos -->
 <script src="{{ asset('js/revision-digital.js') }}"></script>
 <script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
+<script src="{{ asset('js/revision/cargar-estados-archivos.js') }}"></script>
 @endsection 

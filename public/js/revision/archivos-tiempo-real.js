@@ -13,9 +13,6 @@ class ArchivosController {
     configurarEventos() {
         document.addEventListener('change', (e) => {
             if (e.target.type === 'file') {
-                console.log('🔍 Archivo detectado:', e.target);
-                console.log('🔍 data-catalogo-id:', e.target.getAttribute('data-catalogo-id'));
-                console.log('🔍 files:', e.target.files);
                 this.procesarArchivo(e.target);
             }
         });
@@ -28,8 +25,6 @@ class ArchivosController {
             e.preventDefault();
             this.procesarDrop(e);
         });
-        
-        console.log('✅ Eventos de archivos configurados');
     }
 
     async procesarArchivo(input) {

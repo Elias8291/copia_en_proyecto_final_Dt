@@ -212,7 +212,86 @@ class RevisionController extends Controller
     // Limpiar sesiones
     public function limpiarSesiones(Request $request)
     {
-        $request->session()->flush();
-        return response()->json(['success' => true]);
+        $request->session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesiones limpiadas correctamente'
+        ]);
+    }
+
+    /**
+     * Procesar revisión digital completa
+     */
+    public function procesarRevisionDigital(Request $request, int $tramiteId)
+    {
+        try {
+            \Log::info("=== INICIANDO PROCESAMIENTO DE REVISIÓN DIGITAL ===");
+            \Log::info("Trámite ID: " . $tramiteId);
+            \Log::info("Datos recibidos: " . json_encode($request->all(), JSON_PRETTY_PRINT));
+
+            $request->validate([
+                'secciones' => 'required|array',
+                'archivos' => 'nullable|array',
+                'archivos.*.id' => 'required|integer',
+                'archivos.*.status' => 'required|in:Pendiente,Aprobado,Rechazado',
+                'archivos.*.comentario_revision' => 'nullable|string'
+            ]);
+
+            $tramite = Tramite::findOrFail($tramiteId);
+            
+            // Procesar secciones
+            $secciones = $request->input('secciones', []);
+            foreach ($secciones as $seccion => $datos) {
+                if (isset($datos['estado']) && isset($datos['comentario'])) {
+                    $this->revisionService->evaluarSeccion($tramiteId, [
+                        'seccion' => $seccion,
+                        'estado' => $datos['estado'],
+                        'comentario' => $datos['comentario']
+                    ]);
+                }
+            }
+
+            // Procesar archivos
+            $archivos = $request->input('archivos', []);
+            foreach ($archivos as $archivoData) {
+                $archivo = Archivo::findOrFail($archivoData['id']);
+                $archivo->update([
+                    'status' => $archivoData['status'],
+                    'comentario_revision' => $archivoData['comentario_revision'] ?? null,
+                    'revisado_por' => auth()->id()
+                ]);
+            }
+
+            // Determinar estado final del trámite
+            $estadoGeneral = $this->revisionService->obtenerEstadoGeneral($tramiteId);
+            
+            // Actualizar estado del trámite
+            $tramite->update([
+                'status' => $estadoGeneral['estado']
+            ]);
+
+            \Log::info("Estado final del trámite: " . $estadoGeneral['estado']);
+            \Log::info("=== FIN PROCESAMIENTO DE REVISIÓN DIGITAL ===");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Revisión digital procesada correctamente',
+                'data' => [
+                    'estado_tramite' => $estadoGeneral['estado'],
+                    'secciones_evaluadas' => $estadoGeneral['seccionesEvaluadas'],
+                    'total_secciones' => $estadoGeneral['totalSecciones']
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error("Error en procesarRevisionDigital: " . $e->getMessage());
+            \Log::error("Stack trace: " . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la revisión digital: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 
