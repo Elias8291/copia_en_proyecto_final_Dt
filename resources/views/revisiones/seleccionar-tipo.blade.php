@@ -73,80 +73,86 @@
                     <p class="text-gray-600">Elige el método de revisión que vas a realizar para este trámite</p>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 px-6 pb-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 px-6 pb-6 {{ count($tiposDisponibles) === 1 ? 'justify-items-center' : '' }}">
                     
                     {{-- Revisión Digital --}}
-                    @include('tramites.partials.tramite-card', [
-                        'tipo' => 'revision_digital',
-                        'tramites' => [
-                            'revision_digital' => [
-                                'activo' => in_array('Digital', $tiposDisponibles),
-                                'pendiente' => false,
-                                'accion' => in_array('Digital', $tiposDisponibles) ? '' : 'bloqueado',
-                                'motivo' => in_array('Digital', $tiposDisponibles) ? '' : 'No disponible para este estado del trámite'
+                    @if(in_array('Digital', $tiposDisponibles))
+                        @include('tramites.partials.tramite-card', [
+                            'tipo' => 'revision_digital',
+                            'tramites' => [
+                                'revision_digital' => [
+                                    'activo' => true,
+                                    'pendiente' => false,
+                                    'accion' => '',
+                                    'motivo' => ''
+                                ]
+                            ],
+                            'title' => 'Revisión Digital',
+                            'description' => 'Revisa los documentos y datos del trámite de forma digital. Evaluación completa sin contacto físico.',
+                            'gradient' => 'from-[#9d2449] to-[#8a1f40]',
+                            'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>',
+                            'actionText' => 'Iniciar Revisión Digital',
+                            'actionUrl' => route('revisiones.iniciar', $tramite->id),
+                            'formData' => [
+                                'tipo_revision' => 'Digital'
                             ]
-                        ],
-                        'title' => 'Revisión Digital',
-                        'description' => 'Revisa los documentos y datos del trámite de forma digital. Evaluación completa sin contacto físico.',
-                        'gradient' => 'from-[#9d2449] to-[#8a1f40]',
-                        'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>',
-                        'actionText' => 'Iniciar Revisión Digital',
-                        'actionUrl' => route('revisiones.iniciar', $tramite->id),
-                        'formData' => in_array('Digital', $tiposDisponibles) ? [
-                            'tipo_revision' => 'Digital'
-                        ] : null
-                    ])
+                        ])
+                    @endif
 
                     {{-- Revisión Presencial --}}
-                    @include('tramites.partials.tramite-card', [
-                        'tipo' => 'revision_presencial',
-                        'tramites' => [
-                            'revision_presencial' => [
-                                'activo' => in_array('Presencial', $tiposDisponibles),
-                                'pendiente' => false,
-                                'accion' => in_array('Presencial', $tiposDisponibles) ? '' : 'bloqueado',
-                                'motivo' => in_array('Presencial', $tiposDisponibles) ? '' : 'No disponible para este estado del trámite'
+                    @if(in_array('Presencial', $tiposDisponibles))
+                        @include('tramites.partials.tramite-card', [
+                            'tipo' => 'revision_presencial',
+                            'tramites' => [
+                                'revision_presencial' => [
+                                    'activo' => true,
+                                    'pendiente' => false,
+                                    'accion' => '',
+                                    'motivo' => ''
+                                ]
+                            ],
+                            'title' => 'Revisión Presencial',
+                            'description' => 'Revisa el trámite en las instalaciones con el solicitante. Documentos originales.' . 
+                                ($informacionCita ? '<br><br><strong>Cita asignada:</strong><br>📅 ' . $informacionCita['fecha'] . ' a las ' . $informacionCita['hora'] . '<br>👤 Quien debe presentarse: ' . ($personaResponsable ? $personaResponsable['nombre'] . ' (' . $personaResponsable['cargo'] . ')' : 'Por definir') : ''),
+                            'gradient' => 'from-[#8a1f40] to-[#7a1a37]',
+                            'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>',
+                            'actionText' => 'Iniciar Revisión Presencial',
+                            'actionUrl' => route('revisiones.iniciar', $tramite->id),
+                            'formData' => [
+                                'tipo_revision' => 'Presencial'
                             ]
-                        ],
-                        'title' => 'Revisión Presencial',
-                        'description' => 'Revisa el trámite en las instalaciones con el solicitante. Documentos originales.' . 
-                            ($informacionCita ? '<br><br><strong>Cita asignada:</strong><br>📅 ' . $informacionCita['fecha'] . ' a las ' . $informacionCita['hora'] . '<br>👤 Quien debe presentarse: ' . ($personaResponsable ? $personaResponsable['nombre'] . ' (' . $personaResponsable['cargo'] . ')' : 'Por definir') : ''),
-                        'gradient' => 'from-[#8a1f40] to-[#7a1a37]',
-                        'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>',
-                        'actionText' => 'Iniciar Revisión Presencial',
-                        'actionUrl' => route('revisiones.iniciar', $tramite->id),
-                        'formData' => in_array('Presencial', $tiposDisponibles) ? [
-                            'tipo_revision' => 'Presencial'
-                        ] : null
-                    ])
+                        ])
+                    @endif
 
                     {{-- Revisión Domiciliaria --}}
-                    @include('tramites.partials.tramite-card', [
-                        'tipo' => 'revision_domiciliaria',
-                        'tramites' => [
-                            'revision_domiciliaria' => [
-                                'activo' => in_array('Domiciliaria', $tiposDisponibles),
-                                'pendiente' => false,
-                                'accion' => in_array('Domiciliaria', $tiposDisponibles) ? '' : 'bloqueado',
-                                'motivo' => in_array('Domiciliaria', $tiposDisponibles) ? '' : 'No disponible para este estado del trámite'
+                    @if(in_array('Domiciliaria', $tiposDisponibles))
+                        @include('tramites.partials.tramite-card', [
+                            'tipo' => 'revision_domiciliaria',
+                            'tramites' => [
+                                'revision_domiciliaria' => [
+                                    'activo' => true,
+                                    'pendiente' => false,
+                                    'accion' => '',
+                                    'motivo' => ''
+                                ]
+                            ],
+                            'title' => 'Revisión Domiciliaria',
+                            'description' => 'Revisa el trámite en el domicilio del solicitante. Verificación in situ e inspección física.',
+                            'gradient' => 'from-[#9d2449] to-[#7a1a37]',
+                            'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>',
+                            'actionText' => 'Iniciar Revisión Domiciliaria',
+                            'actionUrl' => route('revisiones.iniciar', $tramite->id),
+                            'formData' => [
+                                'tipo_revision' => 'Domiciliaria'
                             ]
-                        ],
-                        'title' => 'Revisión Domiciliaria',
-                        'description' => 'Revisa el trámite en el domicilio del solicitante. Verificación in situ e inspección física.',
-                        'gradient' => 'from-[#9d2449] to-[#7a1a37]',
-                        'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                        </svg>',
-                        'actionText' => 'Iniciar Revisión Domiciliaria',
-                        'actionUrl' => route('revisiones.iniciar', $tramite->id),
-                        'formData' => in_array('Domiciliaria', $tiposDisponibles) ? [
-                            'tipo_revision' => 'Domiciliaria'
-                        ] : null
-                    ])
+                        ])
+                    @endif
 
                 </div>
 

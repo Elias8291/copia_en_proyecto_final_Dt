@@ -160,8 +160,15 @@ class RevisionController extends Controller
     // Obtener estado general del trámite
     public function obtenerEstadoGeneral(int $tramiteId)
     {
-        $estado = $this->revisionService->obtenerEstadoGeneral($tramiteId);
-        return response()->json($estado);
+        try {
+            $estado = $this->revisionService->obtenerEstadoGeneral($tramiteId);
+            return response()->json($estado);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener el estado general: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     // Guardar evaluación de sección
@@ -196,11 +203,11 @@ class RevisionController extends Controller
     /**
      * Procesar revisión digital completa
      */
-    public function procesarRevisionDigital(Request $request, int $tramiteId)
+    public function procesarRevisionDigital(Request $request, Tramite $tramite)
     {
         try {
             \Log::info("=== INICIANDO PROCESAMIENTO DE REVISIÓN DIGITAL ===");
-            \Log::info("Trámite ID: " . $tramiteId);
+            \Log::info("Trámite ID: " . $tramite->id);
             \Log::info("Datos recibidos: " . json_encode($request->all(), JSON_PRETTY_PRINT));
 
             $request->validate([
@@ -210,16 +217,14 @@ class RevisionController extends Controller
                 'archivos.*.status' => 'required|in:Pendiente,Aprobado,Rechazado',
                 'archivos.*.comentario_revision' => 'nullable|string'
             ]);
-
-            $tramite = Tramite::findOrFail($tramiteId);
             
             // Procesar secciones
             $secciones = $request->input('secciones', []);
             foreach ($secciones as $seccion => $datos) {
-                if (isset($datos['estado']) && isset($datos['comentario'])) {
-                    $this->revisionService->evaluarSeccion($tramiteId, [
+                if (isset($datos['decision']) && isset($datos['comentario'])) {
+                    $this->revisionService->evaluarSeccion($tramite->id, [
                         'seccion' => $seccion,
-                        'estado' => $datos['estado'],
+                        'estado' => $datos['decision'],
                         'comentario' => $datos['comentario']
                     ]);
                 }
@@ -237,7 +242,7 @@ class RevisionController extends Controller
             }
 
             // Determinar estado final del trámite
-            $estadoGeneral = $this->revisionService->obtenerEstadoGeneral($tramiteId);
+            $estadoGeneral = $this->revisionService->obtenerEstadoGeneral($tramite->id);
             
             // Actualizar estado del trámite
             $tramite->update([
@@ -335,18 +340,99 @@ class RevisionController extends Controller
             $request->validate(['comentario_general' => 'nullable']);
             $comentarioGeneral = $request->input('comentario_general') ?: null;
             
-            \Log::info("Iniciando aprobación y asignación de proveedor para trámite {$tramiteId}");
+            \Log::info("Iniciando aprobación y asignación de proveedor para trámite {$tramiteId}", [
+                'request_data' => $request->all(),
+                'user_id' => auth()->id(),
+                'timestamp' => now()
+            ]);
             
-            $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
-            $resultado = $decisionesService->aprobarYAsignarProveedor($tramiteId, $comentarioGeneral);
-            
-            if ($resultado['success']) {
-                \Log::info("Trámite {$tramiteId} aprobado exitosamente", $resultado);
-                return response()->json($resultado);
+            // Verificar que el trámite existe y tiene proveedor
+            try {
+                $tramite = \App\Models\Tramite::find($tramiteId);
+                if (!$tramite) {
+                    throw new \Exception("Trámite {$tramiteId} no encontrado");
+                }
+                \Log::info("Trámite encontrado en base de datos");
+            } catch (\Exception $e) {
+                \Log::error("Error al buscar trámite en base de datos", [
+                    'error' => $e->getMessage(),
+                    'tramite_id' => $tramiteId
+                ]);
+                throw $e;
             }
             
-            \Log::warning("Trámite {$tramiteId} no pudo ser aprobado", $resultado);
-            return response()->json($resultado);
+            \Log::info("Trámite encontrado", [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor_id,
+                'tipo_tramite' => $tramite->tipo_tramite,
+                'status' => $tramite->status,
+                'created_at' => $tramite->created_at,
+                'updated_at' => $tramite->updated_at
+            ]);
+            
+            try {
+                if (!$tramite->proveedor) {
+                    throw new \Exception("El trámite {$tramiteId} no tiene un proveedor asociado (proveedor_id: {$tramite->proveedor_id})");
+                }
+                \Log::info("Proveedor encontrado en relación");
+            } catch (\Exception $e) {
+                \Log::error("Error al acceder a la relación proveedor", [
+                    'error' => $e->getMessage(),
+                    'tramite_id' => $tramiteId,
+                    'proveedor_id' => $tramite->proveedor_id
+                ]);
+                throw $e;
+            }
+            
+            \Log::info("Proveedor encontrado", [
+                'proveedor_id' => $tramite->proveedor->id,
+                'rfc' => $tramite->proveedor->rfc,
+                'pv_numero' => $tramite->proveedor->pv_numero,
+                'usuario_id' => $tramite->proveedor->usuario_id,
+                'tipo_persona' => $tramite->proveedor->tipo_persona,
+                'estado_padron' => $tramite->proveedor->estado_padron
+            ]);
+            
+            // Verificar que el RfcProveedorService funciona
+            try {
+                $rfcProveedorService = app(\App\Services\RfcProveedorService::class);
+                
+                // Verificar que el servicio se puede instanciar
+                \Log::info("RfcProveedorService instanciado correctamente");
+                
+                $accion = $rfcProveedorService->determinarAccionPorTipoTramite($tramite->proveedor->rfc, $tramite->tipo_tramite, $tramiteId);
+                \Log::info("Acción determinada por RfcProveedorService", $accion);
+            } catch (\Exception $e) {
+                \Log::error("Error en RfcProveedorService", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
+            
+            // Verificar que el DecisionesFinalesService funciona
+            try {
+                $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
+                
+                // Verificar que el servicio se puede instanciar
+                \Log::info("DecisionesFinalesService instanciado correctamente");
+                
+                $resultado = $decisionesService->aprobarYAsignarProveedor($tramiteId, $comentarioGeneral);
+                
+                if ($resultado['success']) {
+                    \Log::info("Trámite {$tramiteId} aprobado exitosamente", $resultado);
+                    return response()->json($resultado);
+                }
+                
+                \Log::warning("Trámite {$tramiteId} no pudo ser aprobado", $resultado);
+                return response()->json($resultado);
+            } catch (\Exception $e) {
+                \Log::error("Error en DecisionesFinalesService", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                throw $e;
+            }
         } catch (\Exception $e) {
             \Log::error("Error al aprobar y asignar proveedor para trámite {$tramiteId}", [
                 'error' => $e->getMessage(),

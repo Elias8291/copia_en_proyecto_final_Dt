@@ -118,10 +118,21 @@ class DecisionesFinalesService
                 $tramite = Tramite::findOrFail($tramiteId);
                 Log::info("Trámite encontrado", ['tramite_id' => $tramiteId, 'status' => $tramite->status]);
                 
+                // Verificar si el trámite tiene proveedor_id
+                Log::info("Datos del trámite", [
+                    'proveedor_id' => $tramite->proveedor_id,
+                    'tipo_tramite' => $tramite->tipo_tramite,
+                    'status' => $tramite->status
+                ]);
+                
                 $rfcProveedorService = app(RfcProveedorService::class);
                 
                 // Obtener RFC del trámite
                 if (!$tramite->proveedor) {
+                    Log::error("El trámite {$tramiteId} no tiene proveedor asociado", [
+                        'proveedor_id' => $tramite->proveedor_id,
+                        'tramite_exists' => $tramite ? 'Sí' : 'No'
+                    ]);
                     throw new \Exception("El trámite {$tramiteId} no tiene un proveedor asociado");
                 }
                 
@@ -134,62 +145,83 @@ class DecisionesFinalesService
                     'proveedor_id' => $tramite->proveedor->id
                 ]);
                 
+                // Debug: Verificar estado de proveedores para este RFC
+                $rfcProveedorService->debugProveedoresRfc($rfc);
+                
                 // Determinar la acción según el tipo de trámite (excluyendo el trámite actual)
                 $accion = $rfcProveedorService->determinarAccionPorTipoTramite($rfc, $tipoTramite, $tramiteId);
                 
                 Log::info("Acción determinada", [
                     'accion' => $accion['accion'],
                     'motivo' => $accion['motivo'],
-                    'proveedores_existentes' => $accion['proveedores_existentes']
+                    'proveedores_existentes' => $accion['proveedores_existentes'],
+                    'proveedor_activo_id' => $accion['proveedor_activo'] ? $accion['proveedor_activo']->id : null,
+                    'proveedor_activo_pv_numero' => $accion['proveedor_activo'] ? $accion['proveedor_activo']->pv_numero : null,
+                    'proveedor_activo_estado' => $accion['proveedor_activo'] ? $accion['proveedor_activo']->estado_padron : null,
+                    'proveedor_activo_vencimiento' => $accion['proveedor_activo'] ? $accion['proveedor_activo']->fecha_vencimiento_padron : null
                 ]);
-            
-            $proveedorAsignado = null;
-            $numeroProveedor = null;
-            
-            switch ($accion['accion']) {
-                case 'crear_nuevo':
-                    // Crear nuevo proveedor
-                    $numeroProveedor = $rfcProveedorService->generarNumeroProveedor($rfc);
-                    $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroProveedor);
-                    break;
-                    
-                case 'actualizar_existente':
-                    // Mantener el proveedor existente (actualización)
-                    $proveedorAsignado = $accion['proveedor_activo'];
-                    $numeroProveedor = $proveedorAsignado->pv_numero;
-                    break;
-                    
-                case 'renovar_vencido':
-                    // Crear nuevo proveedor para renovación
-                    $numeroProveedor = $rfcProveedorService->generarNumeroProveedor($rfc);
-                    $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroProveedor);
-                    break;
-                    
-                default:
-                    return [
-                        'success' => false,
-                        'message' => 'No se puede procesar este trámite: ' . $accion['motivo']
-                    ];
-            }
-            
-            // Actualizar el trámite con el proveedor asignado
-            $tramite->update([
-                'proveedor_id' => $proveedorAsignado->id,
-                'status' => 'Aprobado',
-                'observaciones' => $comentarioGeneral,
-                'fecha_finalizacion' => now()
-            ]);
+                
+                $proveedorAsignado = null;
+                $numeroProveedor = null;
+                
+                switch ($accion['accion']) {
+                    case 'crear_nuevo':
+                        // Crear nuevo proveedor
+                        $numeroProveedor = $rfcProveedorService->generarNumeroProveedor($rfc);
+                        $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroProveedor);
+                        Log::info("Nuevo proveedor creado", [
+                            'numero_proveedor' => $numeroProveedor,
+                            'proveedor_id' => $proveedorAsignado->id
+                        ]);
+                        break;
+                        
+                    case 'actualizar_existente':
+                        // Mantener el proveedor existente (actualización)
+                        $proveedorAsignado = $accion['proveedor_activo'];
+                        $numeroProveedor = $proveedorAsignado->pv_numero;
+                        Log::info("Proveedor existente reutilizado", [
+                            'numero_proveedor' => $numeroProveedor,
+                            'proveedor_id' => $proveedorAsignado->id,
+                            'estado_padron' => $proveedorAsignado->estado_padron,
+                            'fecha_vencimiento' => $proveedorAsignado->fecha_vencimiento_padron
+                        ]);
+                        break;
+                        
+                    case 'renovar_vencido':
+                        // Crear nuevo proveedor para renovación
+                        $numeroProveedor = $rfcProveedorService->generarNumeroProveedor($rfc);
+                        $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroProveedor);
+                        Log::info("Nuevo proveedor creado para renovación", [
+                            'numero_proveedor' => $numeroProveedor,
+                            'proveedor_id' => $proveedorAsignado->id
+                        ]);
+                        break;
+                        
+                    default:
+                        return [
+                            'success' => false,
+                            'message' => 'No se puede procesar este trámite: ' . $accion['motivo']
+                        ];
+                }
+                
+                // Actualizar el trámite con el proveedor asignado
+                $tramite->update([
+                    'proveedor_id' => $proveedorAsignado->id,
+                    'status' => 'Aprobado',
+                    'observaciones' => $comentarioGeneral,
+                    'fecha_finalizacion' => now()
+                ]);
 
-            // Guardar comentario general
-            $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Aprobado');
+                // Guardar comentario general
+                $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Aprobado');
 
-            return [
-                'success' => true,
-                'message' => "Trámite aprobado exitosamente. Proveedor asignado: {$numeroProveedor}",
-                'numero_proveedor' => $numeroProveedor,
-                'proveedor_id' => $proveedorAsignado->id,
-                'accion_realizada' => $accion['accion']
-            ];
+                return [
+                    'success' => true,
+                    'message' => "Trámite aprobado exitosamente. Proveedor asignado: {$numeroProveedor}",
+                    'numero_proveedor' => $numeroProveedor,
+                    'proveedor_id' => $proveedorAsignado->id,
+                    'accion_realizada' => $accion['accion']
+                ];
             } catch (\Exception $e) {
                 Log::error("Error en proceso de aprobación para trámite {$tramiteId}", [
                     'error' => $e->getMessage(),
@@ -211,8 +243,8 @@ class DecisionesFinalesService
             
             // Obtener datos del trámite de forma segura
             $datosGenerales = $tramite->datosGenerales->first();
-            $contacto = $tramite->contacto->first();
-            $domicilio = $tramite->domicilio->first();
+            $contacto = $tramite->contactos->first();
+            $domicilio = $tramite->direcciones->first();
             
             Log::info("Datos obtenidos del trámite", [
                 'datos_generales_existe' => $datosGenerales ? 'Sí' : 'No',
@@ -228,39 +260,69 @@ class DecisionesFinalesService
                 throw new \Exception('No se encontró el proveedor asociado al trámite');
             }
             
+            // Validar que el proveedor tiene RFC
+            if (!$proveedorActual->rfc) {
+                throw new \Exception('El proveedor actual no tiene RFC asignado');
+            }
+            
             Log::info("Proveedor actual encontrado", [
                 'proveedor_id' => $proveedorActual->id,
                 'rfc' => $proveedorActual->rfc,
-                'razon_social' => $proveedorActual->razon_social
+                'usuario_id' => $proveedorActual->usuario_id,
+                'tipo_persona' => $proveedorActual->tipo_persona
             ]);
-        
-        $proveedor = Proveedor::create([
-            'rfc' => $proveedorActual->rfc,
-            'razon_social' => $datosGenerales ? ($datosGenerales->razon_social ?? null) : ($proveedorActual->razon_social ?? 'Sin razón social'),
-            'curp' => $datosGenerales ? ($datosGenerales->curp ?? null) : ($proveedorActual->curp ?? null),
-            'nombre_contacto' => $contacto ? ($contacto->nombre_contacto ?? $contacto->nombre ?? null) : ($proveedorActual->nombre_contacto ?? null),
-            'email' => $contacto ? ($contacto->email ?? null) : ($proveedorActual->email ?? null),
-            'telefono' => $contacto ? ($contacto->telefono ?? null) : ($proveedorActual->telefono ?? null),
-            'calle' => $domicilio ? ($domicilio->calle ?? null) : ($proveedorActual->calle ?? null),
-            'numero_exterior' => $domicilio ? ($domicilio->numero_exterior ?? null) : ($proveedorActual->numero_exterior ?? null),
-            'numero_interior' => $domicilio ? ($domicilio->numero_interior ?? null) : ($proveedorActual->numero_interior ?? null),
-            'colonia' => $domicilio ? ($domicilio->colonia ?? null) : ($proveedorActual->colonia ?? null),
-            'codigo_postal' => $domicilio ? ($domicilio->codigo_postal ?? null) : ($proveedorActual->codigo_postal ?? null),
-            'municipio' => $domicilio ? ($domicilio->municipio ?? null) : ($proveedorActual->municipio ?? null),
-            'estado' => $domicilio ? ($domicilio->estado ?? null) : ($proveedorActual->estado ?? null),
-            'pv_numero' => $numeroProveedor,
-            'estado_padron' => 'activo',
-            'fecha_vencimiento_padron' => now()->addYear(), // Vence en 1 año
-            'tramite_id' => $tramite->id
-        ]);
-        
-        Log::info("Proveedor creado exitosamente", [
-            'proveedor_id' => $proveedor->id,
-            'numero_pv' => $numeroProveedor,
-            'rfc' => $proveedor->rfc
-        ]);
-        
-        return $proveedor;
+            
+            // Obtener el usuario_id del proveedor actual o del usuario autenticado
+            $usuarioId = $proveedorActual->usuario_id ?? auth()->id();
+            if (!$usuarioId) {
+                throw new \Exception("No se puede crear un proveedor sin usuario_id. El proveedor actual no tiene usuario_id asignado y no hay usuario autenticado.");
+            }
+            
+            // Verificar que el proveedor actual tiene tipo_persona
+            $tipoPersona = $proveedorActual->tipo_persona ?? 'Moral';
+            
+            // Verificar que el RFC existe
+            if (!$proveedorActual->rfc) {
+                throw new \Exception("No se puede crear un proveedor sin RFC. El proveedor actual no tiene RFC asignado.");
+            }
+            
+            Log::info("Creando proveedor con datos", [
+                'usuario_id' => $usuarioId,
+                'rfc' => $proveedorActual->rfc,
+                'tipo_persona' => $tipoPersona,
+                'pv_numero' => $numeroProveedor
+            ]);
+            
+            try {
+                $proveedor = Proveedor::create([
+                    'usuario_id' => $usuarioId,
+                    'rfc' => $proveedorActual->rfc,
+                    'tipo_persona' => $tipoPersona,
+                    'pv_numero' => $numeroProveedor,
+                    'estado_padron' => 'Activo',
+                    'fecha_alta_padron' => now(),
+                    'fecha_vencimiento_padron' => now()->addYear(), // Vence en 1 año
+                ]);
+                
+                Log::info("Proveedor creado exitosamente", [
+                    'proveedor_id' => $proveedor->id,
+                    'numero_pv' => $numeroProveedor,
+                    'rfc' => $proveedor->rfc
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Error al crear proveedor", [
+                    'error' => $e->getMessage(),
+                    'data' => [
+                        'usuario_id' => $usuarioId,
+                        'rfc' => $proveedorActual->rfc,
+                        'tipo_persona' => $tipoPersona,
+                        'pv_numero' => $numeroProveedor
+                    ]
+                ]);
+                throw $e;
+            }
+            
+            return $proveedor;
         } catch (\Exception $e) {
             Log::error("Error creando nuevo proveedor para trámite {$tramite->id}", [
                 'error' => $e->getMessage(),

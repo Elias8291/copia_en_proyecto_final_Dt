@@ -42,17 +42,45 @@ class RfcProveedorService
 
     public function buscarProveedorActivo(string $rfc): ?Proveedor
     {
-        return Proveedor::where('rfc', $rfc)
-            ->where('estado_padron', 'activo')
+        $proveedor = Proveedor::where('rfc', $rfc)
+            ->where('estado_padron', 'Activo')
+            ->where('fecha_vencimiento_padron', '>', Carbon::now())
             ->orderBy('created_at', 'desc')
             ->first();
+            
+        \Log::info("Búsqueda de proveedor activo", [
+            'rfc' => $rfc,
+            'encontrado' => $proveedor ? 'Sí' : 'No',
+            'proveedor_id' => $proveedor ? $proveedor->id : null,
+            'pv_numero' => $proveedor ? $proveedor->pv_numero : null,
+            'estado_padron' => $proveedor ? $proveedor->estado_padron : null,
+            'fecha_vencimiento' => $proveedor ? $proveedor->fecha_vencimiento_padron : null,
+            'fecha_actual' => Carbon::now()
+        ]);
+        
+        return $proveedor;
     }
 
     public function proveedorEstaActivo(Proveedor $proveedor): bool
     {
-        return $proveedor->estado_padron === 'activo' && 
+        $estaActivo = $proveedor->estado_padron === 'Activo' && 
                $proveedor->fecha_vencimiento_padron && 
                $proveedor->fecha_vencimiento_padron > Carbon::now();
+               
+        \Log::info("Verificación de proveedor activo", [
+            'proveedor_id' => $proveedor->id,
+            'rfc' => $proveedor->rfc,
+            'pv_numero' => $proveedor->pv_numero,
+            'estado_padron' => $proveedor->estado_padron,
+            'fecha_vencimiento' => $proveedor->fecha_vencimiento_padron,
+            'fecha_actual' => Carbon::now(),
+            'esta_activo' => $estaActivo,
+            'condicion_estado' => $proveedor->estado_padron === 'Activo',
+            'condicion_fecha_existe' => $proveedor->fecha_vencimiento_padron ? 'Sí' : 'No',
+            'condicion_fecha_valida' => $proveedor->fecha_vencimiento_padron ? ($proveedor->fecha_vencimiento_padron > Carbon::now()) : false
+        ]);
+        
+        return $estaActivo;
     }
 
     public function determinarAccion(string $rfc): array
@@ -161,6 +189,13 @@ class RfcProveedorService
                 ->orderBy('pv_numero', 'desc')
                 ->first();
             
+            \Log::info("Búsqueda de último proveedor", [
+                'rfc' => $rfc,
+                'encontrado' => $ultimoProveedor ? 'Sí' : 'No',
+                'ultimo_pv_numero' => $ultimoProveedor ? $ultimoProveedor->pv_numero : null,
+                'ultimo_proveedor_id' => $ultimoProveedor ? $ultimoProveedor->id : null
+            ]);
+            
             if (!$ultimoProveedor || !$ultimoProveedor->pv_numero) {
                 \Log::info("No se encontró proveedor previo para RFC {$rfc}, asignando 001");
                 return '001';
@@ -172,7 +207,8 @@ class RfcProveedorService
             \Log::info("Número de proveedor generado", [
                 'rfc' => $rfc,
                 'ultimo_numero' => $ultimoProveedor->pv_numero,
-                'nuevo_numero' => $nuevoNumero
+                'nuevo_numero' => $nuevoNumero,
+                'ultimo_proveedor_id' => $ultimoProveedor->id
             ]);
             
             return $nuevoNumero;
@@ -209,6 +245,37 @@ class RfcProveedorService
             })
             ->orderBy('nombre')
             ->get();
+    }
+
+    public function debugProveedoresRfc(string $rfc): array
+    {
+        \Log::info("=== DEBUG PROVEEDORES RFC: {$rfc} ===");
+        
+        $proveedores = $this->buscarProveedoresPorRfc($rfc);
+        $proveedorActivo = $this->buscarProveedorActivo($rfc);
+        
+        $debugInfo = [
+            'rfc' => $rfc,
+            'total_proveedores' => $proveedores->count(),
+            'proveedor_activo_encontrado' => $proveedorActivo ? 'Sí' : 'No',
+            'proveedores_detalle' => []
+        ];
+        
+        foreach ($proveedores as $proveedor) {
+            $estaActivo = $this->proveedorEstaActivo($proveedor);
+            $debugInfo['proveedores_detalle'][] = [
+                'id' => $proveedor->id,
+                'pv_numero' => $proveedor->pv_numero,
+                'estado_padron' => $proveedor->estado_padron,
+                'fecha_vencimiento' => $proveedor->fecha_vencimiento_padron,
+                'esta_activo' => $estaActivo,
+                'created_at' => $proveedor->created_at
+            ];
+        }
+        
+        \Log::info("Debug info", $debugInfo);
+        
+        return $debugInfo;
     }
 
     public function obtenerTramitePendiente(string $rfc, ?int $tramiteIdExcluir = null): ?\App\Models\Tramite

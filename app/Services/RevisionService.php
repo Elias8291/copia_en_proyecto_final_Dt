@@ -104,6 +104,46 @@ class RevisionService
         };
         
         $tramite->update(['status' => $nuevoEstado]);
+        
+        // Buscar la revisión existente para este trámite y tipo
+        $revision = RevisionTramite::where('tramite_id', $tramiteId)
+            ->where('tipo_revision', $tipoRevision)
+            ->where('estado', '!=', 'Finalizada')
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
+        if ($revision) {
+            // Si no hay revisor asignado y el usuario actual tiene el rol correspondiente, asignarlo
+            if (!$revision->revisor_id) {
+                $usuarioActual = Auth::user();
+                $rolRequerido = match($tipoRevision) {
+                    'Digital' => 'Revisor Digital',
+                    'Presencial' => 'Revisor Presencial',
+                    'Domiciliaria' => 'Revisor Domiciliario',
+                    default => 'Revisor Digital'
+                };
+                
+                if ($usuarioActual && $usuarioActual->hasRole($rolRequerido)) {
+                    $revision->update([
+                        'revisor_id' => $usuarioActual->id,
+                        'estado' => 'En_Proceso',
+                        'fecha_inicio' => now()
+                    ]);
+                    
+                    \Log::info('Revisor asignado automáticamente a la revisión', [
+                        'tramite_id' => $tramiteId,
+                        'tipo_revision' => $tipoRevision,
+                        'revisor_id' => $usuarioActual->id
+                    ]);
+                }
+            } else {
+                // Si ya hay revisor asignado, solo cambiar el estado a En_Proceso
+                $revision->update([
+                    'estado' => 'En_Proceso',
+                    'fecha_inicio' => now()
+                ]);
+            }
+        }
     }
 
     /**
@@ -327,6 +367,21 @@ class RevisionService
         }
         $secciones[] = 'archivos';
         
+        // Obtener información detallada de cada sección
+        $seccionesDetalle = [];
+        foreach ($secciones as $seccion) {
+            $revision = \App\Models\SeccionRevision::where('tramite_id', $tramiteId)
+                ->where('seccion', $seccion)
+                ->first();
+            
+            $seccionesDetalle[] = [
+                'nombre' => $this->obtenerNombreSeccion($seccion),
+                'seccion' => $seccion,
+                'estado' => $revision ? $revision->estado : 'Pendiente',
+                'comentario' => $revision ? $revision->comentario : null
+            ];
+        }
+        
         $seccionesEvaluadas = \App\Models\SeccionRevision::where('tramite_id', $tramiteId)
             ->whereIn('seccion', $secciones)
             ->count();
@@ -357,13 +412,30 @@ class RevisionService
         $todasAprobadas = ($seccionesEvaluadas === $totalSecciones) && ($seccionesAprobadas === $totalSecciones);
         
         return [
+            'success' => true,
             'estado' => $estado,
             'totalSecciones' => $totalSecciones,
             'seccionesEvaluadas' => $seccionesEvaluadas,
             'seccionesAprobadas' => $seccionesAprobadas,
             'seccionesRechazadas' => $seccionesRechazadas,
-            'todas_aprobadas' => $todasAprobadas
+            'todas_aprobadas' => $todasAprobadas,
+            'secciones' => $seccionesDetalle
         ];
+    }
+    
+    // Obtener nombre legible de la sección
+    private function obtenerNombreSeccion(string $seccion): string
+    {
+        return match($seccion) {
+            'datos_generales' => 'Datos Generales',
+            'actividades' => 'Actividades Económicas',
+            'domicilio' => 'Domicilio',
+            'constitucion' => 'Constitución',
+            'accionistas' => 'Accionistas',
+            'apoderado' => 'Apoderado Legal',
+            'archivos' => 'Archivos',
+            default => ucfirst(str_replace('_', ' ', $seccion))
+        };
     }
 
     /**

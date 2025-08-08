@@ -70,45 +70,259 @@ function confirmarDecision(decision, titulo, mensaje) {
         return;
     }
     
-    // Verificar que el formulario existe
-    const form = document.getElementById('{{ $formId }}');
-    if (!form) {
-        console.error('Formulario no encontrado:', '{{ $formId }}');
-        alert('Error: Formulario no encontrado');
+    // Si es aprobar, verificar el estado de las secciones primero
+    if (decision === 'agendar_cita') {
+        verificarEstadoSecciones(function() {
+            // Si todas están aprobadas, continuar con la confirmación
+            showConfirmModal(
+                'Confirmar: ' + titulo,
+                mensaje,
+                null,
+                function() {
+                    console.log('Callback de confirmación ejecutado');
+                    ejecutarDecisionFinal(decision);
+                }
+            );
+        });
+    } else {
+        // Para otras decisiones, mostrar confirmación directamente
+        showConfirmModal(
+            'Confirmar: ' + titulo,
+            mensaje,
+            null,
+            function() {
+                console.log('Callback de confirmación ejecutado');
+                ejecutarDecisionFinal(decision);
+            }
+        );
+    }
+}
+
+function verificarEstadoSecciones(callback) {
+    const tramiteId = document.querySelector('meta[name="tramite-id"]')?.content;
+    if (!tramiteId) {
+        console.error('No se encontró el ID del trámite');
+        callback();
         return;
     }
     
-    console.log('Formulario encontrado:', form);
+    console.log('Verificando estado de secciones para trámite:', tramiteId);
     
-    // Mostrar el modal de confirmación
-    showConfirmModal(
-        'Confirmar: ' + titulo,
-        mensaje,
-        '{{ $formId }}',
-        function() {
-            console.log('Callback de confirmación ejecutado');
-            // Callback que se ejecuta cuando se confirma
-            const form = document.getElementById('{{ $formId }}');
-            if (form) {
-                console.log('Procesando formulario...');
-                // Crear un campo hidden para la decisión final
-                let hiddenField = form.querySelector('input[name="decision_final"]');
-                if (!hiddenField) {
-                    hiddenField = document.createElement('input');
-                    hiddenField.type = 'hidden';
-                    hiddenField.name = 'decision_final';
-                    form.appendChild(hiddenField);
+    // Obtener el estado general de las secciones
+    fetch(`/revisiones/${tramiteId}/estado-general`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Estado de secciones (respuesta completa):', data);
+            console.log('Tipo de data:', typeof data);
+            console.log('Keys de data:', Object.keys(data));
+            
+            try {
+                // Verificar que la respuesta tenga la estructura esperada
+                if (data && data.success && typeof data.todas_aprobadas !== 'undefined') {
+                    console.log('Data.todas_aprobadas:', data.todas_aprobadas);
+                    console.log('Data.secciones:', data.secciones);
+                    
+                    if (!data.todas_aprobadas && data.secciones && Array.isArray(data.secciones)) {
+                        const seccionesPendientes = data.secciones.filter(s => s.estado !== 'Aprobado');
+                        console.log('Secciones pendientes:', seccionesPendientes);
+                        
+                                            if (seccionesPendientes.length > 0) {
+                        const seccionesNombres = seccionesPendientes.map(s => s.nombre).join(', ');
+                        const mensaje = `Secciones pendientes: ${seccionesNombres}`;
+                        
+                        mostrarNotificacion(mensaje, 'error');
+                        return;
+                    }
+                    }
+                } else {
+                    console.warn('Respuesta del servidor no tiene la estructura esperada:', data);
+                    // Si no podemos verificar, continuar de todas formas
                 }
-                hiddenField.value = decision;
-                console.log('Decisión final establecida:', decision);
-                
-                // Enviar el formulario
-                console.log('Enviando formulario...');
-                form.submit();
-            } else {
-                console.error('Formulario no encontrado en callback');
+            } catch (error) {
+                console.error('Error al procesar la respuesta:', error);
+                // Si hay error al procesar, continuar de todas formas
+            }
+            
+            callback();
+        })
+        .catch(error => {
+            console.error('Error al verificar estado de secciones:', error);
+            callback(); // Continuar de todas formas
+        });
+}
+
+function ejecutarDecisionFinal(decision) {
+    console.log('Ejecutando decisión final:', decision);
+    
+    // Obtener el ID del trámite desde el meta tag
+    const tramiteId = document.querySelector('meta[name="tramite-id"]')?.content;
+    if (!tramiteId) {
+        console.error('No se encontró el ID del trámite');
+        alert('Error: No se encontró el ID del trámite');
+        return;
+    }
+    
+    // Obtener el token CSRF
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    if (!csrfToken) {
+        console.error('No se encontró el token CSRF');
+        alert('Error: No se encontró el token CSRF');
+        return;
+    }
+    
+    // Obtener comentario general
+    const comentarioGeneral = document.getElementById('comentario_general')?.value || '';
+    
+    // Mapear la decisión a la ruta correcta
+    let url;
+    switch(decision) {
+        case 'agendar_cita':
+            url = `/revisiones/${tramiteId}/aprobar-y-agendar`;
+            break;
+        case 'correcciones':
+            url = `/revisiones/${tramiteId}/rechazar-correccion`;
+            break;
+        case 'rechazado':
+            url = `/revisiones/${tramiteId}/rechazar-completo`;
+            break;
+        default:
+            console.error('Decisión no válida:', decision);
+            alert('Error: Decisión no válida');
+            return;
+    }
+    
+    console.log('Enviando solicitud a:', url);
+    
+    // Enviar solicitud AJAX
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({
+            comentario_general: comentarioGeneral
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Respuesta recibida:', data);
+        if (data.success) {
+            // Mostrar modal de éxito
+            mostrarModalExito(data.message, '/revisiones');
+        } else {
+            // Mostrar error específico
+            const mensajeError = data.message || 'Error al procesar la decisión';
+            console.error('Error del servidor:', mensajeError);
+            mostrarNotificacion(mensajeError, 'error');
+            
+            // Si es un error de validación (secciones no aprobadas), mostrar mensaje adicional
+            if (mensajeError.includes('Todas las secciones deben estar aprobadas')) {
+                setTimeout(() => {
+                    mostrarNotificacion('Aprobe todas las secciones primero', 'info');
+                }, 1000);
             }
         }
-    );
+    })
+    .catch(error => {
+        console.error('Error en la solicitud:', error);
+        mostrarNotificacion('Error de conexión al procesar la solicitud', 'error');
+    });
+}
+
+// Función para mostrar modal de éxito
+function mostrarModalExito(mensaje, urlRedireccion) {
+    // Crear el modal de éxito dinámicamente
+    const modalHtml = `
+        <div id="modal-exito-dinamico" class="fixed z-50 inset-0 overflow-y-auto">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                    <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+                </div>
+                
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                
+                <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
+                    role="dialog" aria-modal="true" aria-labelledby="modal-headline-exito">
+                    
+                    <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
+                        <button type="button" data-behavior="cancel" class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline-exito">
+                                ¡Éxito!
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    ${mensaje}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                        <button type="button" 
+                                onclick="cerrarModalExito('${urlRedireccion}')"
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Aceptar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Agregar el modal al body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Configurar event listeners
+    const modal = document.getElementById('modal-exito-dinamico');
+    
+    // Botones de cancelar
+    const cancelBtns = modal.querySelectorAll('[data-behavior="cancel"]');
+    cancelBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            cerrarModalExito(urlRedireccion);
+        });
+    });
+    
+    // Cerrar al hacer clic fuera del modal
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            cerrarModalExito(urlRedireccion);
+        }
+    });
+    
+    // Cerrar con la tecla Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            cerrarModalExito(urlRedireccion);
+        }
+    });
+}
+
+// Función para cerrar el modal de éxito y redirigir
+function cerrarModalExito(urlRedireccion) {
+    const modal = document.getElementById('modal-exito-dinamico');
+    if (modal) {
+        modal.remove();
+    }
+    // Redirigir a la URL especificada
+    window.location.href = urlRedireccion;
 }
 </script> 

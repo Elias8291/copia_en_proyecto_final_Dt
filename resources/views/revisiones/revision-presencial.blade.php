@@ -2,6 +2,8 @@
 
 @section('title', 'Revisión Presencial')
 
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
 @section('content')
 <!-- Container principal con padding responsive -->
 <div class="p-2 xs:p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10">
@@ -72,7 +74,7 @@
                 <div class="mb-3 xs:mb-4 sm:mb-5">
                     <h2 class="text-base xs:text-lg sm:text-xl md:text-2xl font-bold text-gray-800 leading-tight">Documentos para Cotejo Presencial</h2>
                     <p class="text-xs xs:text-sm sm:text-base text-gray-600 mt-1 xs:mt-2">Verificación presencial de documentos originales</p>
-                </div>
+                        </div>
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-3 xs:p-4 sm:p-5 md:p-6 lg:p-8">
                     <x-revision.evaluacion-archivos 
                         :archivosSubidos="$archivosSubidos"
@@ -109,7 +111,7 @@
                             class="px-3 xs:px-4 sm:px-5 py-2 xs:py-2.5 sm:py-3 bg-green-600 text-white text-xs xs:text-sm sm:text-base font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm min-h-[44px]">
                         <svg class="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 mr-1 xs:mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
+                    </svg>
                         <span class="hidden xs:inline">Aprobar Sección</span>
                         <span class="xs:hidden">Aprobar</span>
                     </button>
@@ -131,21 +133,21 @@
                             onclick="aprobarYAsignarProveedor()"
                             class="inline-flex items-center justify-center px-3 xs:px-4 sm:px-6 md:px-8 py-2 xs:py-2.5 sm:py-3 md:py-4 bg-emerald-600 text-white text-xs xs:text-sm sm:text-base md:text-lg font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-sm min-h-[44px]">
                         <svg class="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-1 xs:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
                         <span class="hidden xs:inline">Aprobar y Asignar Proveedor</span>
                         <span class="xs:hidden">Aprobar</span>
-                    </button>
-                    
+                        </button>
+                        
                     <!-- Botón Rechazar -->
                     <button type="button" 
                             onclick="rechazarTramite()"
                             class="inline-flex items-center justify-center px-3 xs:px-4 sm:px-6 md:px-8 py-2 xs:py-2.5 sm:py-3 md:py-4 bg-red-600 text-white text-xs xs:text-sm sm:text-base md:text-lg font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm min-h-[44px]">
                         <svg class="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-1 xs:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
                         Rechazar
-                    </button>
+                        </button>
                 </div>
             </div>
         </div>
@@ -245,15 +247,17 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
 }
 
 // Validar que los documentos hayan sido evaluados antes de enviar
-document.getElementById('formRevisionPresencial').addEventListener('submit', function(e) {
-    const decisionDocumentos = document.getElementById('decision_documentos').value;
-    
-    if (decisionDocumentos === 'Pendiente') {
+const formRevisionPresencial = document.getElementById('formRevisionPresencial');
+if (formRevisionPresencial) {
+    formRevisionPresencial.addEventListener('submit', function(e) {
+        const decisionDocumentos = document.getElementById('decision_documentos');
+        if (decisionDocumentos && decisionDocumentos.value === 'Pendiente') {
         e.preventDefault();
         mostrarNotificacion('Debe evaluar los documentos antes de finalizar la revisión presencial', 'warning');
         return false;
     }
 });
+}
 
 // Funciones para decisiones finales
 function aprobarYAsignarProveedor() {
@@ -303,19 +307,27 @@ function aprobarYAsignarProveedor() {
                     comentario_general: comentarios
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
                 if (data.success) {
                     mostrarNotificacion(data.message, 'success');
                     setTimeout(() => {
                         window.location.href = '/revisiones';
                     }, 2000);
                 } else {
-                    mostrarNotificacion(data.message, 'error');
+                    mostrarNotificacion(data.message || 'Error desconocido', 'error');
                 }
             })
             .catch(error => {
-                mostrarNotificacion('Error al procesar la solicitud', 'error');
+                console.error('Error completo:', error);
+                mostrarNotificacion('Error al procesar la solicitud: ' + error.message, 'error');
             });
             
             modalAprobar.classList.add('hidden');

@@ -2,13 +2,15 @@
 
 namespace App\Services\Tramites;
 
-use App\Models\Tramite;
 use App\Models\Proveedor;
+use App\Models\RevisionTramite;
+use App\Models\Tramite;
+use App\Models\User;
+use App\Services\Tramites\ConstitucionService;
+use App\Services\Tramites\ContactoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Services\Tramites\ContactoService;
-use App\Services\Tramites\ConstitucionService;
 
 class TramiteService
 {
@@ -54,11 +56,14 @@ class TramiteService
 
             // 1. Crear o obtener proveedor
             $proveedor = $this->crearObtenerProveedor($request);
-            
+
             // 2. Crear trámite base
             $tramite = $this->crearTramiteBase($proveedor, $request);
-            
-            // 3. Guardar secciones del trámite
+
+            // 3. Crear revisión digital automática
+            $this->crearRevisionDigitalAutomatica($tramite);
+
+            // 4. Guardar secciones del trámite
             $this->guardarSecciones($tramite, $proveedor, $request);
 
             Log::info('TramiteService: Trámite creado exitosamente', [
@@ -95,7 +100,7 @@ class TramiteService
                 'fecha_alta_padron' => null,
                 'fecha_vencimiento_padron' => null,
             ]);
-            
+
             Log::info('TramiteService: Proveedor creado', [
                 'proveedor_id' => $proveedor->id,
                 'rfc' => $rfc
@@ -110,12 +115,42 @@ class TramiteService
         return $proveedor;
     }
 
+    private function crearRevisionDigitalAutomatica(Tramite $tramite): void
+    {
+        // Buscar un revisor digital disponible
+        $revisorDigital = User::role('Revisor Digital')->first();
+
+        if (!$revisorDigital) {
+            Log::warning('TramiteService: No se encontró revisor digital disponible', [
+                'tramite_id' => $tramite->id
+            ]);
+            // Si no hay revisor digital, crear la revisión sin revisor asignado
+            // (se asignará cuando un revisor digital inicie la revisión)
+            $revisorDigital = null;
+        }
+
+        // Crear el registro de revisión digital
+        RevisionTramite::create([
+            'tramite_id' => $tramite->id,
+            'tipo_revision' => 'Digital',
+            'revisor_id' => $revisorDigital ? $revisorDigital->id : null,
+            'estado' => 'Pendiente',
+            'fecha_inicio' => now(),
+            'intento' => 1
+        ]);
+
+        Log::info('TramiteService: Revisión digital creada automáticamente', [
+            'tramite_id' => $tramite->id,
+            'revisor_id' => $revisorDigital ? $revisorDigital->id : null
+        ]);
+    }
+
     private function crearTramiteBase(Proveedor $proveedor, Request $request): Tramite
     {
         return Tramite::create([
             'proveedor_id' => $proveedor->id,
             'tipo_tramite' => $request->tipo_tramite ?? 'Inscripcion',
-            'status' => 'Pendiente',
+            'status' => 'Revision_Digital',
             'fecha_inicio' => now(),
             'correcciones_count' => 0,
             'paso_actual' => 1,
@@ -127,27 +162,27 @@ class TramiteService
         // Datos generales (siempre se guardan)
         $this->datosGeneralesService->guardar($tramite, $proveedor, $request);
         $this->contactoService->guardar($tramite, $proveedor, $request);
-        
+
         // Domicilio (siempre se guarda)
         $this->domicilioService->guardar($tramite, $proveedor, $request);
-        
+
         // Actividades económicas (siempre se guardan)
         $this->actividadesService->guardar($tramite, $request);
-        
+
         // Solo para personas morales
         if ($proveedor->tipo_persona === 'Moral') {
             // Constitución (siempre requerida para personas morales)
             $this->constitucionService->guardar($tramite, $proveedor, $request);
-            
+
             if ($request->filled('accionistas')) {
                 $this->accionistasService->guardar($tramite, $proveedor, $request);
             }
-            
+
             if ($request->filled('nombre_apoderado')) {
                 $this->apoderadoService->guardar($tramite, $proveedor, $request);
             }
         }
-        
+
         // Archivos (siempre se procesan)
         if ($request->hasFile('documentos')) {
             $this->archivosService->guardar($tramite, $proveedor, $request);
@@ -177,20 +212,20 @@ class TramiteService
 
             // 1. Actualizar datos generales usando el servicio específico
             $this->datosGeneralesService->actualizar($tramite, $request);
-            
+
             // 2. Actualizar domicilio usando el servicio específico
             $this->domicilioService->actualizar($tramite, $request);
-            
+
             // 3. Actualizar actividades económicas usando el servicio específico
             $this->actividadesService->actualizar($tramite, $request);
-            
+
             // 4. Actualizar datos específicos según tipo de persona
             if ($tramite->proveedor->tipo_persona === 'Moral') {
                 $this->constitucionService->actualizar($tramite, $request);
                 $this->accionistasService->actualizar($tramite, $request);
                 $this->apoderadoService->actualizar($tramite, $request);
             }
-            
+
             // 5. Actualizar archivos si se proporcionaron nuevos
             if ($request->hasFile('archivos')) {
                 $this->archivosService->actualizar($tramite, $request);
@@ -199,7 +234,7 @@ class TramiteService
             // 6. Cambiar estado del trámite a pendiente para nueva revisión
             $tramite->update([
                 'status' => 'Pendiente',
-                'observaciones' => null, // Limpiar observaciones anteriores
+                'observaciones' => null,  // Limpiar observaciones anteriores
                 'correcciones_count' => $tramite->correcciones_count + 1
             ]);
 
@@ -211,6 +246,4 @@ class TramiteService
             return $tramite->fresh();
         });
     }
-
-
-} 
+}

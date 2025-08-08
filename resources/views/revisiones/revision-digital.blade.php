@@ -44,6 +44,34 @@
             </div>
         </div>
 
+        <form id="formRevisionCompleta" method="POST" action="{{ route('revisiones.procesar-digital', $tramite) }}">
+            @csrf
+            <!-- Campos ocultos para cada sección -->
+            <input type="hidden" name="secciones[datos_generales][decision]" id="decision_datos_generales" value="Pendiente">
+            <input type="hidden" name="secciones[datos_generales][comentario]" id="comentario_datos_generales_hidden" value="">
+            
+            <input type="hidden" name="secciones[actividades][decision]" id="decision_actividades" value="Pendiente">
+            <input type="hidden" name="secciones[actividades][comentario]" id="comentario_actividades_hidden" value="">
+            
+            <input type="hidden" name="secciones[domicilio][decision]" id="decision_domicilio" value="Pendiente">
+            <input type="hidden" name="secciones[domicilio][comentario]" id="comentario_domicilio_hidden" value="">
+            
+            @if($viewModel->isPersonaMoral())
+                <input type="hidden" name="secciones[constitucion][decision]" id="decision_constitucion" value="Pendiente">
+                <input type="hidden" name="secciones[constitucion][comentario]" id="comentario_constitucion_hidden" value="">
+                
+                <input type="hidden" name="secciones[accionistas][decision]" id="decision_accionistas" value="Pendiente">
+                <input type="hidden" name="secciones[accionistas][comentario]" id="comentario_accionistas_hidden" value="">
+                
+                <input type="hidden" name="secciones[apoderado][decision]" id="decision_apoderado" value="Pendiente">
+                <input type="hidden" name="secciones[apoderado][comentario]" id="comentario_apoderado_hidden" value="">
+            @endif
+            
+            <input type="hidden" name="secciones[archivos][decision]" id="decision_archivos" value="Pendiente">
+            <input type="hidden" name="secciones[archivos][comentario]" id="comentario_archivos_hidden" value="">
+            
+            <input type="hidden" name="comentario_general" id="comentario_general_hidden" value="">
+            
         <div class="p-6">
             <!-- Información del trámite -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -230,24 +258,13 @@
                 </div>
                     
                 <!-- Botones de decisión -->
-                <div class="flex justify-end space-x-3 mt-4">
-                    <button type="button" 
-                            onclick="evaluarSeccion('datos_generales', 'Rechazado')"
-                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Rechazar Sección
-                    </button>
-                    <button type="button" 
-                            onclick="evaluarSeccion('datos_generales', 'Aprobado')"
-                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Aprobar Sección
-                    </button>
-                </div>
+                <x-revision.botones-evaluacion 
+                    seccion="datos_generales"
+                    titulo="Datos Generales"
+                    style="compact"
+                    textoAprobar="Aprobar Sección"
+                    textoRechazar="Rechazar Sección"
+                />
             </div>
 
             <x-ui.separador-simple margin="my-8" color="border-emerald-300" />
@@ -295,24 +312,13 @@
                 </div>
                     
                 <!-- Botones de decisión -->
-                <div class="flex justify-end space-x-3 mt-4">
-                    <button type="button" 
-                            onclick="evaluarSeccion('actividades', 'Rechazado')"
-                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Rechazar Sección
-                    </button>
-                    <button type="button" 
-                            onclick="evaluarSeccion('actividades', 'Aprobado')"
-                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Aprobar Sección
-                    </button>
-                </div>
+                <x-revision.botones-evaluacion 
+                    seccion="actividades"
+                    titulo="Actividades Económicas"
+                    style="compact"
+                    textoAprobar="Aprobar Sección"
+                    textoRechazar="Rechazar Sección"
+                />
             </div>
 
             <x-ui.separador-simple margin="my-8" color="border-amber-300" />
@@ -360,24 +366,13 @@
                 </div>
                     
                 <!-- Botones de decisión -->
-                <div class="flex justify-end space-x-3 mt-4">
-                    <button type="button" 
-                            onclick="evaluarSeccion('domicilio', 'Rechazado')"
-                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Rechazar Sección
-                    </button>
-                    <button type="button" 
-                            onclick="evaluarSeccion('domicilio', 'Aprobado')"
-                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Aprobar Sección
-                    </button>
-                </div>
+                <x-revision.botones-evaluacion 
+                    seccion="domicilio"
+                    titulo="Domicilio"
+                    style="compact"
+                    textoAprobar="Aprobar Sección"
+                    textoRechazar="Rechazar Sección"
+                />
             </div>
 
             @if($viewModel->isPersonaMoral())
@@ -426,24 +421,13 @@
                     </div>
                         
                     <!-- Botones de decisión -->
-                    <div class="flex justify-end space-x-3 mt-4">
-                        <button type="button" 
-                                onclick="evaluarSeccion('constitucion', 'Rechazado')"
-                                class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            Rechazar Sección
-                        </button>
-                        <button type="button" 
-                                onclick="evaluarSeccion('constitucion', 'Aprobado')"
-                                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Aprobar Sección
-                        </button>
-                    </div>
+                    <x-revision.botones-evaluacion 
+                        seccion="constitucion"
+                        titulo="Constitución"
+                        style="compact"
+                        textoAprobar="Aprobar Sección"
+                        textoRechazar="Rechazar Sección"
+                    />
                 </div>
 
                 <x-ui.separador-simple margin="my-8" color="border-rose-300" />
@@ -491,24 +475,13 @@
                     </div>
                         
                     <!-- Botones de decisión -->
-                    <div class="flex justify-end space-x-3 mt-4">
-                        <button type="button" 
-                                onclick="evaluarSeccion('accionistas', 'Rechazado')"
-                                class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            Rechazar Sección
-                        </button>
-                        <button type="button" 
-                                onclick="evaluarSeccion('accionistas', 'Aprobado')"
-                                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Aprobar Sección
-                        </button>
-                    </div>
+                    <x-revision.botones-evaluacion 
+                        seccion="accionistas"
+                        titulo="Accionistas"
+                        style="compact"
+                        textoAprobar="Aprobar Sección"
+                        textoRechazar="Rechazar Sección"
+                    />
                 </div>
 
                 <x-ui.separador-simple margin="my-8" color="border-cyan-300" />
@@ -556,24 +529,13 @@
                     </div>
                         
                     <!-- Botones de decisión -->
-                    <div class="flex justify-end space-x-3 mt-4">
-                        <button type="button" 
-                                onclick="evaluarSeccion('apoderado', 'Rechazado')"
-                                class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            Rechazar Sección
-                        </button>
-                        <button type="button" 
-                                onclick="evaluarSeccion('apoderado', 'Aprobado')"
-                                class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Aprobar Sección
-                        </button>
-                    </div>
+                    <x-revision.botones-evaluacion 
+                        seccion="apoderado"
+                        titulo="Apoderado Legal"
+                        style="compact"
+                        textoAprobar="Aprobar Sección"
+                        textoRechazar="Rechazar Sección"
+                    />
                 </div>
             @endif
 
@@ -605,24 +567,13 @@
                 </div>
                     
                 <!-- Botones de decisión -->
-                <div class="flex justify-end space-x-3 mt-4">
-                    <button type="button" 
-                            onclick="evaluarSeccion('archivos', 'Rechazado')"
-                            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Rechazar Sección
-                    </button>
-                    <button type="button" 
-                            onclick="evaluarSeccion('archivos', 'Aprobado')"
-                            class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Aprobar Sección
-                    </button>
-                </div>
+                <x-revision.botones-evaluacion 
+                    seccion="archivos"
+                    titulo="Archivos"
+                    style="compact"
+                    textoAprobar="Aprobar Sección"
+                    textoRechazar="Rechazar Sección"
+                />
             </div>
 
             <!-- Comentarios Generales -->
@@ -649,40 +600,17 @@
                         <p class="text-sm text-gray-600">Tomar decisión final sobre el trámite</p>
                     </div>
                     
-                    <div class="flex justify-end space-x-4">
-                        <!-- Botón Aprobar y Agendar Cita -->
-                        <button type="button" 
-                                onclick="aprobarYAgendarCita()"
-                                class="inline-flex items-center px-6 py-3 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Aprobar y Agendar Cita
-                        </button>
-                        
-                        <!-- Botón Rechazar y Para Corrección -->
-                        <button type="button" 
-                                onclick="rechazarParaCorreccion()"
-                                class="inline-flex items-center px-6 py-3 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.084 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                            </svg>
-                            Rechazar y Para Corrección
-                        </button>
-                        
-                        <!-- Botón Rechazar Trámite -->
-                        <button type="button" 
-                                onclick="rechazarTramite()"
-                                class="inline-flex items-center px-6 py-3 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            Rechazar Trámite
-                        </button>
-                    </div>
+                    <x-revision.botones-decision-final 
+                        :showAprobar="true"
+                        :showCorrecciones="true"
+                        :showRechazar="true"
+                        layout="flex"
+                        formId="formRevisionCompleta"
+                    />
                 </div>
             </div>
         </div>
+        </form>
         </div>
     </div>
 
@@ -697,6 +625,84 @@
     border-left: 4px solid #ef4444;
     background-color: #fef2f2;
 }
+
+/* Estilos para notificaciones */
+.fixed {
+    position: fixed;
+}
+
+.top-4 {
+    top: 1rem;
+}
+
+.right-4 {
+    right: 1rem;
+}
+
+.p-4 {
+    padding: 1rem;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+.text-white {
+    color: white;
+}
+
+.transition-opacity {
+    transition-property: opacity;
+}
+
+.duration-300 {
+    transition-duration: 300ms;
+}
+
+.opacity-100 {
+    opacity: 1;
+}
+
+.opacity-0 {
+    opacity: 0;
+}
+
+.bg-green-500 {
+    background-color: #10b981;
+}
+
+.bg-yellow-500 {
+    background-color: #eab308;
+}
+
+.bg-red-500 {
+    background-color: #ef4444;
+}
+
+.bg-blue-500 {
+    background-color: #3b82f6;
+}
+
+.max-w-xs {
+    max-width: 20rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.p-3 {
+    padding: 0.75rem;
+}
 </style>
 
 <!-- JavaScript -->
@@ -706,7 +712,7 @@ window.esPersonaMoral = @json($viewModel->isPersonaMoral());
 
 <!-- Modal de Confirmación -->
 <x-ui.modals.modal-confirmacion 
-    id="modal-confirmacion"
+    id="modal-confirmacion-decision"
     title="Confirmar acción"
     message="¿Está seguro que desea realizar esta acción?"
     confirmText="Confirmar"
@@ -721,4 +727,37 @@ window.esPersonaMoral = @json($viewModel->isPersonaMoral());
 <script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
 <script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 <script src="{{ asset('js/revision/decisiones-finales.js') }}"></script>
-@endsection 
+
+<script>
+// Función para mostrar notificaciones (compacta)
+function mostrarNotificacion(mensaje, tipo = 'info') {
+    // Acortar mensajes largos
+    let mensajeCorto = mensaje;
+    if (mensaje.length > 50) {
+        mensajeCorto = mensaje.substring(0, 47) + '...';
+    }
+    
+    const div = document.createElement('div');
+    div.className = `fixed top-4 right-4 p-3 rounded-lg shadow-lg z-50 text-white transition-opacity duration-300 max-w-xs text-sm ${
+        tipo === 'success' ? 'bg-green-500' :
+        tipo === 'warning' ? 'bg-yellow-500' :
+        tipo === 'error' ? 'bg-red-500' : 'bg-blue-500'
+    }`;
+    div.textContent = mensajeCorto;
+    
+    document.body.appendChild(div);
+    
+    // Mostrar notificación
+    setTimeout(() => div.classList.add('opacity-100'), 100);
+    
+    // Ocultar después de 2.5 segundos
+    setTimeout(() => {
+        div.classList.add('opacity-0');
+        setTimeout(() => document.body.removeChild(div), 300);
+    }, 2500);
+}
+
+// Hacer la función disponible globalmente
+window.mostrarNotificacion = mostrarNotificacion;
+</script>
+@endsection
