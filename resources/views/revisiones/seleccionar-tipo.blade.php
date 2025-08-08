@@ -130,28 +130,47 @@
 
                     {{-- Revisión Domiciliaria --}}
                     @if(in_array('Domiciliaria', $tiposDisponibles))
-                        @include('tramites.partials.tramite-card', [
-                            'tipo' => 'revision_domiciliaria',
-                            'tramites' => [
-                                'revision_domiciliaria' => [
-                                    'activo' => true,
-                                    'pendiente' => false,
-                                    'accion' => '',
-                                    'motivo' => ''
+                        <div class="relative">
+                            <!-- Overlay de "En Desarrollo" -->
+                            <div class="absolute inset-0 bg-gray-900/50 rounded-xl flex items-center justify-center z-10">
+                                <div class="bg-white rounded-lg p-4 shadow-lg border border-gray-200">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-sm font-medium text-gray-800">En Desarrollo</p>
+                                            <p class="text-xs text-gray-600">Próximamente disponible</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            @include('tramites.partials.tramite-card', [
+                                'tipo' => 'revision_domiciliaria',
+                                'tramites' => [
+                                    'revision_domiciliaria' => [
+                                        'activo' => false,
+                                        'pendiente' => false,
+                                        'accion' => '',
+                                        'motivo' => ''
+                                    ]
+                                ],
+                                'title' => 'Revisión Domiciliaria',
+                                'description' => 'Revisa el trámite en el domicilio del solicitante. Verificación in situ e inspección física.',
+                                'gradient' => 'from-gray-400 to-gray-500',
+                                'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                </svg>',
+                                'actionText' => 'No Disponible',
+                                'actionUrl' => '#',
+                                'formData' => [
+                                    'tipo_revision' => 'Domiciliaria'
                                 ]
-                            ],
-                            'title' => 'Revisión Domiciliaria',
-                            'description' => 'Revisa el trámite en el domicilio del solicitante. Verificación in situ e inspección física.',
-                            'gradient' => 'from-[#9d2449] to-[#7a1a37]',
-                            'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                            </svg>',
-                            'actionText' => 'Iniciar Revisión Domiciliaria',
-                            'actionUrl' => route('revisiones.iniciar', $tramite->id),
-                            'formData' => [
-                                'tipo_revision' => 'Domiciliaria'
-                            ]
-                        ])
+                            ])
+                        </div>
                     @endif
 
                 </div>
