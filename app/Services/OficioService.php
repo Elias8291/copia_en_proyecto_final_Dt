@@ -29,22 +29,35 @@ class OficioService
             }
 
             // Cargar las relaciones necesarias
-            $tramite->load(['proveedor', 'datosGenerales']);
+            $tramite->load([
+                'proveedor', 
+                'datosGenerales', 
+                'datosConstitutivos', 
+                'direcciones.estado',
+                'apoderadosLegales'
+            ]);
 
-            // Generar URL si no se proporciona
+            // Generar el PDF del oficio
+            $pdfPath = $this->generarPdfOficio($tramite);
+
+            // Generar URL para descargar el PDF
             if (!$url) {
-                $url = $this->generarUrlOficio($tramite);
+                $url = $this->generarUrlOficio($tramite, $pdfPath);
             }
 
+            // Generar contenido del oficio
+            $contenido = $this->generarContenidoOficio($tramite);
+
             // Crear el oficio
-            $oficio = Oficio::crearOficioConProveedor($tramite, $url);
+            $oficio = Oficio::crearOficioConProveedor($tramite, $url, $contenido);
 
             Log::info('Oficio generado exitosamente', [
                 'oficio_id' => $oficio->id,
                 'numero_oficio' => $oficio->numero_oficio,
                 'tramite_id' => $tramite->id,
                 'proveedor_id' => $tramite->proveedor_id,
-                'url' => $url
+                'url' => $url,
+                'pdf_path' => $pdfPath
             ]);
 
             return $oficio;
@@ -60,9 +73,136 @@ class OficioService
     }
 
     /**
+     * Generar PDF del oficio usando la plantilla
+     */
+    private function generarPdfOficio(Tramite $tramite): string
+    {
+        try {
+            // Cargar todas las relaciones necesarias del trámite
+            $tramite->load([
+                'proveedor',
+                'datosGenerales',
+                'datosConstitutivos',
+                'direcciones.estado',
+                'apoderadosLegales',
+                'actividades',
+                'accionistas',
+                'contactos'
+            ]);
+
+            $proveedor = $tramite->proveedor;
+            $datosGenerales = $tramite->datosGenerales()->latest()->first();
+            $datosConstitutivos = $tramite->datosConstitutivos()->latest()->first();
+            $direcciones = $tramite->direcciones()->with('estado')->get();
+            $apoderadosLegales = $tramite->apoderadosLegales()->latest()->get();
+            $actividades = $tramite->actividades()->get();
+            $accionistas = $tramite->accionistas()->get();
+            $contactos = $tramite->contactos()->get();
+
+            // Preparar datos completos para la plantilla
+            $datos = [
+                'oficio' => (object)[
+                    'numero_oficio' => Oficio::generarNumeroOficio()
+                ],
+                'tramite' => $tramite,
+                'proveedor' => $proveedor,
+                'datosGenerales' => $datosGenerales,
+                'datosConstitutivos' => $datosConstitutivos,
+                'direcciones' => $direcciones,
+                'apoderadosLegales' => $apoderadosLegales,
+                'actividades' => $actividades,
+                'accionistas' => $accionistas,
+                'contactos' => $contactos,
+                'fechaTexto' => Carbon::now()->format('d/m/Y'),
+                'fechaInicioTramite' => $tramite->fecha_inicio,
+                'fechaGeneracionDocumento' => Carbon::now(),
+                'fechaVigenciaProveedor' => $proveedor->fecha_vencimiento_padron ?? Carbon::now()->addYear(),
+                'qrCode' => $this->generarQrCode($tramite)
+            ];
+
+            Log::info('Datos preparados para generar PDF del oficio', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $proveedor->id,
+                'datos_generales_id' => $datosGenerales ? $datosGenerales->id : null,
+                'datos_constitutivos_id' => $datosConstitutivos ? $datosConstitutivos->id : null,
+                'direcciones_count' => $direcciones->count(),
+                'apoderados_count' => $apoderadosLegales->count(),
+                'actividades_count' => $actividades->count(),
+                'accionistas_count' => $accionistas->count(),
+                'contactos_count' => $contactos->count()
+            ]);
+
+            // Verificar que todos los datos del trámite estén disponibles
+            $datosVerificados = $this->verificarDatosTramite($tramite);
+
+            // Determinar qué plantilla usar según el tipo de persona
+            $tipoPersona = $proveedor->tipo_persona ?? 'Moral';
+            $plantilla = $tipoPersona === 'Física' ? 'oficio.documento-fisica-mpdf' : 'oficio.documento-mpdf';
+
+            // Generar el PDF
+            $pdf = \PDF::loadView($plantilla, $datos);
+            $pdf->setPaper('letter', 'portrait');
+
+            // Crear directorio si no existe
+            $directorio = storage_path('app/public/oficios');
+            if (!file_exists($directorio)) {
+                mkdir($directorio, 0755, true);
+            }
+
+            // Generar nombre del archivo
+            $nombreArchivo = $this->generarNombreArchivoOficio($tramite);
+            $rutaCompleta = $directorio . '/' . $nombreArchivo;
+
+            // Guardar el PDF
+            $pdf->save($rutaCompleta);
+
+            Log::info('PDF de oficio generado exitosamente', [
+                'tramite_id' => $tramite->id,
+                'ruta_pdf' => $rutaCompleta,
+                'tipo_persona' => $tipoPersona,
+                'plantilla_usada' => $plantilla
+            ]);
+
+            return $rutaCompleta;
+
+        } catch (\Exception $e) {
+            Log::error('Error al generar PDF del oficio', [
+                'tramite_id' => $tramite->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Generar código QR para validación del documento
+     */
+    private function generarQrCode(Tramite $tramite): string
+    {
+        $datosQr = [
+            'tramite_id' => $tramite->id,
+            'proveedor_id' => $tramite->proveedor_id,
+            'numero_oficio' => Oficio::generarNumeroOficio(),
+            'fecha_generacion' => Carbon::now()->format('Y-m-d H:i:s'),
+            'url_validacion' => route('oficios.validar', $tramite->id)
+        ];
+
+        $qrData = json_encode($datosQr);
+        
+        // Generar QR usando la librería SimpleSoftwareIO/simple-qrcode
+        $qrCode = \QrCode::format('svg')
+            ->size(100)
+            ->margin(0)
+            ->generate($qrData);
+
+        return $qrCode;
+    }
+
+    /**
      * Generar URL para el oficio
      */
-    private function generarUrlOficio(Tramite $tramite): string
+    private function generarUrlOficio(Tramite $tramite, string $pdfPath): string
     {
         $proveedor = $tramite->proveedor;
         $datosGenerales = $tramite->datosGenerales()->latest()->first();
@@ -80,7 +220,8 @@ class OficioService
         Log::info('URL de oficio generada', [
             'tramite_id' => $tramite->id,
             'url' => $url,
-            'nombre_archivo' => $nombreArchivo
+            'nombre_archivo' => $nombreArchivo,
+            'pdf_path' => $pdfPath
         ]);
 
         return $url;
@@ -153,6 +294,104 @@ class OficioService
             ]);
             return false;
         }
+    }
+
+    /**
+     * Verificar que todos los datos del trámite estén disponibles
+     */
+    public function verificarDatosTramite(Tramite $tramite): array
+    {
+        $tramite->load([
+            'proveedor',
+            'datosGenerales',
+            'datosConstitutivos',
+            'direcciones.estado',
+            'apoderadosLegales',
+            'actividades',
+            'accionistas',
+            'contactos'
+        ]);
+
+        $verificacion = [
+            'tramite' => [
+                'id' => $tramite->id,
+                'tipo_tramite' => $tramite->tipo_tramite,
+                'status' => $tramite->status,
+                'fecha_inicio' => $tramite->fecha_inicio,
+                'fecha_finalizacion' => $tramite->fecha_finalizacion,
+                'observaciones' => $tramite->observaciones,
+                'proveedor_id' => $tramite->proveedor_id
+            ],
+            'proveedor' => $tramite->proveedor ? [
+                'id' => $tramite->proveedor->id,
+                'rfc' => $tramite->proveedor->rfc,
+                'razon_social' => $tramite->proveedor->razon_social,
+                'pv_numero' => $tramite->proveedor->pv_numero,
+                'tipo_persona' => $tramite->proveedor->tipo_persona,
+                'estado_padron' => $tramite->proveedor->estado_padron,
+                'fecha_vencimiento_padron' => $tramite->proveedor->fecha_vencimiento_padron
+            ] : null,
+            'datos_generales' => $tramite->datosGenerales()->latest()->first() ? [
+                'id' => $tramite->datosGenerales()->latest()->first()->id,
+                'razon_social' => $tramite->datosGenerales()->latest()->first()->razon_social,
+                'giro' => $tramite->datosGenerales()->latest()->first()->giro,
+                'fecha_constitucion' => $tramite->datosGenerales()->latest()->first()->fecha_constitucion
+            ] : null,
+            'datos_constitutivos' => $tramite->datosConstitutivos()->latest()->first() ? [
+                'id' => $tramite->datosConstitutivos()->latest()->first()->id,
+                'capital_social' => $tramite->datosConstitutivos()->latest()->first()->capital_social,
+                'numero_notario' => $tramite->datosConstitutivos()->latest()->first()->numero_notario
+            ] : null,
+            'direcciones' => $tramite->direcciones()->with('estado')->get()->map(function($direccion) {
+                return [
+                    'id' => $direccion->id,
+                    'calle' => $direccion->calle,
+                    'numero_exterior' => $direccion->numero_exterior,
+                    'numero_interior' => $direccion->numero_interior,
+                    'colonia_asentamiento' => $direccion->colonia_asentamiento,
+                    'municipio' => $direccion->municipio,
+                    'estado' => $direccion->estado ? $direccion->estado->nombre : null,
+                    'codigo_postal' => $direccion->codigo_postal
+                ];
+            })->toArray(),
+            'apoderados_legales' => $tramite->apoderadosLegales()->latest()->get()->map(function($apoderado) {
+                return [
+                    'id' => $apoderado->id,
+                    'nombre_completo' => $apoderado->nombre_completo,
+                    'cargo' => $apoderado->cargo,
+                    'rfc' => $apoderado->rfc
+                ];
+            })->toArray(),
+            'actividades' => $tramite->actividades()->get()->map(function($actividad) {
+                return [
+                    'id' => $actividad->id,
+                    'nombre' => $actividad->nombre,
+                    'descripcion' => $actividad->descripcion
+                ];
+            })->toArray(),
+            'accionistas' => $tramite->accionistas()->get()->map(function($accionista) {
+                return [
+                    'id' => $accionista->id,
+                    'nombre' => $accionista->nombre,
+                    'porcentaje' => $accionista->porcentaje
+                ];
+            })->toArray(),
+            'contactos' => $tramite->contactos()->get()->map(function($contacto) {
+                return [
+                    'id' => $contacto->id,
+                    'nombre' => $contacto->nombre,
+                    'email' => $contacto->email,
+                    'telefono' => $contacto->telefono
+                ];
+            })->toArray()
+        ];
+
+        Log::info('Verificación completa de datos del trámite', [
+            'tramite_id' => $tramite->id,
+            'datos_disponibles' => $verificacion
+        ]);
+
+        return $verificacion;
     }
 
     /**

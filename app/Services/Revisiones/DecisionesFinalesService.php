@@ -421,6 +421,9 @@ class DecisionesFinalesService
                         ];
                 }
                 
+                // Obtener datos generales del trámite actual
+                $datosGenerales = $tramite->datosGenerales()->latest()->first();
+                
                 // Sincronizar datos del proveedor con DatosGenerales del trámite actual
                 $rfcProveedorService = app(\App\Services\RfcProveedorService::class);
                 $sincronizacionExitosa = $rfcProveedorService->sincronizarDatosProveedorConTramite($proveedorAsignado, $tramiteId);

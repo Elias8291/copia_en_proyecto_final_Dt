@@ -166,6 +166,15 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::post('/limpiar-sesiones', [RevisionController::class, 'limpiarSesiones'])->name('limpiar-sesiones');
     });
 
+    // Rutas para oficios
+    Route::prefix('oficios')->name('oficios.')->group(function () {
+        Route::get('/descargar', [App\Http\Controllers\OficioController::class, 'descargar'])->name('descargar');
+        Route::get('/validar/{tramite}', [App\Http\Controllers\OficioController::class, 'validar'])->name('validar');
+        Route::get('/proveedor/{proveedor}', [App\Http\Controllers\OficioController::class, 'porProveedor'])->name('por-proveedor');
+        Route::get('/tramite/{tramite}', [App\Http\Controllers\OficioController::class, 'porTramite'])->name('por-tramite');
+        Route::post('/{oficio}/estado', [App\Http\Controllers\OficioController::class, 'actualizarEstado'])->name('actualizar-estado');
+    });
+
     // Rutas para notificaciones
     Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
         Route::get('/', [NotificacionController::class, 'index'])->name('index');

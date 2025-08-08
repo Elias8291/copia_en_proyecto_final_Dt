@@ -122,7 +122,7 @@ class TramiteController extends Controller
         })
         ->with(['datosGenerales' => function($query) {
             $query->orderBy('created_at', 'desc')->limit(1);
-        }, 'proveedor'])
+        }, 'proveedor', 'oficios'])
         ->orderBy('created_at', 'desc')
         ->get();
         
@@ -141,6 +141,7 @@ class TramiteController extends Controller
         
         return $tramites->map(function($tramite) {
             $datosGenerales = $tramite->datosGenerales->first();
+            $oficio = $tramite->oficios->first(); // Obtener el primer oficio asociado
             
             return [
                 'id' => $tramite->id,
@@ -149,7 +150,14 @@ class TramiteController extends Controller
                 'razon_social' => $datosGenerales ? $datosGenerales->razon_social : 'Sin datos',
                 'observaciones' => $tramite->observaciones ?? null,
                 'created_at' => $tramite->created_at,
-                'updated_at' => $tramite->updated_at
+                'updated_at' => $tramite->updated_at,
+                'oficio' => $oficio ? [
+                    'id' => $oficio->id,
+                    'numero_oficio' => $oficio->numero_oficio,
+                    'fecha_oficio' => $oficio->fecha_oficio,
+                    'url' => $oficio->url,
+                    'estado' => $oficio->estado
+                ] : null
             ];
         });
     }
