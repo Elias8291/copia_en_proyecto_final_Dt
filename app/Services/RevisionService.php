@@ -38,29 +38,240 @@ class RevisionService
                 TramiteStatus::PENDIENTE->value,
                 TramiteStatus::REVISION_DIGITAL->value,
                 TramiteStatus::REVISION_PRESENCIAL->value,
-                TramiteStatus::REVISION_DOMICILIARIA->value
+                TramiteStatus::REVISION_DOMICILIARIA->value,
+                TramiteStatus::PARA_CORRECCION->value
             ]);
 
-        // Filtros
-        if ($request->filled('fecha_inicio')) {
-            $query->whereDate('created_at', '>=', $request->fecha_inicio);
-        }
-
-        if ($request->filled('fecha_fin')) {
-            $query->whereDate('created_at', '<=', $request->fecha_fin);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('rfc')) {
-            $query->whereHas('proveedor', function ($q) use ($request) {
-                $q->where('rfc', 'like', '%' . $request->rfc . '%');
+        // Búsqueda por texto
+        if ($request->filled('search')) {
+            $searchTerm = $request->get('search');
+            $query->where(function($q) use ($searchTerm) {
+                $q->whereHas('proveedor', function($subQ) use ($searchTerm) {
+                    $subQ->where('rfc', 'like', '%' . $searchTerm . '%')
+                         ->orWhere('razon_social', 'like', '%' . $searchTerm . '%')
+                         ->orWhere('curp', 'like', '%' . $searchTerm . '%');
+                })
+                ->orWhere('id', 'like', '%' . $searchTerm . '%');
             });
         }
 
-        return $query->orderBy('created_at', 'desc')->paginate(15);
+        // Filtro por estado
+        if ($request->filled('estado')) {
+            $query->where('status', $request->estado);
+        }
+
+        // Filtro por tipo de trámite
+        if ($request->filled('tipo_tramite')) {
+            $query->where('tipo_tramite', $request->tipo_tramite);
+        }
+
+        // Filtro por asignación
+        if ($request->filled('asignado_a')) {
+            $usuarioActual = Auth::user();
+            switch ($request->asignado_a) {
+                case 'mi_usuario':
+                    $query->whereHas('revisiones', function($q) use ($usuarioActual) {
+                        $q->where('revisor_id', $usuarioActual->id);
+                    });
+                    break;
+                case 'sin_asignar':
+                    $query->whereDoesntHave('revisiones', function($q) {
+                        $q->whereNotNull('revisor_id');
+                    });
+                    break;
+                case 'otros':
+                    $query->whereHas('revisiones', function($q) use ($usuarioActual) {
+                        $q->whereNotNull('revisor_id')
+                          ->where('revisor_id', '!=', $usuarioActual->id);
+                    });
+                    break;
+                case 'todos_asignados':
+                    $query->whereHas('revisiones', function($q) {
+                        $q->whereNotNull('revisor_id');
+                    });
+                    break;
+            }
+        }
+
+        // Filtro por estado de revisión
+        if ($request->filled('estado_revision')) {
+            switch ($request->estado_revision) {
+                case 'pendiente':
+                    $query->where('status', TramiteStatus::PENDIENTE->value);
+                    break;
+                case 'en_proceso':
+                    $query->whereIn('status', [
+                        TramiteStatus::REVISION_DIGITAL->value,
+                        TramiteStatus::REVISION_PRESENCIAL->value,
+                        TramiteStatus::REVISION_DOMICILIARIA->value
+                    ]);
+                    break;
+                case 'finalizada':
+                    $query->whereIn('status', [
+                        TramiteStatus::APROBADO->value,
+                        TramiteStatus::RECHAZADO->value,
+                        TramiteStatus::CANCELADO->value
+                    ]);
+                    break;
+                case 'sin_revision':
+                    $query->whereDoesntHave('revisiones');
+                    break;
+            }
+        }
+
+        // Filtro por mis trámites asignados
+        if ($request->filled('mis_tramites')) {
+            $usuarioActual = Auth::user();
+            $query->whereHas('revisiones', function($q) use ($usuarioActual) {
+                $q->where('revisor_id', $usuarioActual->id);
+            });
+        }
+
+        // Filtros de fecha
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->fecha_hasta);
+        }
+
+        // Filtro por rango de fecha predefinido
+        if ($request->filled('rango_fecha')) {
+            $today = now();
+            switch ($request->rango_fecha) {
+                case 'hoy':
+                    $query->whereDate('created_at', $today->toDateString());
+                    break;
+                case 'ayer':
+                    $query->whereDate('created_at', $today->subDay()->toDateString());
+                    break;
+                case 'semana':
+                    $query->whereDate('created_at', '>=', $today->subWeek()->toDateString());
+                    break;
+                case 'mes':
+                    $query->whereDate('created_at', '>=', $today->subMonth()->toDateString());
+                    break;
+                case 'trimestre':
+                    $query->whereDate('created_at', '>=', $today->subMonths(3)->toDateString());
+                    break;
+            }
+        }
+
+        // Filtro por período específico
+        if ($request->filled('periodo_especifico')) {
+            $today = now();
+            switch ($request->periodo_especifico) {
+                case 'lunes_viernes':
+                    $monday = $today->copy()->startOfWeek();
+                    $friday = $monday->copy()->addDays(4);
+                    $query->whereBetween('created_at', [$monday, $friday]);
+                    break;
+                case 'fin_semana':
+                    $saturday = $today->copy()->endOfWeek()->subDay();
+                    $sunday = $saturday->copy()->addDay();
+                    $query->whereBetween('created_at', [$saturday, $sunday]);
+                    break;
+                case 'primer_semana':
+                    $firstDay = $today->copy()->startOfMonth();
+                    $firstWeekEnd = $firstDay->copy()->addDays(6);
+                    $query->whereBetween('created_at', [$firstDay, $firstWeekEnd]);
+                    break;
+                case 'ultima_semana':
+                    $lastDay = $today->copy()->endOfMonth();
+                    $lastWeekStart = $lastDay->copy()->subDays(6);
+                    $query->whereBetween('created_at', [$lastWeekStart, $lastDay]);
+                    break;
+            }
+        }
+
+        // Filtro por antigüedad
+        if ($request->filled('antiguedad')) {
+            $today = now();
+            switch ($request->antiguedad) {
+                case 'hoy':
+                    $query->whereDate('created_at', $today->toDateString());
+                    break;
+                case 'semana':
+                    $query->whereDate('created_at', '>=', $today->subWeek()->toDateString());
+                    break;
+                case 'mes':
+                    $query->whereDate('created_at', '>=', $today->subMonth()->toDateString());
+                    break;
+                case 'urgente':
+                    $query->whereDate('created_at', '<=', $today->subDays(7)->toDateString());
+                    break;
+                case 'muy_urgente':
+                    $query->whereDate('created_at', '<=', $today->subDays(15)->toDateString());
+                    break;
+            }
+        }
+
+        // Filtro por prioridad
+        if ($request->filled('prioridad')) {
+            $today = now();
+            switch ($request->prioridad) {
+                case 'muy_alta':
+                    $query->whereDate('created_at', '<=', $today->subDays(15)->toDateString());
+                    break;
+                case 'alta':
+                    $query->whereDate('created_at', '<=', $today->subDays(7)->toDateString())
+                          ->whereDate('created_at', '>', $today->subDays(15)->toDateString());
+                    break;
+                case 'media':
+                    $query->whereDate('created_at', '<=', $today->subDays(3)->toDateString())
+                          ->whereDate('created_at', '>', $today->subDays(7)->toDateString());
+                    break;
+                case 'baja':
+                    $query->whereDate('created_at', '>', $today->subDays(3)->toDateString());
+                    break;
+                case 'renovacion':
+                    $query->where('tipo_tramite', 'Renovacion');
+                    break;
+            }
+        }
+
+        // Filtro por tipo de prioridad
+        if ($request->filled('tipo_prioridad')) {
+            switch ($request->tipo_prioridad) {
+                case 'renovacion':
+                    $query->where('tipo_tramite', 'Renovacion');
+                    break;
+                case 'nuevo':
+                    $query->where('tipo_tramite', 'Inscripcion');
+                    break;
+                case 'correccion':
+                    $query->where('status', TramiteStatus::PARA_CORRECCION->value);
+                    break;
+            }
+        }
+
+        // Ordenamiento
+        $ordenarPor = $request->get('ordenar_por', 'fecha_desc');
+        switch ($ordenarPor) {
+            case 'fecha_asc':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'fecha_desc':
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'prioridad':
+                // Ordenar por antigüedad (más antiguos primero)
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'estado':
+                $query->orderBy('status', 'asc');
+                break;
+            case 'tipo':
+                $query->orderBy('tipo_tramite', 'asc');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+        }
+
+        // Paginación
+        $perPage = $request->get('per_page', 15);
+        return $query->paginate($perPage);
     }
 
     /**

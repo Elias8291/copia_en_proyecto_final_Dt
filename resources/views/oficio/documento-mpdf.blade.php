@@ -140,15 +140,27 @@
         
         .qr-code {
             position: absolute;
-            bottom: 30mm;
-            right: 25mm;
-            width: 20mm;
-            height: 20mm;
+            bottom: 25mm;
+            right: 20mm;
+            width: 25mm;
+            height: 25mm;
+            background: white;
+            border: 1px solid #ccc;
+            padding: 1mm;
+            z-index: 1000;
+        }
+        
+        .qr-code svg {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
         }
         
         .qr-code img {
-            width: 100%;
-            height: 100%;
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+            object-fit: contain;
         }
         
         .qr-text {

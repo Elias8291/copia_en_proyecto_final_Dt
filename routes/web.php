@@ -123,7 +123,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{tramite}/edit', [TramiteController::class, 'edit'])->name('edit');
         Route::put('/{tramite}', [TramiteController::class, 'update'])->name('update');
         
-
+        // Ruta para ver trámite histórico
+        Route::get('/{tramite}/historico', [\App\Http\Controllers\TramiteHistoricoController::class, 'mostrarTramiteHistorico'])->name('historico');
+        
+        // Ruta para descargar constancia
+        Route::get('/{tramite}/descargar-constancia', [TramiteController::class, 'descargarConstancia'])->name('descargar-constancia');
     });
 
     // Rutas para revisiones
@@ -166,6 +170,9 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::post('/limpiar-sesiones', [RevisionController::class, 'limpiarSesiones'])->name('limpiar-sesiones');
     });
 
+    // Ruta para buscar actividades económicas
+    Route::get('/actividades-economicas/buscar', [App\Http\Controllers\ProveedorController::class, 'buscarActividades'])->name('actividades.buscar');
+
     // Rutas para oficios
     Route::prefix('oficios')->name('oficios.')->group(function () {
         Route::get('/descargar', [App\Http\Controllers\OficioController::class, 'descargar'])->name('descargar');
@@ -173,6 +180,12 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::get('/proveedor/{proveedor}', [App\Http\Controllers\OficioController::class, 'porProveedor'])->name('por-proveedor');
         Route::get('/tramite/{tramite}', [App\Http\Controllers\OficioController::class, 'porTramite'])->name('por-tramite');
         Route::post('/{oficio}/estado', [App\Http\Controllers\OficioController::class, 'actualizarEstado'])->name('actualizar-estado');
+    });
+
+    // Rutas públicas para proveedores
+    Route::prefix('proveedores')->name('proveedores.')->group(function () {
+        Route::get('/publico/{proveedor}', [App\Http\Controllers\ProveedorPublicoController::class, 'show'])->name('publico');
+        Route::post('/validar-qr', [App\Http\Controllers\ProveedorPublicoController::class, 'validarPorQR'])->name('validar-qr');
     });
 
     // Rutas para notificaciones
@@ -216,6 +229,19 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::patch('/{archivo}/status', [ArchivoController::class, 'updateStatus'])->name('update-status');
         Route::get('/tramite/{tramite}', [ArchivoController::class, 'getArchivosFromTramite'])->name('by-tramite');
         Route::post('/guardar-individual', [ArchivoController::class, 'guardarIndividual'])->name('guardar-individual');
+    });
+
+    // Rutas para proveedores (administración)
+    Route::prefix('proveedores')->name('proveedores.')->group(function () {
+        Route::get('/', [App\Http\Controllers\ProveedorController::class, 'index'])->name('index');
+        Route::get('/{id}', [App\Http\Controllers\ProveedorController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [App\Http\Controllers\ProveedorController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\ProveedorController::class, 'update'])->name('update');
+        Route::delete('/{id}', [App\Http\Controllers\ProveedorController::class, 'destroy'])->name('destroy');
+        Route::get('/estadisticas', [App\Http\Controllers\ProveedorController::class, 'estadisticas'])->name('estadisticas');
+        Route::get('/buscar', [App\Http\Controllers\ProveedorController::class, 'buscar'])->name('buscar');
+        Route::get('/exportar', [App\Http\Controllers\ProveedorController::class, 'exportar'])->name('exportar');
+        Route::get('/debug-filtros', [App\Http\Controllers\ProveedorController::class, 'debugFiltros'])->name('debug-filtros');
     });
 
 });

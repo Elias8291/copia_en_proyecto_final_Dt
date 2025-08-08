@@ -35,7 +35,7 @@
                             <input type="text" 
                                    name="search" 
                                    value="{{ request('search') }}"
-                                   placeholder="Buscar por RFC, razón social o CURP..." 
+                                   placeholder="Buscar por RFC, razón social, CURP o ID de trámite..." 
                                    class="block w-full pl-7 sm:pl-10 md:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
                         </div>
                     </div>
@@ -90,9 +90,11 @@
                                             id="prioridad" 
                                             class="w-full px-3 py-2 text-xs sm:text-sm border border-blue-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 bg-white">
                                         <option value="">Todas las prioridades</option>
-                                        <option value="alta" {{ request('prioridad') == 'alta' ? 'selected' : '' }}>Alta prioridad</option>
-                                        <option value="media" {{ request('prioridad') == 'media' ? 'selected' : '' }}>Prioridad media</option>
-                                        <option value="baja" {{ request('prioridad') == 'baja' ? 'selected' : '' }}>Prioridad baja</option>
+                                        <option value="muy_alta" {{ request('prioridad') == 'muy_alta' ? 'selected' : '' }}>Muy alta (15+ días)</option>
+                                        <option value="alta" {{ request('prioridad') == 'alta' ? 'selected' : '' }}>Alta (7-14 días)</option>
+                                        <option value="media" {{ request('prioridad') == 'media' ? 'selected' : '' }}>Media (3-6 días)</option>
+                                        <option value="baja" {{ request('prioridad') == 'baja' ? 'selected' : '' }}>Baja (0-2 días)</option>
+                                        <option value="renovacion" {{ request('prioridad') == 'renovacion' ? 'selected' : '' }}>Renovaciones (prioridad especial)</option>
                                     </select>
                                 </div>
                                 
@@ -222,14 +224,11 @@
                                             id="estado" 
                                             class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white">
                                         <option value="">Todos los estados</option>
-                                        <option value="Pendiente" {{ request('estado') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                        <option value="Revision_Digital" {{ request('estado') == 'Revision_Digital' ? 'selected' : '' }}>Revisión Digital</option>
-                                        <option value="Revision_Presencial" {{ request('estado') == 'Revision_Presencial' ? 'selected' : '' }}>Revisión Presencial</option>
-                                        <option value="Revision_Domiciliaria" {{ request('estado') == 'Revision_Domiciliaria' ? 'selected' : '' }}>Revisión Domiciliaria</option>
-                                        <option value="Para_Correccion" {{ request('estado') == 'Para_Correccion' ? 'selected' : '' }}>Para Corrección</option>
-                                        <option value="Aprobado" {{ request('estado') == 'Aprobado' ? 'selected' : '' }}>Aprobado</option>
-                                        <option value="Rechazado" {{ request('estado') == 'Rechazado' ? 'selected' : '' }}>Rechazado</option>
-                                        <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
+                                        @foreach(\App\Enums\TramiteStatus::toArray() as $value => $label)
+                                            <option value="{{ $value }}" {{ request('estado') == $value ? 'selected' : '' }}>
+                                                {{ $label }}
+                                            </option>
+                                        @endforeach
                                     </select>
                                 </div>
 
@@ -254,6 +253,20 @@
                                         <option value="mi_usuario" {{ request('asignado_a') == 'mi_usuario' ? 'selected' : '' }}>Asignados a mí</option>
                                         <option value="sin_asignar" {{ request('asignado_a') == 'sin_asignar' ? 'selected' : '' }}>Sin asignar</option>
                                         <option value="otros" {{ request('asignado_a') == 'otros' ? 'selected' : '' }}>Asignados a otros</option>
+                                        <option value="todos_asignados" {{ request('asignado_a') == 'todos_asignados' ? 'selected' : '' }}>Todos los asignados</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label for="estado_revision" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Estado de Revisión</label>
+                                    <select name="estado_revision" 
+                                            id="estado_revision" 
+                                            class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                        <option value="">Todos los estados</option>
+                                        <option value="pendiente" {{ request('estado_revision') == 'pendiente' ? 'selected' : '' }}>Pendientes de revisión</option>
+                                        <option value="en_proceso" {{ request('estado_revision') == 'en_proceso' ? 'selected' : '' }}>En proceso de revisión</option>
+                                        <option value="finalizada" {{ request('estado_revision') == 'finalizada' ? 'selected' : '' }}>Revisión finalizada</option>
+                                        <option value="sin_revision" {{ request('estado_revision') == 'sin_revision' ? 'selected' : '' }}>Sin revisión iniciada</option>
                                     </select>
                                 </div>
 
@@ -429,9 +442,11 @@
                     @if(request('prioridad'))
                     @php
                         $prioridadLabels = [
-                            'alta' => 'Alta prioridad',
-                            'media' => 'Prioridad media',
-                            'baja' => 'Prioridad baja'
+                            'muy_alta' => 'Muy alta (15+ días)',
+                            'alta' => 'Alta (7-14 días)',
+                            'media' => 'Media (3-6 días)',
+                            'baja' => 'Baja (0-2 días)',
+                            'renovacion' => 'Renovaciones (prioridad especial)'
                         ];
                         $prioridadLabel = $prioridadLabels[request('prioridad')] ?? request('prioridad');
                     @endphp
@@ -510,17 +525,7 @@
 
                     @if(request('estado'))
                     @php
-                        $estadoLabels = [
-                            'Pendiente' => 'Pendiente',
-                            'Revision_Digital' => 'Revisión Digital',
-                            'Revision_Presencial' => 'Revisión Presencial',
-                            'Revision_Domiciliaria' => 'Revisión Domiciliaria',
-                            'Para_Correccion' => 'Para Corrección',
-                            'Aprobado' => 'Aprobado',
-                            'Rechazado' => 'Rechazado',
-                            'Cancelado' => 'Cancelado'
-                        ];
-                        $estadoLabel = $estadoLabels[request('estado')] ?? request('estado');
+                        $estadoLabel = \App\Enums\TramiteStatus::toArray()[request('estado')] ?? request('estado');
                     @endphp
                     <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
                         Estado: {{ $estadoLabel }}
@@ -558,6 +563,46 @@
                     <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
                         Mis trámites asignados
                         <a href="{{ request()->fullUrlWithQuery(['mis_tramites' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </span>
+                    @endif
+
+                    @if(request('estado_revision'))
+                    @php
+                        $estadoRevisionLabels = [
+                            'pendiente' => 'Pendientes de revisión',
+                            'en_proceso' => 'En proceso de revisión',
+                            'finalizada' => 'Revisión finalizada',
+                            'sin_revision' => 'Sin revisión iniciada'
+                        ];
+                        $estadoRevisionLabel = $estadoRevisionLabels[request('estado_revision')] ?? request('estado_revision');
+                    @endphp
+                    <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-indigo-100 text-indigo-800 border border-indigo-200">
+                        Estado revisión: {{ $estadoRevisionLabel }}
+                        <a href="{{ request()->fullUrlWithQuery(['estado_revision' => null]) }}" class="ml-1 sm:ml-1.5 text-indigo-800 hover:text-indigo-600">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                        </a>
+                    </span>
+                    @endif
+
+                    @if(request('asignado_a'))
+                    @php
+                        $asignadoLabels = [
+                            'mi_usuario' => 'Asignados a mí',
+                            'sin_asignar' => 'Sin asignar',
+                            'otros' => 'Asignados a otros',
+                            'todos_asignados' => 'Todos los asignados'
+                        ];
+                        $asignadoLabel = $asignadoLabels[request('asignado_a')] ?? request('asignado_a');
+                    @endphp
+                    <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                        Asignación: {{ $asignadoLabel }}
+                        <a href="{{ request()->fullUrlWithQuery(['asignado_a' => null]) }}" class="ml-1 sm:ml-1.5 text-purple-800 hover:text-purple-600">
                             <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                             </svg>
@@ -677,28 +722,10 @@
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
                                 @php
-                                    $estadoColors = [
-                                        'Pendiente' => 'bg-yellow-100 text-yellow-800',
-                                        'Revision_Digital' => 'bg-blue-100 text-blue-800',
-                                        'Revision_Presencial' => 'bg-purple-100 text-purple-800',
-                                        'Revision_Domiciliaria' => 'bg-indigo-100 text-indigo-800',
-                                        'Para_Correccion' => 'bg-orange-100 text-orange-800',
-                                        'Aprobado' => 'bg-green-100 text-green-800',
-                                        'Rechazado' => 'bg-red-100 text-red-800',
-                                        'Cancelado' => 'bg-gray-100 text-gray-800'
-                                    ];
-                                    $estadoColor = $estadoColors[$tramite->status] ?? 'bg-gray-100 text-gray-800';
-                                    $estadoLabels = [
-                                        'Pendiente' => 'Pendiente',
-                                        'Revision_Digital' => 'Revisión Digital',
-                                        'Revision_Presencial' => 'Revisión Presencial',
-                                        'Revision_Domiciliaria' => 'Revisión Domiciliaria',
-                                        'Para_Correccion' => 'Para Corrección',
-                                        'Aprobado' => 'Aprobado',
-                                        'Rechazado' => 'Rechazado',
-                                        'Cancelado' => 'Cancelado'
-                                    ];
-                                    $estadoLabel = $estadoLabels[$tramite->status] ?? $tramite->status;
+                                    // Usar el enum para obtener el color y label del estado
+                                    $estadoEnum = \App\Enums\TramiteStatus::tryFrom($tramite->status);
+                                    $estadoColor = $estadoEnum ? $estadoEnum->color() : 'bg-gray-100 text-gray-800';
+                                    $estadoLabel = $estadoEnum ? $estadoEnum->label() : $tramite->status;
                                 @endphp
                                 <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-sm font-medium {{ $estadoColor }}">
                                     {{ $estadoLabel }}
@@ -814,28 +841,10 @@
                     </div>
                     <div class="flex-shrink-0 ml-1 sm:ml-2 md:ml-3">
                         @php
-                            $estadoColors = [
-                                'Pendiente' => 'bg-yellow-100 text-yellow-800',
-                                'Revision_Digital' => 'bg-blue-100 text-blue-800',
-                                'Revision_Presencial' => 'bg-purple-100 text-purple-800',
-                                'Revision_Domiciliaria' => 'bg-indigo-100 text-indigo-800',
-                                'Para_Correccion' => 'bg-orange-100 text-orange-800',
-                                'Aprobado' => 'bg-green-100 text-green-800',
-                                'Rechazado' => 'bg-red-100 text-red-800',
-                                'Cancelado' => 'bg-gray-100 text-gray-800'
-                            ];
-                            $estadoColor = $estadoColors[$tramite->status] ?? 'bg-gray-100 text-gray-800';
-                            $estadoLabels = [
-                                'Pendiente' => 'Pendiente',
-                                'Revision_Digital' => 'Revisión Digital',
-                                'Revision_Presencial' => 'Revisión Presencial',
-                                'Revision_Domiciliaria' => 'Revisión Domiciliaria',
-                                'Para_Correccion' => 'Para Corrección',
-                                'Aprobado' => 'Aprobado',
-                                'Rechazado' => 'Rechazado',
-                                'Cancelado' => 'Cancelado'
-                            ];
-                            $estadoLabel = $estadoLabels[$tramite->status] ?? $tramite->status;
+                            // Usar el enum para obtener el color y label del estado
+                            $estadoEnum = \App\Enums\TramiteStatus::tryFrom($tramite->status);
+                            $estadoColor = $estadoEnum ? $estadoEnum->color() : 'bg-gray-100 text-gray-800';
+                            $estadoLabel = $estadoEnum ? $estadoEnum->label() : $tramite->status;
                         @endphp
                         <span class="px-1 sm:px-1.5 md:px-2 lg:px-2.5 py-0.5 sm:py-1 md:py-1.5 text-xs sm:text-sm md:text-base font-medium rounded-full {{ $estadoColor }} whitespace-nowrap">
                             {{ $estadoLabel }}
@@ -1081,7 +1090,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Auto-submit cuando se cambian ciertos filtros
-        const autoSubmitFilters = ['prioridad', 'ordenar_por', 'antiguedad', 'tipo_prioridad', 'asignado_a'];
+        const autoSubmitFilters = ['prioridad', 'ordenar_por', 'antiguedad', 'tipo_prioridad', 'asignado_a', 'estado_revision', 'estado', 'tipo_tramite'];
         autoSubmitFilters.forEach(filterName => {
             const filterElement = document.getElementById(filterName);
             if (filterElement) {
@@ -1092,6 +1101,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         });
+
+        // Manejar checkbox de mis trámites
+        const misTramitesCheckbox = document.getElementById('mis_tramites');
+        if (misTramitesCheckbox) {
+            misTramitesCheckbox.addEventListener('change', function() {
+                setTimeout(() => {
+                    searchForm.submit();
+                }, 100);
+            });
+        }
 
     } catch (error) {
         console.warn('Error initializing revisiones page JavaScript:', error);
