@@ -77,10 +77,6 @@
                         </div>
                     </div>
 
-                    <!-- Campos ocultos para el formulario -->
-                    <input type="hidden" id="decision_archivo_{{ $archivo['id'] }}" name="archivos[{{ $archivo['id'] }}][status]" value="{{ $archivo['status'] ?? 'Pendiente' }}">
-                    <input type="hidden" id="comentario_archivo_{{ $archivo['id'] }}" name="archivos[{{ $archivo['id'] }}][comentario_revision]" value="{{ $archivo['comentario_revision'] ?? '' }}">
-
                     <!-- Área de comentarios -->
                     <div class="px-4 pb-4">
                                     <textarea 
@@ -88,7 +84,6 @@
                             placeholder="Agregar comentarios sobre este documento..."
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
                             rows="2"
-                            onchange="sincronizarComentarioArchivo({{ $archivo['id'] }})"
                                     >{{ $archivo['comentario_revision'] ?? '' }}</textarea>
                                 </div>
 
@@ -96,7 +91,7 @@
                     <div class="px-4 pb-4">
                         <div class="flex justify-end space-x-3">
                             <button type="button" 
-                                    onclick="evaluarArchivoRevisionDigital({{ $archivo['id'] }}, 'Rechazado')"
+                                    onclick="evaluarArchivo({{ $archivo['id'] }}, 'Rechazado')"
                                     class="inline-flex items-center px-4 py-2 bg-white border border-red-300 text-red-700 text-sm font-medium rounded-lg hover:bg-red-50 hover:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -104,7 +99,7 @@
                                 Rechazar
                             </button>
                             <button type="button" 
-                                    onclick="evaluarArchivoRevisionDigital({{ $archivo['id'] }}, 'Aprobado')"
+                                    onclick="evaluarArchivo({{ $archivo['id'] }}, 'Aprobado')"
                                     class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -129,49 +124,23 @@
 </div>
 
 <script>
-// Función para evaluar archivo en revisión digital
-function evaluarArchivoRevisionDigital(archivoId, decision) {
-    const textareaEl = document.getElementById(`textarea_archivo_${archivoId}`);
-    const decisionEl = document.getElementById(`decision_archivo_${archivoId}`);
-    const comentarioEl = document.getElementById(`comentario_archivo_${archivoId}`);
+// Función simplificada para evaluar archivo
+async function evaluarArchivo(archivoId, decision) {
+    const textarea = document.getElementById(`textarea_archivo_${archivoId}`);
     const estadoEl = document.getElementById(`estado_archivo_${archivoId}`);
+    const comentario = textarea ? textarea.value.trim() : '';
     
-    const comentario = textareaEl ? textareaEl.value.trim() : '';
-    
-    if (decisionEl) decisionEl.value = decision;
-    if (comentarioEl) comentarioEl.value = comentario;
-    
+    // Actualizar UI
     if (estadoEl) {
         estadoEl.textContent = decision;
-        estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-        
-        if (decision === 'Aprobado') {
-            estadoEl.classList.add('bg-green-100', 'text-green-800');
-        } else if (decision === 'Rechazado') {
-            estadoEl.classList.add('bg-red-100', 'text-red-800');
-        } else {
-            estadoEl.classList.add('bg-gray-100', 'text-gray-600');
-        }
-        
-        estadoEl.innerHTML += ' <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+        estadoEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            decision === 'Aprobado' ? 'bg-green-100 text-green-800' : 
+            decision === 'Rechazado' ? 'bg-red-100 text-red-800' : 
+            'bg-gray-100 text-gray-600'
+        }`;
     }
     
-    // Enviar al servidor inmediatamente
-    enviarEvaluacionArchivo(archivoId, decision, comentario);
-}
-
-// Función para sincronizar comentario
-function sincronizarComentarioArchivo(archivoId) {
-    const textareaEl = document.getElementById(`textarea_archivo_${archivoId}`);
-    const comentarioEl = document.getElementById(`comentario_archivo_${archivoId}`);
-    
-    if (textareaEl && comentarioEl) {
-        comentarioEl.value = textareaEl.value.trim();
-    }
-}
-
-// Función para enviar evaluación al servidor
-async function enviarEvaluacionArchivo(archivoId, decision, comentario) {
+    // Enviar al servidor
     try {
         const response = await fetch(`/archivos/${archivoId}/status`, {
             method: 'PATCH',
@@ -179,21 +148,13 @@ async function enviarEvaluacionArchivo(archivoId, decision, comentario) {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             },
-            body: JSON.stringify({
-                status: decision,
-                comentario_revision: comentario
-            })
+            body: JSON.stringify({ status: decision, comentario_revision: comentario })
         });
-
-        const data = await response.json();
         
-        if (data.success) {
-            console.log(`Archivo ${archivoId} ${decision.toLowerCase()} correctamente`);
-        } else {
-            console.error('Error al actualizar archivo:', data.message);
-        }
+        if (!response.ok) throw new Error('Error en la petición');
+        
     } catch (error) {
-        console.error('Error al enviar evaluación:', error);
+        console.error('Error:', error);
     }
 }
 </script>

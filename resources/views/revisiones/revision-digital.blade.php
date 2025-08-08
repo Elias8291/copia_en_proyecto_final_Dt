@@ -696,19 +696,11 @@
 }
 </style>
 
-<!-- JavaScript para evaluación de secciones -->
+<!-- JavaScript -->
 <script>
-// Variables globales
 window.esPersonaMoral = @json($viewModel->isPersonaMoral());
-
-// Inicializar evaluador cuando cargue la página
-document.addEventListener('DOMContentLoaded', function() {
-    window.evaluadorSecciones = new EvaluacionSecciones({{ $tramite->id }});
-});
 </script>
 
-<!-- JavaScript SUPER SIMPLE - Solo para cargar datos y ver documentos -->
-<script src="{{ asset('js/revision-digital.js') }}"></script>
 <script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
-<script src="{{ asset('js/revision/cargar-estados-archivos.js') }}"></script>
+<script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 @endsection 
