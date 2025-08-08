@@ -14,6 +14,7 @@ class Proveedor extends Model
         'usuario_id',
         'pv_numero',
         'rfc',
+        'razon_social',
         'tipo_persona',
         'estado_padron',
         'fecha_alta_padron',
@@ -73,5 +74,36 @@ class Proveedor extends Model
     public function archivos(): HasMany
     {
         return $this->hasMany(Archivo::class);
+    }
+
+    /**
+     * Sincronizar datos generales en el proveedor
+     */
+    public function sincronizarDatosGenerales($datosGenerales)
+    {
+        \Log::info('Sincronizando datos generales en proveedor', [
+            'proveedor_id' => $this->id,
+            'razon_social_anterior' => $this->razon_social,
+            'razon_social_nueva' => $datosGenerales->razon_social
+        ]);
+
+        $this->update([
+            'razon_social' => $datosGenerales->razon_social,
+        ]);
+
+        // Sincronizar también con el usuario asociado
+        if ($this->usuario) {
+            \Log::info('Sincronizando nombre del usuario con razón social', [
+                'usuario_id' => $this->usuario->id,
+                'nombre_anterior' => $this->usuario->nombre,
+                'nombre_nuevo' => $datosGenerales->razon_social
+            ]);
+
+            $this->usuario->update([
+                'nombre' => $datosGenerales->razon_social
+            ]);
+        }
+
+        return $this;
     }
 } 

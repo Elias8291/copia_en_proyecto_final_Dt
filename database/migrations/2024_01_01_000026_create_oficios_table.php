@@ -15,8 +15,11 @@ return new class extends Migration
             $table->id();
             $table->string('numero_oficio', 100);
             $table->date('fecha_oficio');
-            $table->text('contenido');
+            $table->string('url', 500)->nullable();
+            $table->text('contenido')->nullable();
             $table->foreignId('tramite_id')->constrained('tramites')->onDelete('cascade');
+            $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->string('estado', 50)->default('Generado');
             $table->timestamps();
         });
     }

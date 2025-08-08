@@ -421,6 +421,17 @@ class DecisionesFinalesService
                         ];
                 }
                 
+                // Sincronizar datos del proveedor con DatosGenerales del trámite actual
+                $rfcProveedorService = app(\App\Services\RfcProveedorService::class);
+                $sincronizacionExitosa = $rfcProveedorService->sincronizarDatosProveedorConTramite($proveedorAsignado, $tramiteId);
+                
+                if (!$sincronizacionExitosa) {
+                    \Log::warning('No se pudo sincronizar los datos del proveedor con el trámite actual', [
+                        'tramite_id' => $tramiteId,
+                        'proveedor_id' => $proveedorAsignado->id
+                    ]);
+                }
+
                 // Actualizar el trámite con el proveedor asignado
                 $tramite->update([
                     'proveedor_id' => $proveedorAsignado->id,
@@ -432,12 +443,39 @@ class DecisionesFinalesService
                 // Guardar comentario general
                 $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Aprobado');
 
+                // Generar oficio para el proveedor asignado
+                $oficioService = app(\App\Services\OficioService::class);
+                $oficio = $oficioService->generarOficioParaTramite($tramite);
+
+                // Notificar al usuario que se le asignó un proveedor
+                $notificacionService = app(\App\Services\NotificacionService::class);
+                $notificacionService->notificarProveedorAsignado($tramite, $numeroProveedor);
+
+                // Agendar automáticamente cita para cotejo domiciliario
+                $citasService = app(\App\Services\CitasService::class);
+                $resultadoCita = $citasService->agendarCitaCotejoDomiciliario($tramiteId);
+
+                $mensajeCita = $resultadoCita['success'] 
+                    ? " Cita de cotejo domiciliario agendada para: {$resultadoCita['fecha_formateada']}"
+                    : " No se pudo agendar la cita de cotejo domiciliario: {$resultadoCita['message']}";
+
                 return [
                     'success' => true,
-                    'message' => "Trámite aprobado exitosamente. Proveedor asignado: {$numeroProveedor}",
+                    'message' => "Trámite aprobado exitosamente. Proveedor asignado: {$numeroProveedor}. Oficio generado: {$oficio->numero_oficio}.{$mensajeCita}",
                     'numero_proveedor' => $numeroProveedor,
                     'proveedor_id' => $proveedorAsignado->id,
-                    'accion_realizada' => $accion['accion']
+                    'accion_realizada' => $accion['accion'],
+                    'cita_agendada' => $resultadoCita['success'],
+                    'cita_info' => $resultadoCita['success'] ? $resultadoCita : null,
+                    'oficio_generado' => [
+                        'oficio_id' => $oficio->id,
+                        'numero_oficio' => $oficio->numero_oficio,
+                        'url' => $oficio->url
+                    ],
+                    'datos_sincronizados' => [
+                        'razon_social_actualizada' => $datosGenerales ? $datosGenerales->razon_social : null,
+                        'usuario_actualizado' => $proveedorAsignado->usuario ? true : false
+                    ]
                 ];
             } catch (\Exception $e) {
                 Log::error("Error en proceso de aprobación para trámite {$tramiteId}", [

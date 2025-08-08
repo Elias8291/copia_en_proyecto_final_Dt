@@ -99,6 +99,79 @@ class CitasService
         }
     }
 
+    public function agendarCitaCotejoDomiciliario(int $tramiteId): array
+    {
+        \Log::info('Iniciando agendamiento de cita para cotejo domiciliario', ['tramite_id' => $tramiteId]);
+        
+        $tramite = Tramite::findOrFail($tramiteId);
+        $revisores = $this->obtenerRevisoresDomiciliarios();
+        
+        \Log::info('Revisores domiciliarios encontrados', [
+            'tramite_id' => $tramiteId,
+            'cantidad_revisores' => $revisores->count(),
+            'revisores' => $revisores->pluck('name', 'id')->toArray()
+        ]);
+        
+        if ($revisores->isEmpty()) {
+            \Log::warning('No hay revisores domiciliarios disponibles', ['tramite_id' => $tramiteId]);
+            return ['success' => false, 'message' => 'No hay revisores domiciliarios disponibles'];
+        }
+
+        $fechaHora = $this->buscarPrimerHorarioDisponible($revisores);
+        
+        \Log::info('Horario encontrado para cotejo domiciliario', [
+            'tramite_id' => $tramiteId,
+            'fecha_hora' => $fechaHora ? $fechaHora['datetime'] : null,
+            'revisor_id' => $fechaHora ? $fechaHora['revisor_id'] : null
+        ]);
+        
+        if (!$fechaHora) {
+            \Log::warning('No hay horarios disponibles para cotejo domiciliario', ['tramite_id' => $tramiteId]);
+            return ['success' => false, 'message' => 'No hay horarios disponibles en los próximos 30 días'];
+        }
+
+        try {
+            $cita = Cita::create([
+                'tramite_id' => $tramiteId,
+                'tipo_cita' => 'Domiciliaria',
+                'fecha_cita' => $fechaHora['datetime'],
+                'estado' => 'Asignada',
+                'asignado_a' => $fechaHora['revisor_id'],
+                'intento' => 1
+            ]);
+
+            \Log::info('Cita de cotejo domiciliario creada exitosamente', [
+                'tramite_id' => $tramiteId,
+                'cita_id' => $cita->id,
+                'fecha_cita' => $cita->fecha_cita,
+                'revisor_id' => $cita->asignado_a
+            ]);
+
+            // Actualizar estado del trámite a revisión domiciliaria
+            $tramite->update(['status' => TramiteStatus::REVISION_DOMICILIARIA->value]);
+
+            if ($this->notificacionService) {
+                $this->notificacionService->notificarCitaAgendada($cita);
+            }
+
+            return [
+                'success' => true,
+                'cita' => $cita,
+                'revisor' => User::find($fechaHora['revisor_id']),
+                'fecha_formateada' => Carbon::parse($fechaHora['datetime'])->format('d/m/Y H:i'),
+                'message' => 'Cita de cotejo domiciliario agendada exitosamente'
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error al crear cita de cotejo domiciliario', [
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return ['success' => false, 'message' => 'Error al crear la cita de cotejo domiciliario: ' . $e->getMessage()];
+        }
+    }
+
     public function reagendarCita(int $citaId, array $datos = []): array
     {
         \Log::info('Iniciando reagendamiento de cita', ['cita_id' => $citaId]);
@@ -241,13 +314,22 @@ class CitasService
     }
 
     /**
+     * Obtener revisores domiciliarios
+     */
+    private function obtenerRevisoresDomiciliarios(): Collection
+    {
+        return User::role('Revisor Domiciliario')->get();
+    }
+
+    /**
      * Obtener revisores según tipo de cita
      */
     private function obtenerRevisoresPorTipo(string $tipoCita): Collection
     {
         return match($tipoCita) {
             'Digital' => $this->obtenerRevisoresDigitales(),
-            'Presencial', 'Domiciliaria' => $this->obtenerRevisoresPresenciales(),
+            'Presencial' => $this->obtenerRevisoresPresenciales(),
+            'Domiciliaria' => $this->obtenerRevisoresDomiciliarios(),
             default => collect()
         };
     }

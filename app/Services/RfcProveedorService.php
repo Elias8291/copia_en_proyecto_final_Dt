@@ -467,12 +467,6 @@ class RfcProveedorService
                 'usuario_id' => $datosProveedor['usuario_id'] ?? auth()->id(),
                 'fecha_alta_padron' => $fechaActual,
                 'razon_social' => $datosProveedor['razon_social'] ?? null,
-                'nombre' => $datosProveedor['nombre'] ?? null,
-                'apellido_paterno' => $datosProveedor['apellido_paterno'] ?? null,
-                'apellido_materno' => $datosProveedor['apellido_materno'] ?? null,
-                'curp' => $datosProveedor['curp'] ?? null,
-                'email' => $datosProveedor['email'] ?? null,
-                'telefono' => $datosProveedor['telefono'] ?? null,
             ]);
 
             \Log::info("Nuevo proveedor creado para inscripción", [
@@ -505,6 +499,37 @@ class RfcProveedorService
                 'proveedor_id' => $proveedorReutilizable->id,
                 'pv_numero' => $numeroProveedor
             ]);
+
+            // Sincronizar datos con DatosGenerales después de asignar PV
+            // Buscar el trámite actual que está siendo procesado
+            $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
+                ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
+                ->latest()
+                ->first();
+                
+            if ($tramiteActual) {
+                $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
+                if ($datosGenerales) {
+                    $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
+                    
+                    \Log::info("Datos sincronizados después de asignar PV en inscripción", [
+                        'proveedor_id' => $proveedorReutilizable->id,
+                        'tramite_actual_id' => $tramiteActual->id,
+                        'pv_numero' => $numeroProveedor,
+                        'razon_social' => $datosGenerales->razon_social,
+                        'datos_generales_id' => $datosGenerales->id
+                    ]);
+                } else {
+                    \Log::warning("No se encontraron DatosGenerales para el trámite actual en inscripción", [
+                        'proveedor_id' => $proveedorReutilizable->id,
+                        'tramite_actual_id' => $tramiteActual->id
+                    ]);
+                }
+            } else {
+                \Log::warning("No se encontró trámite actual para sincronizar datos en inscripción", [
+                    'proveedor_id' => $proveedorReutilizable->id
+                ]);
+            }
         } else {
             $numeroProveedor = $proveedorReutilizable->pv_numero;
         }
@@ -556,6 +581,37 @@ class RfcProveedorService
                 'proveedor_id' => $proveedorReutilizable->id,
                 'pv_numero' => $numeroProveedor
             ]);
+
+            // Sincronizar datos con DatosGenerales después de asignar PV
+            // Buscar el trámite actual que está siendo procesado
+            $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
+                ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
+                ->latest()
+                ->first();
+                
+            if ($tramiteActual) {
+                $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
+                if ($datosGenerales) {
+                    $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
+                    
+                    \Log::info("Datos sincronizados después de asignar PV en renovación", [
+                        'proveedor_id' => $proveedorReutilizable->id,
+                        'tramite_actual_id' => $tramiteActual->id,
+                        'pv_numero' => $numeroProveedor,
+                        'razon_social' => $datosGenerales->razon_social,
+                        'datos_generales_id' => $datosGenerales->id
+                    ]);
+                } else {
+                    \Log::warning("No se encontraron DatosGenerales para el trámite actual en renovación", [
+                        'proveedor_id' => $proveedorReutilizable->id,
+                        'tramite_actual_id' => $tramiteActual->id
+                    ]);
+                }
+            } else {
+                \Log::warning("No se encontró trámite actual para sincronizar datos en renovación", [
+                    'proveedor_id' => $proveedorReutilizable->id
+                ]);
+            }
         } else {
             $numeroProveedor = $proveedorReutilizable->pv_numero;
         }
@@ -606,6 +662,37 @@ class RfcProveedorService
                 'proveedor_id' => $proveedorReutilizable->id,
                 'pv_numero' => $numeroProveedor
             ]);
+
+            // Sincronizar datos con DatosGenerales después de asignar PV
+            // Buscar el trámite actual que está siendo procesado
+            $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
+                ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
+                ->latest()
+                ->first();
+                
+            if ($tramiteActual) {
+                $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
+                if ($datosGenerales) {
+                    $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
+                    
+                    \Log::info("Datos sincronizados después de asignar PV en actualización", [
+                        'proveedor_id' => $proveedorReutilizable->id,
+                        'tramite_actual_id' => $tramiteActual->id,
+                        'pv_numero' => $numeroProveedor,
+                        'razon_social' => $datosGenerales->razon_social,
+                        'datos_generales_id' => $datosGenerales->id
+                    ]);
+                } else {
+                    \Log::warning("No se encontraron DatosGenerales para el trámite actual en actualización", [
+                        'proveedor_id' => $proveedorReutilizable->id,
+                        'tramite_actual_id' => $tramiteActual->id
+                    ]);
+                }
+            } else {
+                \Log::warning("No se encontró trámite actual para sincronizar datos en actualización", [
+                    'proveedor_id' => $proveedorReutilizable->id
+                ]);
+            }
         } else {
             $numeroProveedor = $proveedorReutilizable->pv_numero;
         }
@@ -627,6 +714,50 @@ class RfcProveedorService
             'fecha_registro' => $proveedorReutilizable->fecha_registro,
             'fecha_vencimiento' => $proveedorReutilizable->fecha_vencimiento_padron
         ];
+    }
+
+    /**
+     * Sincronizar datos del proveedor con DatosGenerales del trámite específico
+     */
+    public function sincronizarDatosProveedorConTramite(Proveedor $proveedor, int $tramiteId): bool
+    {
+        try {
+            $tramite = Tramite::find($tramiteId);
+            if (!$tramite) {
+                \Log::warning("No se encontró el trámite para sincronizar datos", [
+                    'proveedor_id' => $proveedor->id,
+                    'tramite_id' => $tramiteId
+                ]);
+                return false;
+            }
+
+            $datosGenerales = $tramite->datosGenerales()->latest()->first();
+            if (!$datosGenerales) {
+                \Log::warning("No se encontraron DatosGenerales para el trámite", [
+                    'proveedor_id' => $proveedor->id,
+                    'tramite_id' => $tramiteId
+                ]);
+                return false;
+            }
+
+            $proveedor->sincronizarDatosGenerales($datosGenerales);
+            
+            \Log::info("Datos sincronizados exitosamente con trámite específico", [
+                'proveedor_id' => $proveedor->id,
+                'tramite_id' => $tramiteId,
+                'razon_social' => $datosGenerales->razon_social,
+                'datos_generales_id' => $datosGenerales->id
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            \Log::error("Error al sincronizar datos del proveedor con trámite", [
+                'proveedor_id' => $proveedor->id,
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
     }
 
     /**
