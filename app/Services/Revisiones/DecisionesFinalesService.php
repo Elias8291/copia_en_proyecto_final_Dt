@@ -190,26 +190,51 @@ class DecisionesFinalesService
                 'proveedor_id' => $proveedorAsignado->id,
                 'accion_realizada' => $accion['accion']
             ];
+            } catch (\Exception $e) {
+                Log::error("Error en proceso de aprobación para trámite {$tramiteId}", [
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                throw $e; // Re-lanzar la excepción para que sea manejada por el controlador
+            }
         });
     }
 
     /** Crear nuevo proveedor */
     private function crearNuevoProveedor(Tramite $tramite, string $numeroProveedor): Proveedor
     {
-        // Obtener datos del trámite de forma segura
-        $datosGenerales = $tramite->datosGenerales->first();
-        $contacto = $tramite->contacto->first();
-        $domicilio = $tramite->domicilio->first();
+        try {
+            Log::info("Creando nuevo proveedor para trámite {$tramite->id} con número PV: {$numeroProveedor}");
+            
+            // Obtener datos del trámite de forma segura
+            $datosGenerales = $tramite->datosGenerales->first();
+            $contacto = $tramite->contacto->first();
+            $domicilio = $tramite->domicilio->first();
+            
+            Log::info("Datos obtenidos del trámite", [
+                'datos_generales_existe' => $datosGenerales ? 'Sí' : 'No',
+                'contacto_existe' => $contacto ? 'Sí' : 'No',
+                'domicilio_existe' => $domicilio ? 'Sí' : 'No'
+            ]);
+            
+            // Obtener datos del proveedor actual del trámite
+            $proveedorActual = $tramite->proveedor;
+            
+            // Validar que el proveedor actual existe
+            if (!$proveedorActual) {
+                throw new \Exception('No se encontró el proveedor asociado al trámite');
+            }
+            
+            Log::info("Proveedor actual encontrado", [
+                'proveedor_id' => $proveedorActual->id,
+                'rfc' => $proveedorActual->rfc,
+                'razon_social' => $proveedorActual->razon_social
+            ]);
         
-        // Obtener datos del proveedor actual del trámite
-        $proveedorActual = $tramite->proveedor;
-        
-        // Validar que el proveedor actual existe
-        if (!$proveedorActual) {
-            throw new \Exception('No se encontró el proveedor asociado al trámite');
-        }
-        
-        return Proveedor::create([
+        $proveedor = Proveedor::create([
             'rfc' => $proveedorActual->rfc,
             'razon_social' => $datosGenerales ? ($datosGenerales->razon_social ?? null) : ($proveedorActual->razon_social ?? 'Sin razón social'),
             'curp' => $datosGenerales ? ($datosGenerales->curp ?? null) : ($proveedorActual->curp ?? null),
@@ -228,6 +253,23 @@ class DecisionesFinalesService
             'fecha_vencimiento_padron' => now()->addYear(), // Vence en 1 año
             'tramite_id' => $tramite->id
         ]);
+        
+        Log::info("Proveedor creado exitosamente", [
+            'proveedor_id' => $proveedor->id,
+            'numero_pv' => $numeroProveedor,
+            'rfc' => $proveedor->rfc
+        ]);
+        
+        return $proveedor;
+        } catch (\Exception $e) {
+            Log::error("Error creando nuevo proveedor para trámite {$tramite->id}", [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            throw $e;
+        }
     }
 
     /** Guardar comentario general */

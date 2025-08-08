@@ -153,17 +153,38 @@ class RfcProveedorService
 
     public function generarNumeroProveedor(string $rfc): string
     {
-        $ultimoProveedor = Proveedor::where('rfc', $rfc)
-            ->whereNotNull('pv_numero')
-            ->orderBy('pv_numero', 'desc')
-            ->first();
-        
-        if (!$ultimoProveedor || !$ultimoProveedor->pv_numero) {
-            return '001';
+        try {
+            \Log::info("Generando número de proveedor para RFC: {$rfc}");
+            
+            $ultimoProveedor = Proveedor::where('rfc', $rfc)
+                ->whereNotNull('pv_numero')
+                ->orderBy('pv_numero', 'desc')
+                ->first();
+            
+            if (!$ultimoProveedor || !$ultimoProveedor->pv_numero) {
+                \Log::info("No se encontró proveedor previo para RFC {$rfc}, asignando 001");
+                return '001';
+            }
+            
+            $ultimoNumero = (int) $ultimoProveedor->pv_numero;
+            $nuevoNumero = str_pad($ultimoNumero + 1, 3, '0', STR_PAD_LEFT);
+            
+            \Log::info("Número de proveedor generado", [
+                'rfc' => $rfc,
+                'ultimo_numero' => $ultimoProveedor->pv_numero,
+                'nuevo_numero' => $nuevoNumero
+            ]);
+            
+            return $nuevoNumero;
+        } catch (\Exception $e) {
+            \Log::error("Error generando número de proveedor para RFC {$rfc}", [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            throw $e;
         }
-        
-        $ultimoNumero = (int) $ultimoProveedor->pv_numero;
-        return str_pad($ultimoNumero + 1, 3, '0', STR_PAD_LEFT);
     }
 
     public function obtenerArchivosPorTipoPersona(string $rfc): \Illuminate\Database\Eloquent\Collection
