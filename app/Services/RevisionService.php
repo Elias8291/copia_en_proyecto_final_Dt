@@ -188,22 +188,26 @@ class RevisionService
      */
     private function determinarTiposRevisionDisponibles(Tramite $tramite): array
     {
-        $tipos = ['Digital'];
-
-        // Agregar Presencial si el trámite está en revisión digital
+        // Si el trámite ya está en algún tipo de revisión, solo permitir ese tipo
         if ($tramite->status === TramiteStatus::REVISION_DIGITAL->value) {
-            $tipos[] = 'Presencial';
+            return ['Digital'];
+        }
+        
+        if ($tramite->status === TramiteStatus::REVISION_PRESENCIAL->value) {
+            return ['Presencial'];
+        }
+        
+        if ($tramite->status === TramiteStatus::REVISION_DOMICILIARIA->value) {
+            return ['Domiciliaria'];
         }
 
-        // Agregar Domiciliaria si es necesario
-        if (in_array($tramite->status, [
-            TramiteStatus::REVISION_DIGITAL->value,
-            TramiteStatus::REVISION_PRESENCIAL->value
-        ])) {
-            $tipos[] = 'Domiciliaria';
+        // Si está pendiente, permitir todos los tipos
+        if ($tramite->status === TramiteStatus::PENDIENTE->value) {
+            return ['Digital', 'Presencial', 'Domiciliaria'];
         }
 
-        return $tipos;
+        // Para otros estados, no permitir ningún tipo de revisión
+        return [];
     }
 
     /**
@@ -221,10 +225,10 @@ class RevisionService
 
         return [
             'id' => $cita->id,
-            'fecha' => $cita->fecha,
-            'hora' => $cita->hora,
+            'fecha' => $cita->fecha_cita->format('d/m/Y'),
+            'hora' => $cita->fecha_cita->format('H:i'),
             'estado' => $cita->estado,
-            'tipo' => $cita->tipo
+            'tipo' => $cita->tipo_cita
         ];
     }
 
@@ -349,12 +353,40 @@ class RevisionService
             }
         }
         
+        // Verificar si todas las secciones están aprobadas
+        $todasAprobadas = ($seccionesEvaluadas === $totalSecciones) && ($seccionesAprobadas === $totalSecciones);
+        
         return [
             'estado' => $estado,
             'totalSecciones' => $totalSecciones,
             'seccionesEvaluadas' => $seccionesEvaluadas,
             'seccionesAprobadas' => $seccionesAprobadas,
-            'seccionesRechazadas' => $seccionesRechazadas
+            'seccionesRechazadas' => $seccionesRechazadas,
+            'todas_aprobadas' => $todasAprobadas
         ];
+    }
+
+    /**
+     * Agendar cita para revisión
+     */
+    public function agendarCita(int $tramiteId, array $datos)
+    {
+        return $this->citasService->agendarCita($tramiteId, $datos);
+    }
+
+    /**
+     * Reagendar cita existente
+     */
+    public function reagendarCita(int $citaId, array $datos)
+    {
+        return $this->citasService->reagendarCita($citaId, $datos);
+    }
+
+    /**
+     * Obtener horarios disponibles para una fecha
+     */
+    public function obtenerHorariosDisponibles(string $fecha, string $tipo = 'Presencial'): array
+    {
+        return $this->citasService->obtenerHorariosDisponibles($fecha, $tipo);
     }
 } 

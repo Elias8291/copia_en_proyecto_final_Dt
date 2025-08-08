@@ -1,5 +1,21 @@
 // Función global para evaluar secciones
 async function evaluarSeccion(seccion, estado) {
+    // Validación especial para la sección de archivos
+    if (seccion === 'archivos' && estado === 'Aprobado') {
+        const archivos = document.querySelectorAll('[id^="estado_archivo_"]');
+        const estados = Array.from(archivos).map(el => el.textContent.trim());
+        
+        if (estados.includes('Rechazado')) {
+            mostrarError('No se puede aprobar la sección de documentos. Hay documentos rechazados que requieren corrección.');
+            return;
+        }
+        
+        if (estados.includes('Pendiente')) {
+            mostrarError('No se puede aprobar la sección de documentos. Hay documentos pendientes de revisión.');
+            return;
+        }
+    }
+    
     const comentario = document.getElementById(`comentario_${seccion}`)?.value || '';
     const tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');
     
@@ -64,6 +80,62 @@ function toggleCotejo(seccion) {
     }
 }
 
+// Función para mostrar/ocultar panel de historial
+function toggleHistorial() {
+    const contenidoHistorial = document.getElementById('contenido_historial');
+    const toggleIcon = document.getElementById('toggle_icon_historial');
+    const toggleText = document.getElementById('toggle_text_historial');
+    
+    if (contenidoHistorial && toggleIcon && toggleText) {
+        const isHidden = contenidoHistorial.classList.contains('hidden');
+        
+        if (isHidden) {
+            // Mostrar historial
+            contenidoHistorial.classList.remove('hidden');
+            toggleIcon.style.transform = 'rotate(180deg)';
+            toggleText.textContent = 'Ocultar Historial';
+        } else {
+            // Ocultar historial
+            contenidoHistorial.classList.add('hidden');
+            toggleIcon.style.transform = 'rotate(0deg)';
+            toggleText.textContent = 'Ver Historial';
+        }
+    }
+}
+
+// Función para mostrar mensajes de error
+function mostrarError(mensaje) {
+    // Crear o actualizar elemento de error
+    let errorElement = document.getElementById('error-mensaje');
+    if (!errorElement) {
+        errorElement = document.createElement('div');
+        errorElement.id = 'error-mensaje';
+        errorElement.className = 'fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded z-50 shadow-lg';
+        document.body.appendChild(errorElement);
+    }
+    
+    errorElement.innerHTML = `
+        <div class="flex items-center">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="font-medium">${mensaje}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-red-700 hover:text-red-900">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+        if (errorElement && errorElement.parentElement) {
+            errorElement.remove();
+        }
+    }, 5000);
+}
+
 // Cargar estados iniciales al cargar la página
 document.addEventListener('DOMContentLoaded', async function() {
     const tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');
@@ -107,4 +179,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             console.error(`Error al cargar estado de ${seccion}:`, error);
         }
     }
-}); 
+});
+
+// Las funciones de decisiones finales se han movido a decisiones-finales.js 

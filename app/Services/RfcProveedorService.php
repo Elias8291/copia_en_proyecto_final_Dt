@@ -71,12 +71,12 @@ class RfcProveedorService
         return $this->crearRespuestaAccion('crear_nuevo', 'Proveedor existente no está activo o vencido', $proveedorActivo, $proveedores->count());
     }
 
-    public function determinarAccionPorTipoTramite(string $rfc, string $tipoTramite): array
+    public function determinarAccionPorTipoTramite(string $rfc, string $tipoTramite, ?int $tramiteIdExcluir = null): array
     {
         $proveedores = $this->buscarProveedoresPorRfc($rfc);
         $proveedorActivo = $this->buscarProveedorActivo($rfc);
-        $proveedorConTramitePendiente = $this->buscarProveedorConTramitePendiente($rfc);
-        $tramitePendiente = $this->obtenerTramitePendiente($rfc);
+        $proveedorConTramitePendiente = $this->buscarProveedorConTramitePendiente($rfc, $tramiteIdExcluir);
+        $tramitePendiente = $this->obtenerTramitePendiente($rfc, $tramiteIdExcluir);
         
         // Convertir el tipo de trámite a minúsculas para la comparación
         $tipoTramiteLower = strtolower($tipoTramite);
@@ -122,18 +122,23 @@ class RfcProveedorService
         }
     }
 
-    public function buscarProveedorConTramitePendiente(string $rfc): ?Proveedor
+    public function buscarProveedorConTramitePendiente(string $rfc, ?int $tramiteIdExcluir = null): ?Proveedor
     {
         return Proveedor::where('rfc', $rfc)
-            ->whereHas('tramites', function($query) {
+            ->whereHas('tramites', function($query) use ($tramiteIdExcluir) {
                 $query->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion']);
+                
+                // Excluir el trámite actual si se especifica
+                if ($tramiteIdExcluir) {
+                    $query->where('id', '!=', $tramiteIdExcluir);
+                }
             })
             ->first();
     }
 
-    public function tieneTramitePendiente(string $rfc): bool
+    public function tieneTramitePendiente(string $rfc, ?int $tramiteIdExcluir = null): bool
     {
-        return $this->buscarProveedorConTramitePendiente($rfc) !== null;
+        return $this->buscarProveedorConTramitePendiente($rfc, $tramiteIdExcluir) !== null;
     }
 
     private function crearRespuestaAccion(string $accion, string $motivo, ?Proveedor $proveedorActivo, int $totalProveedores): array
@@ -185,12 +190,17 @@ class RfcProveedorService
             ->get();
     }
 
-    public function obtenerTramitePendiente(string $rfc): ?\App\Models\Tramite
+    public function obtenerTramitePendiente(string $rfc, ?int $tramiteIdExcluir = null): ?\App\Models\Tramite
     {
-        return Tramite::whereHas('proveedor', function($query) use ($rfc) {
+        $query = Tramite::whereHas('proveedor', function($query) use ($rfc) {
             $query->where('rfc', $rfc);
-        })->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
-          ->orderBy('created_at', 'desc')
-          ->first();
+        })->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion']);
+        
+        // Excluir el trámite actual si se especifica
+        if ($tramiteIdExcluir) {
+            $query->where('id', '!=', $tramiteIdExcluir);
+        }
+        
+        return $query->orderBy('created_at', 'desc')->first();
     }
 } 

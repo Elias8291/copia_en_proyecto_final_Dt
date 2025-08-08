@@ -30,6 +30,17 @@ class UserSeeder extends Seeder
         ]);
         $admin->assignRole('Administrador');
 
+        // Crear usuario revisor presencial
+        $revisorPresencial = User::firstOrCreate(['correo' => 'revisor@test.com'], [
+            'nombre' => 'Revisor Presencial Test',
+            'rfc' => 'TEST123456789',
+            'password' => Hash::make('password'),
+            'verification' => true,
+            'verification_token' => null,
+            'ultimo_acceso' => null,
+        ]);
+        $revisorPresencial->assignRole('Revisor Presencial');
+
         $this->command->info('Usuarios creados correctamente');
     }
 }

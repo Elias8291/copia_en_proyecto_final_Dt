@@ -6,7 +6,7 @@
     'redirectUrl' => url('/'),
 ])
 
-@if(session('success') && session('success_title') && session('success_message') && !request()->is('revisiones/revisar*'))
+@if(session('success') && session('success_title') && session('success_message') && request()->is('revisiones/revisar*'))
 <div id="{{ $id }}" class="fixed z-50 inset-0 overflow-y-auto">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity" aria-hidden="true">
@@ -46,10 +46,11 @@
             </div>
             
             <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                <a href="{{ session('success_redirect', $redirectUrl) }}"
-                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                <button type="button" 
+                        onclick="limpiarSesionExito('{{ session('success_redirect', $redirectUrl) }}')"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
                     {{ session('success_accept_text', $acceptText) }}
-                </a>
+                </button>
             </div>
         </div>
     </div>
@@ -87,5 +88,20 @@
         });
     });
 })();
+
+// Función para limpiar sesión de éxito y redirigir
+function limpiarSesionExito(url) {
+    // Limpiar la sesión de éxito
+    fetch('/limpiar-sesion-exito', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    }).then(() => {
+        // Redirigir a la URL especificada
+        window.location.href = url;
+    });
+}
 </script>
 @endif 

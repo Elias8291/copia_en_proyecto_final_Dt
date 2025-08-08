@@ -3,7 +3,7 @@
     'showCorrecciones' => true,
     'showRechazar' => true,
     'textoAprobar' => 'Aprobar y Agendar Cita',
-    'textoCorrecciones' => 'Para Corrección',
+    'textoCorrecciones' => 'Rechazar y Para Corrección',
     'textoRechazar' => 'Rechazar Trámite',
     'layout' => 'grid', // grid, flex
     'formId' => 'formRevisionCompleta'
@@ -35,7 +35,7 @@
     @if($showCorrecciones)
         <button 
             type="button" 
-            onclick="confirmarDecision('correcciones', '{{ $textoCorrecciones }}', '¿Está seguro que desea enviar este trámite para corrección? El solicitante deberá realizar los cambios solicitados.')"
+            onclick="confirmarDecision('correcciones', '{{ $textoCorrecciones }}', '¿Está seguro que desea rechazar este trámite y enviarlo para corrección? El solicitante deberá realizar los cambios solicitados.')"
             class="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-3 rounded-md transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md min-w-[120px] text-sm"
         >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -135,6 +135,7 @@ Route::middleware(['auth'])->group(function () {
         
         // Ruta para procesar revisión digital
         Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
+    Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
         
         // Rutas para gestión de citas
         Route::post('/{tramite}/agendar-cita', [RevisionController::class, 'agendarCita'])->name('agendar-cita');
@@ -148,6 +149,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{tramite}/seccion/estado', [RevisionController::class, 'obtenerEstadoSeccion'])->name('seccion.estado');
         Route::post('/{tramite}/seccion/evaluar', [RevisionController::class, 'evaluarSeccion'])->name('seccion.evaluar');
         Route::get('/{tramite}/estado-general', [RevisionController::class, 'obtenerEstadoGeneral'])->name('estado.general');
+        
+        // Rutas para decisiones finales
+        Route::post('/{tramite}/aprobar-y-agendar', [RevisionController::class, 'aprobarYAgendarCita'])->name('aprobar-y-agendar');
+        Route::post('/{tramite}/rechazar-correccion', [RevisionController::class, 'rechazarParaCorreccion'])->name('rechazar-correccion');
+        Route::post('/{tramite}/rechazar-completo', [RevisionController::class, 'rechazarCompleto'])->name('rechazar-completo');
+        
+        // Rutas para revisión presencial
+        Route::post('/{tramite}/aprobar-asignar-proveedor', [RevisionController::class, 'aprobarYAsignarProveedor'])->name('aprobar-asignar-proveedor');
+        Route::post('/{tramite}/rechazar', [RevisionController::class, 'rechazarTramite'])->name('rechazar');
+
+// Limpiar sesión de éxito
+Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionExito'])->name('limpiar-sesion-exito');
         
         // Ruta para limpiar sesiones
         Route::post('/limpiar-sesiones', [RevisionController::class, 'limpiarSesiones'])->name('limpiar-sesiones');

@@ -650,31 +650,34 @@
                     </div>
                     
                     <div class="flex justify-end space-x-4">
-                        <!-- Botón Agendar Cita -->
+                        <!-- Botón Aprobar y Agendar Cita -->
                         <button type="button" 
-                                class="inline-flex items-center px-6 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-200 shadow-sm">
+                                onclick="aprobarYAgendarCita()"
+                                class="inline-flex items-center px-6 py-3 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
-                            Agendar Cita
+                            Aprobar y Agendar Cita
+                        </button>
+                        
+                        <!-- Botón Rechazar y Para Corrección -->
+                        <button type="button" 
+                                onclick="rechazarParaCorreccion()"
+                                class="inline-flex items-center px-6 py-3 bg-orange-500 text-white text-sm font-medium rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all duration-200 shadow-sm">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.084 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                            </svg>
+                            Rechazar y Para Corrección
                         </button>
                         
                         <!-- Botón Rechazar Trámite -->
                         <button type="button" 
+                                onclick="rechazarTramite()"
                                 class="inline-flex items-center px-6 py-3 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                             Rechazar Trámite
-                        </button>
-                        
-                        <!-- Botón Aprobar Trámite -->
-                        <button type="button" 
-                                class="inline-flex items-center px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Aprobar Trámite
                         </button>
                     </div>
                 </div>
@@ -701,6 +704,21 @@
 window.esPersonaMoral = @json($viewModel->isPersonaMoral());
 </script>
 
+<!-- Modal de Confirmación -->
+<x-ui.modals.modal-confirmacion 
+    id="modal-confirmacion"
+    title="Confirmar acción"
+    message="¿Está seguro que desea realizar esta acción?"
+    confirmText="Confirmar"
+    cancelText="Cancelar"
+    confirmClass="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
+    cancelClass="bg-white border-gray-300 text-gray-700 hover:text-gray-500 focus:ring-blue-500"
+/>
+
+<!-- Modal de Éxito -->
+<x-ui.modals.modal-exito />
+
 <script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
 <script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
+<script src="{{ asset('js/revision/decisiones-finales.js') }}"></script>
 @endsection 

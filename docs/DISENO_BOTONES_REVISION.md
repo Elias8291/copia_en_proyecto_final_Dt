@@ -46,12 +46,12 @@ Este documento detalla el diseño estandarizado de los botones de comentar, apro
 - **Estado del trámite**: Se mantiene en "Revision_Digital"
 - **Confirmación**: "¿Está seguro que desea aprobar este trámite y agendar una cita presencial?"
 
-##### **⚠️ Para Corrección** (Naranja)
-- **Texto**: "Para Corrección"
+##### **⚠️ Rechazar y Para Corrección** (Naranja)
+- **Texto**: "Rechazar y Para Corrección"
 - **Acción**: `correcciones`
-- **Funcionalidad**: Envía el trámite para corrección
+- **Funcionalidad**: Rechaza el trámite y lo envía para corrección
 - **Estado del trámite**: "Para_Correccion"
-- **Confirmación**: "¿Está seguro que desea enviar este trámite para corrección?"
+- **Confirmación**: "¿Está seguro que desea rechazar este trámite y enviarlo para corrección?"
 
 ##### **❌ Rechazar Trámite** (Rojo)
 - **Texto**: "Rechazar Trámite"
@@ -155,7 +155,7 @@ Este documento detalla el diseño estandarizado de los botones de comentar, apro
 
 ### **Mensajes de Confirmación**:
 - **Aprobar**: "¿Está seguro que desea aprobar este trámite y agendar una cita presencial?"
-- **Correcciones**: "¿Está seguro que desea enviar este trámite para corrección?"
+- **Correcciones**: "¿Está seguro que desea rechazar este trámite y enviarlo para corrección?"
 - **Rechazar**: "¿Está seguro que desea rechazar este trámite?"
 
 ### **Implementación Técnica**:

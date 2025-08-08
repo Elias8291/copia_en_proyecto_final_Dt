@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Tramite;
 use App\Models\Archivo;
+use App\Models\SeccionRevision;
 use App\Services\RevisionService;
 use App\Services\Revisiones\RevisionDigitalService;
 use App\Services\Revisiones\RevisionPresencialService;
+use App\Services\Revisiones\DecisionesFinalesService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,49 +21,41 @@ class RevisionController extends Controller
     public function __construct(
         RevisionService $revisionService,
         RevisionDigitalService $revisionDigitalService,
-        RevisionPresencialService $revisionPresencialService
+        RevisionPresencialService $revisionPresencialService,
+        DecisionesFinalesService $decisionesFinalesService
     ) {
         $this->revisionService = $revisionService;
         $this->revisionDigitalService = $revisionDigitalService;
         $this->revisionPresencialService = $revisionPresencialService;
+        $this->decisionesFinalesService = $decisionesFinalesService;
     }
 
-    // Listar trámites para revisión
+    /** Listar trámites para revisión */
     public function index(Request $request)
     {
-        $filtros = $request->only(['search', 'status', 'tipo_tramite']);
-        $tramites = $this->revisionService->obtenerTramitesParaRevision($filtros);
-        
-        return view('revisiones.index', compact('tramites', 'filtros'));
+        $tramites = $this->revisionService->obtenerTramitesPendientes($request);
+        return view('revisiones.index', compact('tramites'));
     }
 
-    // Seleccionar tipo de revisión
+    /** Seleccionar tipo de revisión */
     public function seleccionarTipoRevision(int $tramiteId)
     {
         $datos = $this->revisionService->obtenerDatosSeleccionTipo($tramiteId);
         return view('revisiones.seleccionar-tipo', $datos);
     }
 
-    // Iniciar revisión
+    /** Iniciar revisión */
     public function iniciarRevision(Request $request, int $tramiteId)
     {
-        $request->validate([
-            'tipo_revision' => 'required|in:Digital,Presencial,Domiciliaria'
-        ]);
-
+        $request->validate(['tipo_revision' => 'required|in:Digital,Presencial,Domiciliaria']);
         $this->revisionService->iniciarRevision($tramiteId, $request->tipo_revision);
-
-        return redirect()->route('revisiones.revisar', [
-            'tramite' => $tramiteId,
-            'tipo_revision' => $request->tipo_revision
-        ]);
+        return redirect()->route('revisiones.revisar', ['tramite' => $tramiteId, 'tipo_revision' => $request->tipo_revision]);
     }
 
-    // Revisar trámite
+    /** Revisar trámite */
     public function revisarTramite(Request $request, int $tramiteId)
     {
         $tipoRevision = $request->get('tipo_revision', 'Digital');
-        
         $request->session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
         
         if ($tipoRevision === 'Digital') {
@@ -73,46 +67,26 @@ class RevisionController extends Controller
         }
         
         $vista = $this->revisionService->obtenerVistaRevision($tipoRevision);
-        
         return view($vista, $datos);
     }
 
-    // Agendar cita
+    /** Agendar cita */
     public function agendarCita(Request $request, int $tramiteId)
     {
-        $request->validate([
-            'fecha' => 'required|date|after:today',
-            'hora' => 'required',
-            'tipo_cita' => 'required|in:Presencial,Domiciliaria'
-        ]);
-
+        $request->validate(['fecha' => 'required|date|after:today', 'hora' => 'required', 'tipo_cita' => 'required|in:Presencial,Domiciliaria']);
         $cita = $this->revisionService->agendarCita($tramiteId, $request->all());
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Cita agendada exitosamente',
-            'cita' => $cita
-        ]);
+        return response()->json(['success' => true, 'message' => 'Cita agendada exitosamente', 'cita' => $cita]);
     }
 
-    // Reagendar cita
+    /** Reagendar cita */
     public function reagendarCita(Request $request, int $citaId)
     {
-        $request->validate([
-            'fecha' => 'required|date|after:today',
-            'hora' => 'required'
-        ]);
-
+        $request->validate(['fecha' => 'required|date|after:today', 'hora' => 'required']);
         $cita = $this->revisionService->reagendarCita($citaId, $request->all());
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Cita reagendada exitosamente',
-            'cita' => $cita
-        ]);
+        return response()->json(['success' => true, 'message' => 'Cita reagendada exitosamente', 'cita' => $cita]);
     }
 
-    // Obtener horarios disponibles
+    /** Obtener horarios disponibles */
     public function obtenerHorariosDisponibles(Request $request)
     {
         $fecha = $request->get('fecha');
@@ -123,18 +97,17 @@ class RevisionController extends Controller
         }
         
         $horarios = $this->revisionService->obtenerHorariosDisponibles($fecha, $tipo);
-        
         return response()->json(['horarios' => $horarios]);
     }
 
-    // Ver trámite histórico
+    /** Ver trámite histórico */
     public function verTramiteHistorico(int $tramiteId)
     {
         $datos = $this->revisionService->obtenerDatosRevision($tramiteId, 'Historico');
         return view('revisiones.historico', $datos);
     }
 
-    // Mostrar archivo
+    /** Mostrar archivo */
     public function mostrarArchivo(int $id)
     {
         try {
@@ -293,5 +266,193 @@ class RevisionController extends Controller
                 'message' => 'Error al procesar la revisión digital: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /** Aprobar trámite y agendar cita */
+    public function aprobarYAgendarCita(Request $request, int $tramiteId)
+    {
+        try {
+            $request->validate(['comentario_general' => 'nullable']);
+            $comentarioGeneral = $request->input('comentario_general') ?: null;
+            
+            $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
+            $resultado = $decisionesService->aprobarYAgendarCita($tramiteId, $comentarioGeneral);
+            
+            if ($resultado['success']) {
+                return response()->json($resultado);
+            }
+            
+            return response()->json($resultado);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al aprobar el trámite: ' . $e->getMessage()]);
+        }
+    }
+
+    /** Rechazar para corrección */
+    public function rechazarParaCorreccion(Request $request, int $tramiteId)
+    {
+        try {
+            $request->validate(['comentario_general' => 'nullable']);
+            $comentarioGeneral = $request->input('comentario_general') ?: null;
+            
+            $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
+            $resultado = $decisionesService->rechazarParaCorreccion($tramiteId, $comentarioGeneral);
+            
+            if ($resultado['success']) {
+                return response()->json($resultado);
+            }
+            
+            return response()->json($resultado);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al rechazar el trámite: ' . $e->getMessage()]);
+        }
+    }
+
+    /** Rechazar completamente */
+    public function rechazarCompleto(Request $request, int $tramiteId)
+    {
+        try {
+            $request->validate(['comentario_general' => 'nullable']);
+            $comentarioGeneral = $request->input('comentario_general') ?: null;
+            
+            $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
+            $resultado = $decisionesService->rechazarCompleto($tramiteId, $comentarioGeneral);
+            
+            if ($resultado['success']) {
+                return response()->json($resultado);
+            }
+            
+            return response()->json($resultado);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al rechazar el trámite: ' . $e->getMessage()]);
+        }
+    }
+
+    /** Aprobar y asignar proveedor */
+    public function aprobarYAsignarProveedor(Request $request, int $tramiteId)
+    {
+        try {
+            $request->validate(['comentario_general' => 'nullable']);
+            $comentarioGeneral = $request->input('comentario_general') ?: null;
+            
+            \Log::info("Iniciando aprobación y asignación de proveedor para trámite {$tramiteId}");
+            
+            $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
+            $resultado = $decisionesService->aprobarYAsignarProveedor($tramiteId, $comentarioGeneral);
+            
+            if ($resultado['success']) {
+                \Log::info("Trámite {$tramiteId} aprobado exitosamente", $resultado);
+                return response()->json($resultado);
+            }
+            
+            \Log::warning("Trámite {$tramiteId} no pudo ser aprobado", $resultado);
+            return response()->json($resultado);
+        } catch (\Exception $e) {
+            \Log::error("Error al aprobar y asignar proveedor para trámite {$tramiteId}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false, 
+                'message' => 'Error al aprobar y asignar proveedor: ' . $e->getMessage(),
+                'debug_info' => config('app.debug') ? [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ] : null
+            ]);
+        }
+    }
+
+    /** Rechazar trámite */
+    public function rechazarTramite(Request $request, int $tramiteId)
+    {
+        try {
+            $request->validate(['comentario_general' => 'nullable']);
+            $comentarioGeneral = $request->input('comentario_general') ?: null;
+            
+            $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
+            $resultado = $decisionesService->rechazarCompleto($tramiteId, $comentarioGeneral);
+            
+            if ($resultado['success']) {
+                return response()->json($resultado);
+            }
+            
+            return response()->json($resultado);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error al rechazar el trámite: ' . $e->getMessage()]);
+        }
+    }
+
+    /** Procesar revisión presencial */
+    public function procesarRevisionPresencial(Request $request, int $tramiteId)
+    {
+        $request->validate([
+            'tipo_revision' => 'required|in:Presencial',
+            'decision_documentos' => 'required|in:Aprobado,Rechazado,Pendiente',
+            'comentarios_presencial' => 'nullable|string',
+            'observaciones' => 'nullable|string'
+        ]);
+
+        try {
+            $tramite = Tramite::findOrFail($tramiteId);
+            
+            // Guardar comentarios del cotejo presencial
+            if ($request->filled('comentarios_presencial')) {
+                SeccionRevision::updateOrCreate(
+                    [
+                        'tramite_id' => $tramiteId,
+                        'seccion' => 'documentos_presencial'
+                    ],
+                    [
+                        'estado' => $request->decision_documentos,
+                        'comentario' => $request->comentarios_presencial,
+                        'revisado_por' => auth()->id()
+                    ]
+                );
+            }
+
+            // Actualizar observaciones del trámite
+            if ($request->filled('observaciones')) {
+                $tramite->update(['observaciones' => $request->observaciones]);
+            }
+
+            // Determinar acción final basada en la decisión de documentos
+            if ($request->decision_documentos === 'Aprobado') {
+                // Si los documentos están aprobados, permitir aprobar el trámite
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Revisión presencial completada. Los documentos están conformes.',
+                    'action' => 'aprobar_disponible'
+                ]);
+            } else {
+                // Si los documentos no están aprobados, enviar para corrección
+                $tramite->update([
+                    'status' => 'Para_Correccion',
+                    'correcciones_count' => $tramite->correcciones_count + 1
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Revisión presencial completada. El trámite ha sido enviado para corrección.',
+                    'action' => 'enviado_correccion'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la revisión presencial: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /** Limpiar sesión de éxito */
+    public function limpiarSesionExito()
+    {
+        session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
+        return response()->json(['success' => true]);
     }
 } 

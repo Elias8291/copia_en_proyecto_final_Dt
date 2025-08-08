@@ -123,16 +123,42 @@ class ArchivosEvaluacion {
             decisionSeccion = 'Pendiente';
             comentarioSeccion = 'Faltan documentos por revisar';
         }
-        
-        // Usar la función global que ya existe
-        if (typeof evaluarSeccion === 'function') {
-            evaluarSeccion('archivos', decisionSeccion);
-        }
-        
-        // Actualizar comentario de la sección
+    
         const comentarioField = document.getElementById('comentario_archivos');
         if (comentarioField) {
             comentarioField.value = comentarioSeccion;
+        }
+        
+        setTimeout(() => {
+            if (typeof evaluarSeccion === 'function') {
+                evaluarSeccion('archivos', decisionSeccion);
+            } else {
+                // Fallback: actualizar manualmente si la función no está disponible
+                this.actualizarEstadoSeccionManual('archivos', decisionSeccion);
+            }
+        }, 100);
+    }
+
+    actualizarEstadoSeccionManual(seccion, estado) {
+        const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
+        const estadoEl = document.getElementById(`estado_${seccion}`);
+        
+        if (sectionElement) {
+            sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
+            if (estado === 'Aprobado') {
+                sectionElement.classList.add('seccion-aprobada');
+            } else if (estado === 'Rechazado') {
+                sectionElement.classList.add('seccion-rechazada');
+            }
+        }
+        
+        if (estadoEl) {
+            estadoEl.textContent = estado;
+            estadoEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                estado === 'Aprobado' ? 'bg-green-100 text-green-800' : 
+                estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 
+                'bg-gray-100 text-gray-600'
+            }`;
         }
     }
 

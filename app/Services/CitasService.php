@@ -146,13 +146,90 @@ class CitasService
     }
 
     /**
+     * Agendar cita manual
+     */
+    public function agendarCita(int $tramiteId, array $datos): array
+    {
+        \Log::info('Iniciando agendamiento manual de cita', ['tramite_id' => $tramiteId, 'datos' => $datos]);
+        
+        $tramite = Tramite::findOrFail($tramiteId);
+        
+        // Validar datos requeridos
+        if (!isset($datos['fecha']) || !isset($datos['hora']) || !isset($datos['tipo_cita'])) {
+            return ['success' => false, 'message' => 'Faltan datos requeridos para agendar la cita'];
+        }
+
+        $fechaHora = Carbon::parse($datos['fecha'] . ' ' . $datos['hora']);
+        
+        // Verificar que la fecha sea futura
+        if ($fechaHora->isPast()) {
+            return ['success' => false, 'message' => 'La fecha y hora deben ser futuras'];
+        }
+
+        // Obtener revisores según el tipo de cita
+        $revisores = $this->obtenerRevisoresPorTipo($datos['tipo_cita']);
+        
+        if ($revisores->isEmpty()) {
+            return ['success' => false, 'message' => 'No hay revisores disponibles para este tipo de cita'];
+        }
+
+        // Buscar revisor disponible
+        $revisorDisponible = null;
+        foreach ($revisores as $revisor) {
+            if ($this->revisorDisponibleEnHorario($revisor->id, $fechaHora)) {
+                $revisorDisponible = $revisor;
+                break;
+            }
+        }
+
+        if (!$revisorDisponible) {
+            return ['success' => false, 'message' => 'No hay revisores disponibles en el horario seleccionado'];
+        }
+
+        try {
+            $cita = Cita::create([
+                'tramite_id' => $tramiteId,
+                'tipo_cita' => $datos['tipo_cita'],
+                'fecha_cita' => $fechaHora,
+                'estado' => 'Asignada',
+                'asignado_a' => $revisorDisponible->id,
+                'intento' => 1
+            ]);
+
+            \Log::info('Cita agendada manualmente', [
+                'tramite_id' => $tramiteId,
+                'cita_id' => $cita->id,
+                'fecha_cita' => $cita->fecha_cita,
+                'revisor_id' => $cita->asignado_a
+            ]);
+
+            if ($this->notificacionService) {
+                $this->notificacionService->notificarCitaAgendada($cita);
+            }
+
+            return [
+                'success' => true,
+                'cita' => $cita,
+                'revisor' => $revisorDisponible,
+                'fecha_formateada' => $fechaHora->format('d/m/Y H:i'),
+                'message' => 'Cita agendada exitosamente'
+            ];
+        } catch (\Exception $e) {
+            \Log::error('Error al agendar cita manualmente', [
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return ['success' => false, 'message' => 'Error al agendar la cita: ' . $e->getMessage()];
+        }
+    }
+
+    /**
      * Obtener revisores digitales
      */
     private function obtenerRevisoresDigitales(): Collection
     {
-        return User::where('role', UserRole::REVISOR_DIGITAL->value)
-            ->where('activo', true)
-            ->get();
+        return User::role('Revisor Digital')->get();
     }
 
     /**
@@ -160,9 +237,7 @@ class CitasService
      */
     private function obtenerRevisoresPresenciales(): Collection
     {
-        return User::where('role', UserRole::REVISOR_PRESENCIAL->value)
-            ->where('activo', true)
-            ->get();
+        return User::role('Revisor Presencial')->get();
     }
 
     /**
