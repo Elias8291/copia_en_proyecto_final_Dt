@@ -141,7 +141,7 @@ class TramiteController extends Controller
         
         return $tramites->map(function($tramite) {
             $datosGenerales = $tramite->datosGenerales->first();
-            $oficio = $tramite->oficios->first(); // Obtener el primer oficio asociado
+            $oficios = $tramite->oficios; // Obtener todos los oficios asociados
             
             return [
                 'id' => $tramite->id,
@@ -151,13 +151,15 @@ class TramiteController extends Controller
                 'observaciones' => $tramite->observaciones ?? null,
                 'created_at' => $tramite->created_at,
                 'updated_at' => $tramite->updated_at,
-                'oficio' => $oficio ? [
-                    'id' => $oficio->id,
-                    'numero_oficio' => $oficio->numero_oficio,
-                    'fecha_oficio' => $oficio->fecha_oficio,
-                    'url' => $oficio->url,
-                    'estado' => $oficio->estado
-                ] : null
+                'oficios' => $oficios->map(function($oficio) {
+                    return [
+                        'id' => $oficio->id,
+                        'numero_oficio' => $oficio->numero_oficio,
+                        'fecha_oficio' => $oficio->fecha_oficio,
+                        'url' => $oficio->url,
+                        'estado' => $oficio->estado
+                    ];
+                })->toArray()
             ];
         });
     }
@@ -787,6 +789,95 @@ class TramiteController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Error al corregir el trámite: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Descargar la constancia de un trámite
+     */
+    public function descargarConstancia($tramiteId)
+    {
+        try {
+            $tramite = \App\Models\Tramite::findOrFail($tramiteId);
+            
+            // Verificar que el usuario tenga permisos para descargar este trámite
+            $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
+            if (!$rfc || $tramite->proveedor->rfc !== $rfc) {
+                return redirect()->route('tramites.index')
+                    ->with('error', 'No tiene permisos para descargar este trámite');
+            }
+            
+            // Verificar que el trámite esté aprobado
+            if ($tramite->status !== 'Aprobado') {
+                return redirect()->route('tramites.index')
+                    ->with('error', 'Solo se pueden descargar constancias de trámites aprobados');
+            }
+            
+            // Buscar el archivo de constancia
+            $constancia = $tramite->archivos()
+                ->whereHas('catalogoArchivo', function($query) {
+                    $query->where('nombre', 'like', '%constancia%')
+                          ->orWhere('nombre', 'like', '%Constancia%')
+                          ->orWhere('nombre', 'like', '%situación fiscal%')
+                          ->orWhere('nombre', 'like', '%situacion fiscal%');
+                })
+                ->first();
+            
+            // Log para debugging
+            Log::info('TramiteController: Búsqueda de constancia', [
+                'tramite_id' => $tramite->id,
+                'archivos_count' => $tramite->archivos()->count(),
+                'constancia_encontrada' => $constancia ? true : false,
+                'archivos_disponibles' => $tramite->archivos()->with('catalogoArchivo')->get()->map(function($archivo) {
+                    return [
+                        'id' => $archivo->id,
+                        'nombre_catalogo' => $archivo->catalogoArchivo ? $archivo->catalogoArchivo->nombre : 'Sin catálogo',
+                        'nombre_original' => $archivo->nombre_original
+                    ];
+                })
+            ]);
+            
+            if (!$constancia) {
+                return redirect()->route('tramites.index')
+                    ->with('error', 'No se encontró la constancia para este trámite');
+            }
+            
+            // Verificar que el archivo existe físicamente
+            $rutaArchivo = storage_path('app/public/' . $constancia->ruta);
+            if (!file_exists($rutaArchivo)) {
+                return redirect()->route('tramites.index')
+                    ->with('error', 'El archivo de constancia no está disponible');
+            }
+            
+            Log::info('TramiteController: Constancia descargada exitosamente', [
+                'tramite_id' => $tramite->id,
+                'archivo_id' => $constancia->id,
+                'user_id' => auth()->id()
+            ]);
+            
+            // Descargar el archivo
+            return response()->download($rutaArchivo, $constancia->nombre_original);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('TramiteController: Trámite no encontrado para descarga', [
+                'tramite_id' => $tramiteId,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->route('tramites.index')
+                ->with('error', 'El trámite especificado no existe');
+                
+        } catch (\Exception $e) {
+            Log::error('TramiteController: Error al descargar constancia', [
+                'tramite_id' => $tramiteId,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('tramites.index')
+                ->with('error', 'Error al descargar la constancia: ' . $e->getMessage());
         }
     }
 } 

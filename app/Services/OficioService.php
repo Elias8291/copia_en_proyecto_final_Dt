@@ -99,6 +99,9 @@ class OficioService
             $accionistas = $tramite->accionistas()->get();
             $contactos = $tramite->contactos()->get();
 
+            // Generar QR
+            $qrCode = $this->generarQrCode($tramite);
+            
             // Preparar datos completos para la plantilla
             $datos = [
                 'oficio' => (object)[
@@ -117,8 +120,24 @@ class OficioService
                 'fechaInicioTramite' => $tramite->fecha_inicio,
                 'fechaGeneracionDocumento' => Carbon::now(),
                 'fechaVigenciaProveedor' => $proveedor->fecha_vencimiento_padron ?? Carbon::now()->addYear(),
-                'qrCode' => $this->generarQrCode($tramite)
+                'qrCode' => $qrCode
             ];
+
+            Log::info('Datos preparados para generar PDF del oficio', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $proveedor->id,
+                'datos_generales_id' => $datosGenerales ? $datosGenerales->id : null,
+                'datos_constitutivos_id' => $datosConstitutivos ? $datosConstitutivos->id : null,
+                'direcciones_count' => $direcciones->count(),
+                'apoderados_count' => $apoderadosLegales->count(),
+                'actividades_count' => $actividades->count(),
+                'accionistas_count' => $accionistas->count(),
+                'contactos_count' => $contactos->count(),
+                'qr_code_length' => strlen($qrCode),
+                'qr_code_preview' => substr($qrCode, 0, 200) . '...',
+                'qr_code_contains_html' => strpos($qrCode, '<div') !== false,
+                'qr_code_contains_qr' => strpos($qrCode, 'QR CODE') !== false
+            ]);
 
             Log::info('Datos preparados para generar PDF del oficio', [
                 'tramite_id' => $tramite->id,
@@ -180,23 +199,64 @@ class OficioService
      */
     private function generarQrCode(Tramite $tramite): string
     {
-        $datosQr = [
-            'tramite_id' => $tramite->id,
-            'proveedor_id' => $tramite->proveedor_id,
-            'numero_oficio' => Oficio::generarNumeroOficio(),
-            'fecha_generacion' => Carbon::now()->format('Y-m-d H:i:s'),
-            'url_validacion' => route('oficios.validar', $tramite->id)
-        ];
-
-        $qrData = json_encode($datosQr);
+        $proveedor = $tramite->proveedor;
+        $baseUrl = 'http://127.0.0.1:8000';
         
-        // Generar QR usando la librería SimpleSoftwareIO/simple-qrcode
-        $qrCode = \QrCode::format('svg')
-            ->size(100)
-            ->margin(0)
-            ->generate($qrData);
+        // URL directa a la vista pública del proveedor
+        $urlProveedorPublico = 'http://127.0.0.1:8000/proveedores/publico/' . $proveedor->id;
+        
+        // Usar directamente la URL del proveedor para el QR
+        $qrData = $urlProveedorPublico;
+        
+        try {
+            // Usar la nueva librería Endroid QR Code
+            $qrCode = \Endroid\QrCode\QrCode::create($qrData)
+                ->setSize(200)
+                ->setMargin(10)
+                ->setErrorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::Low);
 
-        return $qrCode;
+            // Generar como PNG
+            $writer = new \Endroid\QrCode\Writer\PngWriter();
+            $result = $writer->write($qrCode);
+            
+            // Convertir a base64
+            $base64Qr = 'data:image/png;base64,' . base64_encode($result->getString());
+
+            // Crear HTML con la imagen base64
+            $qrHtml = '<img src="' . $base64Qr . '" alt="QR Code" style="width: 25mm; height: 25mm; display: block; border: 1px solid #ccc;">';
+
+            Log::info('QR Code generado como imagen PNG base64', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $proveedor->id,
+                'qr_data' => $qrData,
+                'url_proveedor' => $urlProveedorPublico,
+                'base64_length' => strlen($base64Qr)
+            ]);
+
+            return $qrHtml;
+
+        } catch (\Exception $e) {
+            Log::error('Error al generar QR con Endroid', [
+                'error' => $e->getMessage(),
+                'tramite_id' => $tramite->id
+            ]);
+
+            // Fallback: usar la librería simple-qrcode
+            $qrCode = \QrCode::format('svg')
+                ->size(150)
+                ->margin(1)
+                ->errorCorrection('L')
+                ->generate($qrData);
+
+            Log::info('QR Code generado como SVG (fallback)', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $proveedor->id,
+                'qr_data' => $qrData,
+                'url_proveedor' => $urlProveedorPublico
+            ]);
+
+            return $qrCode;
+        }
     }
 
     /**
@@ -210,8 +270,9 @@ class OficioService
         // Generar nombre del archivo
         $nombreArchivo = $this->generarNombreArchivoOficio($tramite);
 
-        // Crear URL para descargar el oficio
-        $url = route('oficios.descargar', [
+        // Crear URL completa para descargar el oficio
+        $baseUrl = 'http://127.0.0.1:8000';
+        $url = $baseUrl . '/oficios/descargar?' . http_build_query([
             'tramite_id' => $tramite->id,
             'proveedor_id' => $proveedor->id,
             'archivo' => $nombreArchivo
@@ -221,7 +282,8 @@ class OficioService
             'tramite_id' => $tramite->id,
             'url' => $url,
             'nombre_archivo' => $nombreArchivo,
-            'pdf_path' => $pdfPath
+            'pdf_path' => $pdfPath,
+            'base_url' => $baseUrl
         ]);
 
         return $url;
