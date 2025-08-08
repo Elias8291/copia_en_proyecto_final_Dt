@@ -60,9 +60,7 @@ Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     // Perfil de usuario
     Route::prefix('profile')->name('profile.')->group(function () {

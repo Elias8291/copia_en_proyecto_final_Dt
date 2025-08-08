@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Código Postal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl mb-4">Test Validación Código Postal</h1>
+    
+    <form id="test-form">
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Código Postal <span class="text-red-500">*</span>
+            </label>
+            <input type="text" 
+                   name="codigo_postal" 
+                   id="codigo_postal" 
+                   value="71233"
+                   class="block w-full px-3 py-2 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                   placeholder="12345"
+                   maxlength="5">
+            <div id="error-message" class="text-red-600 text-sm mt-1 hidden"></div>
+        </div>
+        
+        <button type="button" onclick="testValidation()" class="px-4 py-2 bg-blue-500 text-white rounded">
+            Probar Validación
+        </button>
+    </form>
+    
+    <div id="result" class="mt-4 p-4 bg-gray-100 rounded"></div>
+    
+    <script>
+        function testValidation() {
+            const field = document.getElementById('codigo_postal');
+            const value = field.value.trim();
+            const result = document.getElementById('result');
+            const errorDiv = document.getElementById('error-message');
+            
+            // Limpiar errores anteriores
+            errorDiv.classList.add('hidden');
+            field.classList.remove('border-red-500');
+            
+            // Validación simple
+            if (!value) {
+                showError('Este campo es obligatorio');
+                result.innerHTML = '<p class="text-red-600">❌ Campo vacío</p>';
+                return;
+            }
+            
+            if (value.length !== 5) {
+                showError('Debe tener 5 dígitos numéricos');
+                result.innerHTML = '<p class="text-red-600">❌ Longitud incorrecta</p>';
+                return;
+            }
+            
+            if (!/^[0-9]{5}$/.test(value)) {
+                showError('Debe tener 5 dígitos numéricos');
+                result.innerHTML = '<p class="text-red-600">❌ Formato incorrecto</p>';
+                return;
+            }
+            
+            // Si pasa todas las validaciones
+            result.innerHTML = '<p class="text-green-600">✅ Código postal válido: ' + value + '</p>';
+            field.classList.add('border-green-500');
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            document.getElementById('codigo_postal').classList.add('border-red-500');
+        }
+    </script>
+</body>
+</html> 

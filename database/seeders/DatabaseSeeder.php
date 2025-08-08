@@ -18,10 +18,10 @@ class DatabaseSeeder extends Seeder
             MunicipioSeeder::class,
             LocalidadSeeder::class,
             TiposAsentamientoSeeder::class,
-            AsentamientosSeeder::class,
+            // AsentamientosSeeder::class, // Temporarily commented out due to large dataset
             SectoresSeeder::class,
            ActividadesEconomicasSeeder::class,
-           CatalogoSeeder::class,
+           CatalogoArchivoSeeder::class,
         ]);
     }
 }
