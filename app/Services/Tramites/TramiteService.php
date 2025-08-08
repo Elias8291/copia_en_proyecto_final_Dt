@@ -79,40 +79,52 @@ class TramiteService
     {
         $rfc = $request->rfc ?: $request->rfc_hidden ?: $request->rfc_fallback;
         $tipoPersona = $request->tipo_persona ?: $request->tipo_persona_hidden ?: $request->tipo_persona_fallback;
+        $tipoTramite = $request->tipo_tramite ?? 'Inscripcion';
 
         Log::info('TramiteService: Creando/obteniendo proveedor', [
             'rfc' => $rfc,
             'tipo_persona' => $tipoPersona,
+            'tipo_tramite' => $tipoTramite,
             'user_id' => auth()->id()
         ]);
 
-        $proveedor = Proveedor::where('usuario_id', auth()->id())
-            ->where('rfc', $rfc)
-            ->first();
+        // Usar el RfcProveedorService para gestionar el proveedor según el tipo de trámite
+        $rfcProveedorService = app(\App\Services\RfcProveedorService::class);
+        
+        $datosProveedor = [
+            'tipo_persona' => $tipoPersona,
+            'usuario_id' => auth()->id(),
+            'razon_social' => $request->razon_social ?: $request->razon_social_hidden ?: $request->razon_social_fallback,
+            'nombre' => $request->nombre ?: $request->nombre_hidden ?: $request->nombre_fallback,
+            'apellido_paterno' => $request->apellido_paterno ?: $request->apellido_paterno_hidden ?: $request->apellido_paterno_fallback,
+            'apellido_materno' => $request->apellido_materno ?: $request->apellido_materno_hidden ?: $request->apellido_materno_fallback,
+            'curp' => $request->curp ?: $request->curp_hidden ?: $request->curp_fallback,
+            'email' => $request->email ?: $request->email_hidden ?: $request->email_fallback,
+            'telefono' => $request->telefono ?: $request->telefono_hidden ?: $request->telefono_fallback,
+        ];
 
-        if (!$proveedor) {
-            $proveedor = Proveedor::create([
-                'usuario_id' => auth()->id(),
-                'pv_numero' => null,
+        try {
+            $resultadoGestion = $rfcProveedorService->gestionarProveedorPorTramite($rfc, $tipoTramite, $datosProveedor);
+            
+            Log::info('TramiteService: Proveedor gestionado exitosamente', [
+                'accion' => $resultadoGestion['accion'],
+                'proveedor_id' => $resultadoGestion['proveedor']->id,
+                'numero_proveedor' => $resultadoGestion['numero_proveedor'],
+                'fecha_registro' => $resultadoGestion['fecha_registro'],
+                'fecha_vencimiento' => $resultadoGestion['fecha_vencimiento']
+            ]);
+
+            return $resultadoGestion['proveedor'];
+            
+        } catch (\Exception $e) {
+            Log::error('TramiteService: Error al gestionar proveedor', [
                 'rfc' => $rfc,
-                'tipo_persona' => $tipoPersona,
-                'estado_padron' => 'pendiente',
-                'fecha_alta_padron' => null,
-                'fecha_vencimiento_padron' => null,
+                'tipo_tramite' => $tipoTramite,
+                'error' => $e->getMessage()
             ]);
-
-            Log::info('TramiteService: Proveedor creado', [
-                'proveedor_id' => $proveedor->id,
-                'rfc' => $rfc
-            ]);
-        } else {
-            Log::info('TramiteService: Proveedor existente encontrado', [
-                'proveedor_id' => $proveedor->id,
-                'rfc' => $rfc
-            ]);
+            
+            throw $e;
         }
-
-        return $proveedor;
     }
 
     private function crearRevisionDigitalAutomatica(Tramite $tramite): void

@@ -102,6 +102,12 @@ class TramiteController extends Controller
             }
         }
         
+        \Log::info("Pasando datos a la vista index", [
+            'rfc' => $rfc,
+            'historial_tramites_count' => $historialTramites->count(),
+            'tramites_config' => $tramites
+        ]);
+        
         return view('tramites.index', compact('tramites', 'historialTramites'));
     }
 
@@ -110,32 +116,42 @@ class TramiteController extends Controller
      */
     private function obtenerHistorialTramitesUsuario(string $rfc)
     {
-        $proveedor = \App\Models\Proveedor::where('rfc', $rfc)->first();
+        // Buscar todos los trámites que tengan proveedores con el RFC del usuario
+        $tramites = \App\Models\Tramite::whereHas('proveedor', function($query) use ($rfc) {
+            $query->where('rfc', $rfc);
+        })
+        ->with(['datosGenerales' => function($query) {
+            $query->orderBy('created_at', 'desc')->limit(1);
+        }, 'proveedor'])
+        ->orderBy('created_at', 'desc')
+        ->get();
         
-        if (!$proveedor) {
-            return collect();
-        }
-        
-                        $tramites = \App\Models\Tramite::where('proveedor_id', $proveedor->id)
-            ->with(['datosGenerales' => function($query) {
-                $query->orderBy('created_at', 'desc')->limit(1);
-            }])
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
-            return $tramites->map(function($tramite) {
-                $datosGenerales = $tramite->datosGenerales->first();
-                
+        \Log::info("Obteniendo historial de trámites para RFC: {$rfc}", [
+            'total_tramites_encontrados' => $tramites->count(),
+            'tramites' => $tramites->map(function($t) {
                 return [
-                    'id' => $tramite->id,
-                    'tipo_tramite' => $tramite->tipo_tramite,
-                    'status' => $tramite->status,
-                    'razon_social' => $datosGenerales ? $datosGenerales->razon_social : 'Sin datos',
-                    'observaciones' => $tramite->observaciones ?? null,
-                    'created_at' => $tramite->created_at,
-                    'updated_at' => $tramite->updated_at
+                    'id' => $t->id,
+                    'tipo_tramite' => $t->tipo_tramite,
+                    'status' => $t->status,
+                    'proveedor_id' => $t->proveedor_id,
+                    'proveedor_rfc' => $t->proveedor ? $t->proveedor->rfc : null
                 ];
-            });
+            })->toArray()
+        ]);
+        
+        return $tramites->map(function($tramite) {
+            $datosGenerales = $tramite->datosGenerales->first();
+            
+            return [
+                'id' => $tramite->id,
+                'tipo_tramite' => $tramite->tipo_tramite,
+                'status' => $tramite->status,
+                'razon_social' => $datosGenerales ? $datosGenerales->razon_social : 'Sin datos',
+                'observaciones' => $tramite->observaciones ?? null,
+                'created_at' => $tramite->created_at,
+                'updated_at' => $tramite->updated_at
+            ];
+        });
     }
 
 
@@ -292,10 +308,13 @@ class TramiteController extends Controller
             'accion' => $accion['accion']
         ]);
         
+        // Obtener información de gestión del proveedor para mostrar al usuario
+        $infoProveedor = $this->rfcProveedorService->obtenerInfoGestionProveedor($rfc, $tipo);
+        
         // Guardar el tipo de trámite en la sesión para el store
         session(['tipo_tramite' => ucfirst($tipo)]);
         
-        return view('tramites.create', compact('tipo', 'tipoPersona', 'viewModel', 'archivosRequeridos'));
+        return view('tramites.create', compact('tipo', 'tipoPersona', 'viewModel', 'archivosRequeridos', 'infoProveedor'));
     }
 
     public function store(TramiteFormRequest $request)

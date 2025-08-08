@@ -156,8 +156,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{tramite}/rechazar-completo', [RevisionController::class, 'rechazarCompleto'])->name('rechazar-completo');
         
         // Rutas para revisión presencial
-        Route::post('/{tramite}/aprobar-asignar-proveedor', [RevisionController::class, 'aprobarYAsignarProveedor'])->name('aprobar-asignar-proveedor');
-Route::post('/{tramite}/rechazar', [RevisionController::class, 'rechazarTramite'])->name('rechazar');
+        Route::post('/{tramite}/aprobar', [RevisionController::class, 'aprobar'])->name('aprobar');
+        Route::post('/{tramite}/rechazar', [RevisionController::class, 'rechazarTramite'])->name('rechazar');
 
 // Limpiar sesión de éxito
 Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionExito'])->name('limpiar-sesion-exito');

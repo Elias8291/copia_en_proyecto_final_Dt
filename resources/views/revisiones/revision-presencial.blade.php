@@ -128,14 +128,14 @@
                 </div>
                 
                 <div class="flex flex-col xs:flex-row justify-end gap-2 xs:gap-3 sm:gap-4 lg:gap-6">
-                    <!-- Botón Aprobar y Asignar Proveedor -->
+                    <!-- Botón Aprobar -->
                     <button type="button" 
-                            onclick="aprobarYAsignarProveedor()"
+                            onclick="aprobarTramite()"
                             class="inline-flex items-center justify-center px-3 xs:px-4 sm:px-6 md:px-8 py-2 xs:py-2.5 sm:py-3 md:py-4 bg-emerald-600 text-white text-xs xs:text-sm sm:text-base md:text-lg font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-200 shadow-sm min-h-[44px]">
                         <svg class="w-3 h-3 xs:w-4 xs:h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 mr-1 xs:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
-                        <span class="hidden xs:inline">Aprobar y Asignar Proveedor</span>
+                        <span class="hidden xs:inline">Aprobar</span>
                         <span class="xs:hidden">Aprobar</span>
                         </button>
                         
@@ -260,7 +260,7 @@ if (formRevisionPresencial) {
 }
 
 // Funciones para decisiones finales
-function aprobarYAsignarProveedor() {
+function aprobarTramite() {
     // Verificar que no haya archivos rechazados
     const archivosRechazados = document.querySelectorAll('[id^="estado_archivo_"]');
     let tieneRechazados = false;
@@ -297,7 +297,7 @@ function aprobarYAsignarProveedor() {
         newConfirmBtn.addEventListener('click', function() {
             const comentarios = document.getElementById('comentario_archivos').value;
             
-            fetch(`/revisiones/${tramiteId}/aprobar-asignar-proveedor`, {
+            fetch(`/revisiones/${tramiteId}/aprobar`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -574,7 +574,7 @@ function actualizarEstadoSeccionAutomaticamente() {
 window.scrollToTop = scrollToTop;
 window.evaluarSeccion = evaluarSeccion;
 window.evaluarDocumentosPresencial = evaluarDocumentosPresencial;
-window.aprobarYAsignarProveedor = aprobarYAsignarProveedor;
+window.aprobarTramite = aprobarTramite;
 window.rechazarTramite = rechazarTramite;
 window.cargarDatosGuardados = cargarDatosGuardados;
 window.limpiarDatosGuardados = limpiarDatosGuardados;
@@ -587,7 +587,7 @@ window.actualizarEstadoSeccionAutomaticamente = actualizarEstadoSeccionAutomatic
 <x-ui.modals.modal-confirmacion 
     id="modal-confirmacion-aprobar"
     title="Confirmar Aprobación"
-    message="¿Está seguro que desea aprobar este trámite y asignar un proveedor? Esta acción no se puede deshacer."
+    message="¿Está seguro que desea aprobar este trámite? El sistema gestionará automáticamente el proveedor según el tipo de trámite."
     confirmText="Aprobar"
     cancelText="Cancelar"
     confirmClass="bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500"

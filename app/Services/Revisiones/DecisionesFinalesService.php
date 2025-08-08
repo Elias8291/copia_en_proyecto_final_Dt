@@ -108,6 +108,150 @@ class DecisionesFinalesService
         });
     }
 
+    /** Aprobar y renovar proveedor */
+    public function aprobarYRenovarProveedor(int $tramiteId, ?string $comentarioGeneral = null): array
+    {
+        return DB::transaction(function() use ($tramiteId, $comentarioGeneral) {
+            try {
+                Log::info("Iniciando proceso de renovación para trámite {$tramiteId}");
+                
+                $tramite = Tramite::findOrFail($tramiteId);
+                
+                if (!$tramite->proveedor) {
+                    throw new \Exception("El trámite {$tramiteId} no tiene un proveedor asociado");
+                }
+                
+                $rfc = $tramite->proveedor->rfc;
+                $rfcProveedorService = app(RfcProveedorService::class);
+                
+                // Usar la lógica de gestión de proveedores para renovación
+                $datosProveedor = [
+                    'tipo_persona' => $tramite->proveedor->tipo_persona,
+                    'usuario_id' => $tramite->proveedor->usuario_id,
+                    'razon_social' => $tramite->proveedor->razon_social,
+                    'nombre' => $tramite->proveedor->nombre,
+                    'apellido_paterno' => $tramite->proveedor->apellido_paterno,
+                    'apellido_materno' => $tramite->proveedor->apellido_materno,
+                    'curp' => $tramite->proveedor->curp,
+                    'email' => $tramite->proveedor->email,
+                    'telefono' => $tramite->proveedor->telefono,
+                ];
+                
+                $resultadoGestion = $rfcProveedorService->gestionarProveedorPorTramite($rfc, 'renovacion', $datosProveedor);
+                
+                // Actualizar el proveedor del trámite con el proveedor renovado
+                $tramite->update(['proveedor_id' => $resultadoGestion['proveedor']->id]);
+                
+                // Actualizar estado del trámite
+                $tramite->update([
+                    'status' => 'Aprobado',
+                    'observaciones' => $comentarioGeneral,
+                    'fecha_finalizacion' => now()
+                ]);
+
+                // Guardar comentario general
+                $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Aprobado');
+
+                Log::info("Trámite renovado exitosamente", [
+                    'tramite_id' => $tramiteId,
+                    'proveedor_id' => $resultadoGestion['proveedor']->id,
+                    'numero_proveedor' => $resultadoGestion['numero_proveedor'],
+                    'accion' => $resultadoGestion['accion']
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => 'Trámite renovado exitosamente. Proveedor renovado con número PV: ' . $resultadoGestion['numero_proveedor'],
+                    'numero_proveedor' => $resultadoGestion['numero_proveedor'],
+                    'proveedor_id' => $resultadoGestion['proveedor']->id
+                ];
+                
+            } catch (\Exception $e) {
+                Log::error("Error al renovar trámite {$tramiteId}", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return [
+                    'success' => false,
+                    'message' => 'Error al renovar el trámite: ' . $e->getMessage()
+                ];
+            }
+        });
+    }
+
+    /** Aprobar y actualizar proveedor */
+    public function aprobarYActualizarProveedor(int $tramiteId, ?string $comentarioGeneral = null): array
+    {
+        return DB::transaction(function() use ($tramiteId, $comentarioGeneral) {
+            try {
+                Log::info("Iniciando proceso de actualización para trámite {$tramiteId}");
+                
+                $tramite = Tramite::findOrFail($tramiteId);
+                
+                if (!$tramite->proveedor) {
+                    throw new \Exception("El trámite {$tramiteId} no tiene un proveedor asociado");
+                }
+                
+                $rfc = $tramite->proveedor->rfc;
+                $rfcProveedorService = app(RfcProveedorService::class);
+                
+                // Usar la lógica de gestión de proveedores para actualización
+                $datosProveedor = [
+                    'tipo_persona' => $tramite->proveedor->tipo_persona,
+                    'usuario_id' => $tramite->proveedor->usuario_id,
+                    'razon_social' => $tramite->proveedor->razon_social,
+                    'nombre' => $tramite->proveedor->nombre,
+                    'apellido_paterno' => $tramite->proveedor->apellido_paterno,
+                    'apellido_materno' => $tramite->proveedor->apellido_materno,
+                    'curp' => $tramite->proveedor->curp,
+                    'email' => $tramite->proveedor->email,
+                    'telefono' => $tramite->proveedor->telefono,
+                ];
+                
+                $resultadoGestion = $rfcProveedorService->gestionarProveedorPorTramite($rfc, 'actualizacion', $datosProveedor);
+                
+                // Actualizar el proveedor del trámite con el proveedor actualizado
+                $tramite->update(['proveedor_id' => $resultadoGestion['proveedor']->id]);
+                
+                // Actualizar estado del trámite
+                $tramite->update([
+                    'status' => 'Aprobado',
+                    'observaciones' => $comentarioGeneral,
+                    'fecha_finalizacion' => now()
+                ]);
+
+                // Guardar comentario general
+                $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Aprobado');
+
+                Log::info("Trámite actualizado exitosamente", [
+                    'tramite_id' => $tramiteId,
+                    'proveedor_id' => $resultadoGestion['proveedor']->id,
+                    'numero_proveedor' => $resultadoGestion['numero_proveedor'],
+                    'accion' => $resultadoGestion['accion']
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => 'Trámite actualizado exitosamente. Proveedor actualizado con número PV: ' . $resultadoGestion['numero_proveedor'],
+                    'numero_proveedor' => $resultadoGestion['numero_proveedor'],
+                    'proveedor_id' => $resultadoGestion['proveedor']->id
+                ];
+                
+            } catch (\Exception $e) {
+                Log::error("Error al actualizar trámite {$tramiteId}", [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return [
+                    'success' => false,
+                    'message' => 'Error al actualizar el trámite: ' . $e->getMessage()
+                ];
+            }
+        });
+    }
+
     /** Aprobar y asignar proveedor */
     public function aprobarYAsignarProveedor(int $tramiteId, ?string $comentarioGeneral = null): array
     {
@@ -196,6 +340,79 @@ class DecisionesFinalesService
                             'proveedor_id' => $proveedorAsignado->id
                         ]);
                         break;
+                        
+                    case 'reutilizar_vigente':
+                        // Reutilizar proveedor vigente existente y actualizar fechas
+                        $proveedorAsignado = $accion['proveedor_activo'];
+                        $numeroProveedor = $proveedorAsignado->pv_numero;
+                        
+                        // Actualizar fechas del proveedor vigente
+                        $fechaActual = now();
+                        $fechaVencimiento = $fechaActual->copy()->addYears(3);
+                        
+                        $proveedorAsignado->update([
+                            'fecha_registro' => $fechaActual,
+                            'fecha_vencimiento_padron' => $fechaVencimiento,
+                            'estado_padron' => 'Activo'
+                        ]);
+                        
+                        Log::info("Proveedor vigente reutilizado", [
+                            'numero_proveedor' => $numeroProveedor,
+                            'proveedor_id' => $proveedorAsignado->id,
+                            'estado_padron' => $proveedorAsignado->estado_padron,
+                            'fecha_vencimiento' => $proveedorAsignado->fecha_vencimiento_padron
+                        ]);
+                        break;
+                        
+                    case 'renovar_existente':
+                        // Renovar proveedor existente actualizando fecha de vencimiento
+                        $proveedorAsignado = $accion['proveedor_activo'];
+                        $numeroProveedor = $proveedorAsignado->pv_numero;
+                        
+                        // Actualizar solo la fecha de vencimiento
+                        $fechaActual = now();
+                        $fechaVencimiento = $fechaActual->copy()->addYears(3);
+                        
+                        $proveedorAsignado->update([
+                            'fecha_vencimiento_padron' => $fechaVencimiento,
+                            'estado_padron' => 'Activo'
+                        ]);
+                        
+                        Log::info("Proveedor existente renovado", [
+                            'numero_proveedor' => $numeroProveedor,
+                            'proveedor_id' => $proveedorAsignado->id,
+                            'estado_padron' => $proveedorAsignado->estado_padron,
+                            'fecha_vencimiento' => $proveedorAsignado->fecha_vencimiento_padron
+                        ]);
+                        break;
+                        
+                    case 'tramite_pendiente':
+                        // No se puede procesar porque hay un trámite pendiente
+                        return [
+                            'success' => false,
+                            'message' => 'No se puede procesar este trámite: ' . $accion['motivo']
+                        ];
+                        
+                    case 'no_renovar':
+                        // No se puede renovar porque no hay proveedor
+                        return [
+                            'success' => false,
+                            'message' => 'No se puede procesar este trámite: ' . $accion['motivo']
+                        ];
+                        
+                    case 'no_actualizar':
+                        // No se puede actualizar porque no hay proveedor o no está vigente
+                        return [
+                            'success' => false,
+                            'message' => 'No se puede procesar este trámite: ' . $accion['motivo']
+                        ];
+                        
+                    case 'error':
+                        // Error en el tipo de trámite
+                        return [
+                            'success' => false,
+                            'message' => 'No se puede procesar este trámite: ' . $accion['motivo']
+                        ];
                         
                     default:
                         return [

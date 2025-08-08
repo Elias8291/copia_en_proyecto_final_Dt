@@ -212,7 +212,7 @@ function ejecutarDecisionFinal(decision) {
         console.log('Respuesta recibida:', data);
         if (data.success) {
             // Mostrar modal de éxito
-            mostrarModalExito(data.message, '/revisiones');
+            mostrarModalExito(data.message);
         } else {
             // Mostrar error específico
             const mensajeError = data.message || 'Error al procesar la decisión';
@@ -234,7 +234,7 @@ function ejecutarDecisionFinal(decision) {
 }
 
 // Función para mostrar modal de éxito
-function mostrarModalExito(mensaje, urlRedireccion) {
+function mostrarModalExito(mensaje) {
     // Crear el modal de éxito dinámicamente
     const modalHtml = `
         <div id="modal-exito-dinamico" class="fixed z-50 inset-0 overflow-y-auto">
@@ -277,7 +277,7 @@ function mostrarModalExito(mensaje, urlRedireccion) {
                     
                     <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                         <button type="button" 
-                                onclick="cerrarModalExito('${urlRedireccion}')"
+                                onclick="cerrarModalExito()"
                                 class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
                             Aceptar
                         </button>
@@ -293,36 +293,36 @@ function mostrarModalExito(mensaje, urlRedireccion) {
     // Configurar event listeners
     const modal = document.getElementById('modal-exito-dinamico');
     
-    // Botones de cancelar
-    const cancelBtns = modal.querySelectorAll('[data-behavior="cancel"]');
-    cancelBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            cerrarModalExito(urlRedireccion);
+            // Botones de cancelar
+        const cancelBtns = modal.querySelectorAll('[data-behavior="cancel"]');
+        cancelBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                cerrarModalExito();
+            });
         });
-    });
-    
-    // Cerrar al hacer clic fuera del modal
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            cerrarModalExito(urlRedireccion);
-        }
-    });
-    
-    // Cerrar con la tecla Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-            cerrarModalExito(urlRedireccion);
-        }
-    });
+        
+        // Cerrar al hacer clic fuera del modal
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                cerrarModalExito();
+            }
+        });
+        
+        // Cerrar con la tecla Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                cerrarModalExito();
+            }
+        });
 }
 
 // Función para cerrar el modal de éxito y redirigir
-function cerrarModalExito(urlRedireccion) {
+function cerrarModalExito() {
     const modal = document.getElementById('modal-exito-dinamico');
     if (modal) {
         modal.remove();
     }
-    // Redirigir a la URL especificada
-    window.location.href = urlRedireccion;
+    // Redirigir al inicio de revisiones
+    window.location.href = '/revisiones';
 }
 </script> 

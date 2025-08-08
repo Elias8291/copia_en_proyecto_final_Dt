@@ -334,105 +334,61 @@ class RevisionController extends Controller
     }
 
     /** Aprobar y asignar proveedor */
-    public function aprobarYAsignarProveedor(Request $request, int $tramiteId)
+    public function aprobar(Request $request, int $tramiteId)
     {
         try {
             $request->validate(['comentario_general' => 'nullable']);
             $comentarioGeneral = $request->input('comentario_general') ?: null;
             
-            \Log::info("Iniciando aprobación y asignación de proveedor para trámite {$tramiteId}", [
+            \Log::info("Iniciando aprobación automática para trámite {$tramiteId}", [
                 'request_data' => $request->all(),
                 'user_id' => auth()->id(),
                 'timestamp' => now()
             ]);
             
-            // Verificar que el trámite existe y tiene proveedor
-            try {
-                $tramite = \App\Models\Tramite::find($tramiteId);
-                if (!$tramite) {
-                    throw new \Exception("Trámite {$tramiteId} no encontrado");
-                }
-                \Log::info("Trámite encontrado en base de datos");
-            } catch (\Exception $e) {
-                \Log::error("Error al buscar trámite en base de datos", [
-                    'error' => $e->getMessage(),
-                    'tramite_id' => $tramiteId
-                ]);
-                throw $e;
-            }
+            // Verificar que el trámite existe
+            $tramite = \App\Models\Tramite::findOrFail($tramiteId);
             
             \Log::info("Trámite encontrado", [
                 'tramite_id' => $tramite->id,
-                'proveedor_id' => $tramite->proveedor_id,
                 'tipo_tramite' => $tramite->tipo_tramite,
-                'status' => $tramite->status,
-                'created_at' => $tramite->created_at,
-                'updated_at' => $tramite->updated_at
+                'status' => $tramite->status
             ]);
             
-            try {
-                if (!$tramite->proveedor) {
-                    throw new \Exception("El trámite {$tramiteId} no tiene un proveedor asociado (proveedor_id: {$tramite->proveedor_id})");
-                }
-                \Log::info("Proveedor encontrado en relación");
-            } catch (\Exception $e) {
-                \Log::error("Error al acceder a la relación proveedor", [
-                    'error' => $e->getMessage(),
-                    'tramite_id' => $tramiteId,
-                    'proveedor_id' => $tramite->proveedor_id
-                ]);
-                throw $e;
+            // Usar el DecisionesFinalesService para manejar la aprobación según el tipo de trámite
+            $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
+            
+            // Determinar la acción según el tipo de trámite
+            $tipoTramite = strtolower($tramite->tipo_tramite);
+            
+            switch ($tipoTramite) {
+                case 'inscripcion':
+                    // Para inscripción: aprobar y asignar proveedor
+                    $resultado = $decisionesService->aprobarYAsignarProveedor($tramiteId, $comentarioGeneral);
+                    break;
+                    
+                case 'renovacion':
+                    // Para renovación: aprobar y renovar proveedor
+                    $resultado = $decisionesService->aprobarYRenovarProveedor($tramiteId, $comentarioGeneral);
+                    break;
+                    
+                case 'actualizacion':
+                    // Para actualización: aprobar y actualizar proveedor
+                    $resultado = $decisionesService->aprobarYActualizarProveedor($tramiteId, $comentarioGeneral);
+                    break;
+                    
+                default:
+                    throw new \Exception("Tipo de trámite no válido: {$tramite->tipo_tramite}");
             }
             
-            \Log::info("Proveedor encontrado", [
-                'proveedor_id' => $tramite->proveedor->id,
-                'rfc' => $tramite->proveedor->rfc,
-                'pv_numero' => $tramite->proveedor->pv_numero,
-                'usuario_id' => $tramite->proveedor->usuario_id,
-                'tipo_persona' => $tramite->proveedor->tipo_persona,
-                'estado_padron' => $tramite->proveedor->estado_padron
-            ]);
-            
-            // Verificar que el RfcProveedorService funciona
-            try {
-                $rfcProveedorService = app(\App\Services\RfcProveedorService::class);
-                
-                // Verificar que el servicio se puede instanciar
-                \Log::info("RfcProveedorService instanciado correctamente");
-                
-                $accion = $rfcProveedorService->determinarAccionPorTipoTramite($tramite->proveedor->rfc, $tramite->tipo_tramite, $tramiteId);
-                \Log::info("Acción determinada por RfcProveedorService", $accion);
-            } catch (\Exception $e) {
-                \Log::error("Error en RfcProveedorService", [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                throw $e;
-            }
-            
-            // Verificar que el DecisionesFinalesService funciona
-            try {
-                $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
-                
-                // Verificar que el servicio se puede instanciar
-                \Log::info("DecisionesFinalesService instanciado correctamente");
-                
-                $resultado = $decisionesService->aprobarYAsignarProveedor($tramiteId, $comentarioGeneral);
-                
-                if ($resultado['success']) {
-                    \Log::info("Trámite {$tramiteId} aprobado exitosamente", $resultado);
-                    return response()->json($resultado);
-                }
-                
-                \Log::warning("Trámite {$tramiteId} no pudo ser aprobado", $resultado);
+            if ($resultado['success']) {
+                \Log::info("Trámite {$tramiteId} aprobado exitosamente según tipo: {$tipoTramite}", $resultado);
                 return response()->json($resultado);
-            } catch (\Exception $e) {
-                \Log::error("Error en DecisionesFinalesService", [
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
-                ]);
-                throw $e;
             }
+            
+            \Log::warning("Trámite {$tramiteId} no pudo ser aprobado", $resultado);
+            return response()->json($resultado);
+            
         } catch (\Exception $e) {
             \Log::error("Error al aprobar y asignar proveedor para trámite {$tramiteId}", [
                 'error' => $e->getMessage(),

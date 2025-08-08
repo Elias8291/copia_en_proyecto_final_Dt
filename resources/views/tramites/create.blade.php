@@ -53,6 +53,53 @@
                 </div>
             @endif
 
+            <!-- Información del proveedor según tipo de trámite -->
+            @if(isset($infoProveedor))
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">
+                                Gestión del Proveedor - {{ ucfirst($infoProveedor['tipo_tramite']) }}
+                            </h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <p class="mb-2">{{ $infoProveedor['mensaje_usuario'] }}</p>
+                                
+                                @if($infoProveedor['proveedor_existente'])
+                                    <div class="bg-white rounded-md p-3 mt-3">
+                                        <h4 class="font-medium text-blue-800 mb-2">Proveedor Existente:</h4>
+                                        <div class="grid grid-cols-2 gap-2 text-xs">
+                                            <div>
+                                                <span class="font-medium">Número PV:</span> 
+                                                <span class="text-blue-600">{{ $infoProveedor['proveedor_existente']['pv_numero'] }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="font-medium">Estado:</span> 
+                                                <span class="px-2 py-1 rounded text-xs {{ $infoProveedor['proveedor_existente']['esta_vigente'] ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ $infoProveedor['proveedor_existente']['estado_padron'] }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span class="font-medium">Fecha Registro:</span> 
+                                                <span class="text-blue-600">{{ $infoProveedor['proveedor_existente']['fecha_registro'] ? $infoProveedor['proveedor_existente']['fecha_registro']->format('d/m/Y') : 'N/A' }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="font-medium">Fecha Vencimiento:</span> 
+                                                <span class="text-blue-600">{{ $infoProveedor['proveedor_existente']['fecha_vencimiento'] ? $infoProveedor['proveedor_existente']['fecha_vencimiento']->format('d/m/Y') : 'N/A' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                     <h3 class="text-red-800 font-semibold mb-2">Errores de validación:</h3>
