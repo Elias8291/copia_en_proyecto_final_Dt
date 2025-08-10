@@ -57,6 +57,11 @@ Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
 // RUTAS AUTENTICADAS
 // ============================================================================
 
+// Ruta de prueba para Tailwind CSS
+Route::get('/test-tailwind', function () {
+    return view('test-tailwind');
+})->name('test-tailwind');
+
 
 Route::middleware(['auth'])->group(function () {
     // Dashboard
@@ -222,6 +227,9 @@ Route::prefix('api')->group(function () {
     Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
 });
+
+// Rutas para el extractor de QR (sin prefijo api)
+Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
 
 Route::post('/extract-qr-url-web', [QRExtractorController::class, 'extractQrFromPdf'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])

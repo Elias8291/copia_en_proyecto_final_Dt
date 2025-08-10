@@ -13,12 +13,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
         crossorigin="anonymous">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/tramite-forms.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/form-validator.css') }}">
-    <!-- Estilos globales para inputs - DEBE IR AL FINAL para máxima prioridad -->
-    <link rel="stylesheet" href="{{ asset('css/global-input-styles.css') }}">
+    
+    {{-- Forzar uso de archivos compilados --}}
+    <link rel="stylesheet" href="/build/assets/app-CZkbBSon.css">
+    <script src="/build/assets/app-D-nbQjmd.js" defer></script>
+    
+    <link rel="stylesheet" href="/css/custom.css">
+    <link rel="stylesheet" href="/css/tramite-forms.css">
+    <link rel="stylesheet" href="/css/form-validator.css">
+    <link rel="stylesheet" href="/css/global-input-styles.css">
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 

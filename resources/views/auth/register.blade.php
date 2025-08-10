@@ -17,7 +17,7 @@
         <div class="text-center mb-3">
             <div class="flex flex-col items-center justify-center mb-2">
                 <div class="w-14 h-14 flex items-center justify-center mb-2 bg-gradient-to-br from-primary/10 to-primary-dark/10 rounded-full p-2">
-                    <img src="{{ asset('images/logoprin.jpg') }}" alt="Logo Estado de Oaxaca" class="w-full h-full object-contain rounded-full">
+                    <img src="/images/logoprin.jpg" alt="Logo Estado de Oaxaca" class="w-full h-full object-contain rounded-full">
                 </div>
                 <div class="text-center space-y-1">
                     <span class="text-primary font-bold text-sm block tracking-wide">ADMINISTRACIÓN</span>
@@ -214,13 +214,13 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('vendor/pdfjs-dist/pdf.min.js') }}"></script>
-    <script src="{{ asset('vendor/pdfjs-dist/pdf.worker.min.js') }}"></script>
-    <script src="{{ asset('vendor/jsQR/jsQR.min.js') }}"></script>
-    <script src="{{ asset('js/sat-qr-extractor/qr-extractor-simple.js') }}"></script>
-    <script src="{{ asset('js/sat-qr-extractor/sat-scraper-simple.js') }}"></script>
-    <script src="{{ asset('js/sat-qr-extractor/constancia-extractor.js') }}"></script>
-    <script src="{{ asset('js/auth/register-handler.js') }}"></script>
+    <script src="/vendor/pdfjs-dist/pdf.min.js"></script>
+    <script src="/vendor/pdfjs-dist/pdf.worker.min.js"></script>
+    <script src="/vendor/jsQR/jsQR.min.js"></script>
+    <script src="/js/sat-qr-extractor/qr-extractor-simple.js"></script>
+    <script src="/js/sat-qr-extractor/sat-scraper-simple.js"></script>
+    <script src="/js/sat-qr-extractor/constancia-extractor.js"></script>
+    <script src="/js/auth/register-handler.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             @if (session('showSuccessModal'))

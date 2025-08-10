@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('code') - @yield('title')</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Forzar uso de archivos compilados --}}
+    <link rel="stylesheet" href="/build/assets/app-CZkbBSon.css">
+    <script src="/build/assets/app-D-nbQjmd.js" defer></script>
     <style>
         .bg-logo-pattern {
             background-image: url('/images/logoNegro.png');

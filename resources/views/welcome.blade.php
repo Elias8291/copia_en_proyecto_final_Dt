@@ -3,7 +3,6 @@
 @section('title', 'Bienvenido - Padrón de Proveedores del Estado de Oaxaca')
 
 @section('content')
-<div class="bg-white p-4 rounded-2xl lg:rounded-l-none shadow-2xl relative overflow-hidden">
     <!-- Decoración de fondo -->
     <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-primary-dark/10 rounded-full -translate-y-10 translate-x-10"></div>
     <div class="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-primary/5 to-primary-dark/5 rounded-full translate-y-8 -translate-x-8"></div>
@@ -12,7 +11,7 @@
     <div class="text-center mb-4 relative z-10">
         <div class="flex flex-col items-center justify-center mb-3">
             <div class="w-14 h-14 lg:w-16 lg:h-16 flex items-center justify-center mb-2 bg-gradient-to-br from-primary/10 to-primary-dark/10 rounded-full p-2">
-                <img src="{{ asset('images/logoprin.jpg') }}" alt="Logo Estado de Oaxaca" class="w-full h-full object-contain rounded-full">
+                <img src="/images/logoprin.jpg" alt="Logo Estado de Oaxaca" class="w-full h-full object-contain rounded-full">
             </div>
             <div class="text-center space-y-1">
                 <span class="text-primary font-bold text-sm lg:text-base block tracking-wide">ADMINISTRACIÓN</span>
@@ -81,6 +80,4 @@
             <span class="text-gray-500 font-medium">Secretaría de Administración</span>
         </p>
     </div>
-</div>
-
 @endsection

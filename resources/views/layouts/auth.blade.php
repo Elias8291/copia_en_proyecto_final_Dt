@@ -7,13 +7,16 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Padrón de Proveedores de Oaxaca')</title>
     
-    <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" type="image/png" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/global-input-styles.css') }}">
+    {{-- Forzar uso de archivos compilados --}}
+    <link rel="stylesheet" href="/build/assets/app-CZkbBSon.css">
+    <script src="/build/assets/app-D-nbQjmd.js" defer></script>
+    
+    <link rel="stylesheet" href="/css/global-input-styles.css">
 
     <style>
         /* Solo estilos esenciales que no se pueden hacer con Tailwind */
@@ -39,7 +42,7 @@
             background: rgba(157, 36, 73, 0.1); 
         }
     </style>
-    <script src="{{ asset('js/dom-safety.js') }}"></script>
+    <script src="/js/dom-safety.js"></script>
 </head>
 
 <body class="font-inter text-textDark overflow-x-hidden">
@@ -70,7 +73,7 @@
                         <!-- Slide 1 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-100" data-slide="0">
                             <div class="relative w-full h-full">
-                                <img src="{{ asset('images/carrousel_1.webp') }}" 
+                                <img src="/images/carrousel_1.webp" 
                                      alt="Padrón de Proveedores"
                                      class="w-full h-full object-cover opacity-70 transition-all duration-3000 scale-105 group-hover:scale-110">
                                 <div class="absolute inset-0 bg-gradient-to-br from-slate-900/70 via-slate-800/50 to-slate-900/70"></div>
@@ -114,7 +117,7 @@
                         <!-- Slide 2 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-0" data-slide="1">
                             <div class="relative w-full h-full">
-                                <img src="{{ asset('images/carrousel2.webp') }}" 
+                                <img src="/images/carrousel2.webp" 
                                      alt="Registro con QR del SAT"
                                      class="w-full h-full object-cover opacity-70 transition-all duration-3000 scale-105 group-hover:scale-110">
                                 <div class="absolute inset-0 bg-gradient-to-br from-blue-900/70 via-slate-800/50 to-slate-900/70"></div>
@@ -155,7 +158,7 @@
                         <!-- Slide 3 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-0" data-slide="2">
                             <div class="relative w-full h-full">
-                                <img src="{{ asset('images/carrousel3.webp') }}" 
+                                <img src="/images/carrousel3.webp" 
                                      alt="Gestión de Trámites"
                                      class="w-full h-full object-cover opacity-70 transition-all duration-3000 scale-105 group-hover:scale-110">
                                 <div class="absolute inset-0 bg-gradient-to-br from-emerald-900/70 via-slate-800/50 to-slate-900/70"></div>
@@ -196,7 +199,7 @@
                         <!-- Slide 4 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-0" data-slide="3">
                             <div class="relative w-full h-full">
-                                <img src="{{ asset('images/carrousel4.webp') }}" 
+                                <img src="/images/carrousel4.webp" 
                                      alt="Portal de Proveedores"
                                      class="w-full h-full object-cover opacity-70 transition-all duration-3000 scale-105 group-hover:scale-110">
                                 <div class="absolute inset-0 bg-gradient-to-br from-purple-900/70 via-slate-800/50 to-slate-900/70"></div>
@@ -364,7 +367,7 @@
     </script>
     
     @include('components.ui.modals.loading-modal')
-    <script src="{{ asset('js/components/global-loading.js') }}"></script>
+    <script src="/js/components/global-loading.js"></script>
     @stack('scripts')
 </body>
 </html> 

@@ -1,7 +1,7 @@
 if (typeof SimpleSATScraper === 'undefined') {
 class SimpleSATScraper {
     constructor() {
-        this.baseUrl = '/api/scrape-sat-data';
+        this.baseUrl = '/scrape-sat-data';
     }
 
     async scrapeSATData(url) {
