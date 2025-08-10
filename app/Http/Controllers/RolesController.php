@@ -5,9 +5,18 @@ namespace App\Http\Controllers;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class RolesController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(PermissionMiddleware::class . ':roles.ver')->only(['index', 'show']);
+        $this->middleware(PermissionMiddleware::class . ':roles.crear')->only(['create', 'store']);
+        $this->middleware(PermissionMiddleware::class . ':roles.editar')->only(['edit', 'update']);
+        $this->middleware(PermissionMiddleware::class . ':roles.eliminar')->only(['destroy']);
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 15);

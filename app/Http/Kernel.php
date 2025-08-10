@@ -28,6 +28,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\NoCacheHeaders::class,
             \App\Http\Middleware\HandleLargeUploads::class,
             \App\Http\Middleware\SetTimezone::class,
+            \App\Http\Middleware\AutoLoggingMiddleware::class,
         ],
 
         'api' => [

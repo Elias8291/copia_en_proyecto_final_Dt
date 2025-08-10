@@ -17,6 +17,7 @@ use App\Http\Controllers\{
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 
 Route::middleware('guest')->group(function () {
@@ -193,17 +194,12 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::get('/api/recientes-dropdown', [NotificacionController::class, 'recientesParaDropdown'])->name('recientes-dropdown');
         Route::post('/api/marcar-vistas-leidas', [NotificacionController::class, 'marcarVistasComoLeidas'])->name('marcar-vistas-leidas');
         
-        // Rutas administrativas (requieren permisos especiales)
-        Route::middleware('permission:notificaciones.crear')->group(function () {
-            Route::get('/crear', [NotificacionController::class, 'create'])->name('create');
-            Route::post('/', [NotificacionController::class, 'store'])->name('store');
-        });
-        
-        Route::middleware('permission:notificaciones.gestionar')->group(function () {
-            Route::get('/{notificacion}/editar', [NotificacionController::class, 'edit'])->name('edit');
-            Route::put('/{notificacion}', [NotificacionController::class, 'update'])->name('update');
-            Route::post('/limpiar-antiguas', [NotificacionController::class, 'limpiarAntiguas'])->name('limpiar-antiguas');
-        });
+        // Rutas administrativas
+        Route::get('/crear', [NotificacionController::class, 'create'])->name('create');
+        Route::post('/', [NotificacionController::class, 'store'])->name('store');
+        Route::get('/{notificacion}/editar', [NotificacionController::class, 'edit'])->name('edit');
+        Route::put('/{notificacion}', [NotificacionController::class, 'update'])->name('update');
+        Route::post('/limpiar-antiguas', [NotificacionController::class, 'limpiarAntiguas'])->name('limpiar-antiguas');
     });
 
     // Rutas para archivos

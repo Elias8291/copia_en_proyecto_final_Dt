@@ -9,9 +9,18 @@ use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(PermissionMiddleware::class . ':usuarios.ver')->only(['index', 'show']);
+        $this->middleware(PermissionMiddleware::class . ':usuarios.crear')->only(['create', 'store']);
+        $this->middleware(PermissionMiddleware::class . ':usuarios.editar')->only(['edit', 'update', 'restore']);
+        $this->middleware(PermissionMiddleware::class . ':usuarios.eliminar')->only(['destroy', 'forceDelete']);
+    }
+
     public function index(Request $request)
     {
         $query = User::with('roles');

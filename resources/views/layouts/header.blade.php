@@ -29,12 +29,14 @@
                     this.loading = true;
                     try {
                         // Cargar todas las notificaciones recientes (leídas y no leídas)
-                        const response = await fetch(window.location.origin + '/notificaciones/api/recientes-dropdown');
+                        const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
                         const data = await response.json();
-                        this.notificaciones = data.notificaciones;
-                        this.count = data.conteo_no_leidas; // Solo contar las no leídas
+                        this.notificaciones = data.notificaciones || [];
+                        this.count = data.conteo_no_leidas || 0; // Solo contar las no leídas
                     } catch (error) {
                         console.error('Error loading notifications:', error);
+                        this.notificaciones = [];
+                        this.count = 0;
                     } finally {
                         this.loading = false;
                     }
@@ -44,10 +46,10 @@
                         // Al abrir, cargar notificaciones
                         await this.loadNotifications();
                         // Marcar las no leídas como leídas
-                        const unreadNotifications = this.notificaciones.filter(n => !n.leida);
+                        const unreadNotifications = (this.notificaciones || []).filter(n => !n.leida);
                         if (unreadNotifications.length > 0) {
                             try {
-                                const response = await fetch(window.location.origin + '/notificaciones/api/marcar-vistas-leidas', {
+                                const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -56,9 +58,9 @@
                                 });
                                 const result = await response.json();
                                 // Actualizar contador
-                                this.count = result.conteo_restante;
+                                this.count = result.conteo_restante || 0;
                                 // Actualizar el estado de las notificaciones localmente
-                                this.notificaciones.forEach(notif => {
+                                (this.notificaciones || []).forEach(notif => {
                                     if (!notif.leida) notif.leida = true;
                                 });
                             } catch (error) {
@@ -116,7 +118,7 @@
                             </div>
                         </template>
 
-                        <template x-if="!loading && notificaciones.length === 0">
+                        <template x-if="!loading && (!notificaciones || notificaciones.length === 0)">
                             <div class="px-4 py-6 text-center">
                                 <!-- Ícono de campana (Heroicons Bell Outline) -->
                                 <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,7 +130,7 @@
                         </template>
 
                         <div class="divide-y divide-gray-100">
-                                                         <template x-for="notificacion in notificaciones.slice(0, 6)" :key="notificacion.id">
+                                                         <template x-for="notificacion in (notificaciones || []).slice(0, 6)" :key="notificacion.id">
                                  <div class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150"
                                       :class="notificacion.leida ? 'bg-gray-50/30 opacity-75' : 'bg-blue-50/30'">
                                     <div class="flex items-start space-x-3">
@@ -149,15 +151,15 @@
                                         </div>
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-start justify-between">
-                                                <p class="text-xs font-medium text-gray-900 truncate" x-text="notificacion.titulo"></p>
+                                                <p class="text-xs font-medium text-gray-900 truncate" x-text="notificacion.titulo || 'Sin título'"></p>
                                                 <!-- Indicador de no leída -->
                                                 <div x-show="!notificacion.leida" class="flex-shrink-0 ml-2">
                                                     <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
                                                 </div>
                                             </div>
-                                            <p class="text-xs text-gray-600 line-clamp-1 mt-0.5" x-text="notificacion.mensaje"></p>
+                                            <p class="text-xs text-gray-600 line-clamp-1 mt-0.5" x-text="notificacion.mensaje || 'Sin mensaje'"></p>
                                             <div class="flex items-center mt-1 space-x-2">
-                                                <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada"></span>
+                                                <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada || 'Reciente'"></span>
                                                 <span x-show="notificacion.leida" class="text-xs text-gray-400">• Leída</span>
                                             </div>
                                         </div>
@@ -168,7 +170,7 @@
                     </div>
 
                     <!-- Footer móvil -->
-                    <template x-if="notificaciones.length > 0">
+                    <template x-if="notificaciones && notificaciones.length > 0">
                         <div class="px-4 py-3 bg-gray-50 border-t border-gray-100">
                             <a href="{{ route('notificaciones.index') }}" 
                                class="block text-center text-xs text-blue-600 hover:text-blue-800 font-medium">
@@ -193,10 +195,12 @@
                             // Cargar todas las notificaciones recientes (leídas y no leídas)
                             const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
                             const data = await response.json();
-                            this.notificaciones = data.notificaciones;
-                            this.count = data.conteo_no_leidas; // Solo contar las no leídas
+                            this.notificaciones = data.notificaciones || [];
+                            this.count = data.conteo_no_leidas || 0; // Solo contar las no leídas
                         } catch (error) {
                             console.error('Error loading notifications:', error);
+                            this.notificaciones = [];
+                            this.count = 0;
                         } finally {
                             this.loading = false;
                         }
@@ -206,7 +210,7 @@
                             // Al abrir, cargar notificaciones
                             await this.loadNotifications();
                             // Marcar las no leídas como leídas
-                            const unreadNotifications = this.notificaciones.filter(n => !n.leida);
+                            const unreadNotifications = (this.notificaciones || []).filter(n => !n.leida);
                             if (unreadNotifications.length > 0) {
                                 try {
                                     const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
@@ -218,9 +222,9 @@
                                     });
                                     const result = await response.json();
                                     // Actualizar contador
-                                    this.count = result.conteo_restante;
+                                    this.count = result.conteo_restante || 0;
                                     // Actualizar el estado de las notificaciones localmente
-                                    this.notificaciones.forEach(notif => {
+                                    (this.notificaciones || []).forEach(notif => {
                                         if (!notif.leida) notif.leida = true;
                                     });
                                 } catch (error) {
@@ -278,7 +282,7 @@
                                 </div>
                             </template>
 
-                            <template x-if="!loading && notificaciones.length === 0">
+                            <template x-if="!loading && (!notificaciones || notificaciones.length === 0)">
                                 <div class="px-4 py-8 text-center">
                                     <!-- Ícono de campana (Heroicons Bell Outline) -->
                                     <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -290,7 +294,7 @@
                             </template>
 
                             <div class="divide-y divide-gray-100">
-                                                                 <template x-for="notificacion in notificaciones.slice(0, 7)" :key="notificacion.id">
+                                                                 <template x-for="notificacion in (notificaciones || []).slice(0, 7)" :key="notificacion.id">
                                      <div class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150"
                                           :class="notificacion.leida ? 'bg-gray-50/30 opacity-75' : 'bg-blue-50/30'">
                                         <div class="flex items-start space-x-3">
@@ -337,15 +341,15 @@
                                                 <div class="flex items-start justify-between">
                                                     <div class="flex-1">
                                                         <div class="flex items-start justify-between">
-                                                            <p class="text-sm font-medium text-gray-900 truncate" x-text="notificacion.titulo"></p>
+                                                            <p class="text-sm font-medium text-gray-900 truncate" x-text="notificacion.titulo || 'Sin título'"></p>
                                                             <!-- Indicador de no leída -->
                                                             <div x-show="!notificacion.leida" class="flex-shrink-0 ml-2">
                                                                 <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
                                                             </div>
                                                         </div>
-                                                        <p class="text-xs text-gray-600 line-clamp-2 mt-1" x-text="notificacion.mensaje"></p>
+                                                                                                                 <p class="text-xs text-gray-600 line-clamp-2 mt-1" x-text="notificacion.mensaje || 'Sin mensaje'"></p>
                                                         <div class="flex items-center mt-2 space-x-2">
-                                                            <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada"></span>
+                                                            <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada || 'Reciente'"></span>
                                                             <span x-show="notificacion.leida" class="text-xs text-gray-400">• Leída</span>
                                                         </div>
                                                     </div>
@@ -358,7 +362,7 @@
                         </div>
 
                         <!-- Footer -->
-                        <template x-if="notificaciones.length > 0">
+                                                    <template x-if="notificaciones && notificaciones.length > 0">
                             <div class="px-4 py-3 bg-gray-50 border-t border-gray-100">
                                 <a href="{{ route('notificaciones.index') }}" 
                                    class="block text-center text-sm text-blue-600 hover:text-blue-800 font-medium">

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class NotificacionController extends Controller
 {
@@ -37,8 +38,6 @@ class NotificacionController extends Controller
     public function create()
     {
         // Solo usuarios con permisos pueden crear notificaciones
-        $this->authorize('crear', Notificacion::class);
-        
         return view('notificaciones.create');
     }
 
@@ -47,8 +46,6 @@ class NotificacionController extends Controller
      */
     public function store(Request $request)
     {
-        $this->authorize('crear', Notificacion::class);
-
         $request->validate([
             'usuario_id' => 'required|exists:users,id',
             'tipo' => 'required|in:informativo,advertencia,error,exito,Tramite,Cita',
@@ -93,8 +90,6 @@ class NotificacionController extends Controller
      */
     public function edit(Notificacion $notificacion)
     {
-        $this->authorize('editar', $notificacion);
-        
         return view('notificaciones.edit', compact('notificacion'));
     }
 
@@ -103,8 +98,6 @@ class NotificacionController extends Controller
      */
     public function update(Request $request, Notificacion $notificacion)
     {
-        $this->authorize('editar', $notificacion);
-
         $request->validate([
             'tipo' => 'required|in:informativo,advertencia,error,exito,Tramite,Cita',
             'titulo' => 'required|string|max:255',
@@ -197,15 +190,25 @@ class NotificacionController extends Controller
         
         $notificaciones = Notificacion::delUsuario($user->id)
             ->recientes(1) // Últimas 24 horas
-            ->orderBy('created_at', 'desc')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(function ($notificacion) {
+                return [
+                    'id' => $notificacion->id,
+                    'titulo' => $notificacion->titulo,
+                    'mensaje' => $notificacion->mensaje,
+                    'tipo' => $notificacion->tipo,
+                    'fecha' => $this->formatearFechaNotificacion($notificacion),
+                    'leida' => $notificacion->leida,
+                    'url' => $notificacion->accion_url
+                ];
+            });
 
         return response()->json($notificaciones);
     }
 
     /**
-     * Obtener solo las notificaciones no leídas del usuario (para el header)
+     * Obtener las notificaciones no leídas (para AJAX)
      */
     public function noLeidas()
     {
@@ -213,36 +216,50 @@ class NotificacionController extends Controller
         
         $notificaciones = Notificacion::delUsuario($user->id)
             ->noLeidas()
-            ->recientes(7) // Últimos 7 días
             ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get();
+            ->limit(10)
+            ->get()
+            ->map(function ($notificacion) {
+                return [
+                    'id' => $notificacion->id,
+                    'titulo' => $notificacion->titulo,
+                    'mensaje' => $notificacion->mensaje,
+                    'tipo' => $notificacion->tipo,
+                    'fecha' => $this->formatearFechaNotificacion($notificacion),
+                    'url' => $notificacion->accion_url
+                ];
+            });
 
         return response()->json($notificaciones);
     }
 
     /**
-     * Obtener notificaciones recientes para el dropdown (leídas y no leídas)
+     * Obtener las notificaciones recientes para el dropdown
      */
     public function recientesParaDropdown()
     {
         $user = Auth::user();
         
-        // Obtener todas las notificaciones recientes (leídas y no leídas)
         $notificaciones = Notificacion::delUsuario($user->id)
             ->recientes(7) // Últimos 7 días
-            ->orderBy('created_at', 'desc')
-            ->limit(8) // Aumentamos el límite para mostrar más
-            ->get();
+            ->limit(8)
+            ->get()
+            ->map(function ($notificacion) {
+                return [
+                    'id' => $notificacion->id,
+                    'titulo' => $notificacion->titulo,
+                    'mensaje' => Str::limit($notificacion->mensaje, 50),
+                    'tipo' => $notificacion->tipo,
+                    'fecha_formateada' => $this->formatearFechaNotificacion($notificacion),
+                    'leida' => $notificacion->leida,
+                    'url' => $notificacion->accion_url
+                ];
+            });
 
-        // Formatear las fechas en el servidor
-        $notificaciones->transform(function ($notificacion) {
-            $notificacion = $this->formatearFechaNotificacion($notificacion);
-            return $notificacion;
-        });
-
-        // Contar solo las no leídas para el badge
-        $conteoNoLeidas = Notificacion::delUsuario($user->id)->noLeidas()->count();
+        // Contar notificaciones no leídas
+        $conteoNoLeidas = Notificacion::delUsuario($user->id)
+            ->noLeidas()
+            ->count();
 
         return response()->json([
             'notificaciones' => $notificaciones,
@@ -251,64 +268,70 @@ class NotificacionController extends Controller
     }
 
     /**
-     * Método helper para formatear la fecha de una notificación
+     * Formatear la fecha de la notificación para mostrar
      */
     private function formatearFechaNotificacion($notificacion)
     {
-        // Forzar zona horaria de México
-        date_default_timezone_set('America/Mexico_City');
-        
         $fecha = $notificacion->created_at;
-        
-        // Usar diffForHumans para mostrar tiempo relativo
-        $notificacion->fecha_formateada = $fecha->diffForHumans();
-        
-        return $notificacion;
+        $ahora = now();
+        $diferencia = $ahora->diffInMinutes($fecha);
+
+        if ($diferencia < 1) {
+            return 'Ahora mismo';
+        } elseif ($diferencia < 60) {
+            return "Hace {$diferencia} min";
+        } elseif ($diferencia < 1440) {
+            $horas = floor($diferencia / 60);
+            return "Hace {$horas} h";
+        } else {
+            $dias = floor($diferencia / 1440);
+            return "Hace {$dias} días";
+        }
     }
 
     /**
-     * Marcar notificaciones como leídas al abrir el dropdown
+     * Marcar como leídas las notificaciones que han sido vistas
      */
     public function marcarVistasComoLeidas()
     {
         $user = Auth::user();
-        
-        // Marcar las últimas notificaciones no leídas como leídas
-        $notificaciones = Notificacion::delUsuario($user->id)
-            ->noLeidas()
-            ->recientes(7)
-            ->orderBy('created_at', 'desc')
-            ->limit(8)
-            ->get();
+        $notificacionesVistas = request()->input('notificaciones', []);
 
-        foreach ($notificaciones as $notificacion) {
-            $notificacion->marcarComoLeida();
+        if (!empty($notificacionesVistas)) {
+            Notificacion::delUsuario($user->id)
+                ->whereIn('id', $notificacionesVistas)
+                ->noLeidas()
+                ->update([
+                    'leida' => true,
+                    'fecha_lectura' => now()
+                ]);
         }
 
-        // Retornar el nuevo conteo de no leídas
-        $conteoRestante = Notificacion::delUsuario($user->id)->noLeidas()->count();
+        // Obtener el conteo actualizado de notificaciones no leídas
+        $conteoRestante = Notificacion::delUsuario($user->id)
+            ->noLeidas()
+            ->count();
 
         return response()->json([
             'success' => true,
-            'marcadas' => $notificaciones->count(),
+            'message' => 'Notificaciones marcadas como leídas.',
             'conteo_restante' => $conteoRestante
         ]);
     }
 
     /**
-     * Eliminar notificaciones antiguas leídas
+     * Limpiar notificaciones antiguas (solo administradores)
      */
     public function limpiarAntiguas()
     {
-        $this->authorize('gestionar', Notificacion::class);
+        $dias = request()->input('dias', 30);
+        $fechaLimite = now()->subDays($dias);
 
-        $fechaLimite = Carbon::now()->subMonths(3);
-        
-        $eliminadas = Notificacion::where('leida', true)
-            ->where('created_at', '<', $fechaLimite)
+        $notificacionesEliminadas = Notificacion::where('created_at', '<', $fechaLimite)
+            ->where('leida', true)
             ->delete();
 
-        return redirect()->back()
-            ->with('success', "Se eliminaron {$eliminadas} notificaciones antiguas.");
+        return redirect()->route('notificaciones.index')
+            ->with('success', "Se eliminaron {$notificacionesEliminadas} notificaciones antiguas.");
     }
 }

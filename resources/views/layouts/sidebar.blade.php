@@ -17,18 +17,21 @@
                         <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Dashboard</span>
                     </a>
 
-                    <!-- Usuarios -->
-                    <a href="{{ route('users.index') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
-                    {{ request()->routeIs('users.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
-                    <div class="relative">
-                        <svg class="{{ request()->routeIs('users.*') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-all duration-200 group-hover/item:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
-                    </div>
-                    <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Usuarios</span>
-                </a>
+                                    <!-- Usuarios -->
+                @can('usuarios.ver')
+                <a href="{{ route('users.index') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
+                {{ request()->routeIs('users.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
+                <div class="relative">
+                    <svg class="{{ request()->routeIs('users.*') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-all duration-200 group-hover/item:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+                <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Usuarios</span>
+            </a>
+            @endcan
 
                     <!-- Roles -->
+                    @can('roles.ver')
                     <a href="{{ route('roles.index') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                         {{ request()->routeIs('roles.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                         <svg class="{{ request()->routeIs('roles.*') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-transform duration-200 group-hover/item:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -37,6 +40,7 @@
                         </svg>
                         <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Roles</span>
                     </a>
+                    @endcan
 
                     <!-- Trámites -->
                     <a href="{{ route('tramites.index') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
@@ -66,6 +70,7 @@
                     </a>
 
                     <!-- Archivos -->
+                    @can('archivos.ver')
                     <a href="{{ route('archivos.index') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                         {{ request()->routeIs('archivos.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                         <svg class="{{ request()->routeIs('archivos.*') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-transform duration-200 group-hover/item:scale-110" fill="currentColor" viewBox="0 0 24 24">
@@ -77,6 +82,7 @@
                         </svg>
                         <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Archivos</span>
                     </a>
+                    @endcan
 
                   
 
@@ -89,12 +95,14 @@
     async loadNotifications() {
         this.loading = true;
         try {
-                                    const response = await fetch('https://' + window.location.host + '/notificaciones/api/recientes-dropdown');
+            const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
             const data = await response.json();
-            this.notificaciones = data.notificaciones;
-            this.count = data.conteo_no_leidas;
+            this.notificaciones = data.notificaciones || [];
+            this.count = data.conteo_no_leidas || 0;
         } catch (error) {
             console.error('Error loading notifications:', error);
+            this.notificaciones = [];
+            this.count = 0;
         } finally {
             this.loading = false;
         }
@@ -102,7 +110,7 @@
     async markAsReadAndOpen() {
         if (!this.open) {
             await this.loadNotifications();
-            const unreadNotifications = this.notificaciones.filter(n => !n.leida);
+            const unreadNotifications = (this.notificaciones || []).filter(n => !n.leida);
             if (unreadNotifications.length > 0) {
                 try {
                     const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
@@ -113,8 +121,8 @@
                         }
                     });
                     const result = await response.json();
-                    this.count = result.conteo_restante;
-                    this.notificaciones.forEach(notif => {
+                    this.count = result.conteo_restante || 0;
+                    (this.notificaciones || []).forEach(notif => {
                         if (!notif.leida) notif.leida = true;
                     });
                 } catch (error) {
@@ -184,7 +192,7 @@
             </div>
 
             <!-- Lista de notificaciones -->
-            <template x-if="!loading && notificaciones.length > 0">
+                                <template x-if="!loading && notificaciones && notificaciones.length > 0">
                 <div>
                     <template x-for="notificacion in notificaciones" :key="notificacion.id">
                         <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150">
@@ -226,15 +234,15 @@
                                 <!-- Contenido de la notificación -->
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center justify-between">
-                                        <p class="text-sm font-medium text-gray-900" x-text="notificacion.titulo"></p>
+                                        <p class="text-sm font-medium text-gray-900" x-text="notificacion.titulo || 'Sin título'"></p>
                                         <div class="flex items-center space-x-2">
                                             <!-- Indicador de no leída -->
                                             <div x-show="!notificacion.leida" class="w-2 h-2 bg-blue-500 rounded-full"></div>
                                             <!-- Fecha -->
-                                            <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada"></span>
+                                            <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada || 'Reciente'"></span>
                                         </div>
                                     </div>
-                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2" x-text="notificacion.mensaje"></p>
+                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2" x-text="notificacion.mensaje || 'Sin mensaje'"></p>
                                 </div>
                             </div>
                         </div>
@@ -243,7 +251,7 @@
             </template>
 
             <!-- Estado vacío -->
-            <template x-if="!loading && notificaciones.length === 0">
+                                <template x-if="!loading && (!notificaciones || notificaciones.length === 0)">
                 <div class="p-4 text-center">
                     <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />

@@ -17,6 +17,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
+                    @can('usuarios.crear')
                     <a href="{{ route('users.create') }}" 
                        class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,6 +25,7 @@
                         </svg>
                         Nuevo Usuario
                     </a>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -292,6 +294,7 @@
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
                                 <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                                    @can('usuarios.ver')
                                     <a href="{{ route('users.show', $user->id) }}" 
                                        class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-[#9d2449] hover:text-white hover:bg-[#9d2449] rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                                        title="Ver detalles">
@@ -300,6 +303,8 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         </svg>
                                     </a>
+                                    @endcan
+                                    @can('usuarios.editar')
                                     <a href="{{ route('users.edit', $user->id) }}" 
                                        class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-gray-600 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                                        title="Editar">
@@ -307,6 +312,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                                         </svg>
                                     </a>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

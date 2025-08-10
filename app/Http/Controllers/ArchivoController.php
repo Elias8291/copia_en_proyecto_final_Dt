@@ -9,9 +9,18 @@ use App\Models\Proveedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class ArchivoController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(PermissionMiddleware::class . ':archivos.ver')->only(['index', 'show']);
+        $this->middleware(PermissionMiddleware::class . ':archivos.crear')->only(['create', 'store']);
+        $this->middleware(PermissionMiddleware::class . ':archivos.editar')->only(['edit', 'update', 'updateStatus']);
+        $this->middleware(PermissionMiddleware::class . ':archivos.eliminar')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */

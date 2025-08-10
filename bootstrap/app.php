@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->append(\App\Http\Middleware\AutoLoggingMiddleware::class);
+        // AutoLoggingMiddleware moved to web middleware group
     })
     ->withExceptions(function (Exceptions $exceptions) {
         
