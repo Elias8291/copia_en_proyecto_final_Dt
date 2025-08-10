@@ -1,0 +1,101 @@
+input,
+select,
+textarea,
+.form-input,
+.form-control,
+.form-select {
+    border-color: #e5e7eb !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+}
+
+.border-black,
+input.border-black,
+select.border-black,
+textarea.border-black {
+    border-color: #e5e7eb !important;
+}
+
+.border-gray-900,
+.border-gray-800,
+input.border-gray-900,
+select.border-gray-900,
+textarea.border-gray-900,
+input.border-gray-800,
+select.border-gray-800,
+textarea.border-gray-800 {
+    border-color: #e5e7eb !important;
+}
+
+input[style*="border-color: black"],
+input[style*="border-color: #000"],
+input[style*="border-color: rgb(0,0,0)"],
+input[style*="border-color: rgba(0,0,0"],
+select[style*="border-color: black"],
+select[style*="border-color: #000"],
+select[style*="border-color: rgb(0,0,0)"],
+select[style*="border-color: rgba(0,0,0"],
+textarea[style*="border-color: black"],
+textarea[style*="border-color: #000"],
+textarea[style*="border-color: rgb(0,0,0)"],
+textarea[style*="border-color: rgba(0,0,0"] {
+    border-color: #e5e7eb !important;
+}
+
+*[style*="border-color: black"],
+*[style*="border-color: #000"],
+*[style*="border-color: rgb(0,0,0)"],
+*[style*="border-color: rgba(0,0,0"] {
+    border-color: #e5e7eb !important;
+}
+
+.border-gray-300,
+input.border-gray-300,
+select.border-gray-300,
+textarea.border-gray-300 {
+    border-color: #e5e7eb !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.form-input:focus,
+.form-control:focus,
+.form-select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    outline: none !important;
+}
+
+input:hover,
+select:hover,
+textarea:hover,
+.form-input:hover,
+.form-control:hover,
+.form-select:hover {
+    border-color: #d1d5db !important;
+}
+
+input.error,
+select.error,
+textarea.error,
+.form-input.error,
+.form-control.error,
+.form-select.error,
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid {
+    border-color: #ef4444 !important;
+}
+
+input.success,
+select.success,
+textarea.success,
+.form-input.success,
+.form-control.success,
+.form-select.success,
+input.is-valid,
+select.is-valid,
+textarea.is-valid {
+    border-color: #10b981 !important;
+}

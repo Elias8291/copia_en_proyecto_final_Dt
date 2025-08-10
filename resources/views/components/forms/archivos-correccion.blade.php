@@ -782,7 +782,7 @@ function mostrarNotificacionArchivo(archivoId, decision, comentario) {
     if (typeof mostrarNotificacion === 'function') {
         mostrarNotificacion(mensaje, decision === 'Aprobado' ? 'success' : 'warning');
     } else {
-        console.log(mensaje);
+        // Fallback notification
     }
 }
 

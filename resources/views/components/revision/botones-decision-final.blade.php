@@ -61,8 +61,6 @@
 
 <script>
 function confirmarDecision(decision, titulo, mensaje) {
-    console.log('confirmarDecision llamado:', { decision, titulo, mensaje });
-    
     // Verificar que showConfirmModal existe
     if (typeof showConfirmModal !== 'function') {
         console.error('showConfirmModal no está definida');
@@ -79,7 +77,6 @@ function confirmarDecision(decision, titulo, mensaje) {
                 mensaje,
                 null,
                 function() {
-                    console.log('Callback de confirmación ejecutado');
                     ejecutarDecisionFinal(decision);
                 }
             );
@@ -91,7 +88,6 @@ function confirmarDecision(decision, titulo, mensaje) {
             mensaje,
             null,
             function() {
-                console.log('Callback de confirmación ejecutado');
                 ejecutarDecisionFinal(decision);
             }
         );
@@ -106,36 +102,25 @@ function verificarEstadoSecciones(callback) {
         return;
     }
     
-    console.log('Verificando estado de secciones para trámite:', tramiteId);
-    
     // Obtener el estado general de las secciones
     fetch(`/revisiones/${tramiteId}/estado-general`)
         .then(response => {
-            console.log('Response status:', response.status);
             return response.json();
         })
         .then(data => {
-            console.log('Estado de secciones (respuesta completa):', data);
-            console.log('Tipo de data:', typeof data);
-            console.log('Keys de data:', Object.keys(data));
-            
             try {
                 // Verificar que la respuesta tenga la estructura esperada
                 if (data && data.success && typeof data.todas_aprobadas !== 'undefined') {
-                    console.log('Data.todas_aprobadas:', data.todas_aprobadas);
-                    console.log('Data.secciones:', data.secciones);
-                    
                     if (!data.todas_aprobadas && data.secciones && Array.isArray(data.secciones)) {
                         const seccionesPendientes = data.secciones.filter(s => s.estado !== 'Aprobado');
-                        console.log('Secciones pendientes:', seccionesPendientes);
                         
-                                            if (seccionesPendientes.length > 0) {
-                        const seccionesNombres = seccionesPendientes.map(s => s.nombre).join(', ');
-                        const mensaje = `Secciones pendientes: ${seccionesNombres}`;
-                        
-                        mostrarNotificacion(mensaje, 'error');
-                        return;
-                    }
+                        if (seccionesPendientes.length > 0) {
+                            const seccionesNombres = seccionesPendientes.map(s => s.nombre).join(', ');
+                            const mensaje = `Secciones pendientes: ${seccionesNombres}`;
+                            
+                            mostrarNotificacion(mensaje, 'error');
+                            return;
+                        }
                     }
                 } else {
                     console.warn('Respuesta del servidor no tiene la estructura esperada:', data);
@@ -155,8 +140,6 @@ function verificarEstadoSecciones(callback) {
 }
 
 function ejecutarDecisionFinal(decision) {
-    console.log('Ejecutando decisión final:', decision);
-    
     // Obtener el ID del trámite desde el meta tag
     const tramiteId = document.querySelector('meta[name="tramite-id"]')?.content;
     if (!tramiteId) {
@@ -194,8 +177,6 @@ function ejecutarDecisionFinal(decision) {
             return;
     }
     
-    console.log('Enviando solicitud a:', url);
-    
     // Enviar solicitud AJAX
     fetch(url, {
         method: 'POST',
@@ -209,7 +190,6 @@ function ejecutarDecisionFinal(decision) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Respuesta recibida:', data);
         if (data.success) {
             // Mostrar modal de éxito
             mostrarModalExito(data.message);
@@ -218,18 +198,11 @@ function ejecutarDecisionFinal(decision) {
             const mensajeError = data.message || 'Error al procesar la decisión';
             console.error('Error del servidor:', mensajeError);
             mostrarNotificacion(mensajeError, 'error');
-            
-            // Si es un error de validación (secciones no aprobadas), mostrar mensaje adicional
-            if (mensajeError.includes('Todas las secciones deben estar aprobadas')) {
-                setTimeout(() => {
-                    mostrarNotificacion('Aprobe todas las secciones primero', 'info');
-                }, 1000);
-            }
         }
     })
     .catch(error => {
-        console.error('Error en la solicitud:', error);
-        mostrarNotificacion('Error de conexión al procesar la solicitud', 'error');
+        console.error('Error al enviar solicitud:', error);
+        mostrarNotificacion('Error de conexión al procesar la decisión', 'error');
     });
 }
 

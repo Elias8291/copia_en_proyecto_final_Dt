@@ -332,11 +332,42 @@
     .section-card {
         break-inside: avoid;
         box-shadow: none;
-        border: 1px solid #000;
+        border: 1px solid #e5e7eb;
     }
     
     .form-field {
-        border: 1px solid #000;
+        border: 1px solid #e5e7eb;
         background: white;
     }
+}
+
+/* Quitar bordes negros de inputs */
+input,
+select,
+textarea {
+    border-color: #e5e7eb !important; /* gray-200 en lugar de negro */
+}
+
+.border-black {
+    border-color: #e5e7eb !important;
+}
+
+.border-gray-900 {
+    border-color: #e5e7eb !important;
+}
+
+.border-gray-800 {
+    border-color: #e5e7eb !important;
+}
+
+/* Override border-gray-300 para inputs */
+input.border-gray-300,
+select.border-gray-300,
+textarea.border-gray-300 {
+    border-color: #e5e7eb !important; /* gray-200 en lugar de gray-300 */
+}
+
+/* Override border-gray-300 para cualquier elemento con esa clase */
+.border-gray-300 {
+    border-color: #e5e7eb !important; /* gray-200 en lugar de gray-300 */
 } 

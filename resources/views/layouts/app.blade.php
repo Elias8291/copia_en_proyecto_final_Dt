@@ -16,6 +16,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     <link rel="stylesheet" href="{{ asset('css/tramite-forms.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/form-validator.css') }}">
+    <!-- Estilos globales para inputs - DEBE IR AL FINAL para máxima prioridad -->
+    <link rel="stylesheet" href="{{ asset('css/global-input-styles.css') }}">
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 

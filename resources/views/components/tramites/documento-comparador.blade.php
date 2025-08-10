@@ -391,7 +391,7 @@ function ajustarPDF(seccion) {
                 }, 10);
             }
         } catch (error) {
-            console.log('Error al ajustar PDF:', error);
+            // Silently handle PDF adjustment errors
         }
     }, 100);
 }
@@ -418,7 +418,7 @@ function ajustarVideo(seccion) {
                 }, 10);
             }
         } catch (error) {
-            console.log('Error al ajustar video:', error);
+            // Silently handle video adjustment errors
         }
     }, 100);
 }
@@ -441,7 +441,7 @@ function ajustarImagen(seccion) {
                 imagen.style.display = 'block';
             }, 10);
         } catch (error) {
-            console.log('Error al ajustar imagen:', error);
+            // Silently handle image adjustment errors
         }
     }, 100);
 }

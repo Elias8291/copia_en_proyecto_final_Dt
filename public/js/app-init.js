@@ -22,11 +22,9 @@
     const initErrorHandling = () => {
         // Check if error handler is already loaded
         if (window.safeElement && window.safeAddEventListener) {
-            console.log('Error handler already loaded');
             initSVGValidation();
         } else {
             loadScript('/js/error-handler.js?v=1.0.1', () => {
-                console.log('Error handler loaded');
                 initSVGValidation();
             });
         }
@@ -35,7 +33,6 @@
     // Initialize SVG validation
     const initSVGValidation = () => {
         loadScript('/js/svg-fix.js', () => {
-            console.log('SVG validator loaded');
             initIframeSecurity();
         });
     };
@@ -43,7 +40,6 @@
     // Initialize iframe security
     const initIframeSecurity = () => {
         loadScript('/js/iframe-security.js', () => {
-            console.log('Iframe security loaded');
             initApp();
         });
     };
@@ -91,8 +87,6 @@
                     console.warn('Document viewer initialization warning:', error);
                 }
             }
-
-            console.log('Application components initialized successfully');
         } catch (error) {
             console.error('Error initializing components:', error);
         }
@@ -103,7 +97,6 @@
 
     // Provide global reinitialization function
     window.reinitializeApp = () => {
-        console.log('Reinitializing application components...');
         initComponents();
     };
 

@@ -73,13 +73,10 @@ const steps = @json($steps);
  * Navega entre pasos
  */
 function navigateStep(direction) {
-    console.log('navigateStep called with direction:', direction, 'currentStep:', currentStep, 'totalSteps:', totalSteps);
-    
     // Verificar si hay una función interceptada y llamarla primero
     if (window.navigateStep !== navigateStep) {
         const result = window.navigateStep(direction);
         if (result === false) {
-            console.log('Navigation blocked by validation');
             return false;
         }
     }
@@ -90,11 +87,8 @@ function navigateStep(direction) {
     } else if (direction === 'next' && currentStep < totalSteps - 1) {
         currentStep++;
     } else {
-        console.log('Navigation limits reached');
         return false;
     }
-    
-    console.log('New currentStep:', currentStep);
     
     updateStepDisplay();
     updateStepsComponent();
@@ -108,8 +102,6 @@ function navigateStep(direction) {
  * Actualiza la visualización del paso actual
  */
 function updateStepDisplay() {
-    console.log('updateStepDisplay - currentStep:', currentStep);
-    
     document.querySelectorAll('.step-content').forEach(step => {
         step.classList.remove('active');
     });
@@ -130,11 +122,8 @@ function updateStepDisplay() {
  * Actualiza el componente visual
  */
 function updateStepsComponent() {
-    console.log('updateStepsComponent - currentStep:', currentStep, 'totalSteps:', totalSteps);
-    
     const stepsContainer = document.querySelector('[data-steps-container]');
     if (!stepsContainer) {
-        console.warn('Steps container not found');
         return;
     }
     
@@ -142,10 +131,7 @@ function updateStepsComponent() {
     const progressBar = document.getElementById('progress-bar-fill');
     if (progressBar) {
         const progress = Math.round(((currentStep + 1) / totalSteps) * 100);
-        console.log('Updating progress bar to:', progress + '%');
         progressBar.style.width = `${progress}%`;
-    } else {
-        console.warn('Progress bar element not found');
     }
     
     // Actualizar versión móvil
@@ -183,19 +169,15 @@ function updateStepsComponent() {
  * Actualiza la navegación
  */
 function updateNavigation() {
-    console.log('updateNavigation - currentStep:', currentStep);
-    
     const prevBtn = document.querySelector('[onclick="navigateStep(\'prev\')"]');
     const nextBtn = document.querySelector('[onclick="navigateStep(\'next\')"]');
     
     if (prevBtn) {
         prevBtn.disabled = currentStep === 0;
-        console.log('Previous button disabled:', currentStep === 0);
     }
     
     if (nextBtn) {
         nextBtn.disabled = currentStep === totalSteps - 1;
-        console.log('Next button disabled:', currentStep === totalSteps - 1);
     }
 }
 
@@ -203,11 +185,8 @@ function updateNavigation() {
  * Muestra el botón de envío final
  */
 function showFinalSubmitButton() {
-    console.log('showFinalSubmitButton - currentStep:', currentStep, 'totalSteps:', totalSteps);
-    
     const navigation = document.querySelector('[data-step-navigation]');
     if (!navigation) {
-        console.warn('Navigation container not found');
         return;
     }
     
@@ -328,15 +307,8 @@ function handleFormSubmit(e) {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Steps component initialized - currentStep:', currentStep, 'totalSteps:', totalSteps);
-    
     // Verificar que el contenedor de navegación existe
     const navigationContainer = document.querySelector('[data-step-navigation]');
-    if (navigationContainer) {
-        console.log('Navigation container found, generating buttons...');
-    } else {
-        console.error('Navigation container not found!');
-    }
     
     updateStepDisplay();
     updateStepsComponent();

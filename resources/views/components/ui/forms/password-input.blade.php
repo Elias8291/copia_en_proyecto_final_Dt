@@ -15,7 +15,7 @@
             name="{{ $name }}" 
             @if($required) required @endif
             value="{{ old($name, $value) }}" 
-            class="w-full px-2.5 py-1.5 pr-10 rounded-lg border @error($name) border-red-500 bg-red-50/30 @else border-gray-300 @enderror focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm" 
+            class="w-full px-2.5 py-1.5 pr-10 rounded-lg border @error($name) border-red-500 bg-red-50/30 @else border-gray-200 @enderror focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 text-sm" 
             placeholder="{{ $placeholder }}" 
             aria-describedby="{{ $name }}-error">
         

@@ -291,13 +291,16 @@ const tramiteFormConfig = [
     }
 ];
 
+// Variable global para el controlador de formulario
+let formController;
+
 // Inicializar validación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar validación para el formulario de trámites
-    const tramiteForm = new FormController('#tramite-form', tramiteFormConfig);
+    // Inicializar validación para el formulario de trámites (solo una vez)
+    formController = new FormController('#tramite-form', tramiteFormConfig);
     
     // Hacer disponible globalmente para debugging
-    window.tramiteFormValidator = tramiteForm;
+    window.tramiteFormValidator = formController;
     
     // Configurar validación para campos dinámicos de accionistas
     setupAccionistasValidation();
@@ -310,12 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.actualizarEstadoArchivos = actualizarEstadoArchivos;
     
     // Hacer disponible la validación de archivos al enviar
-    if (window.tramiteFormValidator) {
-        window.validateArchivosOnSubmit = () => window.tramiteFormValidator.validateArchivosOnSubmit();
-    }
-    
-    console.log('✅ Sistema de validación inicializado correctamente');
-    console.log('📋 Validaciones configuradas:', tramiteFormConfig.length, 'campos');
+    window.validateArchivosOnSubmit = () => formController.validateArchivosOnSubmit();
 });
 
 // Configurar validación para campos dinámicos de accionistas
@@ -615,24 +613,4 @@ function actualizarEstadoArchivos() {
 
 // Hacer funciones disponibles globalmente
 window.calcularTotalPorcentajes = calcularTotalPorcentajes;
-window.actualizarEstadoArchivos = actualizarEstadoArchivos;
-
-// Variable global para el controlador de formulario
-let formController;
-
-// Inicializar el controlador de validación cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('FormController: Initializing validation system...');
-    
-    // Inicializar el controlador principal
-    formController = new FormController('#tramite-form', tramiteFormConfig);
-    
-    // Hacer validateArchivosOnSubmit disponible globalmente
-    window.validateArchivosOnSubmit = () => formController.validateArchivosOnSubmit();
-    
-    // Configurar validaciones específicas
-    setupAccionistasValidation();
-    setupArchivosValidation();
-    
-    console.log('FormController: Validation system initialized');
-}); 
+window.actualizarEstadoArchivos = actualizarEstadoArchivos; 

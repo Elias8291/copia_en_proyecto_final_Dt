@@ -19,7 +19,7 @@
 ])
 
 @php
-    $inputClasses = 'block w-full rounded-lg border-gray-300 shadow-sm transition-colors duration-200 focus:border-blue-500 focus:ring-blue-500';
+    $inputClasses = 'block w-full rounded-lg border-gray-200 shadow-sm transition-colors duration-200 focus:border-blue-500 focus:ring-blue-500';
     
     // Configurar tamaños
     $sizeClasses = match($size) {

@@ -335,34 +335,6 @@
         --tw-ring-color: rgba(157, 36, 73, 0.4) !important; /* primary con 40% opacidad */
     }
     
-    /* Asegurar que los inputs tengan bordes grises por defecto */
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="tel"],
-    input[type="url"],
-    input[type="number"],
-    input[type="date"],
-    input[type="search"],
-    select,
-    textarea {
-        border-color: #e5e7eb !important; /* gray-200 */
-    }
-    
-    /* Hover state con color primario sutil */
-    input[type="text"]:hover,
-    input[type="email"]:hover,
-    input[type="password"]:hover,
-    input[type="tel"]:hover,
-    input[type="url"]:hover,
-    input[type="number"]:hover,
-    input[type="date"]:hover,
-    input[type="search"]:hover,
-    select:hover,
-    textarea:hover {
-        border-color: rgba(157, 36, 73, 0.1) !important; /* primary con 10% opacidad */
-    }
-    
     /* Focus state con color primario sutil */
     input[type="text"]:focus,
     input[type="email"]:focus,
@@ -376,5 +348,49 @@
     textarea:focus {
         border-color: rgba(157, 36, 73, 0.4) !important; /* primary con 40% opacidad */
         box-shadow: 0 0 0 3px rgba(157, 36, 73, 0.1) !important; /* primary con 10% opacidad */
+    }
+    
+    /* Quitar bordes negros */
+    input,
+    select,
+    textarea {
+        border-color: #e5e7eb !important; /* gray-200 en lugar de negro */
+    }
+    
+    .border-black {
+        border-color: #e5e7eb !important;
+    }
+    
+    .border-gray-900 {
+        border-color: #e5e7eb !important;
+    }
+    
+    .border-gray-800 {
+        border-color: #e5e7eb !important;
+    }
+    
+    /* Override específico para cualquier borde negro */
+    input[style*="border-color: black"],
+    input[style*="border-color: #000"],
+    input[style*="border-color: rgb(0,0,0)"],
+    select[style*="border-color: black"],
+    select[style*="border-color: #000"],
+    select[style*="border-color: rgb(0,0,0)"],
+    textarea[style*="border-color: black"],
+    textarea[style*="border-color: #000"],
+    textarea[style*="border-color: rgb(0,0,0)"] {
+        border-color: #e5e7eb !important;
+    }
+    
+    /* Override border-gray-300 para inputs */
+    input.border-gray-300,
+    select.border-gray-300,
+    textarea.border-gray-300 {
+        border-color: #e5e7eb !important; /* gray-200 en lugar de gray-300 */
+    }
+    
+    /* Override border-gray-300 para cualquier elemento con esa clase */
+    .border-gray-300 {
+        border-color: #e5e7eb !important; /* gray-200 en lugar de gray-300 */
     }
 }

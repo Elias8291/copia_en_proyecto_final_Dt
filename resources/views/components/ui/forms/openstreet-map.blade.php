@@ -30,40 +30,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let map = null;
     let marker = null;
-    let mapInitialized = false;
-    let initializationAttempts = 0;
-    const maxAttempts = 10;
 
-    function isElementVisible(element) {
-        if (!element) return false;
-        
-        const rect = element.getBoundingClientRect();
-        const style = window.getComputedStyle(element);
-        
-        return rect.width > 0 && 
-               rect.height > 0 && 
-               style.display !== 'none' && 
-               style.visibility !== 'hidden' && 
-               style.opacity !== '0';
-    }
-
-    function initializeMap() {
-        if (mapInitialized) return;
-        
+    function initMap() {
         const mapContainer = document.getElementById('mapa');
-        if (!mapContainer) {
-            console.warn('Map container not found');
-            return;
-        }
+        if (!mapContainer) return;
 
-        // Verificar si el contenedor es visible
-        if (!isElementVisible(mapContainer)) {
-            initializationAttempts++;
-            if (initializationAttempts < maxAttempts) {
-                setTimeout(initializeMap, 200);
-            } else {
-                console.warn('Map initialization failed after', maxAttempts, 'attempts');
-            }
+        if (mapContainer.offsetHeight === 0) {
+            setTimeout(initMap, 100);
             return;
         }
 
@@ -73,178 +46,121 @@ document.addEventListener('DOMContentLoaded', function () {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            marker = hasCoords ? L.marker([lat, lng], { draggable: editable }).addTo(map) : null;
-            mapInitialized = true;
-            initializationAttempts = 0;
-
-            // Configurar eventos si es editable
-            if (editable) {
-                map.on('click', e => updateCoords(e.latlng.lat, e.latlng.lng));
-                
-                if (marker) marker.on('dragend', e => updateCoords(e.target.getLatLng().lat, e.target.getLatLng().lng));
-                
-                ['latitud-manual', 'longitud-manual'].forEach(id => {
-                    const input = document.getElementById(id);
-                    if (input) {
-                        input.addEventListener('change', () => {
-                            const latVal = document.getElementById('latitud-manual')?.value;
-                            const lngVal = document.getElementById('longitud-manual')?.value;
-                            if (latVal && lngVal) {
-                                const newLat = parseFloat(latVal);
-                                const newLng = parseFloat(lngVal);
-                                if (!isNaN(newLat) && !isNaN(newLng)) {
-                                    updateCoords(newLat, newLng);
-                                    map.setView([newLat, newLng], 13);
-                                }
-                            }
-                        });
-                    }
-                });
-                
-                document.getElementById('ubicacion-btn')?.addEventListener('click', () => {
-                    if (navigator.geolocation) {
-                        navigator.geolocation.getCurrentPosition(pos => {
-                            updateCoords(pos.coords.latitude, pos.coords.longitude);
-                            map.setView([pos.coords.latitude, pos.coords.longitude], 13);
-                        }, () => alert('No se pudo obtener la ubicación'));
-                    } else {
-                        alert('Geolocalización no soportada');
-                    }
-                });
+            if (hasCoords) {
+                marker = L.marker([lat, lng], { draggable: editable }).addTo(map);
+                if (editable) {
+                    marker.on('dragend', e => updateCoords(e.target.getLatLng().lat, e.target.getLatLng().lng));
+                }
             }
 
-            // Disparar evento personalizado para notificar que el mapa está listo
-            window.dispatchEvent(new CustomEvent('mapaInicializado', { detail: { map, marker } }));
-            
-            console.log('Map initialized successfully');
+            if (editable) {
+                map.on('click', e => updateCoords(e.latlng.lat, e.latlng.lng));
+                document.getElementById('ubicacion-btn')?.addEventListener('click', getLocation);
+            }
+
+            setTimeout(() => {
+                if (map) map.invalidateSize();
+            }, 100);
+
         } catch (error) {
-            console.error('Error initializing map:', error);
-            mapInitialized = false;
+            console.error('Error inicializando mapa:', error);
+            setTimeout(initMap, 200);
         }
     }
 
-    function updateCoords(lat, lng) {
-        console.log('updateCoords llamado con:', { lat, lng });
-        
+    function updateCoords(newLat, newLng) {
+        lat = newLat;
+        lng = newLng;
+
         if (marker) {
             marker.setLatLng([lat, lng]);
-        } else if (map) {
+        } else {
             marker = L.marker([lat, lng], { draggable: editable }).addTo(map);
+            if (editable) {
+                marker.on('dragend', e => updateCoords(e.target.getLatLng().lat, e.target.getLatLng().lng));
+            }
         }
         
-        // Actualizar inputs directamente
         const latInput = document.getElementById('latitud-manual');
         const lngInput = document.getElementById('longitud-manual');
         const display = document.getElementById('coordenadas-display');
         const displayDomicilio = document.getElementById('coordenadas-display-domicilio');
         
-        if (latInput) {
-            latInput.value = lat.toFixed(6);
-            console.log('Latitud actualizada en input:', latInput.value);
-        }
-        if (lngInput) {
-            lngInput.value = lng.toFixed(6);
-            console.log('Longitud actualizada en input:', lngInput.value);
-        }
+        if (latInput) latInput.value = lat.toFixed(6);
+        if (lngInput) lngInput.value = lng.toFixed(6);
         if (display) display.textContent = `Coordenadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         if (displayDomicilio) displayDomicilio.textContent = `Coordenadas seleccionadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-        // Disparar evento personalizado para notificar cambio de coordenadas
-        console.log('Disparando evento coordenadasActualizadas:', { lat, lng });
         window.dispatchEvent(new CustomEvent('coordenadasActualizadas', { 
             detail: { lat, lng } 
         }));
-        
-        // También disparar un evento de input para activar cualquier listener de input
-        if (latInput) {
-            latInput.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-        if (lngInput) {
-            lngInput.dispatchEvent(new Event('input', { bubbles: true }));
-        }
     }
 
-    function resizeMap() {
-        if (map && mapInitialized) {
-            try {
-                setTimeout(() => {
-                    map.invalidateSize();
-                    console.log('Map resized successfully');
-                }, 100);
-            } catch (error) {
-                console.error('Error resizing map:', error);
-            }
-        }
-    }
-
-    // Inicializar mapa inmediatamente si es posible
-    initializeMap();
-
-    // Escuchar cambios en los steps para redimensionar el mapa
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const target = mutation.target;
-                if (target.classList.contains('step-content') && target.classList.contains('active')) {
-                    // Si este step contiene el mapa, redimensionarlo
-                    if (target.querySelector('#mapa')) {
-                        setTimeout(resizeMap, 100);
-                    }
-                }
-            }
-        });
-    });
-
-    // Observar cambios en los steps
-    document.querySelectorAll('.step-content').forEach(step => {
-        observer.observe(step, { attributes: true });
-    });
-
-    // También escuchar el evento personalizado de navegación de steps
-    window.addEventListener('stepChanged', function(event) {
-        const currentStep = event.detail?.currentStep;
-        const stepElement = document.querySelector(`[data-step="${currentStep}"]`);
+    function getLocation() {
+        const btn = document.getElementById('ubicacion-btn');
+        btn.textContent = 'Obteniendo...';
+        btn.disabled = true;
         
-        if (stepElement && stepElement.querySelector('#mapa')) {
-            // Si el mapa no está inicializado, intentar inicializarlo
-            if (!mapInitialized) {
-                setTimeout(initializeMap, 100);
-            } else {
-                setTimeout(resizeMap, 100);
-            }
-        }
-    });
-
-    // Escuchar cuando el DOM cambie (para casos donde los steps se cargan dinámicamente)
-    const domObserver = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                mutation.addedNodes.forEach(function(node) {
-                    if (node.nodeType === 1 && node.classList && node.classList.contains('step-content')) {
-                        if (node.querySelector('#mapa')) {
-                            setTimeout(initializeMap, 100);
-                        }
+        if (navigator.geolocation) {
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            };
+            
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const accuracy = pos.coords.accuracy;
+                    updateCoords(pos.coords.latitude, pos.coords.longitude);
+                    map.setView([pos.coords.latitude, pos.coords.longitude], 18);
+                    
+                    if (accuracy <= 10) {
+                        btn.textContent = 'Ubicación precisa';
+                    } else if (accuracy <= 50) {
+                        btn.textContent = 'Ubicación aproximada';
+                    } else {
+                        btn.textContent = 'Ubicación imprecisa';
                     }
-                });
-            }
-        });
-    });
-
-    domObserver.observe(document.body, { childList: true, subtree: true });
-
-    // Escuchar cambios en el tamaño de la ventana
-    window.addEventListener('resize', function() {
-        if (mapInitialized) {
-            setTimeout(resizeMap, 100);
-        }
-    });
-
-    // Escuchar evento para forzar la inicialización del mapa
-    window.addEventListener('forceMapInitialization', function() {
-        if (!mapInitialized) {
-            setTimeout(initializeMap, 100);
+                    
+                    setTimeout(() => {
+                        btn.textContent = 'Obtener ubicación actual';
+                        btn.disabled = false;
+                    }, 3000);
+                },
+                error => {
+                    let errorMsg = 'Error al obtener ubicación';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg = 'Permiso denegado';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg = 'Ubicación no disponible';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg = 'Tiempo agotado';
+                            break;
+                    }
+                    
+                    btn.textContent = errorMsg;
+                    setTimeout(() => {
+                        btn.textContent = 'Obtener ubicación actual';
+                        btn.disabled = false;
+                    }, 3000);
+                },
+                options
+            );
         } else {
-            setTimeout(resizeMap, 100);
+            alert('Geolocalización no soportada');
+            btn.textContent = 'Obtener ubicación actual';
+            btn.disabled = false;
+        }
+    }
+
+    setTimeout(initMap, 100);
+
+    window.addEventListener('resize', () => {
+        if (map) {
+            setTimeout(() => map.invalidateSize(), 100);
         }
     });
 });

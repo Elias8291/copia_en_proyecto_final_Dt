@@ -88,5 +88,5 @@
         return false;
     };
 
-    console.log('Error Handler inicializado correctamente');
+
 })(); 

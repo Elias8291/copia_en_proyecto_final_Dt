@@ -56,14 +56,11 @@ class FormController {
 
         // Validar todo el formulario antes de enviar
         this.form.addEventListener('submit', (e) => {
-            console.log('Form submit event triggered');
-            
             // Validar campos del formulario
             if (!this.validateAll()) {
                 e.preventDefault();
                 e.stopPropagation();
                 this.showAllErrors();
-                console.log('Form submission blocked due to validation errors');
                 return false;
             }
             
@@ -72,11 +69,8 @@ class FormController {
                 e.preventDefault();
                 e.stopPropagation();
                 this.showArchivosErrors();
-                console.log('Form submission blocked due to file validation errors');
                 return false;
             }
-            
-            console.log('Form validation passed, allowing submission');
         });
 
         // Interceptar la función global navigateStep para validación
@@ -88,13 +82,10 @@ class FormController {
         const originalNavigateStep = window.navigateStep;
         
         window.navigateStep = (direction) => {
-            console.log('FormController: navigateStep intercepted, direction:', direction);
-            
             // Solo validar en dirección 'next'
             if (direction === 'next') {
                 // Validar el paso actual antes de avanzar
                 if (!this.validateCurrentStep()) {
-                    console.log('FormController: Current step validation failed');
                     this.showCurrentStepErrors();
                     return false; // Bloquear navegación
                 }
@@ -104,8 +95,6 @@ class FormController {
                                      document.querySelector('[name="tipo_persona_hidden"]')?.value === 'Moral';
                 const currentStep = this.getCurrentStep();
                 
-                console.log('FormController: Current step:', currentStep, 'isPersonaMoral:', isPersonaMoral);
-                
                 // Validación específica para el paso de actividades (paso 1)
                 if (currentStep === 1) {
                     const actividadesField = this.form.querySelector('[name="actividades_seleccionadas"]');
@@ -114,12 +103,10 @@ class FormController {
                         try {
                             const actividades = JSON.parse(actividadesValue);
                             if (!Array.isArray(actividades) || actividades.length === 0) {
-                                console.log('FormController: Actividades validation failed: no activities selected');
                                 this.showCurrentStepErrors();
                                 return false;
                             }
                         } catch (error) {
-                            console.log('FormController: Actividades validation failed: invalid JSON');
                             this.showCurrentStepErrors();
                             return false;
                         }
@@ -130,7 +117,6 @@ class FormController {
                 if (currentStep === 4) {
                     const totalPorcentaje = window.calcularTotalPorcentajes ? window.calcularTotalPorcentajes() : 0;
                     if (totalPorcentaje !== 100) {
-                        console.log(`FormController: Accionistas validation failed: total percentage is ${totalPorcentaje}%, must be 100%`);
                         this.showCurrentStepErrors();
                         return false;
                     }
@@ -142,7 +128,6 @@ class FormController {
                 if (currentStep === documentosStep) {
                     const estadoArchivos = window.actualizarEstadoArchivos ? window.actualizarEstadoArchivos() : { completado: false };
                     if (!estadoArchivos.completado) {
-                        console.log('FormController: Documentos validation failed: not all required files are uploaded and valid');
                         this.showCurrentStepErrors();
                         return false;
                     }
@@ -154,18 +139,14 @@ class FormController {
                 if (currentStep === ultimoPaso) {
                     const terminosCheckbox = document.querySelector('[name="aceptar_terminos"]');
                     if (terminosCheckbox && !terminosCheckbox.checked) {
-                        console.log('FormController: Terminos validation failed: terms not accepted');
                         this.showCurrentStepErrors();
                         return false;
                     }
                 }
-                
-                console.log('FormController: All validations passed, allowing navigation');
             }
             
             // Si es válido o es retroceso, continuar con la navegación original
             if (originalNavigateStep) {
-                console.log('FormController: Calling original navigateStep');
                 return originalNavigateStep(direction);
             }
             
@@ -190,41 +171,25 @@ class FormController {
         let allValid = true;
         let hasFieldsInStep = false;
         
-        console.log(`FormController: validateCurrentStep - step ${currentStep}`);
-        console.log(`FormController: Total validators: ${this.validators.size}`);
-        
         this.validators.forEach((validator, fieldName) => {
             const field = validator.field;
-            console.log(`FormController: Checking field: ${fieldName}, field exists: ${!!field}`);
             
             if (this.isFieldInCurrentStep(field, currentStep)) {
                 hasFieldsInStep = true;
-                console.log(`FormController: Validating field: ${fieldName} in step ${currentStep}`);
-                
-                // Validación especial para actividades_seleccionadas
-                if (fieldName === 'actividades_seleccionadas') {
-                    console.log(`FormController: Validating actividades_seleccionadas:`, field.value);
-                }
                 
                 const fieldValid = validator.validate();
-                console.log(`FormController: Field ${fieldName} validation result: ${fieldValid}`);
                 
                 if (!fieldValid) {
                     allValid = false;
-                    console.log(`FormController: Field ${fieldName} failed validation`);
                 }
-            } else {
-                console.log(`FormController: Field ${fieldName} not in current step ${currentStep}`);
             }
         });
         
         // Si no hay campos en este paso, considerar válido
         if (!hasFieldsInStep) {
-            console.log(`FormController: No fields found in step ${currentStep}, considering valid`);
             return true;
         }
         
-        console.log(`FormController: Step ${currentStep} validation result: ${allValid}`);
         return allValid;
     }
 
@@ -238,13 +203,11 @@ class FormController {
     isFieldInCurrentStep(field, currentStep) {
         const stepContent = field.closest('.step-content');
         if (!stepContent) {
-            console.log(`Field ${field.name} not found in any step-content`);
             return false;
         }
         
         const fieldStep = parseInt(stepContent.dataset.step);
         const isInStep = fieldStep === currentStep;
-        console.log(`Field ${field.name} in step ${fieldStep}, current step: ${currentStep}, isInStep: ${isInStep}`);
         return isInStep;
     }
 
@@ -332,7 +295,6 @@ class FormController {
             allValid = false;
         }
         
-        console.log(`Archivos validation: ${archivosCargados}/${archivosRequeridos} loaded, allValid: ${allValid}`);
         return allValid;
     }
 

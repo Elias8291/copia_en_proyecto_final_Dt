@@ -66,7 +66,7 @@
                 <label for="rfc" class="block text-xs font-medium text-gray-700 mb-0.5">RFC</label>
                 <div class="relative">
                     <input type="text" id="rfc" name="rfc" required
-                        class="w-full px-2.5 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 uppercase @error('rfc') border-red-500 @enderror text-sm"
+                        class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 uppercase @error('rfc') border-red-500 @enderror text-sm"
                         placeholder="Ej: XAXX010101000">
                 </div>
             </div>
@@ -75,7 +75,7 @@
                 <label for="password" class="block text-xs font-medium text-gray-700 mb-0.5">Contraseña</label>
                 <div class="relative">
                     <input type="password" id="password" name="password" required
-                        class="w-full px-2.5 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 @error('password') border-red-500 @enderror text-sm"
+                        class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-300 @error('password') border-red-500 @enderror text-sm"
                         placeholder="••••••••">
                     <button type="button" onclick="togglePassword()"
                         class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">

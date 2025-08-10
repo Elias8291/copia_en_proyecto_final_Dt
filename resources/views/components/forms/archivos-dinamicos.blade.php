@@ -80,8 +80,18 @@
                             {{ $archivo->nombre }} <span class="text-red-500">*</span>
                         </h5>
                         
-                        <!-- Descripción -->
-                        <p class="text-xs text-gray-500 mb-3 line-clamp-2">{{ $archivo->descripcion }}</p>
+                        <!-- Descripción expandible -->
+                        <div class="mb-3">
+                            <div class="text-xs text-gray-500 description-container" data-archivo-id="{{ $archivo->id }}">
+                                <div class="description-preview line-clamp-2">{{ $archivo->descripcion }}</div>
+                                <div class="description-full hidden">{{ $archivo->descripcion }}</div>
+                                @if(strlen($archivo->descripcion) > 100)
+                                    <button type="button" class="text-[#9D2449] hover:text-[#9D2449]/80 text-xs font-medium mt-1 description-toggle" data-archivo-id="{{ $archivo->id }}">
+                                        Ver más
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
                         
                         <!-- Tipo de archivo -->
                         <div class="mb-3">
@@ -137,17 +147,7 @@
             </div>
         @enderror
 
-        <!-- Indicador de estado de archivos -->
-        <div id="estado-archivos" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p class="text-sm text-blue-700">
-                    <strong>Estado de Archivos:</strong> <span id="archivos-progreso">0 de 0</span> archivos obligatorios cargados.
-                </p>
-            </div>
-        </div>
+
 
         <!-- Información adicional -->
         <div class="mt-6 bg-gray-50 rounded-lg p-4">
@@ -313,69 +313,143 @@
     @endif
 </div>
 
+<style>
+.description-container {
+    position: relative;
+}
+
+.description-preview, .description-full {
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.description-toggle {
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+}
+
+.description-toggle:hover {
+    text-decoration: underline;
+}
+
+.description-full {
+    white-space: pre-wrap;
+}
+</style>
+
 <script>
+
+
 function updateFileName(input, elementId) {
     const fileNameElement = document.getElementById(elementId);
-    if (input.files && input.files[0]) {
+    if (fileNameElement && input.files && input.files[0]) {
         fileNameElement.textContent = input.files[0].name;
         fileNameElement.classList.remove('hidden');
-    } else {
+        
+        // Cambiar el estilo del contenedor del archivo
+        const archivoContainer = input.closest('.archivo-container')?.parentElement;
+        if (archivoContainer) {
+            archivoContainer.classList.remove('border-gray-300', 'hover:border-[#9D2449]');
+            archivoContainer.classList.add('border-green-300', 'bg-green-50');
+        }
+    } else if (fileNameElement) {
         fileNameElement.classList.add('hidden');
-    }
-    
-    // Actualizar estado de archivos
-    if (window.actualizarEstadoArchivos) {
-        window.actualizarEstadoArchivos();
+        
+        // Restaurar el estilo original del contenedor
+        const archivoContainer = input.closest('.archivo-container')?.parentElement;
+        if (archivoContainer) {
+            archivoContainer.classList.remove('border-green-300', 'bg-green-50');
+            archivoContainer.classList.add('border-gray-300', 'hover:border-[#9D2449]');
+        }
     }
 }
 
-// Actualizar estado inicial de archivos
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.actualizarEstadoArchivos) {
-        window.actualizarEstadoArchivos();
-    }
+// Función para configurar descripciones expandibles
+function setupDescriptionToggles() {
+    const toggleButtons = document.querySelectorAll('.description-toggle');
     
-    // Inicializar sistema de archivos en tiempo real
-    if (window.ArchivosController) {
-        window.archivosController = new ArchivosController();
-    }
-    
-    // Agregar validación al envío del formulario
-    const form = document.querySelector('#tramite-form');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            // Validar archivos antes de enviar
-            if (window.validateArchivosOnSubmit) {
-                const archivosValidos = window.validateArchivosOnSubmit();
-                if (!archivosValidos) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Mostrar mensaje de error
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                    errorMessage.innerHTML = `
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                            <span>Por favor, corrija los errores en los archivos antes de continuar.</span>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(errorMessage);
-                    
-                    // Remover mensaje después de 5 segundos
-                    setTimeout(() => {
-                        if (errorMessage.parentNode) {
-                            errorMessage.remove();
-                        }
-                    }, 5000);
-                    
-                    return false;
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const archivoId = this.getAttribute('data-archivo-id');
+            const container = document.querySelector(`.description-container[data-archivo-id="${archivoId}"]`);
+            
+            if (container) {
+                const preview = container.querySelector('.description-preview');
+                const full = container.querySelector('.description-full');
+                const toggle = container.querySelector('.description-toggle');
+                
+                if (preview && full && toggle) {
+                    if (preview.classList.contains('hidden')) {
+                        // Contraer
+                        preview.classList.remove('hidden');
+                        full.classList.add('hidden');
+                        toggle.textContent = 'Ver más';
+                    } else {
+                        // Expandir
+                        preview.classList.add('hidden');
+                        full.classList.remove('hidden');
+                        toggle.textContent = 'Ver menos';
+                    }
                 }
             }
         });
+    });
+}
+
+// Función para validar archivos antes del envío
+function validateArchivosOnSubmit() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    let todosCargados = true;
+    
+    fileInputs.forEach(input => {
+        if (input.hasAttribute('required') && (!input.files || input.files.length === 0)) {
+            todosCargados = false;
+            // Resaltar el input faltante
+            const archivoContainer = input.closest('.archivo-container')?.parentElement;
+            if (archivoContainer) {
+                archivoContainer.classList.add('border-red-300', 'bg-red-50');
+            }
+        }
+    });
+    
+    return todosCargados;
+}
+
+// Inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    // Agregar event listeners a todos los inputs de archivo
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Event listener para cambios en archivos
+        });
+    });
+    
+    // Configurar descripciones expandibles
+    setupDescriptionToggles();
+    
+    // Agregar validación al envío del formulario
+    const form = document.querySelector('#tramite-form') || document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const archivosValidos = validateArchivosOnSubmit();
+            if (!archivosValidos) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // El mensaje de error será manejado por el FormController
+                // para evitar duplicación de mensajes
+                
+                return false;
+            }
+        });
     }
+    
+    // Hacer las funciones disponibles globalmente
+    window.validateArchivosOnSubmit = validateArchivosOnSubmit;
 });
 </script> 

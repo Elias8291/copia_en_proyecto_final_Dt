@@ -63,12 +63,6 @@ class DecisionesFinales {
         }
         
         // Log para debugging
-        console.log('Enviando datos:', {
-            accion: accion,
-            tramiteId: this.tramiteId,
-            comentarioGeneral: comentarioGeneral,
-            comentarioGeneralType: typeof comentarioGeneral
-        });
         
         try {
             const response = await fetch(`/revisiones/${this.tramiteId}/${accion}`, {
