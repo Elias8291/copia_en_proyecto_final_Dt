@@ -29,7 +29,7 @@
                     this.loading = true;
                     try {
                         // Cargar todas las notificaciones recientes (leídas y no leídas)
-                        const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
+                        const response = await fetch(window.location.origin + '/notificaciones/api/recientes-dropdown');
                         const data = await response.json();
                         this.notificaciones = data.notificaciones;
                         this.count = data.conteo_no_leidas; // Solo contar las no leídas
@@ -47,7 +47,7 @@
                         const unreadNotifications = this.notificaciones.filter(n => !n.leida);
                         if (unreadNotifications.length > 0) {
                             try {
-                                const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
+                                const response = await fetch(window.location.origin + '/notificaciones/api/marcar-vistas-leidas', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -100,7 +100,7 @@
                     <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
                         <div class="flex items-center justify-between">
                             <h3 class="text-sm font-semibold text-gray-900">Notificaciones</h3>
-                            <a href="{{ route('notificaciones.index') }}" 
+                            <a href="/notificaciones" 
                                class="text-xs text-blue-600 hover:text-blue-800 font-medium">
                                 Ver todas
                             </a>
@@ -431,7 +431,7 @@
 
                         <!-- Cerrar sesión -->
                         <div class="py-2">
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="/cerrar-sesion" class="inline">
                                 @csrf
                                 <button type="submit"
                                     class="group flex w-full items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200">

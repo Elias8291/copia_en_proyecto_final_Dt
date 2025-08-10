@@ -331,7 +331,11 @@
                     showSatDataModal(result.sat_data);
                     showExtractedData();
                 } else {
-                    alert("Error al procesar el archivo: " + (result.error || "No se pudo extraer la información del código QR. Verifica que el archivo contenga un código QR válido de la constancia fiscal del SAT."));
+                    if (typeof mostrarModalError === 'function') {
+                        mostrarModalError("Error al procesar el archivo", result.error || "No se pudo extraer la información del código QR. Verifica que el archivo contenga un código QR válido de la constancia fiscal del SAT.");
+                    } else {
+                        alert("Error al procesar el archivo: " + (result.error || "No se pudo extraer la información del código QR. Verifica que el archivo contenga un código QR válido de la constancia fiscal del SAT."));
+                    }
                 }
             }
         };
@@ -380,6 +384,17 @@
                 }
             }
         };
+
+        // Asegurar que las funciones estén disponibles globalmente
+        if (typeof window !== 'undefined') {
+            window.showSatDataFromForm = window.showSatDataFromForm || function () {
+                if (satDataGlobal) {
+                    if (typeof showSatDataModal === 'function') {
+                        showSatDataModal(satDataGlobal);
+                    }
+                }
+            };
+        }
     </script>
     @endpush
 @endsection 

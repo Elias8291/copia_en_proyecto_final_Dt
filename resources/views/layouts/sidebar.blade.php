@@ -89,7 +89,7 @@
     async loadNotifications() {
         this.loading = true;
         try {
-            const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
+                                    const response = await fetch('https://' + window.location.host + '/notificaciones/api/recientes-dropdown');
             const data = await response.json();
             this.notificaciones = data.notificaciones;
             this.count = data.conteo_no_leidas;
@@ -282,7 +282,7 @@
                     </div>
 
                     <!-- Cerrar Sesión -->
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="/cerrar-sesion" class="inline">
                         @csrf
                         <button type="submit" class="group/item flex items-center w-full min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 text-red-700 hover:bg-red-50 hover:shadow-md hover:text-red-800">
                             <svg class="text-red-400 group-hover/item:text-red-500 flex-shrink-0 w-6 h-6 transition-all duration-200 group-hover/item:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">

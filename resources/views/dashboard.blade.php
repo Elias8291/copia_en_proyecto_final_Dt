@@ -519,7 +519,7 @@
                                         @endif
                                     </div>
                                     <div class="flex-1 flex justify-center lg:justify-end">
-                                        <img src="{{ asset('images/mujer_bienvenida.png') }}" alt="Asistente Virtual"
+                                        <img src="/images/mujer_bienvenida.png" alt="Asistente Virtual"
                                             class="w-auto h-64 lg:h-80 object-contain drop-shadow-xl">
                                     </div>
                                 </div>
@@ -533,39 +533,49 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-                    function updateDateTime() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            const formattedHours = hours % 12 || 12;
-            const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+            function updateDateTime() {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const formattedHours = hours % 12 || 12;
+                const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
 
-            // Usar funciones seguras para establecer contenido
-            window.safeSetText('currentTime', `${formattedHours}:${formattedMinutes} ${ampm}`);
+                // Actualizar tiempo
+                const timeElement = document.getElementById('currentTime');
+                if (timeElement) {
+                    timeElement.textContent = `${formattedHours}:${formattedMinutes} ${ampm}`;
+                }
 
-            const options = {
-                weekday: 'long',
-                year: 'numeric',  
-                month: 'long',
-                day: 'numeric'
-            };
-            window.safeSetText('currentDate', now.toLocaleDateString('es-ES', options));
+                // Actualizar fecha
+                const dateElement = document.getElementById('currentDate');
+                if (dateElement) {
+                    const options = {
+                        weekday: 'long',
+                        year: 'numeric',  
+                        month: 'long',
+                        day: 'numeric'
+                    };
+                    dateElement.textContent = now.toLocaleDateString('es-ES', options);
+                }
 
-            // Saludo seguro
-            const userName = '{{ auth()->check() ? auth()->user()->name : 'Invitado' }}';
-            let greetingText;
-            
-            if (hours < 12) {
-                greetingText = `Buenos días, ${userName}`;
-            } else if (hours >= 12 && hours < 19) {
-                greetingText = `Buenas tardes, ${userName}`;
-            } else {
-                greetingText = `Buenas noches, ${userName}`;
+                // Actualizar saludo
+                const greetingElement = document.getElementById('greeting');
+                if (greetingElement) {
+                    const userName = '{{ auth()->check() ? auth()->user()->name : 'Invitado' }}';
+                    let greetingText;
+                    
+                    if (hours < 12) {
+                        greetingText = `Buenos días, ${userName}`;
+                    } else if (hours >= 12 && hours < 19) {
+                        greetingText = `Buenas tardes, ${userName}`;
+                    } else {
+                        greetingText = `Buenas noches, ${userName}`;
+                    }
+                    
+                    greetingElement.textContent = greetingText;
+                }
             }
-            
-            window.safeSetText('greeting', greetingText);
-        }
 
             updateDateTime();
             setInterval(updateDateTime, 60000);
