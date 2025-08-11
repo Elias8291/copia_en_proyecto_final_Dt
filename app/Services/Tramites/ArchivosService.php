@@ -8,6 +8,7 @@ use App\Models\Archivo;
 use App\Models\CatalogoArchivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
 
 class ArchivosService extends BaseService
@@ -19,11 +20,52 @@ class ArchivosService extends BaseService
         }
         
         $documentos = $request->file('documentos');
+        $archivosParaGuardar = [];
+        $errores = [];
         
+        Log::info('ArchivosService: Iniciando procesamiento ultra optimizado de archivos', [
+            'tramite_id' => $tramite->id,
+            'total_archivos' => count($documentos)
+        ]);
+        
+        // Procesar archivos en lote ultra optimizado
         foreach ($documentos as $nombreArchivo => $archivo) {
-            if ($this->validarArchivo($archivo)) {
-                $this->procesarArchivo($tramite, $proveedor, $nombreArchivo, $archivo);
+            try {
+                if ($this->validarArchivo($archivo)) {
+                    $resultado = $this->prepararArchivoUltraOptimizado($tramite, $proveedor, $nombreArchivo, $archivo);
+                    if ($resultado) {
+                        $archivosParaGuardar[] = $resultado;
+                    }
+                }
+            } catch (\Exception $e) {
+                $errores[] = [
+                    'archivo' => $nombreArchivo,
+                    'error' => $e->getMessage()
+                ];
+                Log::warning('ArchivosService: Error al procesar archivo', [
+                    'archivo' => $nombreArchivo,
+                    'error' => $e->getMessage()
+                ]);
             }
+        }
+        
+        // Guardar archivos en lote si hay archivos válidos
+        if (!empty($archivosParaGuardar)) {
+            $this->guardarArchivosEnLoteUltraOptimizado($archivosParaGuardar);
+        }
+        
+        // Log de resultados
+        Log::info('ArchivosService: Procesamiento ultra optimizado completado', [
+            'tramite_id' => $tramite->id,
+            'archivos_procesados' => count($archivosParaGuardar),
+            'errores' => count($errores)
+        ]);
+        
+        if (!empty($errores)) {
+            Log::warning('ArchivosService: Errores durante el procesamiento', [
+                'tramite_id' => $tramite->id,
+                'errores' => $errores
+            ]);
         }
     }
 
@@ -35,32 +77,23 @@ class ArchivosService extends BaseService
         return $tramite->archivos()->with('catalogoArchivo')->get();
     }
 
-    private function procesarArchivo(Tramite $tramite, Proveedor $proveedor, string $nombreArchivo, $archivo): void
+    private function prepararArchivoUltraOptimizado(Tramite $tramite, Proveedor $proveedor, string $nombreArchivo, $archivo): ?array
     {
         $catalogoArchivo = $this->buscarCatalogoArchivo($nombreArchivo);
         
         if (!$catalogoArchivo) {
-            \Log::warning('ArchivoService: Archivo no reconocido en catálogo', [
-                'nombre_archivo' => $nombreArchivo,
-                'nombre_original' => $archivo->getClientOriginalName()
-            ]);
-            return; // Saltar archivos no reconocidos
+            return null;
         }
 
         // Validar tipo de archivo según el catálogo
         if (!$this->validarTipoArchivo($archivo, $catalogoArchivo->tipo_archivo)) {
-            \Log::warning('ArchivoService: Tipo de archivo no válido', [
-                'nombre_archivo' => $nombreArchivo,
-                'tipo_esperado' => $catalogoArchivo->tipo_archivo,
-                'extension_real' => $archivo->getClientOriginalExtension()
-            ]);
-            return;
+            return null;
         }
 
         $nombreUnico = $this->generarNombreUnico('doc', $tramite->id, $archivo->getClientOriginalName());
         $ruta = $archivo->storeAs('tramites/' . $tramite->id, $nombreUnico, 'public');
 
-        Archivo::create([
+        return [
             'tramite_id' => $tramite->id,
             'proveedor_id' => $proveedor->id,
             'catalogo_archivo_id' => $catalogoArchivo->id,
@@ -70,14 +103,27 @@ class ArchivosService extends BaseService
             'extension' => $archivo->getClientOriginalExtension(),
             'tamaño' => $archivo->getSize(),
             'status' => 'Pendiente',
-        ]);
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+    }
 
-        \Log::info('ArchivoService: Archivo procesado exitosamente', [
-            'tramite_id' => $tramite->id,
-            'catalogo_archivo_id' => $catalogoArchivo->id,
-            'nombre_original' => $archivo->getClientOriginalName(),
-            'tipo_archivo' => $catalogoArchivo->tipo_archivo
-        ]);
+    private function guardarArchivosEnLoteUltraOptimizado(array $archivos): void
+    {
+        try {
+            // Usar inserción en lote ultra optimizada
+            Archivo::insert($archivos);
+            
+            Log::info('ArchivosService: Archivos guardados en lote ultra optimizado', [
+                'total_archivos' => count($archivos)
+            ]);
+        } catch (\Exception $e) {
+            Log::error('ArchivosService: Error al guardar archivos en lote', [
+                'error' => $e->getMessage(),
+                'archivos' => count($archivos)
+            ]);
+            throw $e;
+        }
     }
 
     private function buscarCatalogoArchivo(string $nombre): ?CatalogoArchivo

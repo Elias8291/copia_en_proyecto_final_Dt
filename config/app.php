@@ -70,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'America/Mexico_City',
+    'timezone' => env('APP_TIMEZONE', 'America/Mexico_City'),
 
     /*
     |--------------------------------------------------------------------------
@@ -83,7 +83,7 @@ return [
     |
     */
 
-    'locale' => 'es',
+    'locale' => env('APP_LOCALE', 'es'),
 
     /*
     |--------------------------------------------------------------------------
@@ -96,7 +96,7 @@ return [
     |
     */
 
-    'fallback_locale' => 'en',
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
     /*
     |--------------------------------------------------------------------------
@@ -109,7 +109,7 @@ return [
     |
     */
 
-    'faker_locale' => 'es_MX',
+    'faker_locale' => env('FAKER_LOCALE', 'es_MX'),
 
     /*
     |--------------------------------------------------------------------------
@@ -132,17 +132,16 @@ return [
     |--------------------------------------------------------------------------
     |
     | These configuration options determine the driver used to determine and
-    | manage Laravel's "maintenance mode". The "cache" driver will store
-    | the maintenance mode in the cache for the application. The "file"
-    | driver will store the maintenance mode in a file.
+    | manage Laravel's "maintenance mode" status. The "cache" driver will
+    | allow maintenance mode to be controlled across multiple machines.
     |
-    | Supported drivers: "cache", "file"
+    | Supported drivers: "file", "cache"
     |
     */
 
     'maintenance' => [
-        'driver' => 'file',
-        // 'store' => 'redis',
+        'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
+        'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
     /*
@@ -185,5 +184,22 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Performance Optimizations
+    |--------------------------------------------------------------------------
+    |
+    | Configuration options to optimize application performance
+    |
+    */
+
+    'optimize' => [
+        'file_upload_max_size' => env('FILE_UPLOAD_MAX_SIZE', 51200), // 50MB
+        'file_upload_timeout' => env('FILE_UPLOAD_TIMEOUT', 300), // 5 minutes
+        'batch_processing_size' => env('BATCH_PROCESSING_SIZE', 10), // Number of files to process in batch
+        'enable_file_compression' => env('ENABLE_FILE_COMPRESSION', true),
+        'enable_response_caching' => env('ENABLE_RESPONSE_CACHING', true),
+    ],
 
 ];

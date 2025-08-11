@@ -15,12 +15,17 @@ use App\Exports\ProveedoresEstadoPadronExport;
 use App\Exports\ListaContactosExport;
 use App\Exports\ReporteFiltradoExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class ProveedoresController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth');
+        $this->middleware(PermissionMiddleware::class . ':proveedores.ver')->only(['index', 'show']);
+        $this->middleware(PermissionMiddleware::class . ':proveedores.crear')->only(['create', 'store']);
+        $this->middleware(PermissionMiddleware::class . ':proveedores.editar')->only(['edit', 'update']);
+        $this->middleware(PermissionMiddleware::class . ':proveedores.eliminar')->only(['destroy']);
     }
 
     /**

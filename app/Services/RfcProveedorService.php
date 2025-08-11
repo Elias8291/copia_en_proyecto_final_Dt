@@ -452,109 +452,107 @@ class RfcProveedorService
      */
     private function gestionarInscripcion(string $rfc, ?Proveedor $proveedorReutilizable, array $datosProveedor, Carbon $fechaActual): array
     {
-        // Si no hay proveedor reutilizable, crear nuevo
+        // Si no hay proveedor reutilizable, crear nuevo con estado pendiente
         if (!$proveedorReutilizable) {
             $numeroProveedor = $this->generarNumeroProveedor($rfc);
-            $fechaVencimiento = $fechaActual->copy()->addYears(3); // 3 años de vigencia
             
             $nuevoProveedor = Proveedor::create([
                 'rfc' => $rfc,
                 'pv_numero' => $numeroProveedor,
                 'tipo_persona' => $datosProveedor['tipo_persona'] ?? 'Física',
-                'estado_padron' => 'Activo',
-                'fecha_registro' => $fechaActual,
-                'fecha_vencimiento_padron' => $fechaVencimiento,
+                'estado_padron' => 'Pendiente', // Estado pendiente hasta aprobación
+                'fecha_registro' => null, // Se asignará cuando se apruebe
+                'fecha_vencimiento_padron' => null, // Se asignará cuando se apruebe
                 'usuario_id' => $datosProveedor['usuario_id'] ?? auth()->id(),
-                'fecha_alta_padron' => $fechaActual,
+                'fecha_alta_padron' => null, // Se asignará cuando se apruebe
                 'razon_social' => $datosProveedor['razon_social'] ?? null,
             ]);
 
-            \Log::info("Nuevo proveedor creado para inscripción", [
+            \Log::info("Nuevo proveedor creado para inscripción (pendiente)", [
                 'rfc' => $rfc,
                 'pv_numero' => $numeroProveedor,
-                'fecha_registro' => $fechaActual,
-                'fecha_vencimiento' => $fechaVencimiento
+                'estado_padron' => 'Pendiente',
+                'fecha_registro' => null,
+                'fecha_vencimiento' => null
             ]);
 
             return [
-                'accion' => 'creado',
+                'accion' => 'creado_pendiente',
                 'proveedor' => $nuevoProveedor,
                 'numero_proveedor' => $numeroProveedor,
-                'fecha_registro' => $fechaActual,
-                'fecha_vencimiento' => $fechaVencimiento
+                'fecha_registro' => null,
+                'fecha_vencimiento' => null
             ];
         }
 
-        // Si hay proveedor reutilizable, reutilizarlo y actualizar fechas
-        $fechaVencimiento = $fechaActual->copy()->addYears(3);
-        
+        // Si hay proveedor reutilizable, reutilizarlo pero mantener estado pendiente
         // Si el proveedor no tiene número PV, generarlo
         if (!$proveedorReutilizable->pv_numero) {
             $numeroProveedor = $this->generarNumeroProveedor($rfc);
             $proveedorReutilizable->update([
-                'pv_numero' => $numeroProveedor
+                'pv_numero' => $numeroProveedor,
+                'estado_padron' => 'Pendiente', // Mantener pendiente hasta aprobación
+                'fecha_registro' => null, // Se asignará cuando se apruebe
+                'fecha_vencimiento_padron' => null, // Se asignará cuando se apruebe
+                'fecha_alta_padron' => null // Se asignará cuando se apruebe
             ]);
-            \Log::info("Número PV asignado a proveedor existente", [
+            \Log::info("Número PV asignado a proveedor existente (pendiente)", [
                 'rfc' => $rfc,
                 'proveedor_id' => $proveedorReutilizable->id,
-                'pv_numero' => $numeroProveedor
+                'pv_numero' => $numeroProveedor,
+                'estado_padron' => 'Pendiente'
             ]);
-
-            // Sincronizar datos con DatosGenerales después de asignar PV
-            // Buscar el trámite actual que está siendo procesado
-            $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
-                ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
-                ->latest()
-                ->first();
+        } else {
+            $numeroProveedor = $proveedorReutilizable->pv_numero;
+            // Actualizar estado a pendiente si no lo está
+            if ($proveedorReutilizable->estado_padron !== 'Pendiente') {
+                $proveedorReutilizable->update([
+                    'estado_padron' => 'Pendiente',
+                    'fecha_registro' => null,
+                    'fecha_vencimiento_padron' => null,
+                    'fecha_alta_padron' => null
+                ]);
+            }
+        }
+        
+        // Sincronizar datos con DatosGenerales después de asignar PV
+        // Buscar el trámite actual que está siendo procesado
+        $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
+            ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
+            ->latest()
+            ->first();
+            
+        if ($tramiteActual) {
+            $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
+            if ($datosGenerales) {
+                $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
                 
-            if ($tramiteActual) {
-                $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
-                if ($datosGenerales) {
-                    $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
-                    
-                    \Log::info("Datos sincronizados después de asignar PV en inscripción", [
-                        'proveedor_id' => $proveedorReutilizable->id,
-                        'tramite_actual_id' => $tramiteActual->id,
-                        'pv_numero' => $numeroProveedor,
-                        'razon_social' => $datosGenerales->razon_social,
-                        'datos_generales_id' => $datosGenerales->id
-                    ]);
-                } else {
-                    \Log::warning("No se encontraron DatosGenerales para el trámite actual en inscripción", [
-                        'proveedor_id' => $proveedorReutilizable->id,
-                        'tramite_actual_id' => $tramiteActual->id
-                    ]);
-                }
+                \Log::info("Datos sincronizados después de asignar PV en inscripción (pendiente)", [
+                    'proveedor_id' => $proveedorReutilizable->id,
+                    'tramite_actual_id' => $tramiteActual->id,
+                    'pv_numero' => $numeroProveedor,
+                    'razon_social' => $datosGenerales->razon_social,
+                    'datos_generales_id' => $datosGenerales->id,
+                    'estado_padron' => 'Pendiente'
+                ]);
             } else {
-                \Log::warning("No se encontró trámite actual para sincronizar datos en inscripción", [
-                    'proveedor_id' => $proveedorReutilizable->id
+                \Log::warning("No se encontraron DatosGenerales para el trámite actual en inscripción", [
+                    'proveedor_id' => $proveedorReutilizable->id,
+                    'tramite_actual_id' => $tramiteActual->id
                 ]);
             }
         } else {
-            $numeroProveedor = $proveedorReutilizable->pv_numero;
+            \Log::warning("No se encontró trámite actual para sincronizar datos en inscripción", [
+                'proveedor_id' => $proveedorReutilizable->id
+            ]);
         }
-        
-        $proveedorReutilizable->update([
-            'fecha_registro' => $fechaActual,
-            'fecha_vencimiento_padron' => $fechaVencimiento,
-            'estado_padron' => 'Activo'
-        ]);
-
-        \Log::info("Proveedor reutilizable actualizado para inscripción", [
-            'rfc' => $rfc,
-            'proveedor_id' => $proveedorReutilizable->id,
-            'pv_numero' => $numeroProveedor,
-            'estado_anterior' => $proveedorReutilizable->getOriginal('estado_padron'),
-            'fecha_registro' => $fechaActual,
-            'fecha_vencimiento' => $fechaVencimiento
-        ]);
 
         return [
-            'accion' => 'reutilizado',
-            'proveedor' => $proveedorReutilizable,
+            'accion' => 'reutilizado_pendiente',
+            'proveedor' => $proveedorReutilizable->fresh(),
             'numero_proveedor' => $numeroProveedor,
-            'fecha_registro' => $fechaActual,
-            'fecha_vencimiento' => $fechaVencimiento
+            'fecha_registro' => null,
+            'fecha_vencimiento' => null
         ];
     }
 
@@ -567,74 +565,83 @@ class RfcProveedorService
             throw new \Exception("No existe proveedor para renovar con RFC: {$rfc}");
         }
 
-        // Reutilizar el proveedor existente y actualizar solo la fecha de vencimiento
-        $fechaVencimiento = $fechaActual->copy()->addYears(3);
-        
+        // Reutilizar el proveedor existente pero mantener estado pendiente
         // Si el proveedor no tiene número PV, generarlo
         if (!$proveedorReutilizable->pv_numero) {
             $numeroProveedor = $this->generarNumeroProveedor($rfc);
             $proveedorReutilizable->update([
-                'pv_numero' => $numeroProveedor
+                'pv_numero' => $numeroProveedor,
+                'estado_padron' => 'Pendiente', // Mantener pendiente hasta aprobación
+                'fecha_registro' => null, // Se asignará cuando se apruebe
+                'fecha_vencimiento_padron' => null, // Se asignará cuando se apruebe
+                'fecha_alta_padron' => null // Se asignará cuando se apruebe
             ]);
-            \Log::info("Número PV asignado a proveedor existente para renovación", [
+            \Log::info("Número PV asignado a proveedor existente para renovación (pendiente)", [
                 'rfc' => $rfc,
                 'proveedor_id' => $proveedorReutilizable->id,
-                'pv_numero' => $numeroProveedor
+                'pv_numero' => $numeroProveedor,
+                'estado_padron' => 'Pendiente'
             ]);
+        } else {
+            $numeroProveedor = $proveedorReutilizable->pv_numero;
+            // Actualizar estado a pendiente si no lo está
+            if ($proveedorReutilizable->estado_padron !== 'Pendiente') {
+                $proveedorReutilizable->update([
+                    'estado_padron' => 'Pendiente',
+                    'fecha_registro' => null,
+                    'fecha_vencimiento_padron' => null,
+                    'fecha_alta_padron' => null
+                ]);
+            }
+        }
 
-            // Sincronizar datos con DatosGenerales después de asignar PV
-            // Buscar el trámite actual que está siendo procesado
-            $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
-                ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
-                ->latest()
-                ->first();
+        // Sincronizar datos con DatosGenerales después de asignar PV
+        // Buscar el trámite actual que está siendo procesado
+        $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
+            ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
+            ->latest()
+            ->first();
+            
+        if ($tramiteActual) {
+            $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
+            if ($datosGenerales) {
+                $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
                 
-            if ($tramiteActual) {
-                $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
-                if ($datosGenerales) {
-                    $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
-                    
-                    \Log::info("Datos sincronizados después de asignar PV en renovación", [
-                        'proveedor_id' => $proveedorReutilizable->id,
-                        'tramite_actual_id' => $tramiteActual->id,
-                        'pv_numero' => $numeroProveedor,
-                        'razon_social' => $datosGenerales->razon_social,
-                        'datos_generales_id' => $datosGenerales->id
-                    ]);
-                } else {
-                    \Log::warning("No se encontraron DatosGenerales para el trámite actual en renovación", [
-                        'proveedor_id' => $proveedorReutilizable->id,
-                        'tramite_actual_id' => $tramiteActual->id
-                    ]);
-                }
+                \Log::info("Datos sincronizados después de asignar PV en renovación (pendiente)", [
+                    'proveedor_id' => $proveedorReutilizable->id,
+                    'tramite_actual_id' => $tramiteActual->id,
+                    'pv_numero' => $numeroProveedor,
+                    'razon_social' => $datosGenerales->razon_social,
+                    'datos_generales_id' => $datosGenerales->id,
+                    'estado_padron' => 'Pendiente'
+                ]);
             } else {
-                \Log::warning("No se encontró trámite actual para sincronizar datos en renovación", [
-                    'proveedor_id' => $proveedorReutilizable->id
+                \Log::warning("No se encontraron DatosGenerales para el trámite actual en renovación", [
+                    'proveedor_id' => $proveedorReutilizable->id,
+                    'tramite_actual_id' => $tramiteActual->id
                 ]);
             }
         } else {
-            $numeroProveedor = $proveedorReutilizable->pv_numero;
+            \Log::warning("No se encontró trámite actual para sincronizar datos en renovación", [
+                'proveedor_id' => $proveedorReutilizable->id
+            ]);
         }
-        
-        $proveedorReutilizable->update([
-            'fecha_vencimiento_padron' => $fechaVencimiento,
-            'estado_padron' => 'Activo'
-        ]);
 
-        \Log::info("Proveedor renovado", [
+        \Log::info("Proveedor reutilizable actualizado para renovación (pendiente)", [
             'rfc' => $rfc,
             'proveedor_id' => $proveedorReutilizable->id,
             'pv_numero' => $numeroProveedor,
-            'estado_anterior' => $proveedorReutilizable->getOriginal('estado_padron'),
-            'fecha_vencimiento' => $fechaVencimiento
+            'estado_padron' => 'Pendiente',
+            'fecha_registro' => null,
+            'fecha_vencimiento' => null
         ]);
 
         return [
-            'accion' => 'renovado',
-            'proveedor' => $proveedorReutilizable,
+            'accion' => 'renovado_pendiente',
+            'proveedor' => $proveedorReutilizable->fresh(),
             'numero_proveedor' => $numeroProveedor,
-            'fecha_registro' => $proveedorReutilizable->fecha_registro,
-            'fecha_vencimiento' => $fechaVencimiento
+            'fecha_registro' => null,
+            'fecha_vencimiento' => null
         ];
     }
 
@@ -647,72 +654,83 @@ class RfcProveedorService
             throw new \Exception("No existe proveedor para actualizar con RFC: {$rfc}");
         }
 
-        if (!$this->proveedorPuedeReutilizarse($proveedorReutilizable)) {
-            throw new \Exception("El proveedor con RFC {$rfc} no está vigente para actualización");
-        }
-
+        // Reutilizar el proveedor existente pero mantener estado pendiente
         // Si el proveedor no tiene número PV, generarlo
         if (!$proveedorReutilizable->pv_numero) {
             $numeroProveedor = $this->generarNumeroProveedor($rfc);
             $proveedorReutilizable->update([
-                'pv_numero' => $numeroProveedor
+                'pv_numero' => $numeroProveedor,
+                'estado_padron' => 'Pendiente', // Mantener pendiente hasta aprobación
+                'fecha_registro' => null, // Se asignará cuando se apruebe
+                'fecha_vencimiento_padron' => null, // Se asignará cuando se apruebe
+                'fecha_alta_padron' => null // Se asignará cuando se apruebe
             ]);
-            \Log::info("Número PV asignado a proveedor existente para actualización", [
+            \Log::info("Número PV asignado a proveedor existente para actualización (pendiente)", [
                 'rfc' => $rfc,
                 'proveedor_id' => $proveedorReutilizable->id,
-                'pv_numero' => $numeroProveedor
+                'pv_numero' => $numeroProveedor,
+                'estado_padron' => 'Pendiente'
             ]);
+        } else {
+            $numeroProveedor = $proveedorReutilizable->pv_numero;
+            // Actualizar estado a pendiente si no lo está
+            if ($proveedorReutilizable->estado_padron !== 'Pendiente') {
+                $proveedorReutilizable->update([
+                    'estado_padron' => 'Pendiente',
+                    'fecha_registro' => null,
+                    'fecha_vencimiento_padron' => null,
+                    'fecha_alta_padron' => null
+                ]);
+            }
+        }
 
-            // Sincronizar datos con DatosGenerales después de asignar PV
-            // Buscar el trámite actual que está siendo procesado
-            $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
-                ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
-                ->latest()
-                ->first();
+        // Sincronizar datos con DatosGenerales después de asignar PV
+        // Buscar el trámite actual que está siendo procesado
+        $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
+            ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
+            ->latest()
+            ->first();
+            
+        if ($tramiteActual) {
+            $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
+            if ($datosGenerales) {
+                $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
                 
-            if ($tramiteActual) {
-                $datosGenerales = $tramiteActual->datosGenerales()->latest()->first();
-                if ($datosGenerales) {
-                    $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
-                    
-                    \Log::info("Datos sincronizados después de asignar PV en actualización", [
-                        'proveedor_id' => $proveedorReutilizable->id,
-                        'tramite_actual_id' => $tramiteActual->id,
-                        'pv_numero' => $numeroProveedor,
-                        'razon_social' => $datosGenerales->razon_social,
-                        'datos_generales_id' => $datosGenerales->id
-                    ]);
-                } else {
-                    \Log::warning("No se encontraron DatosGenerales para el trámite actual en actualización", [
-                        'proveedor_id' => $proveedorReutilizable->id,
-                        'tramite_actual_id' => $tramiteActual->id
-                    ]);
-                }
+                \Log::info("Datos sincronizados después de asignar PV en actualización (pendiente)", [
+                    'proveedor_id' => $proveedorReutilizable->id,
+                    'tramite_actual_id' => $tramiteActual->id,
+                    'pv_numero' => $numeroProveedor,
+                    'razon_social' => $datosGenerales->razon_social,
+                    'datos_generales_id' => $datosGenerales->id,
+                    'estado_padron' => 'Pendiente'
+                ]);
             } else {
-                \Log::warning("No se encontró trámite actual para sincronizar datos en actualización", [
-                    'proveedor_id' => $proveedorReutilizable->id
+                \Log::warning("No se encontraron DatosGenerales para el trámite actual en actualización", [
+                    'proveedor_id' => $proveedorReutilizable->id,
+                    'tramite_actual_id' => $tramiteActual->id
                 ]);
             }
         } else {
-            $numeroProveedor = $proveedorReutilizable->pv_numero;
+            \Log::warning("No se encontró trámite actual para sincronizar datos en actualización", [
+                'proveedor_id' => $proveedorReutilizable->id
+            ]);
         }
 
-        // Reutilizar el proveedor vigente sin cambiar fechas
-        \Log::info("Proveedor reutilizable usado para actualización", [
+        \Log::info("Proveedor reutilizable actualizado para actualización (pendiente)", [
             'rfc' => $rfc,
             'proveedor_id' => $proveedorReutilizable->id,
             'pv_numero' => $numeroProveedor,
-            'estado_padron' => $proveedorReutilizable->estado_padron,
-            'fecha_registro' => $proveedorReutilizable->fecha_registro,
-            'fecha_vencimiento' => $proveedorReutilizable->fecha_vencimiento_padron
+            'estado_padron' => 'Pendiente',
+            'fecha_registro' => null,
+            'fecha_vencimiento' => null
         ]);
 
         return [
-            'accion' => 'actualizado',
-            'proveedor' => $proveedorReutilizable,
+            'accion' => 'actualizado_pendiente',
+            'proveedor' => $proveedorReutilizable->fresh(),
             'numero_proveedor' => $numeroProveedor,
-            'fecha_registro' => $proveedorReutilizable->fecha_registro,
-            'fecha_vencimiento' => $proveedorReutilizable->fecha_vencimiento_padron
+            'fecha_registro' => null,
+            'fecha_vencimiento' => null
         ];
     }
 
@@ -802,5 +820,49 @@ class RfcProveedorService
         }
 
         return $info;
+    }
+
+    /**
+     * Activar proveedor cuando el trámite sea aprobado
+     */
+    public function activarProveedor(Proveedor $proveedor, string $tipoTramite): bool
+    {
+        try {
+            $fechaActual = Carbon::now();
+            $fechaVencimiento = $fechaActual->copy()->addYears(3); // 3 años de vigencia
+            
+            $datosActualizacion = [
+                'estado_padron' => 'Activo',
+                'fecha_registro' => $fechaActual,
+                'fecha_vencimiento_padron' => $fechaVencimiento,
+                'fecha_alta_padron' => $fechaActual,
+            ];
+            
+            // Para renovación, mantener la fecha de registro original si existe
+            if ($tipoTramite === 'renovacion' && $proveedor->fecha_registro) {
+                $datosActualizacion['fecha_registro'] = $proveedor->fecha_registro;
+            }
+            
+            $proveedor->update($datosActualizacion);
+            
+            \Log::info("Proveedor activado exitosamente", [
+                'proveedor_id' => $proveedor->id,
+                'rfc' => $proveedor->rfc,
+                'pv_numero' => $proveedor->pv_numero,
+                'tipo_tramite' => $tipoTramite,
+                'estado_padron' => 'Activo',
+                'fecha_registro' => $fechaActual,
+                'fecha_vencimiento' => $fechaVencimiento
+            ]);
+            
+            return true;
+        } catch (\Exception $e) {
+            \Log::error("Error al activar proveedor", [
+                'proveedor_id' => $proveedor->id,
+                'rfc' => $proveedor->rfc,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
     }
 } 

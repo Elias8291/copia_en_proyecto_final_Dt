@@ -148,3 +148,4 @@ class ExportModal extends ModalManager {
 
 // Exportar para uso global
 window.ExportModal = ExportModal;
+

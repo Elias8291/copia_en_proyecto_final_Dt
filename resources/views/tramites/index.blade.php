@@ -3,8 +3,8 @@
 @section('title', 'Trámites Disponibles')
 
 @section('content')
-<div class="p-4 sm:p-6 lg:p-8 bg-gradient-to-b from-white to-gray-50 min-h-screen">
-    <div class="max-w-7xl mx-auto">
+<div class="pt-2 pb-4 sm:pt-4 sm:pb-6 lg:pt-6 lg:pb-8 min-h-screen">
+    <div class="max-w-6xl mx-auto">
         @php
             // Verificar si hay trámite pendiente
             $tieneTramitePendiente = false;
@@ -27,7 +27,7 @@
         @endphp
 
         {{-- Mensajes de estado --}}
-        <div class="space-y-3 mb-6">
+        <div class="space-y-2 mb-4">
             @if(session('warning'))
                 <div class="rounded-xl border border-amber-200/70 bg-amber-50/70 p-4 shadow-sm backdrop-blur supports-backdrop-blur">
                     <div class="flex items-start gap-3">
@@ -61,8 +61,8 @@
         </div>
 
         {{-- Encabezado principal --}}
-        <div class="bg-white/80 border border-gray-200 rounded-2xl shadow-sm backdrop-blur supports-backdrop-blur">
-            <div class="p-6 sm:p-8 border-b border-gray-200/70">
+        <div class="bg-white border border-gray-100 rounded-3xl shadow-sm">
+            <div class="p-3 sm:p-5 border-b border-gray-200/70">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                     <div class="flex items-center gap-4">
                         <div class="rounded-2xl p-3 shadow-lg bg-gradient-to-br from-[{{ $brandFrom }}] via-[{{ $brandVia }}] to-[{{ $brandTo }}]">
@@ -115,15 +115,15 @@
             </div>
 
             {{-- Tarjetas de trámites --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-6 sm:p-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-5">
                 {{-- Inscripción al Padrón --}}
                 @include('tramites.partials.tramite-card', [
                     'tipo' => 'inscripcion',
                     'tramites' => $tramites,
                     'title' => 'Inscripción al Padrón',
                     'description' => 'Registro inicial para nuevos proveedores. Complete todos los requisitos para formar parte del padrón oficial.',
-                    'gradient' => 'from-[#9d2449] to-[#8a1f40]',
-                    'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>'
+                    'gradient' => 'bg-blue-600',
+                    'icon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>'
                 ])
 
                 {{-- Renovación de Registro --}}
@@ -132,8 +132,8 @@
                     'tramites' => $tramites,
                     'title' => 'Renovación de Registro',
                     'description' => 'Renueve su registro anual para mantener activo su estado en el padrón de proveedores.',
-                    'gradient' => 'from-[#8a1f40] to-[#7a1a37]',
-                    'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>'
+                    'gradient' => 'bg-emerald-600',
+                    'icon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>'
                 ])
 
                 {{-- Actualización de Datos --}}
@@ -142,16 +142,16 @@
                     'tramites' => $tramites,
                     'title' => 'Actualización de Datos',
                     'description' => 'Modifique su información registrada. Mantenga sus datos siempre actualizados.',
-                    'gradient' => 'from-[#9d2449] to-[#7a1a37]',
-                    'icon' => '<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'
+                    'gradient' => 'bg-purple-600',
+                    'icon' => '<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>'
                 ])
             </div>
         </div>
 
         {{-- Historial de Trámites --}}
-        <div class="mt-8">
-            <div class="rounded-2xl border border-gray-200 bg-white/80 shadow-sm backdrop-blur supports-backdrop-blur">
-                <div class="p-6 sm:p-8 border-b border-gray-200/70">
+        <div class="mt-4">
+            <div class="rounded-3xl border border-gray-100 bg-white shadow-sm">
+                <div class="p-3 sm:p-5 border-b border-gray-200/70">
                     <div class="flex items-center gap-4">
                         <div class="rounded-2xl p-3 shadow-lg bg-gradient-to-br from-[{{ $brandFrom }}] via-[{{ $brandVia }}] to-[{{ $brandTo }}]">
                             <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -48,27 +48,40 @@ class TramiteService
 
     public function crearTramiteCompleto(Request $request): Tramite
     {
-        return DB::transaction(function () use ($request) {
+        $startTime = microtime(true);
+        
+        return DB::transaction(function () use ($request, $startTime) {
             Log::info('TramiteService: Iniciando creación de trámite completo', [
                 'user_id' => auth()->id(),
                 'tipo_tramite' => $request->tipo_tramite
             ]);
 
-            // 1. Crear o obtener proveedor
+            // 1. Crear o obtener proveedor (operación rápida)
             $proveedor = $this->crearObtenerProveedor($request);
+            $proveedorTime = microtime(true) - $startTime;
 
-            // 2. Crear trámite base
+            // 2. Crear trámite base (operación rápida)
             $tramite = $this->crearTramiteBase($proveedor, $request);
+            $tramiteTime = microtime(true) - $startTime;
 
-            // 3. Crear revisión digital automática
+            // 3. Crear revisión digital automática (operación rápida)
             $this->crearRevisionDigitalAutomatica($tramite);
+            $revisionTime = microtime(true) - $startTime;
 
-            // 4. Guardar secciones del trámite
-            $this->guardarSecciones($tramite, $proveedor, $request);
+            // 4. Guardar secciones del trámite (optimizado)
+            $this->guardarSeccionesUltraOptimizado($tramite, $proveedor, $request);
+            $seccionesTime = microtime(true) - $startTime;
 
             Log::info('TramiteService: Trámite creado exitosamente', [
                 'tramite_id' => $tramite->id,
-                'proveedor_id' => $proveedor->id
+                'proveedor_id' => $proveedor->id,
+                'tiempos' => [
+                    'proveedor' => round($proveedorTime, 3),
+                    'tramite' => round($tramiteTime, 3),
+                    'revision' => round($revisionTime, 3),
+                    'secciones' => round($seccionesTime, 3),
+                    'total' => round($seccionesTime, 3)
+                ]
             ]);
 
             return $tramite;
@@ -169,35 +182,54 @@ class TramiteService
         ]);
     }
 
-    private function guardarSecciones(Tramite $tramite, Proveedor $proveedor, Request $request): void
+    private function guardarSeccionesUltraOptimizado(Tramite $tramite, Proveedor $proveedor, Request $request): void
     {
-        // Datos generales (siempre se guardan)
-        $this->datosGeneralesService->guardar($tramite, $proveedor, $request);
-        $this->contactoService->guardar($tramite, $proveedor, $request);
+        Log::info('TramiteService: Iniciando guardado ultra optimizado de secciones', [
+            'tramite_id' => $tramite->id,
+            'tipo_persona' => $proveedor->tipo_persona
+        ]);
 
-        // Domicilio (siempre se guarda)
-        $this->domicilioService->guardar($tramite, $proveedor, $request);
-
-        // Actividades económicas (siempre se guardan)
-        $this->actividadesService->guardar($tramite, $request);
-
-        // Solo para personas morales
-        if ($proveedor->tipo_persona === 'Moral') {
-            // Constitución (siempre requerida para personas morales)
-            $this->constitucionService->guardar($tramite, $proveedor, $request);
-
-            if ($request->filled('accionistas')) {
-                $this->accionistasService->guardar($tramite, $proveedor, $request);
-            }
-
-            if ($request->filled('nombre_apoderado')) {
-                $this->apoderadoService->guardar($tramite, $proveedor, $request);
-            }
+        // Procesar archivos primero (operación más lenta) para evitar bloqueos
+        if ($request->hasFile('documentos')) {
+            Log::info('TramiteService: Procesando archivos', ['tramite_id' => $tramite->id]);
+            $this->archivosService->guardar($tramite, $proveedor, $request);
         }
 
-        // Archivos (siempre se procesan)
-        if ($request->hasFile('documentos')) {
-            $this->archivosService->guardar($tramite, $proveedor, $request);
+        // Procesar todos los datos básicos en una sola operación
+        $this->procesarDatosBasicosUltraOptimizado($tramite, $proveedor, $request);
+
+        // Procesar datos específicos según tipo de persona
+        if ($proveedor->tipo_persona === 'Moral') {
+            $this->procesarDatosMoralesUltraOptimizado($tramite, $proveedor, $request);
+        }
+
+        Log::info('TramiteService: Secciones guardadas exitosamente', [
+            'tramite_id' => $tramite->id
+        ]);
+    }
+
+    private function procesarDatosBasicosUltraOptimizado(Tramite $tramite, Proveedor $proveedor, Request $request): void
+    {
+        // Procesar datos básicos de manera ultra eficiente
+        $this->datosGeneralesService->guardar($tramite, $proveedor, $request);
+        $this->contactoService->guardar($tramite, $proveedor, $request);
+        $this->domicilioService->guardar($tramite, $proveedor, $request);
+        $this->actividadesService->guardar($tramite, $request);
+    }
+
+    private function procesarDatosMoralesUltraOptimizado(Tramite $tramite, Proveedor $proveedor, Request $request): void
+    {
+        // Constitución (siempre requerida para personas morales)
+        $this->constitucionService->guardar($tramite, $proveedor, $request);
+
+        // Procesar accionistas solo si están presentes
+        if ($request->filled('accionistas')) {
+            $this->accionistasService->guardar($tramite, $proveedor, $request);
+        }
+
+        // Procesar apoderado solo si está presente
+        if ($request->filled('nombre_apoderado')) {
+            $this->apoderadoService->guardar($tramite, $proveedor, $request);
         }
     }
 

@@ -11,6 +11,62 @@
     .step-content.active {
         display: block;
     }
+    
+    /* Animaciones personalizadas para el indicador de progreso */
+    @keyframes progressPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    @keyframes successBounce {
+        0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+        40%, 43% { transform: translate3d(0, -30px, 0); }
+        70% { transform: translate3d(0, -15px, 0); }
+        90% { transform: translate3d(0, -4px, 0); }
+    }
+    
+    .progress-pulse {
+        animation: progressPulse 2s infinite;
+    }
+    
+    .success-bounce {
+        animation: successBounce 1s ease-out;
+    }
+    
+    /* Efecto de brillo para el botón de envío */
+    .btn-enviar-loading {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-enviar-loading::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-enviar-loading:hover::before {
+        left: 100%;
+    }
+    
+    /* Efecto de confeti para el éxito */
+    .confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background: #f00;
+        animation: confetti-fall 3s linear infinite;
+    }
+    
+    @keyframes confetti-fall {
+        0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
 </style>
 
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
@@ -41,7 +97,7 @@
         </div>
 
         <div class="p-6">
-            @if (session('success'))
+            @if (session('success') && session('tramite_creado') === true)
                 <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                     <p class="text-green-800">{{ session('success') }}</p>
                 </div>
@@ -382,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     @endif
 
-    // Configurar el formulario
+    // Configurar el formulario con optimizaciones
     const tramiteForm = document.getElementById('tramite-form');
     
     if (tramiteForm) {
@@ -392,14 +448,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const btnEnviar = document.getElementById('btn-enviar-tramite-final');
             if (btnEnviar) {
                 btnEnviar.disabled = true;
-                btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+                btnEnviar.classList.add('btn-enviar-loading');
+                btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
             }
             
-            // Timeout de seguridad para evitar que se quede colgado
+            // Mostrar indicador de progreso
+            mostrarIndicadorProgreso();
+            
+            // Timeout reducido a 10 segundos (más realista)
+            setTimeout(() => {
+                if (btnEnviar && btnEnviar.disabled) {
+                    console.warn('Tramite Form: El formulario está tardando más de lo esperado');
+                    actualizarIndicadorProgreso('Procesando archivos...', 75, 'Finalizando proceso...');
+                }
+            }, 5000); // 5 segundos
+            
+            // Timeout de seguridad reducido a 15 segundos
             setTimeout(() => {
                 if (btnEnviar && btnEnviar.disabled) {
                     console.error('Tramite Form: El formulario parece estar colgado, reactivando botón');
                     btnEnviar.disabled = false;
+                    btnEnviar.classList.remove('btn-enviar-loading');
                     btnEnviar.innerHTML = `
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
@@ -407,32 +476,148 @@ document.addEventListener('DOMContentLoaded', function() {
                         Enviar Trámite
                     `;
                     
-                    // Mostrar mensaje de error
+                    ocultarIndicadorProgreso(false);
+                    
+                    // Mostrar mensaje de error más específico
                     const errorDiv = document.createElement('div');
-                    errorDiv.className = 'bg-red-50 border border-red-200 rounded-lg p-4 mt-4';
+                    errorDiv.className = 'bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4';
                     errorDiv.innerHTML = `
                         <div class="flex items-center">
-                            <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                             </svg>
-                            <p class="text-sm text-red-700">
-                                <strong>Error:</strong> El envío del formulario está tardando demasiado. Por favor, revise los datos y vuelva a intentar. Si el problema persiste, contacte al administrador.
-                            </p>
+                            <div>
+                                <p class="text-sm text-yellow-700">
+                                    <strong>Procesamiento lento:</strong> El envío está tardando más de lo normal. Esto puede deberse a:
+                                </p>
+                                <ul class="text-sm text-yellow-600 mt-1 ml-4 list-disc">
+                                    <li>Archivos grandes siendo procesados</li>
+                                    <li>Alta carga del servidor</li>
+                                    <li>Conexión lenta a internet</li>
+                                </ul>
+                                <p class="text-sm text-yellow-700 mt-2">
+                                    <strong>Recomendación:</strong> Espere unos segundos más. Si el problema persiste, intente nuevamente.
+                                </p>
+                            </div>
                         </div>
                     `;
                     
                     // Insertar el mensaje antes del formulario
                     tramiteForm.insertBefore(errorDiv, tramiteForm.firstChild);
                     
-                    // Remover el mensaje después de 10 segundos
+                    // Remover el mensaje después de 15 segundos
                     setTimeout(() => {
                         if (errorDiv.parentNode) {
                             errorDiv.remove();
                         }
-                    }, 10000);
+                    }, 15000);
                 }
-            }, 30000); // 30 segundos de timeout
+            }, 15000); // 15 segundos de timeout
+            
+            // Detectar cuando el formulario se envía exitosamente
+            // Esto se ejecutará cuando la página se recargue con éxito
+            window.addEventListener('beforeunload', function() {
+                // Si llegamos aquí, significa que el formulario se está enviando
+                console.log('Tramite Form: Formulario enviándose...');
+            });
         });
+    }
+    
+    // Función para mostrar indicador de progreso
+    function mostrarIndicadorProgreso() {
+        const progressDiv = document.createElement('div');
+        progressDiv.id = 'progress-indicator';
+        progressDiv.className = 'fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white z-50 shadow-lg';
+        progressDiv.innerHTML = `
+            <div class="flex items-center justify-center py-3 px-4">
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <div class="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent"></div>
+                        <div class="absolute inset-0 rounded-full h-6 w-6 border-2 border-blue-300 animate-pulse"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm font-semibold" id="progress-text">Iniciando envío...</span>
+                        <span class="text-xs opacity-75" id="progress-subtitle">Por favor espere...</span>
+                    </div>
+                </div>
+                <div class="ml-6 w-40 bg-blue-700 rounded-full h-3 shadow-inner">
+                    <div class="bg-white h-3 rounded-full transition-all duration-300 shadow-sm" id="progress-bar" style="width: 10%"></div>
+                </div>
+                <div class="ml-4 text-xs font-medium" id="progress-percentage">10%</div>
+            </div>
+        `;
+        document.body.appendChild(progressDiv);
+        
+        // Animar progreso inicial más rápido y con más feedback
+        setTimeout(() => {
+            actualizarIndicadorProgreso('Validando datos del formulario...', 25, 'Verificando información...');
+        }, 200);
+        
+        setTimeout(() => {
+            actualizarIndicadorProgreso('Procesando información del proveedor...', 45, 'Gestionando datos...');
+        }, 600);
+        
+        setTimeout(() => {
+            actualizarIndicadorProgreso('Guardando archivos...', 70, 'Procesando documentos...');
+        }, 1000);
+        
+        setTimeout(() => {
+            actualizarIndicadorProgreso('Finalizando trámite...', 90, 'Completando proceso...');
+        }, 1400);
+    }
+    
+    // Función para actualizar indicador de progreso
+    function actualizarIndicadorProgreso(texto, porcentaje, subtitulo = '') {
+        const progressText = document.getElementById('progress-text');
+        const progressSubtitle = document.getElementById('progress-subtitle');
+        const progressBar = document.getElementById('progress-bar');
+        const progressPercentage = document.getElementById('progress-percentage');
+        
+        if (progressText) progressText.textContent = texto;
+        if (progressSubtitle && subtitulo) progressSubtitle.textContent = subtitulo;
+        if (progressBar) progressBar.style.width = porcentaje + '%';
+        if (progressPercentage) progressPercentage.textContent = porcentaje + '%';
+        
+        // Efecto de pulso en el botón de envío
+        const btnEnviar = document.getElementById('btn-enviar-tramite-final');
+        if (btnEnviar) {
+            btnEnviar.classList.add('animate-pulse');
+        }
+    }
+    
+    // Función para ocultar indicador de progreso con efecto de éxito
+    function ocultarIndicadorProgreso(conExito = false) {
+        const progressDiv = document.getElementById('progress-indicator');
+        if (progressDiv) {
+            if (conExito) {
+                // Efecto de éxito antes de ocultar
+                progressDiv.className = 'fixed top-0 left-0 w-full bg-gradient-to-r from-green-600 to-green-800 text-white z-50 shadow-lg transition-all duration-500';
+                progressDiv.innerHTML = `
+                    <div class="flex items-center justify-center py-3 px-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-2xl">✅</div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-semibold">¡Trámite enviado exitosamente!</span>
+                                <span class="text-xs opacity-75">Redirigiendo...</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Ocultar después de mostrar el éxito
+                setTimeout(() => {
+                    progressDiv.remove();
+                }, 1500);
+            } else {
+                progressDiv.remove();
+            }
+        }
+        
+        // Remover efecto de pulso del botón
+        const btnEnviar = document.getElementById('btn-enviar-tramite-final');
+        if (btnEnviar) {
+            btnEnviar.classList.remove('animate-pulse', 'btn-enviar-loading');
+        }
     }
     
     // Mostrar errores de validación en campos específicos
@@ -544,7 +729,87 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     // Simular tramite ID (en creación será null, pero funciona para editar)
     window.tramiteId = null; // Será null al crear, se asignará después del envío
+    
+    // Detectar si hay mensaje de éxito en la sesión SOLO si viene de un envío exitoso
+    @if(session('success') && session('tramite_creado') === true)
+        // Mostrar efecto de éxito solo si el trámite se creó exitosamente
+        mostrarEfectoExito();
+    @endif
 });
+
+// Función para mostrar efecto de éxito
+function mostrarEfectoExito() {
+    // Crear confeti
+    crearConfeti();
+    
+    // Crear overlay de éxito
+    const successOverlay = document.createElement('div');
+    successOverlay.id = 'success-overlay';
+    successOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    successOverlay.innerHTML = `
+        <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center shadow-2xl transform transition-all duration-500 scale-95 success-bounce">
+            <div class="text-6xl mb-4 success-bounce">🎉</div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">¡Trámite Creado Exitosamente!</h3>
+            <p class="text-gray-600 mb-6">Su trámite ha sido procesado y enviado correctamente.</p>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <p class="text-sm text-green-700">
+                    <strong>Estado:</strong> Procesado y enviado correctamente
+                </p>
+            </div>
+            <button onclick="cerrarEfectoExito()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
+                Continuar
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(successOverlay);
+    
+    // Animar entrada
+    setTimeout(() => {
+        const modal = successOverlay.querySelector('div');
+        modal.classList.remove('scale-95');
+        modal.classList.add('scale-100');
+    }, 100);
+}
+
+// Función para crear confeti
+function crearConfeti() {
+    const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+    
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = Math.random() * 3 + 's';
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            
+            document.body.appendChild(confetti);
+            
+            // Remover confeti después de la animación
+            setTimeout(() => {
+                if (confetti.parentNode) {
+                    confetti.remove();
+                }
+            }, 5000);
+        }, i * 100);
+    }
+}
+
+// Función para cerrar efecto de éxito
+function cerrarEfectoExito() {
+    const successOverlay = document.getElementById('success-overlay');
+    if (successOverlay) {
+        const modal = successOverlay.querySelector('div');
+        modal.classList.remove('scale-100');
+        modal.classList.add('scale-95');
+        
+        setTimeout(() => {
+            successOverlay.remove();
+        }, 300);
+    }
+}
 </script>
 
 <script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>

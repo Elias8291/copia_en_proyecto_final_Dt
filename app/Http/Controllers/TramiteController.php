@@ -327,15 +327,16 @@ class TramiteController extends Controller
 
     public function store(TramiteFormRequest $request)
     {
-        Log::info('TramiteController: Iniciando creación de trámite', [
+        $startTime = microtime(true);
+        
+        Log::info('TramiteController: Iniciando creación de trámite ultra optimizada', [
             'user_id' => auth()->id(),
-            'request_data' => $request->all(),
-            'files' => $request->allFiles(),
-            'session_data' => session()->all()
+            'tipo_tramite' => $request->tipo_tramite,
+            'files_count' => $request->hasFile('documentos') ? count($request->file('documentos')) : 0
         ]);
         
         try {
-            // Verificar si tiene trámite pendiente
+            // Verificar si tiene trámite pendiente (operación rápida)
             $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
             if ($rfc) {
                 $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
@@ -349,16 +350,10 @@ class TramiteController extends Controller
             // Obtener el tipo de trámite de la sesión o del request
             $tipoTramite = session('tipo_tramite') ?? $request->tipo_tramite ?? 'Inscripcion';
             
-            Log::info('TramiteController: Tipo de trámite para crear', [
-                'tipo_tramite' => $tipoTramite,
-                'session_tipo_tramite' => session('tipo_tramite'),
-                'request_tipo_tramite' => $request->tipo_tramite
-            ]);
-            
             // Agregar el tipo de trámite al request
             $request->merge(['tipo_tramite' => $tipoTramite]);
             
-            // Verificar que los datos necesarios estén presentes
+            // Validación ultra rápida de datos requeridos
             $datosRequeridos = ['rfc', 'tipo_persona', 'razon_social', 'telefono'];
             $datosFaltantes = [];
             
@@ -371,8 +366,7 @@ class TramiteController extends Controller
             
             if (!empty($datosFaltantes)) {
                 Log::error('TramiteController: Datos requeridos faltantes', [
-                    'datos_faltantes' => $datosFaltantes,
-                    'request_data' => $request->all()
+                    'datos_faltantes' => $datosFaltantes
                 ]);
                 
                 return back()
@@ -380,25 +374,33 @@ class TramiteController extends Controller
                     ->withErrors(['error' => 'Faltan datos requeridos: ' . implode(', ', $datosFaltantes)]);
             }
             
+            // Crear trámite (operación principal ultra optimizada)
             $tramite = $this->tramiteService->crearTramiteCompleto($request);
             
-            Log::info('TramiteController: Trámite creado exitosamente', [
+            $endTime = microtime(true);
+            $executionTime = round($endTime - $startTime, 3);
+            
+            Log::info('TramiteController: Trámite creado exitosamente ultra optimizado', [
                 'tramite_id' => $tramite->id,
-                'proveedor_id' => $tramite->proveedor_id
+                'proveedor_id' => $tramite->proveedor_id,
+                'execution_time_seconds' => $executionTime
             ]);
             
             // Limpiar datos de sesión después de crear el trámite
             session()->forget(['datos_constancia', 'tipo_tramite', 'tipo_tramite_seleccionado']);
             
             return redirect()->route('tramites.index')
-                ->with('success', 'Trámite creado exitosamente.');
+                ->with('success', "Trámite creado exitosamente.")
+                ->with('tramite_creado', true);
                 
         } catch (\Exception $e) {
+            $endTime = microtime(true);
+            $executionTime = round($endTime - $startTime, 3);
+            
             Log::error('TramiteController: Error al crear trámite', [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'request_data' => $request->all()
+                'execution_time_seconds' => $executionTime
             ]);
             
             return back()
