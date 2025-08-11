@@ -9,9 +9,18 @@ use App\Http\Requests\CitaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class CitasController extends Controller
 {
+    public function __construct()
+    {
+        // Middleware de permisos para citas
+        $this->middleware(PermissionMiddleware::class . ':citas.ver')->only(['index', 'show']);
+        $this->middleware(PermissionMiddleware::class . ':citas.crear')->only(['create', 'store']);
+        $this->middleware(PermissionMiddleware::class . ':citas.editar')->only(['edit', 'update', 'marcarAsistida', 'marcarNoAsistio', 'cancelar']);
+        $this->middleware(PermissionMiddleware::class . ':citas.eliminar')->only(['destroy']);
+    }
     public function index(Request $request)
     {
         $query = Cita::with(['tramite.proveedor.usuario', 'asignadoA']);

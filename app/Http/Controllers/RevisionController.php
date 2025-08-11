@@ -11,6 +11,7 @@ use App\Services\Revisiones\RevisionPresencialService;
 use App\Services\Revisiones\DecisionesFinalesService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class RevisionController extends Controller
 {
@@ -28,6 +29,10 @@ class RevisionController extends Controller
         $this->revisionDigitalService = $revisionDigitalService;
         $this->revisionPresencialService = $revisionPresencialService;
         $this->decisionesFinalesService = $decisionesFinalesService;
+
+        // Middleware de permisos para revisiones
+        $this->middleware(PermissionMiddleware::class . ':revisiones.ver')->only(['index', 'seleccionarTipoRevision', 'verTramiteHistorico', 'mostrarArchivo', 'obtenerEstadoSeccion', 'obtenerEstadoGeneral']);
+        $this->middleware(PermissionMiddleware::class . ':revisiones.revisar')->only(['iniciarRevision', 'revisarTramite', 'agendarCita', 'reagendarCita', 'obtenerHorariosDisponibles', 'evaluarSeccion', 'procesarRevisionDigital', 'aprobarYAgendarCita', 'rechazarParaCorreccion', 'rechazarCompleto', 'aprobar', 'rechazarTramite', 'procesarRevisionPresencial']);
     }
 
     /** Listar trámites para revisión */

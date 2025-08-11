@@ -56,6 +56,7 @@
                 </a>
 
                 <!-- Revisiones -->
+                @can('revisiones.ver')
                 <a href="{{ route('revisiones.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('revisiones.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                     <svg class="{{ request()->routeIs('revisiones.*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }} flex-shrink-0 w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,8 +64,10 @@
                     </svg>
                     <span class="font-medium tracking-wide">Revisiones</span>
                 </a>
+                @endcan
 
                 <!-- Citas -->
+                @can('citas.ver')
                 <a href="{{ route('citas.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('citas.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                     <svg class="{{ request()->routeIs('citas.*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }} flex-shrink-0 w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24">
@@ -72,6 +75,7 @@
                     </svg>
                     <span class="font-medium tracking-wide">Citas</span>
                 </a>
+                @endcan
 
                 <!-- Archivos -->
                 @can('archivos.ver')
