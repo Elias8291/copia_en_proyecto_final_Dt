@@ -14,6 +14,7 @@ use App\Exports\ProveedoresGiroEconomicoExport;
 use App\Exports\ProveedoresEstadoPadronExport;
 use App\Exports\ListaContactosExport;
 use App\Exports\ReporteFiltradoExport;
+use App\Exports\ProveedoresTrimestralesExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 
@@ -33,6 +34,14 @@ class ProveedoresController extends Controller
      */
     public function index(Request $request)
     {
+        // Log para depuración
+        \Log::info('Filtros recibidos en index', [
+            'estado_padron' => $request->get('estado'),
+            'estado_geografico' => $request->get('estado_geografico'),
+            'busqueda' => $request->get('search'),
+            'tipo_persona' => $request->get('tipo_persona')
+        ]);
+        
         $query = Proveedor::query();
 
         // Búsqueda por texto
@@ -47,6 +56,9 @@ class ProveedoresController extends Controller
 
         // Filtro por estado del padrón
         if ($request->filled('estado')) {
+            \Log::info('Aplicando filtro de estado', [
+                'estado_valor' => $request->estado
+            ]);
             $query->where('estado_padron', $request->estado);
         }
 
@@ -114,12 +126,37 @@ class ProveedoresController extends Controller
             }
         }
 
+        // Filtro por estado geográfico
+        if ($request->filled('estado_geografico')) {
+            $estadoId = $request->estado_geografico;
+            
+            \Log::info('Aplicando filtro de estado geográfico', [
+                'estado_id' => $estadoId
+            ]);
+            
+            $query->whereHas('tramites.direcciones.estado', function($q) use ($estadoId) {
+                $q->where('id', $estadoId);
+            });
+        }
+
         // Ordenar por ID descendente
         $query->orderBy('id', 'desc');
 
+        // Log de la query antes de ejecutar
+        \Log::info('Query SQL generada', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
+        
         // Paginación
         $perPage = $request->get('per_page', 15);
         $todosProveedores = $query->paginate($perPage)->withQueryString();
+        
+        // Log del resultado
+        \Log::info('Resultados de la consulta', [
+            'total_registros' => $todosProveedores->total(),
+            'registros_en_pagina' => $todosProveedores->count()
+        ]);
 
         // Obtener actividades económicas agrupadas por sector para el modal
         $sectores = Sector::with(['actividades' => function($query) {
@@ -128,6 +165,44 @@ class ProveedoresController extends Controller
 
         // Obtener estados geográficos de México para el filtro
         $estados = \App\Models\Estado::orderBy('nombre')->get();
+
+        // Manejar reporte trimestral
+        if ($request->get('reporte_trimestral') == '1' && $request->get('formato') == 'excel') {
+            \Log::info('Generando reporte trimestral', [
+                'ano' => $request->get('ano'),
+                'trimestre' => $request->get('trimestre'),
+                'fecha_inicio' => $request->get('fecha_inicio'),
+                'fecha_fin' => $request->get('fecha_fin')
+            ]);
+            
+            $ano = $request->get('ano');
+            $trimestre = $request->get('trimestre');
+            $fechaInicio = $request->get('fecha_inicio');
+            $fechaFin = $request->get('fecha_fin');
+            
+            // Crear filtros para el reporte trimestral usando la misma lógica del ReporteFiltradoExport
+            $filtrosTrimestre = [
+                'estado_padron' => 'Activo',
+                'periodo_trimestral' => true,
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin,
+                'trimestre' => $trimestre,
+                'ano' => $ano
+            ];
+            
+            $nombreArchivo = "Reporte_Trimestral_Q{$trimestre}_{$ano}_" . date('Y-m-d_H-i-s');
+            
+            try {
+                return Excel::download(new ReporteFiltradoExport($filtrosTrimestre, 'trimestral'), 
+                                     $nombreArchivo . '.xlsx');
+            } catch (\Exception $e) {
+                \Log::error('Error generando reporte trimestral', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                return response()->json(['error' => 'Error generando el reporte: ' . $e->getMessage()], 500);
+            }
+        }
 
         return view('proveedores.index', compact('todosProveedores', 'sectores', 'estados'));
     }
@@ -412,6 +487,12 @@ class ProveedoresController extends Controller
      */
     public function exportarReporteFiltrado(Request $request)
     {
+        // Log para depuración
+        \Log::info('Exportación iniciada', [
+            'parametros' => $request->all(),
+            'columnas' => $request->get('columnas')
+        ]);
+        
         // Obtener todos los filtros aplicados en la vista
         $filtros = [
             'search' => $request->get('search'),
@@ -434,10 +515,19 @@ class ProveedoresController extends Controller
         $columnasSeleccionadas = $request->get('columnas');
         if ($columnasSeleccionadas) {
             $columnasSeleccionadas = explode(',', $columnasSeleccionadas);
+            // Limpiar espacios en blanco
+            $columnasSeleccionadas = array_map('trim', $columnasSeleccionadas);
+            // Filtrar columnas vacías
+            $columnasSeleccionadas = array_filter($columnasSeleccionadas);
         } else {
             // Columnas por defecto si no se especifican
             $columnasSeleccionadas = ['id', 'pv_numero', 'razon_social', 'rfc', 'tipo_persona', 'estado_padron', 'fecha_alta', 'fecha_vencimiento'];
         }
+        
+        \Log::info('Columnas seleccionadas para exportar', [
+            'columnas' => $columnasSeleccionadas,
+            'cantidad' => count($columnasSeleccionadas)
+        ]);
 
         // Filtrar solo los filtros que tienen valor
         $filtros = array_filter($filtros, function($valor) {
@@ -472,7 +562,139 @@ class ProveedoresController extends Controller
         }
 
         $nombreArchivo .= '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        \Log::info('Generando archivo Excel', [
+            'filtros_aplicados' => $filtros,
+            'nombre_archivo' => $nombreArchivo,
+            'columnas' => $columnasSeleccionadas
+        ]);
 
-        return Excel::download(new ReporteFiltradoExport($filtros, 'personalizado', $columnasSeleccionadas), $nombreArchivo);
+        try {
+            return Excel::download(new ReporteFiltradoExport($filtros, 'personalizado', $columnasSeleccionadas), $nombreArchivo);
+        } catch (\Exception $e) {
+            \Log::error('Error al generar archivo Excel', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Error al generar el archivo de exportación',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Mostrar vista de reportes trimestrales
+     */
+    public function reportesTrimestrales()
+    {
+        // Verificar permisos
+        if (!auth()->user()->can('proveedores.reportes.trimestrales')) {
+            abort(403, 'No tienes permisos para acceder a los reportes trimestrales.');
+        }
+
+        // Obtener años disponibles basados en las fechas de creación de proveedores
+        $años = Proveedor::selectRaw('YEAR(created_at) as año')
+            ->distinct()
+            ->orderBy('año', 'desc')
+            ->pluck('año');
+
+        // Si no hay años, agregar el año actual por defecto
+        if ($años->isEmpty()) {
+            $años = collect([date('Y')]);
+        }
+
+        return view('reportes.trimestrales', compact('años'));
+    }
+
+    /**
+     * Generar reporte trimestral
+     */
+    public function generarReporteTrimestral(Request $request)
+    {
+        $request->validate([
+            'año' => 'required|integer|min:2020|max:' . (date('Y') + 1),
+            'trimestre' => 'required|integer|min:1|max:4',
+            'formato' => 'required|in:excel,pdf'
+        ]);
+
+        $año = $request->año;
+        $trimestre = $request->trimestre;
+        $formato = $request->formato;
+
+        // Calcular fechas del trimestre
+        $fechas = $this->calcularFechasTrimestre($año, $trimestre);
+        
+        \Log::info('Generando reporte trimestral', [
+            'año' => $año,
+            'trimestre' => $trimestre,
+            'fecha_inicio' => $fechas['inicio'],
+            'fecha_fin' => $fechas['fin'],
+            'formato' => $formato
+        ]);
+
+        // Obtener proveedores activos en el trimestre
+        $proveedores = $this->obtenerProveedoresActivosTrimestre($fechas['inicio'], $fechas['fin']);
+
+        \Log::info('Proveedores encontrados para el trimestre', [
+            'total' => $proveedores->count()
+        ]);
+
+        // Generar export
+        $export = new ProveedoresTrimestralesExport($proveedores, $año, $trimestre, $fechas);
+        $filename = "reporte_trimestral_{$año}_T{$trimestre}_" . now()->format('Y_m_d_H_i_s') . '.xlsx';
+
+        return Excel::download($export, $filename);
+    }
+
+    /**
+     * Calcular fechas de inicio y fin del trimestre
+     */
+    private function calcularFechasTrimestre($año, $trimestre)
+    {
+        switch ($trimestre) {
+            case 1:
+                return [
+                    'inicio' => "{$año}-01-01",
+                    'fin' => "{$año}-03-31"
+                ];
+            case 2:
+                return [
+                    'inicio' => "{$año}-04-01",
+                    'fin' => "{$año}-06-30"
+                ];
+            case 3:
+                return [
+                    'inicio' => "{$año}-07-01",
+                    'fin' => "{$año}-09-30"
+                ];
+            case 4:
+                return [
+                    'inicio' => "{$año}-10-01",
+                    'fin' => "{$año}-12-31"
+                ];
+        }
+    }
+
+    /**
+     * Obtener proveedores activos en el trimestre
+     */
+    private function obtenerProveedoresActivosTrimestre($fechaInicio, $fechaFin)
+    {
+        return Proveedor::with(['tramites.direcciones.estado', 'actividades', 'sectores'])
+            ->where(function($query) use ($fechaInicio, $fechaFin) {
+                $query->where(function($q) use ($fechaInicio, $fechaFin) {
+                    // Proveedor creado antes o durante el trimestre
+                    $q->where('created_at', '<=', $fechaFin)
+                      // Y que no haya vencido antes del trimestre O que no tenga fecha de vencimiento
+                      ->where(function($subQuery) use ($fechaInicio) {
+                          $subQuery->whereNull('fecha_vencimiento_padron')
+                                   ->orWhere('fecha_vencimiento_padron', '>=', $fechaInicio);
+                      });
+                });
+            })
+            ->orderBy('razon_social')
+            ->get();
     }
 }

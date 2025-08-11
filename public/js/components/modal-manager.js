@@ -75,3 +75,5 @@ class ModalManager {
 // Exportar para uso global
 window.ModalManager = ModalManager;
 
+
+

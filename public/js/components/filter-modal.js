@@ -169,3 +169,5 @@ class FilterModal extends ModalManager {
 // Exportar para uso global
 window.FilterModal = FilterModal;
 
+
+

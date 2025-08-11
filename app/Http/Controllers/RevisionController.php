@@ -31,7 +31,7 @@ class RevisionController extends Controller
         $this->decisionesFinalesService = $decisionesFinalesService;
 
         // Middleware de permisos para revisiones
-        $this->middleware(PermissionMiddleware::class . ':revisiones.ver')->only(['index', 'seleccionarTipoRevision', 'verTramiteHistorico', 'mostrarArchivo', 'obtenerEstadoSeccion', 'obtenerEstadoGeneral']);
+        $this->middleware(PermissionMiddleware::class . ':revisiones.ver')->only(['index', 'seleccionarTipoRevision', 'verTramiteHistorico', 'obtenerEstadoSeccion', 'obtenerEstadoGeneral']);
         $this->middleware(PermissionMiddleware::class . ':revisiones.revisar')->only(['iniciarRevision', 'revisarTramite', 'agendarCita', 'reagendarCita', 'obtenerHorariosDisponibles', 'evaluarSeccion', 'procesarRevisionDigital', 'aprobarYAgendarCita', 'rechazarParaCorreccion', 'rechazarCompleto', 'aprobar', 'rechazarTramite', 'procesarRevisionPresencial']);
     }
 
@@ -500,6 +500,68 @@ class RevisionController extends Controller
     public function limpiarSesionExito()
     {
         session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
-        return response()->json(['success' => true]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Sesión de éxito limpiada correctamente'
+        ]);
+    }
+
+    /** Obtener estados de revisión para API */
+    public function obtenerEstadosRevision(int $tramiteId)
+    {
+        try {
+            $tramite = Tramite::findOrFail($tramiteId);
+            
+            // Obtener estados de secciones
+            $estadosSecciones = [];
+            $secciones = ['datos_generales', 'actividades', 'domicilio', 'contacto', 'archivos_correccion'];
+            if ($tramite->proveedor->tipo_persona === 'Moral') {
+                $secciones = array_merge($secciones, ['constitucion', 'accionistas', 'apoderado']);
+            }
+            
+            foreach ($secciones as $seccion) {
+                $seccionRevision = \App\Models\SeccionRevision::where('tramite_id', $tramiteId)
+                    ->where('seccion', $seccion)
+                    ->first();
+                
+                if ($seccionRevision) {
+                    $estadosSecciones[$seccion] = [
+                        'estado' => $seccionRevision->estado,
+                        'comentario' => $seccionRevision->comentario ?? ''
+                    ];
+                } else {
+                    $estadosSecciones[$seccion] = [
+                        'estado' => 'Pendiente',
+                        'comentario' => ''
+                    ];
+                }
+            }
+            
+            // Obtener estados de archivos
+            $estadosArchivos = [];
+            $archivos = $tramite->archivos;
+            foreach ($archivos as $archivo) {
+                $estadosArchivos[$archivo->id] = [
+                    'status' => $archivo->status ?? 'Pendiente',
+                    'comentario' => $archivo->comentario_revision ?? ''
+                ];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'estados_secciones' => $estadosSecciones,
+                    'estados_archivos' => $estadosArchivos,
+                    'tramite_status' => $tramite->status
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener estados de revisión: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

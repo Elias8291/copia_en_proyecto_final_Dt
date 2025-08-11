@@ -24,14 +24,42 @@
     $actividadesNormalizadas = [];
     foreach ($actividadesArray as $actividad) {
         if (is_array($actividad)) {
+            // Para ActividadProveedor, obtener datos de la actividad relacionada
+            $actividadId = $actividad['actividad_id'] ?? $actividad['id'] ?? null;
+            $actividadNombre = '';
+            
+            if (isset($actividad['actividad']) && is_array($actividad['actividad'])) {
+                $actividadNombre = $actividad['actividad']['nombre'] ?? $actividad['actividad']['descripcion'] ?? 'Actividad';
+            } elseif (isset($actividad['nombre'])) {
+                $actividadNombre = $actividad['nombre'];
+            } elseif (isset($actividad['descripcion'])) {
+                $actividadNombre = $actividad['descripcion'];
+            } else {
+                $actividadNombre = 'Actividad';
+            }
+            
             $actividadesNormalizadas[] = [
-                'id' => $actividad['id'] ?? $actividad['actividad_id'] ?? null,
-                'nombre' => $actividad['nombre'] ?? $actividad['descripcion'] ?? $actividad['actividad']['nombre'] ?? 'Actividad',
+                'id' => $actividadId,
+                'nombre' => $actividadNombre,
             ];
         } elseif (is_object($actividad)) {
+            // Para objetos ActividadProveedor
+            $actividadId = $actividad->actividad_id ?? $actividad->id ?? null;
+            $actividadNombre = '';
+            
+            if ($actividad->actividad) {
+                $actividadNombre = $actividad->actividad->nombre ?? $actividad->actividad->descripcion ?? 'Actividad';
+            } elseif (isset($actividad->nombre)) {
+                $actividadNombre = $actividad->nombre;
+            } elseif (isset($actividad->descripcion)) {
+                $actividadNombre = $actividad->descripcion;
+            } else {
+                $actividadNombre = 'Actividad';
+            }
+            
             $actividadesNormalizadas[] = [
-                'id' => $actividad->id ?? $actividad->actividad_id ?? null,
-                'nombre' => $actividad->nombre ?? $actividad->descripcion ?? $actividad->actividad->nombre ?? 'Actividad',
+                'id' => $actividadId,
+                'nombre' => $actividadNombre,
             ];
         } else {
             // Si es solo un string

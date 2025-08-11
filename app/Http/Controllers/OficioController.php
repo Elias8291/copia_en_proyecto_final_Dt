@@ -221,4 +221,44 @@ class OficioController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Regenerar oficio para un trámite específico
+     */
+    public function regenerar(Request $request, int $tramiteId)
+    {
+        try {
+            Log::info('Solicitud de regeneración de oficio', [
+                'tramite_id' => $tramiteId,
+                'user_ip' => $request->ip()
+            ]);
+
+            $oficio = $this->oficioService->regenerarOficioParaTramite($tramiteId);
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Oficio regenerado exitosamente',
+                'data' => [
+                    'oficio_id' => $oficio->id,
+                    'numero_oficio' => $oficio->numero_oficio,
+                    'fecha_oficio' => $oficio->fecha_oficio->format('d/m/Y'),
+                    'url' => $oficio->url,
+                    'tramite_id' => $oficio->tramite_id,
+                    'proveedor_id' => $oficio->proveedor_id
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error al regenerar oficio', [
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al regenerar el oficio: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 

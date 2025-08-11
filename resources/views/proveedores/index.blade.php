@@ -56,56 +56,74 @@
                 </div>
 
                 <div class="border-t border-gray-100 pt-3 sm:pt-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4">
-                        <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3">
-                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex justify-between items-center mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-gradient-to-r from-[#9d2449] to-[#8a1f40] rounded-xl shadow-lg">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
                             </svg>
-                            <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros avanzados</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">Filtros de Búsqueda</h3>
+                                <p class="text-sm text-gray-500">Refina tus resultados con criterios específicos</p>
+                            </div>
                         </div>
                         <button type="button" 
                                 id="toggleFilters" 
-                                class="text-xs sm:text-sm md:text-base text-[#9d2449] hover:text-[#8a1f40] font-medium flex items-center gap-1 transition-colors self-start sm:self-auto">
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#9d2449] text-[#9d2449] hover:bg-[#9d2449] hover:text-white font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md">
                             <span id="filterText">Mostrar filtros</span>
-                            <span id="filterIcon" class="text-xs sm:text-sm md:text-base transform transition-transform duration-200">▼</span>
+                            <span id="filterIcon" class="transform transition-transform duration-300">▼</span>
                         </button>
                     </div>
                         
-                    <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+                    <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
+                        <div class="space-y-6">
+                            <!-- Filtros Básicos -->
+                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 shadow-sm">
+                                <div class="flex items-center gap-2 mb-4">
+                                    <div class="p-1.5 bg-blue-500 rounded-lg">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <h4 class="text-md font-semibold text-gray-900">Filtros Básicos</h4>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
-                                <label for="estado" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estado</label>
+                                        <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">Estado del Padrón</label>
                                 <select name="estado" 
                                         id="estado" 
-                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                                class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm hover:shadow-md"
+                                                onchange="console.log('Estado cambiado a:', this.value)">
                                     <option value="">Todos los estados</option>
-                                    <option value="Activo" {{ request('estado') == 'Activo' ? 'selected' : '' }}>Activo</option>
-                                    <option value="Inactivo" {{ request('estado') == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
-                                    <option value="Vencido" {{ request('estado') == 'Vencido' ? 'selected' : '' }}>Vencido</option>
-                                    <option value="Pendiente" {{ request('estado') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                            <option value="Activo" {{ request('estado') == 'Activo' ? 'selected' : '' }}>✅ Activo</option>
+                                            <option value="Inactivo" {{ request('estado') == 'Inactivo' ? 'selected' : '' }}>⏸️ Inactivo</option>
+                                            <option value="Vencido" {{ request('estado') == 'Vencido' ? 'selected' : '' }}>❌ Vencido</option>
+                                            <option value="Pendiente" {{ request('estado') == 'Pendiente' ? 'selected' : '' }}>⏳ Pendiente</option>
+                                            <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>🚫 Cancelado</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label for="tipo_persona" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Tipo de persona</label>
+                                        <label for="tipo_persona" class="block text-sm font-medium text-gray-700 mb-2">Tipo de persona</label>
                                 <select name="tipo_persona" 
                                         id="tipo_persona" 
-                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                                class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm hover:shadow-md">
                                     <option value="">Todos los tipos</option>
-                                    <option value="Física" {{ request('tipo_persona') == 'Física' ? 'selected' : '' }}>Persona Física</option>
-                                    <option value="Moral" {{ request('tipo_persona') == 'Moral' ? 'selected' : '' }}>Persona Moral</option>
+                                            <option value="Física" {{ request('tipo_persona') == 'Física' ? 'selected' : '' }}>👤 Persona Física</option>
+                                            <option value="Moral" {{ request('tipo_persona') == 'Moral' ? 'selected' : '' }}>🏢 Persona Moral</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label for="vencimiento" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estado de vencimiento</label>
+                                        <label for="vencimiento" class="block text-sm font-medium text-gray-700 mb-2">Estado de vencimiento</label>
                                 <select name="vencimiento" 
                                         id="vencimiento" 
-                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                                class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm hover:shadow-md">
                                     <option value="">Todos</option>
-                                    <option value="vencido" {{ request('vencimiento') == 'vencido' ? 'selected' : '' }}>Ya vencido</option>
-                                    <option value="por_vencer" {{ request('vencimiento') == 'por_vencer' ? 'selected' : '' }}>Por vencer</option>
-                                    <option value="sin_fecha" {{ request('vencimiento') == 'sin_fecha' ? 'selected' : '' }}>Sin fecha</option>
+                                            <option value="vencido" {{ request('vencimiento') == 'vencido' ? 'selected' : '' }}>🔴 Ya vencido</option>
+                                            <option value="por_vencer" {{ request('vencimiento') == 'por_vencer' ? 'selected' : '' }}>🟡 Por vencer</option>
+                                            <option value="sin_fecha" {{ request('vencimiento') == 'sin_fecha' ? 'selected' : '' }}>⚪ Sin fecha</option>
                                 </select>
                             </div>
 
@@ -122,32 +140,17 @@
                             </div>
 
                             <div>
-                                <label for="estado_geografico" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estados del país</label>
-                                <div class="relative">
-                                    <button type="button" 
-                                            id="btnAbrirModalEstados"
-                                            class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white text-left flex items-center justify-between hover:bg-gray-50">
-                                        <span id="estadosSeleccionadosTexto" class="truncate">
-                                            @if(request('estado_geografico') && !empty(array_filter((array)request('estado_geografico'))))
-                                                {{ count(array_filter((array)request('estado_geografico'))) }} estado(s) seleccionado(s)
-                                            @else
-                                                Seleccionar estados...
-                                            @endif
-                                        </span>
-                                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                        </svg>
-                                    </button>
-                                    <!-- Input oculto para mantener los estados seleccionados -->
-                                    @if(request('estado_geografico') && !empty(array_filter((array)request('estado_geografico'))))
-                                        @foreach((array)request('estado_geografico') as $estadoId)
-                                            @if(!empty($estadoId))
-                                                <input type="hidden" name="estado_geografico[]" value="{{ $estadoId }}">
-                                            @endif
+                                <label for="estado_geografico" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estado geográfico</label>
+                                <select name="estado_geografico" 
+                                        id="estado_geografico" 
+                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                    <option value="">Todos los estados</option>
+                                    @foreach($estados as $estado)
+                                        <option value="{{ $estado->id }}" {{ request('estado_geografico') == $estado->id ? 'selected' : '' }}>
+                                            {{ $estado->nombre }}
+                                        </option>
                                         @endforeach
-                                    @endif
-                                    <input type="hidden" id="estadosSeleccionados" value="{{ implode(',', array_filter((array)request('estado_geografico', []))) }}">
-                                </div>
+                                </select>
                             </div>
 
                             <div>
@@ -251,6 +254,16 @@
                 <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                                     <!-- Sección de Reportes -->
                 <div class="flex items-center gap-2">
+                    <!-- Reporte Trimestral -->
+                    <button type="button" 
+                            id="btnReporteTrimestral"
+                            class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        Trimestral
+                    </button>
+                    
                     <!-- Exportar Tabla Filtrada -->
                     <button type="button" 
                             id="btnAbrirModalExport"
@@ -260,188 +273,6 @@
                         </svg>
                         Exportar
                     </button>
-
-                    <!-- Dashboard Ejecutivo -->
-                    <a href="{{ route('proveedores.reporte.dashboard-ejecutivo') }}" 
-                       class="inline-flex items-center px-3 py-2 bg-purple-600 text-white text-xs font-medium rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                        Dashboard
-                    </a>
-
-                    <!-- Dropdown de Reportes por Vencer -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" 
-                                class="inline-flex items-center px-3 py-2 bg-emerald-600 text-white text-xs font-medium rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            Por Vencer
-                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div x-show="open" 
-                             @click.away="open = false"
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute left-0 z-10 mt-1 w-48 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                             style="display: none;">
-                            <div class="py-1">
-                                <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                                    Activos por Vencer
-                                </div>
-                                <a href="{{ route('proveedores.reporte.por-vencer', ['dias' => 7]) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
-                                    7 días
-                                </a>
-                                <a href="{{ route('proveedores.reporte.por-vencer', ['dias' => 15]) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-amber-500 mr-2"></div>
-                                    15 días
-                                </a>
-                                <a href="{{ route('proveedores.reporte.por-vencer', ['dias' => 30]) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></div>
-                                    30 días
-                                </a>
-                                <a href="{{ route('proveedores.reporte.por-vencer', ['dias' => 60]) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-                                    60 días
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Dropdown de Reportes por Estado -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" 
-                                class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            Por Estado
-                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div x-show="open" 
-                             @click.away="open = false"
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute left-0 z-10 mt-1 w-48 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                             style="display: none;">
-                            <div class="py-1">
-                                <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                                    Por Estado del Padrón
-                                </div>
-                                <a href="{{ route('proveedores.reporte.estado-padron') }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-gray-500 mr-2"></div>
-                                    Todos los Estados
-                                </a>
-                                <a href="{{ route('proveedores.reporte.estado-padron', ['estado' => 'Activo']) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                                    Solo Activos
-                                </a>
-                                <a href="{{ route('proveedores.reporte.estado-padron', ['estado' => 'Vencido']) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
-                                    Solo Vencidos
-                                </a>
-                                <a href="{{ route('proveedores.reporte.estado-padron', ['estado' => 'Pendiente']) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <div class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></div>
-                                    Solo Pendientes
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Dropdown de Otros Reportes -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" 
-                                class="inline-flex items-center px-3 py-2 bg-indigo-600 text-white text-xs font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 transition-all duration-200 shadow-sm">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                            </svg>
-                            Más Reportes
-                            <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-
-                        <div x-show="open" 
-                             @click.away="open = false"
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="transform opacity-0 scale-95"
-                             x-transition:enter-end="transform opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="transform opacity-100 scale-100"
-                             x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute right-0 z-10 mt-1 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                             style="display: none;">
-                            <div class="py-1">
-                                <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                                    Reportes Especializados
-                                </div>
-                                <a href="{{ route('proveedores.reporte.geografico') }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    Distribución Geográfica
-                                </a>
-                                <a href="{{ route('proveedores.reporte.giro-economico') }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                    </svg>
-                                    Por Giro Económico
-                                </a>
-                                <div class="border-t border-gray-200 my-1"></div>
-                                <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50">
-                                    Listas de Contacto
-                                </div>
-                                <a href="{{ route('proveedores.reporte.lista-contactos', ['tipo' => 'todos']) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                    </svg>
-                                    Todos los Contactos
-                                </a>
-                                <a href="{{ route('proveedores.reporte.lista-contactos', ['tipo' => 'por_vencer']) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <svg class="w-4 h-4 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    Contactos por Vencer
-                                </a>
-                                <a href="{{ route('proveedores.reporte.lista-contactos', ['tipo' => 'activos']) }}" 
-                                   class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    Contactos Activos
-                                </a>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                     
                     <!-- Selector de elementos por página -->
@@ -930,6 +761,7 @@
                             </svg>
                         </div>
                         <input type="text" 
+                               id="buscarEstado"
                                data-search 
                                placeholder="Buscar estado..." 
                                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 text-sm">
@@ -956,7 +788,7 @@
             <!-- Botones de Acción -->
             <div class="flex justify-between items-center pt-4 border-t border-gray-200">
                 <div class="text-xs text-gray-500">
-                    💡 Tip: Usa el buscador para encontrar estados específicos
+                    💡 Tip: Selecciona los estados y presiona "Guardar Selección". Luego usa el botón "Buscar" para aplicar los filtros
                 </div>
                 <div class="flex gap-3">
                     <button data-modal-cancel class="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 transition-colors border border-gray-300">
@@ -966,7 +798,7 @@
                         <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                         </svg>
-                        Aplicar Filtro
+                        Guardar Selección
                     </button>
                 </div>
             </div>
@@ -1310,6 +1142,73 @@
         </div>
     </div>
 </div>
+
+<!-- Modal de Reporte Trimestral -->
+<div id="modalReporteTrimestral" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        
+        <div class="inline-block px-4 pt-5 pb-4 overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+                <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-green-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modal-title">
+                        Reporte Trimestral de Proveedores
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500 mb-4">
+                            Selecciona el período para generar el reporte de proveedores que estuvieron activos durante ese trimestre.
+                        </p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label for="reporteAno" class="block text-sm font-medium text-gray-700 mb-2">Año</label>
+                                <select id="reporteAno" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                    <option value="">Seleccionar año...</option>
+                                    @for($year = 2020; $year <= date('Y') + 1; $year++)
+                                        <option value="{{ $year }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ $year }}</option>
+                                    @endfor
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="reporteTrimestre" class="block text-sm font-medium text-gray-700 mb-2">Trimestre</label>
+                                <select id="reporteTrimestre" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                    <option value="">Seleccionar trimestre...</option>
+                                    <option value="1">Q1 - Enero a Marzo</option>
+                                    <option value="2">Q2 - Abril a Junio</option>
+                                    <option value="3">Q3 - Julio a Septiembre</option>
+                                    <option value="4">Q4 - Octubre a Diciembre</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button type="button" 
+                        id="btnGenerarReporte"
+                        class="inline-flex justify-center w-full px-4 py-2 text-base font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Generar Reporte
+                </button>
+                <button type="button" 
+                        id="btnCerrarModalReporte"
+                        class="inline-flex justify-center w-full px-4 py-2 mt-3 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -1321,6 +1220,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const icon = document.getElementById('filterIcon');
     const perPageSelect = document.getElementById('per_page');
     const searchForm = document.getElementById('searchForm');
+    
+    // Debug del formulario
+    searchForm?.addEventListener('submit', function(e) {
+        const estadoSelect = document.getElementById('estado');
+        const estadoGeografico = document.getElementById('estado_geografico');
+        
+        console.log('=== FORMULARIO ENVIADO ===');
+        console.log('- Estado del padrón:', estadoSelect ? estadoSelect.value : '');
+        console.log('- Estado geográfico:', estadoGeografico ? estadoGeografico.value : '');
+        console.log('- Búsqueda:', this.querySelector('[name="search"]')?.value || '');
+        console.log('=== FIN DEBUG FORMULARIO ===');
+    });
     
     // Los filtros siempre empiezan ocultos, sin importar si hay búsqueda
     
@@ -1659,77 +1570,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar estado de sectores
     actualizarTextoBotonSectores();
 
-    // ========== MODAL DE ESTADOS DEL PAÍS ==========
-    const modalEstados = document.getElementById('modalEstados');
-    const btnAbrirModalEstados = document.getElementById('btnAbrirModalEstados');
-    const btnCerrarModalEstados = document.getElementById('cerrarModalEstados');
-    const btnCancelarEstados = document.getElementById('cancelarEstados');
-    const btnAplicarSeleccionEstados = document.getElementById('aplicarSeleccionEstados');
-    const btnSeleccionarTodosEstados = document.getElementById('seleccionarTodosEstados');
-    const btnLimpiarTodosEstados = document.getElementById('limpiarTodosEstados');
+    // Estados geográficos simplificados - ya no se usa modal
+
+    // Estados geográficos ahora usan select simple
     const buscarEstado = document.getElementById('buscarEstado');
-    const contadorEstadosSeleccionados = document.getElementById('contadorEstadosSeleccionados');
+    const btnAplicarSeleccionEstados = document.querySelector('#modalEstados [data-apply]');
 
-    // Abrir modal de estados
-    btnAbrirModalEstados?.addEventListener('click', function() {
-        modalEstados?.classList.remove('hidden');
-        cargarEstadosSeleccionados();
-        actualizarContadorEstados();
-    });
-
-    // Cerrar modal de estados
+    // Función para cerrar modal de estados
     function cerrarModalEstados() {
+        const modalEstados = document.getElementById('modalEstados');
         modalEstados?.classList.add('hidden');
+        document.body.style.overflow = 'auto';
     }
 
-    btnCerrarModalEstados?.addEventListener('click', cerrarModalEstados);
-    btnCancelarEstados?.addEventListener('click', cerrarModalEstados);
-
-    // Cerrar modal al hacer clic fuera
-    modalEstados?.addEventListener('click', function(e) {
-        if (e.target === modalEstados) {
-            cerrarModalEstados();
-        }
-    });
-
-    // Función para actualizar contador de estados
-    function actualizarContadorEstados() {
+    // Función para actualizar el texto del botón principal de estados
+    function actualizarTextoBotonEstados() {
         const checkboxes = document.querySelectorAll('.estado-checkbox:checked');
-        contadorEstadosSeleccionados.textContent = checkboxes.length;
-    }
-
-    // Cargar estados previamente seleccionados
-    function cargarEstadosSeleccionados() {
-        const estadosSeleccionados = document.getElementById('estadosSeleccionados').value;
-        if (estadosSeleccionados) {
-            const ids = estadosSeleccionados.split(',').filter(id => id.trim() !== '');
-            const checkboxes = document.querySelectorAll('.estado-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = ids.includes(checkbox.value);
-            });
+        const count = checkboxes.length;
+        const estadosSeleccionadosTexto = document.getElementById('estadosSeleccionadosTexto');
+        
+        if (estadosSeleccionadosTexto) {
+            if (count === 0) {
+                estadosSeleccionadosTexto.textContent = 'Seleccionar estados...';
+            } else {
+                estadosSeleccionadosTexto.textContent = count + ' estado(s) seleccionado(s)';
+            }
         }
     }
-
-    // Seleccionar todos los estados
-    btnSeleccionarTodosEstados?.addEventListener('click', function() {
-        const checkboxes = document.querySelectorAll('.estado-checkbox');
-        checkboxes.forEach(checkbox => checkbox.checked = true);
-        actualizarContadorEstados();
-    });
-
-    // Limpiar todos los estados
-    btnLimpiarTodosEstados?.addEventListener('click', function() {
-        const checkboxes = document.querySelectorAll('.estado-checkbox');
-        checkboxes.forEach(checkbox => checkbox.checked = false);
-        actualizarContadorEstados();
-    });
-
-    // Actualizar contador cuando se cambie una checkbox
-    document.addEventListener('change', function(e) {
-        if (e.target.classList.contains('estado-checkbox')) {
-            actualizarContadorEstados();
-        }
-    });
 
     // Buscador de estados
     buscarEstado?.addEventListener('input', function() {
@@ -1748,12 +1615,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Aplicar selección de estados
     btnAplicarSeleccionEstados?.addEventListener('click', function() {
+        console.log('Aplicando filtro de estados geográficos...');
         const estadosSeleccionados = [];
         const checkboxes = document.querySelectorAll('.estado-checkbox:checked');
         
+        console.log('Checkboxes encontrados:', checkboxes.length);
+        
         checkboxes.forEach(checkbox => {
             estadosSeleccionados.push(checkbox.value);
+            console.log('Estado seleccionado:', checkbox.value, checkbox.textContent?.trim());
         });
+        
+        console.log('Estados a enviar:', estadosSeleccionados);
 
         // Limpiar inputs existentes
         const inputsExistentes = document.querySelectorAll('input[name="estado_geografico[]"]');
@@ -1775,36 +1648,46 @@ document.addEventListener('DOMContentLoaded', function() {
         // Actualizar texto del botón
         actualizarTextoBotonEstados();
 
-        // Cerrar modal y enviar formulario
+        // Mostrar indicador de cambios pendientes si hay diferencias con la URL actual
+        const estadosEnURL = new URLSearchParams(window.location.search).getAll('estado_geografico[]');
+        const hayDiferencias = JSON.stringify(estadosSeleccionados.sort()) !== JSON.stringify(estadosEnURL.sort());
+        const indicador = document.getElementById('estadosIndicadorCambios');
+        if (indicador) {
+            if (hayDiferencias) {
+                indicador.classList.remove('hidden');
+        } else {
+                indicador.classList.add('hidden');
+            }
+        }
+        
+        // Solo cerrar modal sin enviar formulario
+        console.log('Cerrando modal. Estados seleccionados guardados:', estadosSeleccionados);
+        console.log('Inputs ocultos mantenidos:', form.querySelectorAll('input[name="estado_geografico[]"]').length);
+        
         cerrarModalEstados();
-        form.submit();
+        
+        console.log('Modal cerrado. Use el botón Buscar para aplicar filtros.');
     });
 
-    // Función para actualizar el texto del botón de estados
-    function actualizarTextoBotonEstados() {
-        const estadosSeleccionados = document.getElementById('estadosSeleccionados').value;
-        const btnTexto = document.getElementById('estadosSeleccionadosTexto');
-        
-        if (estadosSeleccionados && estadosSeleccionados.trim() !== '') {
-            const count = estadosSeleccionados.split(',').filter(id => id.trim() !== '').length;
-            btnTexto.textContent = count + ' estado(s) seleccionado(s)';
-        } else {
-            btnTexto.textContent = 'Seleccionar estados...';
-        }
-    }
-
-    // Inicializar estado de estados
-    actualizarTextoBotonEstados();
-
     // ========== MODAL DE SELECCIÓN DE COLUMNAS PARA EXPORT ==========
+    console.log('🔍 Inicializando modal de exportación...');
     const modalExport = document.getElementById('modalExportColumnas');
     const btnAbrirModalExport = document.getElementById('btnAbrirModalExport');
-    const btnCerrarModalExport = document.getElementById('cerrarModalExport');
-    const btnCancelarExport = document.getElementById('cancelarExport');
-    const btnConfirmarExport = document.getElementById('confirmarExport');
-    const btnSeleccionarTodasColumnas = document.getElementById('seleccionarTodasColumnas');
-    const btnLimpiarTodasColumnas = document.getElementById('limpiarTodasColumnas');
-    const contadorColumnasSeleccionadas = document.getElementById('contadorColumnasSeleccionadas');
+    const btnCerrarModalExport = document.querySelector('[data-modal-close]');
+    const btnCancelarExport = document.querySelector('#modalExportColumnas [data-modal-cancel]');
+    const btnConfirmarExport = document.querySelector('[data-confirm-export]');
+    const btnSeleccionarTodasColumnas = document.querySelector('[data-select-all-columns]');
+    const btnLimpiarTodasColumnas = document.querySelector('[data-clear-all-columns]');
+    const contadorColumnasSeleccionadas = document.querySelector('[data-column-counter]');
+    
+    // Debug de elementos encontrados
+    console.log('📋 Estado de elementos del modal de exportación:');
+    console.log('  - Modal:', modalExport ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('  - Botón Abrir:', btnAbrirModalExport ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('  - Botón Cerrar:', btnCerrarModalExport ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('  - Botón Cancelar:', btnCancelarExport ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('  - Botón Confirmar:', btnConfirmarExport ? '✅ Encontrado' : '❌ No encontrado');
+    console.log('  - Contador Columnas:', contadorColumnasSeleccionadas ? '✅ Encontrado' : '❌ No encontrado');
 
 
 
@@ -1826,7 +1709,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Función para actualizar contador de columnas seleccionadas
     function actualizarContadorColumnas() {
         const checkboxes = document.querySelectorAll('.columna-checkbox:checked');
+        if (contadorColumnasSeleccionadas) {
         contadorColumnasSeleccionadas.textContent = checkboxes.length;
+        }
     }
 
     // Seleccionar todas las columnas
@@ -1851,15 +1736,33 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Abrir modal de export
-    btnAbrirModalExport?.addEventListener('click', function() {
-        modalExport?.classList.remove('hidden');
+    if (btnAbrirModalExport) {
+        console.log('✅ Botón de exportar encontrado');
+        btnAbrirModalExport.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('🔄 Clic en botón de exportar detectado...');
+            
+            if (modalExport) {
+                console.log('✅ Modal encontrado, abriendo...');
+                modalExport.classList.remove('hidden');
         actualizarContadorColumnas(); // Actualizar contador al abrir
+                console.log('✅ Modal de exportación abierto exitosamente');
+            } else {
+                console.error('❌ Modal de exportación no encontrado');
+                alert('Error: No se puede encontrar el modal de exportación. Por favor, recarga la página.');
+            }
     });
+    } else {
+        console.error('❌ Botón de exportar no encontrado en el DOM');
+    }
 
     // Confirmar exportación
     btnConfirmarExport?.addEventListener('click', function() {
+        console.log('Iniciando exportación...');
         const columnasSeleccionadas = [];
         const checkboxes = document.querySelectorAll('.columna-checkbox:checked');
+        
+        console.log('Checkboxes encontrados:', checkboxes.length);
         
         if (checkboxes.length === 0) {
             alert('Debes seleccionar al menos una columna para exportar.');
@@ -1869,6 +1772,8 @@ document.addEventListener('DOMContentLoaded', function() {
         checkboxes.forEach(checkbox => {
             columnasSeleccionadas.push(checkbox.value);
         });
+        
+        console.log('Columnas seleccionadas:', columnasSeleccionadas);
 
         // Obtener todos los parámetros de la URL actual
         const urlParams = new URLSearchParams(window.location.search);
@@ -1876,9 +1781,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Construir la URL de exportación con los mismos parámetros
         const exportUrl = new URL('{{ route("proveedores.reporte.filtrado") }}', window.location.origin);
         
-        // Copiar todos los parámetros de búsqueda
+        // Copiar todos los parámetros de búsqueda excepto los que vamos a reemplazar
         urlParams.forEach((value, key) => {
+            if (!['actividad_economica[]', 'sector[]', 'estado_geografico[]', 'columnas'].includes(key)) {
             exportUrl.searchParams.append(key, value);
+            }
         });
 
         // Agregar las actividades económicas seleccionadas si las hay
@@ -1888,6 +1795,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 exportUrl.searchParams.append('actividad_economica[]', input.value);
             }
         });
+        
+        // También revisar las actividades seleccionadas del modal
+        const actividadesSeleccionadas = document.getElementById('actividadesSeleccionadas');
+        if (actividadesSeleccionadas && actividadesSeleccionadas.value) {
+            const actividadesIds = actividadesSeleccionadas.value.split(',').filter(id => id.trim() !== '');
+            actividadesIds.forEach(id => {
+                exportUrl.searchParams.append('actividad_economica[]', id);
+            });
+        }
 
         // Agregar los sectores seleccionados si los hay
         const sectoresInputs = document.querySelectorAll('input[name="sector[]"]');
@@ -1896,19 +1812,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 exportUrl.searchParams.append('sector[]', input.value);
             }
         });
+        
+        // También revisar los sectores seleccionados del modal
+        const sectoresSeleccionados = document.getElementById('sectoresSeleccionados');
+        if (sectoresSeleccionados && sectoresSeleccionados.value) {
+            const sectoresIds = sectoresSeleccionados.value.split(',').filter(id => id.trim() !== '');
+            sectoresIds.forEach(id => {
+                exportUrl.searchParams.append('sector[]', id);
+            });
+        }
 
         // Agregar los estados geográficos seleccionados si los hay
-        const estadosInputs = document.querySelectorAll('input[name="estado_geografico[]"]');
-        estadosInputs.forEach(input => {
-            if (input.value && input.value.trim() !== '') {
-                exportUrl.searchParams.append('estado_geografico[]', input.value);
+        const estadosCheckboxes = document.querySelectorAll('.estado-checkbox:checked');
+        estadosCheckboxes.forEach(checkbox => {
+            if (checkbox.value && checkbox.value.trim() !== '') {
+                exportUrl.searchParams.append('estado_geografico[]', checkbox.value);
             }
         });
+        
+        // También revisar el input oculto de estadosSeleccionados
+        const estadosSeleccionadosInput = document.getElementById('estadosSeleccionados');
+        if (estadosSeleccionadosInput && estadosSeleccionadosInput.value) {
+            const estadosIds = estadosSeleccionadosInput.value.split(',').filter(id => id.trim() !== '');
+            estadosIds.forEach(id => {
+                exportUrl.searchParams.append('estado_geografico[]', id);
+            });
+        }
         
         // Agregar las columnas seleccionadas
         exportUrl.searchParams.set('columnas', columnasSeleccionadas.join(','));
         
-        console.log('URL de exportación:', exportUrl.toString());
+        console.log('URL de exportación completa:', exportUrl.toString());
+        console.log('Parametros de la URL:', Object.fromEntries(exportUrl.searchParams));
         
         // Cerrar modal y realizar la exportación
         cerrarModalExport();
@@ -1923,15 +1858,137 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         btnConfirmarExport.disabled = true;
 
+        try {
         // Abrir el enlace de descarga
-        window.open(exportUrl.toString(), '_blank');
+            console.log('Abriendo ventana de descarga...');
+            const ventanaDescarga = window.open(exportUrl.toString(), '_blank');
+            
+            if (!ventanaDescarga) {
+                alert('No se pudo abrir la ventana de descarga. Por favor, permite las ventanas emergentes.');
+                console.error('Ventana de descarga bloqueada');
+            }
+        } catch (error) {
+            console.error('Error al abrir la descarga:', error);
+            alert('Error al generar el archivo. Por favor, inténtalo de nuevo.');
+        }
 
         // Restaurar el botón después de un breve delay
         setTimeout(() => {
             btnConfirmarExport.innerHTML = originalText;
             btnConfirmarExport.disabled = false;
+            console.log('Botón restaurado');
+        }, 3000);
+    });
+
+    // ========== REPORTE TRIMESTRAL ==========
+    const modalReporteTrimestral = document.getElementById('modalReporteTrimestral');
+    const btnReporteTrimestral = document.getElementById('btnReporteTrimestral');
+    const btnCerrarModalReporte = document.getElementById('btnCerrarModalReporte');
+    const btnGenerarReporte = document.getElementById('btnGenerarReporte');
+    const reporteAno = document.getElementById('reporteAno');
+    const reporteTrimestre = document.getElementById('reporteTrimestre');
+
+    // Abrir modal de reporte trimestral
+    btnReporteTrimestral?.addEventListener('click', function() {
+        modalReporteTrimestral?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    });
+
+    // Cerrar modal de reporte trimestral
+    function cerrarModalReporteTrimestral() {
+        modalReporteTrimestral?.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    btnCerrarModalReporte?.addEventListener('click', cerrarModalReporteTrimestral);
+
+    // Cerrar modal al hacer clic fuera
+    modalReporteTrimestral?.addEventListener('click', function(e) {
+        if (e.target === modalReporteTrimestral) {
+            cerrarModalReporteTrimestral();
+        }
+    });
+
+    // Generar reporte trimestral
+    btnGenerarReporte?.addEventListener('click', function() {
+        const ano = reporteAno?.value;
+        const trimestre = reporteTrimestre?.value;
+
+        if (!ano || !trimestre) {
+            alert('Por favor selecciona tanto el año como el trimestre.');
+            return;
+        }
+
+        // Calcular fechas del trimestre
+        const fechasTrimestrales = {
+            1: { inicio: `${ano}-01-01`, fin: `${ano}-03-31` },
+            2: { inicio: `${ano}-04-01`, fin: `${ano}-06-30` },
+            3: { inicio: `${ano}-07-01`, fin: `${ano}-09-30` },
+            4: { inicio: `${ano}-10-01`, fin: `${ano}-12-31` }
+        };
+
+        const periodo = fechasTrimestrales[trimestre];
+        const fechaInicio = periodo.inicio;
+        const fechaFin = periodo.fin;
+
+        console.log(`Generando reporte trimestral para Q${trimestre} ${ano}`);
+        console.log(`Período: ${fechaInicio} al ${fechaFin}`);
+
+        // Mostrar indicador de carga
+        const originalText = this.innerHTML;
+        this.innerHTML = `
+            <svg class="w-4 h-4 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Generando...
+        `;
+        this.disabled = true;
+
+        // Construir URL del reporte con filtros específicos para el trimestre
+        const baseUrl = '{{ route("proveedores.index") }}';
+        const params = new URLSearchParams();
+        params.set('reporte_trimestral', '1');
+        params.set('ano', ano);
+        params.set('trimestre', trimestre);
+        params.set('fecha_inicio', fechaInicio);
+        params.set('fecha_fin', fechaFin);
+        params.set('estado', 'Activo'); // Solo proveedores activos
+        params.set('formato', 'excel');
+        
+        const reporteUrl = baseUrl + '?' + params.toString();
+
+        try {
+            // Abrir el reporte en una nueva ventana
+            console.log('URL del reporte:', reporteUrl);
+            const ventanaReporte = window.open(reporteUrl, '_blank');
+            
+            if (!ventanaReporte) {
+                alert('No se pudo abrir la ventana del reporte. Por favor, permite las ventanas emergentes.');
+                console.error('Ventana del reporte bloqueada');
+            } else {
+                // Cerrar modal después de un breve delay
+                setTimeout(() => {
+                    cerrarModalReporteTrimestral();
+                }, 1000);
+            }
+        } catch (error) {
+            console.error('Error al generar el reporte:', error);
+            alert('Error al generar el reporte. Por favor, inténtalo de nuevo.');
+        }
+
+        // Restaurar el botón después de 2 segundos
+        setTimeout(() => {
+            this.innerHTML = originalText;
+            this.disabled = false;
         }, 2000);
     });
+
+    // Mensaje final de depuración
+    console.log('🎉 Script de proveedores/index.blade.php ejecutado completamente');
+    console.log('📊 Resumen de elementos críticos:');
+    console.log('   - Botón Exportar (btnAbrirModalExport):', btnAbrirModalExport ? 'DISPONIBLE' : 'NO DISPONIBLE');
+    console.log('   - Modal Exportar (modalExport):', modalExport ? 'DISPONIBLE' : 'NO DISPONIBLE');
+    console.log('   - Botón Reporte Trimestral (btnReporteTrimestral):', btnReporteTrimestral ? 'DISPONIBLE' : 'NO DISPONIBLE');
 });
 </script>
 @endpush

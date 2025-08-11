@@ -180,12 +180,24 @@ class OficioService
      */
     private function generarQrCode(Tramite $tramite): string
     {
+        // Generar URL de validación con la URL base correcta
+        $baseUrl = config('app.url', 'https://padronproveedores.oaxaca.gob.mx');
+        
+        // Si la URL base es localhost, usar una URL más apropiada
+        if (str_contains($baseUrl, 'localhost')) {
+            $baseUrl = 'https://padronproveedores.oaxaca.gob.mx';
+        }
+        
+        $urlValidacion = $baseUrl . '/oficios/validar/' . $tramite->id;
+        
         $datosQr = [
+            'proveedor_id' => $tramite->proveedor_id, // ID del proveedor como primer elemento
             'tramite_id' => $tramite->id,
-            'proveedor_id' => $tramite->proveedor_id,
             'numero_oficio' => Oficio::generarNumeroOficio(),
             'fecha_generacion' => Carbon::now()->format('Y-m-d H:i:s'),
-            'url_validacion' => route('oficios.validar', $tramite->id)
+            'url_validacion' => $urlValidacion,
+            'pv_numero' => $tramite->proveedor ? $tramite->proveedor->pv_numero : null,
+            'rfc' => $tramite->proveedor ? $tramite->proveedor->rfc : null
         ];
 
         $qrData = json_encode($datosQr);
@@ -200,6 +212,69 @@ class OficioService
     }
 
     /**
+     * Regenerar oficio para un trámite específico
+     */
+    public function regenerarOficioParaTramite(int $tramiteId): Oficio
+    {
+        try {
+            $tramite = Tramite::with([
+                'proveedor', 
+                'datosGenerales', 
+                'datosConstitutivos', 
+                'direcciones.estado',
+                'apoderadosLegales',
+                'actividades',
+                'accionistas',
+                'contactos'
+            ])->findOrFail($tramiteId);
+
+            Log::info('Iniciando regeneración de oficio para trámite', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor_id
+            ]);
+
+            // Verificar que el trámite tenga proveedor asignado
+            if (!$tramite->proveedor_id) {
+                throw new \Exception('El trámite no tiene proveedor asignado');
+            }
+
+            // Eliminar oficios anteriores del mismo trámite
+            Oficio::where('tramite_id', $tramite->id)->delete();
+
+            // Generar el PDF del oficio con nuevo QR
+            $pdfPath = $this->generarPdfOficio($tramite);
+
+            // Generar URL para descargar el PDF
+            $url = $this->generarUrlOficio($tramite, $pdfPath);
+
+            // Generar contenido del oficio
+            $contenido = $this->generarContenidoOficio($tramite);
+
+            // Crear el nuevo oficio
+            $oficio = Oficio::crearOficioConProveedor($tramite, $url, $contenido);
+
+            Log::info('Oficio regenerado exitosamente', [
+                'oficio_id' => $oficio->id,
+                'numero_oficio' => $oficio->numero_oficio,
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor_id,
+                'url' => $url,
+                'pdf_path' => $pdfPath
+            ]);
+
+            return $oficio;
+
+        } catch (\Exception $e) {
+            Log::error('Error al regenerar oficio', [
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
      * Generar URL para el oficio
      */
     private function generarUrlOficio(Tramite $tramite, string $pdfPath): string
@@ -210,8 +285,15 @@ class OficioService
         // Generar nombre del archivo
         $nombreArchivo = $this->generarNombreArchivoOficio($tramite);
 
-        // Crear URL para descargar el oficio
-        $url = route('oficios.descargar', [
+        // Crear URL para descargar el oficio sin usar el host por defecto
+        $baseUrl = config('app.url', 'https://padronproveedores.oaxaca.gob.mx');
+        
+        // Si la URL base es localhost, usar una URL más apropiada
+        if (str_contains($baseUrl, 'localhost')) {
+            $baseUrl = 'https://padronproveedores.oaxaca.gob.mx';
+        }
+        
+        $url = $baseUrl . '/oficios/descargar?' . http_build_query([
             'tramite_id' => $tramite->id,
             'proveedor_id' => $proveedor->id,
             'archivo' => $nombreArchivo
@@ -221,7 +303,8 @@ class OficioService
             'tramite_id' => $tramite->id,
             'url' => $url,
             'nombre_archivo' => $nombreArchivo,
-            'pdf_path' => $pdfPath
+            'pdf_path' => $pdfPath,
+            'base_url_used' => $baseUrl
         ]);
 
         return $url;

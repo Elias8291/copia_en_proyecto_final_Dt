@@ -64,13 +64,12 @@
                                         </td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                @can('archivos.ver')
-                                                    <a href="{{ route('archivos.show', $archivo->id) }}" 
-                                                       class="btn btn-sm btn-info" 
-                                                       title="Ver archivo">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
-                                                @endcan
+                                                {{-- Removido @can para permitir que todos vean archivos --}}
+                                                <a href="{{ route('archivos.show', $archivo->id) }}" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="Ver archivo">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
 
                                                 @can('archivos.editar')
                                                     <a href="{{ route('archivos.edit', $archivo->id) }}" 

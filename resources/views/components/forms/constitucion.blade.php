@@ -111,7 +111,7 @@
                     </div>
                     <input type="date"
                         name="fecha_constitucion"
-                        value="{{ old('fecha_constitucion', $datos['fecha_constitucion'] ?? '') }}"
+                        value="{{ old('fecha_constitucion', $datos['fecha_constitucion'] ? \Carbon\Carbon::parse($datos['fecha_constitucion'])->format('Y-m-d') : '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('fecha_constitucion') ? 'border-red-500' : '' }}">
                 </div>
                 @error('fecha_constitucion')
@@ -186,7 +186,7 @@
                     </div>
                     <input type="date"
                         name="fecha_inscripcion"
-                        value="{{ old('fecha_inscripcion', $datos['fecha_inscripcion'] ?? '') }}"
+                        value="{{ old('fecha_inscripcion', $datos['fecha_inscripcion'] ? \Carbon\Carbon::parse($datos['fecha_inscripcion'])->format('Y-m-d') : '') }}"
                         class="block w-full pl-10 pr-4 py-2.5 text-gray-900 border border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary {{ $errors->has('fecha_inscripcion') ? 'border-red-500' : '' }}">
                 </div>
                 @error('fecha_inscripcion')

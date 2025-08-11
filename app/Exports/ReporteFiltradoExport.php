@@ -30,6 +30,13 @@ class ReporteFiltradoExport implements FromCollection, WithHeadings, WithMapping
         $this->filtros = $filtros;
         $this->tipoReporte = $tipoReporte;
         $this->columnasSeleccionadas = $columnasSeleccionadas;
+        
+        \Log::info('ReporteFiltradoExport inicializado', [
+            'tipo_reporte' => $tipoReporte,
+            'filtros_count' => count($filtros),
+            'columnas_count' => count($columnasSeleccionadas),
+            'columnas' => $columnasSeleccionadas
+        ]);
     }
 
     /**
@@ -158,7 +165,37 @@ class ReporteFiltradoExport implements FromCollection, WithHeadings, WithMapping
                   ->where('fecha_vencimiento_padron', '<=', $fechaLimite);
         }
 
-        return $query->orderBy('updated_at', 'desc')->get();
+        // Filtro especial para reporte trimestral
+        if (!empty($this->filtros['periodo_trimestral']) && $this->filtros['periodo_trimestral'] === true) {
+            $fechaInicio = $this->filtros['fecha_inicio'];
+            $fechaFin = $this->filtros['fecha_fin'];
+            
+            \Log::info('Aplicando filtro trimestral', [
+                'fecha_inicio' => $fechaInicio,
+                'fecha_fin' => $fechaFin
+            ]);
+            
+            $query->where(function($q) use ($fechaInicio, $fechaFin) {
+                // Proveedores que estuvieron activos durante el trimestre
+                $q->where(function($subQ) use ($fechaInicio, $fechaFin) {
+                    // Caso 1: Sin fecha de vencimiento (siempre activos)
+                    $subQ->whereNull('fecha_vencimiento_padron')
+                        // Caso 2: Fecha de vencimiento posterior al inicio del trimestre
+                        ->orWhere('fecha_vencimiento_padron', '>', $fechaInicio);
+                })
+                // Y que fueron registrados antes o durante el trimestre
+                ->where('fecha_alta_padron', '<=', $fechaFin);
+            });
+        }
+
+        $resultado = $query->orderBy('updated_at', 'desc')->get();
+        
+        \Log::info('Datos recolectados para exportación', [
+            'total_registros' => $resultado->count(),
+            'filtros_aplicados' => array_keys(array_filter($this->filtros))
+        ]);
+        
+        return $resultado;
     }
 
     /**
@@ -241,6 +278,17 @@ class ReporteFiltradoExport implements FromCollection, WithHeadings, WithMapping
                     'Fecha Vencimiento',
                     'Tiempo Restante',
                     'Estado Vigencia'
+                ]);
+
+            case 'trimestral':
+                return array_merge($headingsBase, [
+                    'Fecha Alta',
+                    'Fecha Vencimiento',
+                    'Estado',
+                    'Actividades',
+                    'Contacto',
+                    'Teléfono',
+                    'Estado en Trimestre'
                 ]);
 
             default: // completo
@@ -401,6 +449,20 @@ class ReporteFiltradoExport implements FromCollection, WithHeadings, WithMapping
                     $proveedor->fecha_vencimiento_padron ? Carbon::parse($proveedor->fecha_vencimiento_padron)->format('d/m/Y') : 'N/A',
                     $tiempoRestante,
                     $estadoVigencia
+                ]);
+
+            case 'trimestral':
+                // Determinar estado específico en el trimestre
+                $estadoTrimestre = $this->determinarEstadoEnTrimestre($proveedor);
+                
+                return array_merge($baseData, [
+                    $proveedor->fecha_alta_padron ? Carbon::parse($proveedor->fecha_alta_padron)->format('d/m/Y') : 'N/A',
+                    $proveedor->fecha_vencimiento_padron ? Carbon::parse($proveedor->fecha_vencimiento_padron)->format('d/m/Y') : 'Sin fecha',
+                    $direccion && $direccion->estado ? $direccion->estado->nombre : 'N/A',
+                    substr($actividades, 0, 100) . (strlen($actividades) > 100 ? '...' : ''),
+                    $contacto->nombre_contacto ?? 'Sin contacto',
+                    $contacto->telefono ?? 'N/A',
+                    $estadoTrimestre
                 ]);
 
             default: // completo
@@ -581,5 +643,48 @@ class ReporteFiltradoExport implements FromCollection, WithHeadings, WithMapping
                 ]);
             },
         ];
+    }
+
+    /**
+     * Determinar el estado del proveedor durante el trimestre específico
+     */
+    private function determinarEstadoEnTrimestre($proveedor)
+    {
+        if (empty($this->filtros['fecha_inicio']) || empty($this->filtros['fecha_fin'])) {
+            return 'N/A';
+        }
+
+        $fechaInicio = Carbon::parse($this->filtros['fecha_inicio']);
+        $fechaFin = Carbon::parse($this->filtros['fecha_fin']);
+        $fechaAlta = $proveedor->fecha_alta_padron ? Carbon::parse($proveedor->fecha_alta_padron) : null;
+        $fechaVencimiento = $proveedor->fecha_vencimiento_padron ? Carbon::parse($proveedor->fecha_vencimiento_padron) : null;
+
+        // Si fue registrado durante el trimestre
+        if ($fechaAlta && $fechaAlta->between($fechaInicio, $fechaFin)) {
+            if (!$fechaVencimiento) {
+                return 'Registrado en trimestre (Sin vencimiento)';
+            } elseif ($fechaVencimiento->isAfter($fechaFin)) {
+                return 'Registrado en trimestre (Activo)';
+            } elseif ($fechaVencimiento->between($fechaInicio, $fechaFin)) {
+                return 'Registrado y vencido en trimestre';
+            } else {
+                return 'Registrado en trimestre';
+            }
+        }
+
+        // Si ya existía antes del trimestre
+        if ($fechaAlta && $fechaAlta->isBefore($fechaInicio)) {
+            if (!$fechaVencimiento) {
+                return 'Activo durante todo el trimestre (Sin vencimiento)';
+            } elseif ($fechaVencimiento->between($fechaInicio, $fechaFin)) {
+                return 'Vencido durante el trimestre';
+            } elseif ($fechaVencimiento->isAfter($fechaFin)) {
+                return 'Activo durante todo el trimestre';
+            } elseif ($fechaVencimiento->isBefore($fechaInicio)) {
+                return 'Ya vencido antes del trimestre';
+            }
+        }
+
+        return 'Activo en período';
     }
 }

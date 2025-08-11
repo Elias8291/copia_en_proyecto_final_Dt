@@ -179,6 +179,7 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::get('/proveedor/{proveedor}', [App\Http\Controllers\OficioController::class, 'porProveedor'])->name('por-proveedor');
         Route::get('/tramite/{tramite}', [App\Http\Controllers\OficioController::class, 'porTramite'])->name('por-tramite');
         Route::post('/{oficio}/estado', [App\Http\Controllers\OficioController::class, 'actualizarEstado'])->name('actualizar-estado');
+        Route::post('/regenerar/{tramite}', [App\Http\Controllers\OficioController::class, 'regenerar'])->name('regenerar');
     });
 
     // Rutas para notificaciones
@@ -273,6 +274,15 @@ Route::get('/proveedores/reporte/filtrado', [ProveedoresController::class, 'expo
     ->middleware('auth')
     ->name('proveedores.reporte.filtrado');
 
+// Rutas para reportes trimestrales de proveedores
+Route::get('/proveedores/reportes/trimestrales', [ProveedoresController::class, 'reportesTrimestrales'])
+    ->middleware('auth')
+    ->name('proveedores.reportes.trimestrales');
+
+Route::post('/proveedores/reportes/trimestrales/generar', [ProveedoresController::class, 'generarReporteTrimestral'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.trimestral.generar');
+
 // Rutas para reportes dinámicos
 Route::get('/reportes', [ReportesController::class, 'index'])
     ->middleware('auth')
@@ -302,4 +312,6 @@ Route::get('/reportes/exportar-trimestral', [ReportesController::class, 'exporta
 Route::get('/reportes/comparativo-trimestral', [ReportesController::class, 'comparativoTrimestral'])
     ->middleware('auth')
     ->name('reportes.comparativo-trimestral');
+
+
 

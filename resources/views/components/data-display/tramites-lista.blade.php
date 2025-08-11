@@ -42,14 +42,17 @@
 
     @if($mostrarFiltros && $tipoVista === 'completa')
     <!-- Filtros -->
-    <x-tramites.filtros />
+    {{-- <x-tramites.filtros /> --}}
+    {{-- TODO: Componente de filtros pendiente de implementar --}}
     @endif
 
     @if($tipoVista === 'tarjetas')
         <!-- Vista de Tarjetas -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             @forelse($tramites as $tramite)
-                <x-tramites.tarjeta :tramite="$tramite" />
+                {{-- <x-tramites.tarjeta :tramite="$tramite" /> --}}
+                {{-- TODO: Usar componente tramite-card existente --}}
+                <x-data-display.tramite-card :tramite="$tramite" />
             @empty
                 <div class="col-span-full text-center py-12">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -63,7 +66,9 @@
     @else
         <!-- Vista de Tabla -->
         <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-            <x-tramites.tabla :tramites="$tramites" :tipo="$tipoVista" />
+            {{-- <x-tramites.tabla :tramites="$tramites" :tipo="$tipoVista" /> --}}
+            {{-- TODO: Usar componente tramites-table existente --}}
+            <x-data-display.tramites-table :tramites="$tramites" />
         </div>
     @endif
 </div> 

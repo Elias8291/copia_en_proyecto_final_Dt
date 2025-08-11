@@ -15,7 +15,8 @@ class ArchivoController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(PermissionMiddleware::class . ':archivos.ver')->only(['index', 'show']);
+        // Eliminado el middleware para 'show' para permitir que todos vean archivos
+        $this->middleware(PermissionMiddleware::class . ':archivos.ver')->only(['index']);
         $this->middleware(PermissionMiddleware::class . ':archivos.crear')->only(['create', 'store']);
         $this->middleware(PermissionMiddleware::class . ':archivos.editar')->only(['edit', 'update', 'updateStatus']);
         $this->middleware(PermissionMiddleware::class . ':archivos.eliminar')->only(['destroy']);

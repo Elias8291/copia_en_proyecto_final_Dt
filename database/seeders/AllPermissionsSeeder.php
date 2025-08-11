@@ -55,6 +55,7 @@ class AllPermissionsSeeder extends Seeder
             'proveedores.crear' => 'Crear proveedores',
             'proveedores.editar' => 'Editar proveedores',
             'proveedores.eliminar' => 'Eliminar proveedores',
+            'proveedores.reportes.trimestrales' => 'Ver reportes trimestrales de proveedores',
 
             'dashboard.ver' => 'Ver dashboard',
         ];
