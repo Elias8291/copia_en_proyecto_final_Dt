@@ -56,19 +56,40 @@ class FormController {
 
         // Validar todo el formulario antes de enviar
         this.form.addEventListener('submit', (e) => {
-            // Validar campos del formulario
-            if (!this.validateAll()) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.showAllErrors();
-                return false;
-            }
+            console.log('FormController: Iniciando validación de envío del formulario');
             
-            // Validar archivos antes de enviar
-            if (!this.validateArchivosOnSubmit()) {
+            try {
+                // Validar campos del formulario
+                const allFieldsValid = this.validateAll();
+                console.log('FormController: Validación de campos:', allFieldsValid);
+                
+                if (!allFieldsValid) {
+                    console.log('FormController: Validación de campos falló, bloqueando envío');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.showAllErrors();
+                    return false;
+                }
+                
+                // Validar archivos antes de enviar
+                const archivosValid = this.validateArchivosOnSubmit();
+                console.log('FormController: Validación de archivos:', archivosValid);
+                
+                if (!archivosValid) {
+                    console.log('FormController: Validación de archivos falló, bloqueando envío');
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.showArchivosErrors();
+                    return false;
+                }
+                
+                console.log('FormController: Todas las validaciones pasaron, permitiendo envío');
+                
+            } catch (error) {
+                console.error('FormController: Error durante validación:', error);
                 e.preventDefault();
                 e.stopPropagation();
-                this.showArchivosErrors();
+                alert('Error durante la validación del formulario. Por favor, revise los datos ingresados.');
                 return false;
             }
         });
@@ -267,35 +288,53 @@ class FormController {
 
     // Validar archivos al enviar el formulario
     validateArchivosOnSubmit() {
-        const fileInputs = document.querySelectorAll('input[type="file"]');
-        let allValid = true;
-        let archivosCargados = 0;
-        let archivosRequeridos = 0;
-        
-        fileInputs.forEach(input => {
-            archivosRequeridos++;
+        try {
+            console.log('FormController: Iniciando validación de archivos');
+            const fileInputs = document.querySelectorAll('input[type="file"]');
+            let allValid = true;
+            let archivosCargados = 0;
+            let archivosRequeridos = 0;
             
-            if (input.files && input.files.length > 0) {
-                archivosCargados++;
-                const file = input.files[0];
+            console.log(`FormController: Encontrados ${fileInputs.length} inputs de archivos`);
+            
+            fileInputs.forEach((input, index) => {
+                // Solo contar archivos que realmente sean requeridos
+                const isRequired = input.hasAttribute('required') || input.closest('.required-file');
                 
-                // Validar archivo individual
-                if (!this.validateArchivoIndividual(input, file)) {
-                    allValid = false;
+                if (isRequired) {
+                    archivosRequeridos++;
+                    console.log(`FormController: Archivo ${index + 1} es requerido`);
+                    
+                    if (input.files && input.files.length > 0) {
+                        archivosCargados++;
+                        const file = input.files[0];
+                        console.log(`FormController: Validando archivo: ${file.name}`);
+                        
+                        // Validar archivo individual
+                        if (!this.validateArchivoIndividual(input, file)) {
+                            allValid = false;
+                            console.log(`FormController: Archivo ${file.name} no válido`);
+                        }
+                    } else {
+                        // Archivo requerido no cargado
+                        allValid = false;
+                        console.log(`FormController: Archivo requerido ${index + 1} no cargado`);
+                        this.marcarArchivoComoError(input, 'Este archivo es obligatorio');
+                    }
+                } else {
+                    console.log(`FormController: Archivo ${index + 1} no es requerido`);
                 }
-            } else {
-                // Archivo requerido no cargado
-                allValid = false;
-                this.marcarArchivoComoError(input, 'Este archivo es obligatorio');
-            }
-        });
-        
-        // Verificar que todos los archivos requeridos estén cargados
-        if (archivosCargados < archivosRequeridos) {
-            allValid = false;
+            });
+            
+            console.log(`FormController: Archivos cargados: ${archivosCargados}/${archivosRequeridos}`);
+            console.log(`FormController: Validación de archivos resultado: ${allValid}`);
+            
+            return allValid;
+            
+        } catch (error) {
+            console.error('FormController: Error durante validación de archivos:', error);
+            return true; // En caso de error, permitir el envío para que lo maneje el servidor
         }
-        
-        return allValid;
     }
 
     // Validar archivo individual

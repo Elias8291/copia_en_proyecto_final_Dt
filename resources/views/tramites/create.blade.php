@@ -387,11 +387,51 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (tramiteForm) {
         tramiteForm.addEventListener('submit', function(e) {
-            const btnEnviar = document.getElementById('btn-enviar-tramite');
+            console.log('Tramite Form: Iniciando envío del formulario');
+            
+            const btnEnviar = document.getElementById('btn-enviar-tramite-final');
             if (btnEnviar) {
                 btnEnviar.disabled = true;
                 btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
             }
+            
+            // Timeout de seguridad para evitar que se quede colgado
+            setTimeout(() => {
+                if (btnEnviar && btnEnviar.disabled) {
+                    console.error('Tramite Form: El formulario parece estar colgado, reactivando botón');
+                    btnEnviar.disabled = false;
+                    btnEnviar.innerHTML = `
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        Enviar Trámite
+                    `;
+                    
+                    // Mostrar mensaje de error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'bg-red-50 border border-red-200 rounded-lg p-4 mt-4';
+                    errorDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                            <p class="text-sm text-red-700">
+                                <strong>Error:</strong> El envío del formulario está tardando demasiado. Por favor, revise los datos y vuelva a intentar. Si el problema persiste, contacte al administrador.
+                            </p>
+                        </div>
+                    `;
+                    
+                    // Insertar el mensaje antes del formulario
+                    tramiteForm.insertBefore(errorDiv, tramiteForm.firstChild);
+                    
+                    // Remover el mensaje después de 10 segundos
+                    setTimeout(() => {
+                        if (errorDiv.parentNode) {
+                            errorDiv.remove();
+                        }
+                    }, 10000);
+                }
+            }, 30000); // 30 segundos de timeout
         });
     }
     

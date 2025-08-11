@@ -12,7 +12,9 @@ use App\Http\Controllers\{
     RevisionController,
     NotificacionController,
     CitasController,
-    ArchivoController
+    ArchivoController,
+    ProveedoresController,
+    ReportesController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -217,6 +219,17 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::post('/guardar-individual', [ArchivoController::class, 'guardarIndividual'])->name('guardar-individual');
     });
 
+    // Rutas para proveedores
+    Route::prefix('proveedores')->name('proveedores.')->group(function () {
+        Route::get('/', [ProveedoresController::class, 'index'])->name('index');
+        Route::get('/crear', [ProveedoresController::class, 'create'])->name('create');
+        Route::post('/', [ProveedoresController::class, 'store'])->name('store');
+        Route::get('/{proveedor}', [ProveedoresController::class, 'show'])->name('show');
+        Route::get('/{proveedor}/editar', [ProveedoresController::class, 'edit'])->name('edit');
+        Route::put('/{proveedor}', [ProveedoresController::class, 'update'])->name('update');
+        Route::delete('/{proveedor}', [ProveedoresController::class, 'destroy'])->name('destroy');
+    });
+
 });
 
 Route::prefix('api')->group(function () {
@@ -230,4 +243,63 @@ Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl'])
 Route::post('/extract-qr-url-web', [QRExtractorController::class, 'extractQrFromPdf'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
     ->name('extract.qr.web');
+
+// Ruta para exportar reporte de proveedores por vencer
+Route::get('/proveedores/reporte/por-vencer', [ProveedoresController::class, 'exportarProveedoresPorVencer'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.por-vencer');
+
+Route::get('/proveedores/reporte/dashboard-ejecutivo', [ProveedoresController::class, 'exportarDashboardEjecutivo'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.dashboard-ejecutivo');
+
+Route::get('/proveedores/reporte/geografico', [ProveedoresController::class, 'exportarReporteGeografico'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.geografico');
+
+Route::get('/proveedores/reporte/giro-economico', [ProveedoresController::class, 'exportarReporteGiroEconomico'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.giro-economico');
+
+Route::get('/proveedores/reporte/estado-padron', [ProveedoresController::class, 'exportarReporteEstadoPadron'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.estado-padron');
+
+Route::get('/proveedores/reporte/lista-contactos', [ProveedoresController::class, 'exportarListaContactos'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.lista-contactos');
+
+Route::get('/proveedores/reporte/filtrado', [ProveedoresController::class, 'exportarReporteFiltrado'])
+    ->middleware('auth')
+    ->name('proveedores.reporte.filtrado');
+
+// Rutas para reportes dinámicos
+Route::get('/reportes', [ReportesController::class, 'index'])
+    ->middleware('auth')
+    ->name('reportes.index');
+
+Route::get('/reportes/exportar-filtrado', [ReportesController::class, 'exportarFiltrado'])
+    ->middleware('auth')
+    ->name('reportes.exportar-filtrado');
+
+Route::get('/reportes/analisis', [ReportesController::class, 'analisisEstadistico'])
+    ->middleware('auth')
+    ->name('reportes.analisis');
+
+Route::get('/api/municipios-por-estado', [ReportesController::class, 'getMunicipiosPorEstado'])
+    ->middleware('auth')
+    ->name('api.municipios-por-estado');
+
+// Rutas para reportes trimestrales
+Route::get('/reportes/trimestrales', [ReportesController::class, 'reportesTrimestrales'])
+    ->middleware('auth')
+    ->name('reportes.trimestrales');
+
+Route::get('/reportes/exportar-trimestral', [ReportesController::class, 'exportarReporteTrimestral'])
+    ->middleware('auth')
+    ->name('reportes.exportar-trimestral');
+
+Route::get('/reportes/comparativo-trimestral', [ReportesController::class, 'comparativoTrimestral'])
+    ->middleware('auth')
+    ->name('reportes.comparativo-trimestral');
 

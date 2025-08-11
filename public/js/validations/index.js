@@ -281,7 +281,7 @@ const tramiteFormConfig = [
         rules: []
     },
     {
-        selector: '[name="aceptar_terminos"]',
+        selector: '[name="acepto_terminos"]',
         rules: ['required', (value) => {
             if (!value || value !== '1') {
                 return 'Debe aceptar los términos de servicio para continuar';
