@@ -307,20 +307,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                                         </svg>
                                     </a>
-                                    <button onclick="openDeleteModal('deleteModal{{ $user->id }}', '{{ $user->name ?? 'Usuario' }}', 'usuario')" 
-                                            class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                                            title="Eliminar">
-                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
                                 </div>
-                                
-                                <!-- Formulario oculto para eliminación -->
-                                <form id="delete-form-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="hidden">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
                             </td>
                         </tr>
                         @empty
@@ -400,22 +387,7 @@
                             Editar
                         </span>
                     </a>
-                    <button onclick="openDeleteModal('deleteModal{{ $user->id }}', '{{ $user->name ?? 'Usuario' }}', 'usuario')" 
-                            class="flex-1 text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-600 hover:text-white transition-all duration-200 truncate shadow-sm">
-                        <span class="flex items-center justify-center gap-1.5 sm:gap-2">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                            Eliminar
-                        </span>
-                    </button>
                 </div>
-                
-                <!-- Formulario oculto para eliminación móvil -->
-                <form id="delete-form-mobile-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="hidden">
-                    @csrf
-                    @method('DELETE')
-                </form>
             </div>
             @empty
             <div class="col-span-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8 lg:p-10 text-center">
@@ -461,19 +433,6 @@
     acceptText="Aceptar"
     :redirectUrl="route('users.index')"
 />
-
-<!-- Modales de confirmación de eliminación para cada usuario -->
-@foreach($users as $user)
-    <x-ui.modals.delete-confirmation-modal 
-        :id="'deleteModal' . $user->id"
-        title="Confirmar Eliminación"
-        message="¿Está seguro de que desea eliminar este usuario? Esta acción no se puede deshacer."
-        confirmText="Eliminar"
-        cancelText="Cancelar"
-        :itemName="$user->name ?? 'Usuario'"
-        itemType="usuario"
-    />
-@endforeach
 
 <!-- Mostrar modal de error si hay error de sesión -->
 @if(session('error'))

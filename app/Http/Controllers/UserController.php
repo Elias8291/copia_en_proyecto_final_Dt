@@ -12,169 +12,210 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    // Lista usuarios con filtros (búsqueda, rol, estado)
     public function index(Request $request)
     {
-        $users = User::with('roles')
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $s = $request->string('search');
-                $q->where(fn ($qq) =>
-                    $qq->where('nombre', 'like', "%{$s}%")
-                       ->orWhere('correo', 'like', "%{$s}%")
-                       ->orWhere('rfc', 'like', "%{$s}%")
-                );
-            })
-            ->when($request->filled('rol'), fn ($q) =>
-                $q->whereHas('roles', fn ($rq) => $rq->where('name', $request->rol))
-            )
-            ->when($request->filled('estado'), function ($q) use ($request) {
-                return $request->estado === 'activo'
-                    ? $q->whereNull('deleted_at')
-                    : $q->withTrashed()->whereNotNull('deleted_at');
-            }, fn ($q) => $q->whereNull('deleted_at'))
-            ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString()
-            ->through(fn ($user) => (object) [
-                'id'                => $user->id,
-                'name'              => $user->nombre,
-                'email'             => $user->correo,
-                'rfc'               => $user->rfc,
-                'roles'             => $user->roles,
+        $query = User::with('roles');
+    
+        if ($request->filled('search')) {
+            $query->where(fn ($q) => $q->where('nombre', 'like', "%{$request->search}%")
+                ->orWhere('correo', 'like', "%{$request->search}%")
+                ->orWhere('rfc', 'like', "%{$request->search}%"));
+        }
+    
+        if ($request->filled('rol')) {
+            $query->whereHas('roles', fn ($q) => $q->where('name', $request->rol));
+        }
+    
+        $query->when($request->filled('estado'), fn ($q) => $request->estado === 'activo' 
+            ? $q->whereNull('deleted_at')
+            : $q->withTrashed()->whereNotNull('deleted_at'), 
+            fn ($q) => $q->whereNull('deleted_at'));
+    
+        $users = $query->orderBy('nombre')->paginate(10)->withQueryString()->through(
+            fn ($user) => (object) [
+                'id' => $user->id,
+                'name' => $user->nombre,
+                'email' => $user->correo,
+                'rfc' => $user->rfc,
+                'roles' => $user->roles,
                 'email_verified_at' => $user->email_verified_at,
-                'created_at'        => $user->created_at,
-                'deleted_at'        => $user->deleted_at,
-            ]);
-
+                'created_at' => $user->created_at,
+                'deleted_at' => $user->deleted_at,
+            ]
+        );
+    
         return view('users.index', compact('users'));
     }
 
-    // Formulario de creación
     public function create()
     {
         $roles = Role::all();
         return view('users.create', compact('roles'));
     }
 
-    // Crea usuario y asigna rol (usa transacción)
     public function store(UserStoreRequest $request)
     {
-        DB::transaction(function () use ($request) {
-            $data = $request->validated();
+        try {
+            DB::beginTransaction();
 
+            // Crear el usuario
             $user = User::create([
-                'nombre'   => $data['nombre'],
-                'correo'   => $data['correo'],
-                'rfc'      => $data['rfc'],
-                'password' => Hash::make($data['password']),
+                'nombre' => $request->nombre,
+                'correo' => $request->correo,
+                'rfc' => $request->rfc,
+                'password' => Hash::make($request->password),
             ]);
 
-            $user->assignRole($request->input('roles', 'user'));
-        });
+            // Asignar roles si se proporcionan
+            if ($request->has('roles') && !empty($request->roles)) {
+                $user->assignRole($request->roles);
+            } else {
+                // Asignar rol por defecto si no se especifica
+                $user->assignRole('user');
+            }
 
-        return $this->flashSuccess('users.index', 'Usuario creado exitosamente', '¡Usuario Creado!', 'El usuario ha sido creado correctamente.');
+            DB::commit();
+
+            return redirect()->route('users.index')
+                ->with('success', 'Usuario creado exitosamente')
+                ->with('success_title', '¡Usuario Creado!')
+                ->with('success_message', 'El usuario ha sido creado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al crear el usuario: ' . $e->getMessage());
+        }
     }
 
-    // Muestra detalle (sin mutar el modelo)
     public function show(User $user)
     {
         $user->load('roles');
-
-        $presented = (object) [
-            'id'     => $user->id,
-            'name'   => $user->nombre,
-            'email'  => $user->correo,
-            'rfc'    => $user->rfc,
-            'rol'    => optional($user->roles->first())->name ?? 'user',
-            'estado' => $user->deleted_at ? 'inactivo' : 'activo',
-        ];
-
-        return view('users.show', ['user' => $presented]);
+        $user->email = $user->correo;
+        $user->rol = $user->roles->first() ? $user->roles->first()->name : 'user';
+        $user->estado = $user->deleted_at ? 'inactivo' : 'activo';
+        
+        return view('users.show', compact('user'));
     }
 
-    // Formulario de edición
     public function edit(User $user)
     {
         $roles = Role::all();
         $user->load('roles');
-
+        
         return view('users.edit', compact('user', 'roles'));
     }
 
-    // Actualiza datos y roles (solo cambia password si viene)
     public function update(UserUpdateRequest $request, User $user)
     {
-        DB::transaction(function () use ($request, $user) {
-            $data = $request->validated();
+        try {
+            DB::beginTransaction();
 
-            $payload = [
-                'nombre' => $data['nombre'],
-                'correo' => $data['correo'],
-                'rfc'    => $data['rfc'],
+            // Actualizar datos básicos
+            $userData = [
+                'nombre' => $request->nombre,
+                'correo' => $request->correo,
+                'rfc' => $request->rfc,
             ];
 
-            if (!empty($data['password'])) {
-                $payload['password'] = Hash::make($data['password']);
+            // Actualizar contraseña solo si se proporciona
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
             }
 
-            $user->update($payload);
+            $user->update($userData);
 
+            // Actualizar roles
             if ($request->has('roles')) {
-                $user->syncRoles($request->input('roles', []));
+                $user->syncRoles($request->roles);
             }
-        });
 
-        return $this->flashSuccess('users.index', 'Usuario actualizado exitosamente', '¡Usuario Actualizado!', 'El usuario ha sido actualizado correctamente.');
+            DB::commit();
+
+            return redirect()->route('users.index')
+                ->with('success', 'Usuario actualizado exitosamente')
+                ->with('success_title', '¡Usuario Actualizado!')
+                ->with('success_message', 'El usuario ha sido actualizado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al actualizar el usuario: ' . $e->getMessage());
+        }
     }
 
-    // Soft delete (no permite auto-eliminarse)
     public function destroy(User $user)
     {
-        if ($user->is(auth()->user())) {
+        try {
+            // Verificar que no se elimine el usuario actual
+            if ($user->id === auth()->id()) {
+                return redirect()->route('users.index')
+                    ->with('error', 'No puedes eliminar tu propia cuenta');
+            }
+
+            $user->delete();
+
             return redirect()->route('users.index')
-                ->with('error', 'No puedes eliminar tu propia cuenta');
+                ->with('success', 'Usuario eliminado exitosamente')
+                ->with('success_title', '¡Usuario Eliminado!')
+                ->with('success_message', 'El usuario ha sido eliminado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
+
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Error al eliminar el usuario: ' . $e->getMessage());
         }
-
-        $user->delete();
-
-        return $this->flashSuccess('users.index', 'Usuario eliminado exitosamente', '¡Usuario Eliminado!', 'El usuario ha sido eliminado correctamente.');
     }
 
-    // Restaura un usuario eliminado
     public function restore($id)
     {
-        $user = User::withTrashed()->findOrFail($id);
-        $user->restore();
+        try {
+            $user = User::withTrashed()->findOrFail($id);
+            $user->restore();
 
-        return $this->flashSuccess('users.index', 'Usuario restaurado exitosamente', '¡Usuario Restaurado!', 'El usuario ha sido restaurado correctamente.');
+            return redirect()->route('users.index')
+                ->with('success', 'Usuario restaurado exitosamente')
+                ->with('success_title', '¡Usuario Restaurado!')
+                ->with('success_message', 'El usuario ha sido restaurado correctamente.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
+
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Error al restaurar el usuario: ' . $e->getMessage());
+        }
     }
 
-    // Elimina permanentemente (no permite auto-eliminarse)
     public function forceDelete($id)
     {
-        $user = User::withTrashed()->findOrFail($id);
+        try {
+            $user = User::withTrashed()->findOrFail($id);
+            
+            // Verificar que no se elimine el usuario actual
+            if ($user->id === auth()->id()) {
+                return redirect()->route('users.index')
+                    ->with('error', 'No puedes eliminar permanentemente tu propia cuenta');
+            }
 
-        if ($user->is(auth()->user())) {
+            $user->forceDelete();
+
             return redirect()->route('users.index')
-                ->with('error', 'No puedes eliminar permanentemente tu propia cuenta');
+                ->with('success', 'Usuario eliminado permanentemente')
+                ->with('success_title', '¡Usuario Eliminado Permanentemente!')
+                ->with('success_message', 'El usuario ha sido eliminado permanentemente del sistema.')
+                ->with('success_accept_text', 'Aceptar')
+                ->with('success_redirect', route('users.index'));
+
+        } catch (\Exception $e) {
+            return redirect()->route('users.index')
+                ->with('error', 'Error al eliminar permanentemente el usuario: ' . $e->getMessage());
         }
-
-        $user->forceDelete();
-
-        return $this->flashSuccess('users.index', 'Usuario eliminado permanentemente', '¡Usuario Eliminado Permanentemente!', 'El usuario ha sido eliminado permanentemente del sistema.');
-    }
-
-    // Helper: redirección + mensajes de éxito unificados
-    private function flashSuccess(string $route, string $msg, string $title, string $detail)
-    {
-        return redirect()
-            ->route($route)
-            ->with([
-                'success'             => $msg,
-                'success_title'       => $title,
-                'success_message'     => $detail,
-                'success_accept_text' => 'Aceptar',
-                'success_redirect'    => route($route),
-            ]);
     }
 }
