@@ -12,9 +12,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    {{-- Forzar uso de archivos compilados --}}
-    <link rel="stylesheet" href="/build/assets/app-CZkbBSon.css">
-    <script src="/build/assets/app-D-nbQjmd.js" defer></script>
+    {{-- Vite Assets --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <link rel="stylesheet" href="/css/global-input-styles.css">
 

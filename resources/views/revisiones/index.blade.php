@@ -314,61 +314,41 @@
                 }
             @endphp
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-                <div class="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-lg p-3">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium text-red-800">Muy Urgentes</p>
-                            <p class="text-lg font-bold text-red-900">{{ $muyUrgentes }}</p>
-                        </div>
-                        <div class="w-8 h-8 bg-red-200 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                            </svg>
-                        </div>
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-full">
+                    <div class="w-5 h-5 bg-red-200 rounded-full flex items-center justify-center">
+                        <svg class="w-3 h-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                        </svg>
                     </div>
+                    <span class="text-xs font-medium text-red-800">Muy Urgentes: {{ $muyUrgentes }}</span>
                 </div>
                 
-                <div class="bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-3">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium text-orange-800">Urgentes</p>
-                            <p class="text-lg font-bold text-orange-900">{{ $urgentes }}</p>
-                        </div>
-                        <div class="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 rounded-full">
+                    <div class="w-5 h-5 bg-orange-200 rounded-full flex items-center justify-center">
+                        <svg class="w-3 h-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
                     </div>
+                    <span class="text-xs font-medium text-orange-800">Urgentes: {{ $urgentes }}</span>
                 </div>
                 
-                <div class="bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-3">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium text-purple-800">Renovaciones</p>
-                            <p class="text-lg font-bold text-purple-900">{{ $renovaciones }}</p>
-                        </div>
-                        <div class="w-8 h-8 bg-purple-200 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                            </svg>
-                        </div>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 rounded-full">
+                    <div class="w-5 h-5 bg-purple-200 rounded-full flex items-center justify-center">
+                        <svg class="w-3 h-3 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
                     </div>
+                    <span class="text-xs font-medium text-purple-800">Renovaciones: {{ $renovaciones }}</span>
                 </div>
                 
-                <div class="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-3">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-xs font-medium text-blue-800">Total</p>
-                            <p class="text-lg font-bold text-blue-900">{{ $totalTramites }}</p>
-                        </div>
-                        <div class="w-8 h-8 bg-blue-200 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                            </svg>
-                        </div>
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-full">
+                    <div class="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center">
+                        <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
                     </div>
+                    <span class="text-xs font-medium text-blue-800">Total: {{ $totalTramites }}</span>
                 </div>
             </div>
             
@@ -588,6 +568,27 @@
                         @php
                             // Calcular prioridad basada en antigüedad y tipo
                             $diasTranscurridos = $tramite->created_at->diffInDays(now());
+                            $horasTranscurridas = $tramite->created_at->diffInHours(now());
+                            $minutosTranscurridos = $tramite->created_at->diffInMinutes(now());
+                            
+                            // Formatear tiempo transcurrido
+                            $tiempoTranscurrido = '';
+                            if ($diasTranscurridos > 0) {
+                                $tiempoTranscurrido = $diasTranscurridos . ' ' . ($diasTranscurridos == 1 ? 'día' : 'días');
+                                $horasRestantes = $horasTranscurridas % 24;
+                                if ($horasRestantes > 0) {
+                                    $tiempoTranscurrido .= ', ' . $horasRestantes . ' ' . ($horasRestantes == 1 ? 'hora' : 'horas');
+                                }
+                            } elseif ($horasTranscurridas > 0) {
+                                $tiempoTranscurrido = $horasTranscurridas . ' ' . ($horasTranscurridas == 1 ? 'hora' : 'horas');
+                                $minutosRestantes = $minutosTranscurridos % 60;
+                                if ($minutosRestantes > 0) {
+                                    $tiempoTranscurrido .= ', ' . $minutosRestantes . ' ' . ($minutosRestantes == 1 ? 'minuto' : 'minutos');
+                                }
+                            } else {
+                                $tiempoTranscurrido = $minutosTranscurridos . ' ' . ($minutosTranscurridos == 1 ? 'minuto' : 'minutos');
+                            }
+                            
                             $prioridad = 'baja';
                             $prioridadColor = 'bg-gray-100 text-gray-600';
                             $prioridadIcon = 'clock';
@@ -617,8 +618,10 @@
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
                                 <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
                                     <div class="relative">
-                                        <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
-                                            <span class="text-white font-semibold text-xs sm:text-sm md:text-base">#{{ $tramite->id }}</span>
+                                        <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
                                         </div>
                                         @if($prioridad !== 'baja')
                                         <div class="absolute -top-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 {{ $prioridadColor }} rounded-full flex items-center justify-center">
@@ -637,7 +640,7 @@
                                     <div class="min-w-0 flex-1">
                                         <div class="flex items-center gap-2">
                                             <div class="font-semibold text-gray-900 truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl text-xs sm:text-sm md:text-base">
-                                                Trámite #{{ $tramite->id }}
+                                                ID Trámite: {{ $tramite->id }}
                                             </div>
                                             @if($prioridad !== 'baja')
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium {{ $prioridadColor }}">
@@ -652,11 +655,6 @@
                                             @endif
                                         </div>
                                         <div class="text-xs sm:text-sm text-gray-500">{{ $tramite->created_at->format('d/m/Y H:i') }}</div>
-                                        @if($diasTranscurridos > 0)
-                                        <div class="text-xs text-gray-400">
-                                            {{ $diasTranscurridos }} {{ $diasTranscurridos == 1 ? 'día' : 'días' }} de antigüedad
-                                        </div>
-                                        @endif
                                     </div>
                                 </div>
                             </td>
@@ -745,6 +743,27 @@
             @php
                 // Calcular prioridad basada en antigüedad y tipo
                 $diasTranscurridos = $tramite->created_at->diffInDays(now());
+                $horasTranscurridas = $tramite->created_at->diffInHours(now());
+                $minutosTranscurridos = $tramite->created_at->diffInMinutes(now());
+                
+                // Formatear tiempo transcurrido
+                $tiempoTranscurrido = '';
+                if ($diasTranscurridos > 0) {
+                    $tiempoTranscurrido = $diasTranscurridos . ' ' . ($diasTranscurridos == 1 ? 'día' : 'días');
+                    $horasRestantes = $horasTranscurridas % 24;
+                    if ($horasRestantes > 0) {
+                        $tiempoTranscurrido .= ', ' . $horasRestantes . ' ' . ($horasRestantes == 1 ? 'hora' : 'horas');
+                    }
+                } elseif ($horasTranscurridas > 0) {
+                    $tiempoTranscurrido = $horasTranscurridas . ' ' . ($horasTranscurridas == 1 ? 'hora' : 'horas');
+                    $minutosRestantes = $minutosTranscurridos % 60;
+                    if ($minutosRestantes > 0) {
+                        $tiempoTranscurrido .= ', ' . $minutosRestantes . ' ' . ($minutosRestantes == 1 ? 'minuto' : 'minutos');
+                    }
+                } else {
+                    $tiempoTranscurrido = $minutosTranscurridos . ' ' . ($minutosTranscurridos == 1 ? 'minuto' : 'minutos');
+                }
+                
                 $prioridad = 'baja';
                 $prioridadColor = 'bg-gray-100 text-gray-600';
                 $prioridadIcon = 'clock';
@@ -774,8 +793,10 @@
                 <div class="flex items-start justify-between mb-2 sm:mb-3 md:mb-4">
                     <div class="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 lg:space-x-4 min-w-0 flex-1">
                         <div class="relative">
-                            <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
-                                <span class="text-white font-semibold text-xs sm:text-sm md:text-base lg:text-lg">#{{ $tramite->id }}</span>
+                            <div class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
                             </div>
                             @if($prioridad !== 'baja')
                             <div class="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 lg:w-5 lg:h-5 {{ $prioridadColor }} rounded-full flex items-center justify-center">
@@ -793,7 +814,7 @@
                         </div>
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-1 sm:gap-2">
-                                <span class="text-gray-700 font-medium text-xs sm:text-sm md:text-base lg:text-lg block">Trámite #{{ $tramite->id }}</span>
+                                <span class="text-gray-700 font-medium text-xs sm:text-sm md:text-base lg:text-lg block">ID Trámite: {{ $tramite->id }}</span>
                                 @if($prioridad !== 'baja')
                                 <span class="inline-flex items-center px-1 py-0.5 rounded-full text-xs font-medium {{ $prioridadColor }}">
                                     @if($prioridad === 'muy_alta')
@@ -807,9 +828,7 @@
                                 @endif
                             </div>
                             <p class="text-xs sm:text-sm md:text-base text-gray-500 truncate">{{ $tramite->tipo_tramite }}</p>
-                            @if($diasTranscurridos > 0)
-                            <p class="text-xs text-gray-400">{{ $diasTranscurridos }} {{ $diasTranscurridos == 1 ? 'día' : 'días' }} de antigüedad</p>
-                            @endif
+
                         </div>
                     </div>
                     <div class="flex-shrink-0 ml-1 sm:ml-2 md:ml-3">

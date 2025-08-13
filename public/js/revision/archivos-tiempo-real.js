@@ -4,34 +4,24 @@ class ArchivosEvaluacion {
     }
 
     init() {
-        this.cargarEstadosArchivos();
+        this.cargarEstadoSeccion();
+        this.configurarEventListeners();
     }
 
-    async cargarEstadosArchivos() {
-        const tramiteId = this.obtenerTramiteId();
-        if (!tramiteId) return;
-
-        try {
-            const response = await fetch(`/archivos/tramite/${tramiteId}`);
-            const data = await response.json();
-
-            if (data.success && data.data) {
-                data.data.forEach(archivo => {
-                    this.actualizarEstadoArchivo(archivo.id, archivo.status, archivo.comentario_revision);
-                });
+    configurarEventListeners() {
+        document.addEventListener('click', (e) => {
+            if (e.target.matches('[data-archivo-action]')) {
+                const archivoId = e.target.getAttribute('data-archivo-id');
+                const action = e.target.getAttribute('data-archivo-action');
                 
-                // Cargar estado de la sección de archivos
-                await this.cargarEstadoSeccionArchivos();
-                
-                // Evaluar automáticamente la sección
-                this.evaluarSeccionDocumentos();
+                if (archivoId && action) {
+                    this.evaluarArchivo(archivoId, action);
+                }
             }
-        } catch (error) {
-            console.error('Error:', error);
-        }
+        });
     }
 
-    async cargarEstadoSeccionArchivos() {
+    async cargarEstadoSeccion() {
         const tramiteId = this.obtenerTramiteId();
         if (!tramiteId) return;
 
@@ -39,26 +29,41 @@ class ArchivosEvaluacion {
             const response = await fetch(`/revisiones/${tramiteId}/seccion/estado?seccion=archivos`);
             const data = await response.json();
             
-            if (data.evaluada) {
-                const comentarioField = document.getElementById('comentario_archivos');
-                if (comentarioField && data.comentario) {
-                    comentarioField.value = data.comentario;
-                }
+            const comentarioField = document.getElementById('comentario_archivos');
+            if (comentarioField && data.comentario) {
+                comentarioField.value = data.comentario;
+            }
+            
+            const sectionElement = document.querySelector('[data-section="archivos"]');
+            if (sectionElement) {
+                sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
                 
-                const sectionElement = document.querySelector('[data-section="archivos"]');
-                if (sectionElement) {
-                    sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
-                    sectionElement.classList.add(data.estado === 'Aprobado' ? 'seccion-aprobada' : 'seccion-rechazada');
+                if (data.evaluada) {
+                    if (data.estado === 'Aprobado') {
+                        sectionElement.classList.add('seccion-aprobada');
+                    } else if (data.estado === 'Rechazado') {
+                        sectionElement.classList.add('seccion-rechazada');
+                    } else if (data.estado === 'Pendiente') {
+                        sectionElement.classList.add('seccion-pendiente');
+                    }
+                } else {
+                    sectionElement.classList.add('seccion-pendiente');
                 }
-                
-                const estadoEl = document.getElementById('estado_archivos');
-                if (estadoEl) {
+            }
+            
+            const estadoEl = document.getElementById('estado_archivos');
+            if (estadoEl) {
+                if (data.evaluada) {
                     estadoEl.textContent = data.estado;
                     estadoEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         data.estado === 'Aprobado' ? 'bg-green-100 text-green-800' : 
                         data.estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 
+                        data.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-600'
                     }`;
+                } else {
+                    estadoEl.textContent = 'Pendiente';
+                    estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
                 }
             }
         } catch (error) {
@@ -75,6 +80,7 @@ class ArchivosEvaluacion {
             estadoEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 status === 'Aprobado' ? 'bg-green-100 text-green-800' : 
                 status === 'Rechazado' ? 'bg-red-100 text-red-800' : 
+                status === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
                 'bg-gray-100 text-gray-600'
             }`;
         }
@@ -133,7 +139,6 @@ class ArchivosEvaluacion {
             if (typeof evaluarSeccion === 'function') {
                 evaluarSeccion('archivos', decisionSeccion);
             } else {
-                // Fallback: actualizar manualmente si la función no está disponible
                 this.actualizarEstadoSeccionManual('archivos', decisionSeccion);
             }
         }, 100);
@@ -144,11 +149,13 @@ class ArchivosEvaluacion {
         const estadoEl = document.getElementById(`estado_${seccion}`);
         
         if (sectionElement) {
-            sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
+            sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
             if (estado === 'Aprobado') {
                 sectionElement.classList.add('seccion-aprobada');
             } else if (estado === 'Rechazado') {
                 sectionElement.classList.add('seccion-rechazada');
+            } else if (estado === 'Pendiente') {
+                sectionElement.classList.add('seccion-pendiente');
             }
         }
         
@@ -157,6 +164,7 @@ class ArchivosEvaluacion {
             estadoEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 estado === 'Aprobado' ? 'bg-green-100 text-green-800' : 
                 estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 
+                estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
                 'bg-gray-100 text-gray-600'
             }`;
         }

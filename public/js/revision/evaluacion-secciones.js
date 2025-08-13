@@ -1,6 +1,4 @@
-// Función global para evaluar secciones
 async function evaluarSeccion(seccion, estado) {
-    // Validación especial para la sección de archivos
     if (seccion === 'archivos' && estado === 'Aprobado') {
         const archivos = document.querySelectorAll('[id^="estado_archivo_"]');
         const estados = Array.from(archivos).map(el => el.textContent.trim());
@@ -32,20 +30,25 @@ async function evaluarSeccion(seccion, estado) {
         });
 
         if (response.ok) {
-            // Actualizar estado visual
             const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
             if (sectionElement) {
-                sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
-                sectionElement.classList.add(estado === 'Aprobado' ? 'seccion-aprobada' : 'seccion-rechazada');
+                sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
+                if (estado === 'Aprobado') {
+                    sectionElement.classList.add('seccion-aprobada');
+                } else if (estado === 'Rechazado') {
+                    sectionElement.classList.add('seccion-rechazada');
+                } else if (estado === 'Pendiente') {
+                    sectionElement.classList.add('seccion-pendiente');
+                }
             }
             
-            // Actualizar indicador de estado
             const estadoEl = document.getElementById(`estado_${seccion}`);
             if (estadoEl) {
                 estadoEl.textContent = estado;
                 estadoEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     estado === 'Aprobado' ? 'bg-green-100 text-green-800' : 
                     estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 
+                    estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-gray-100 text-gray-600'
                 }`;
             }
@@ -55,7 +58,6 @@ async function evaluarSeccion(seccion, estado) {
     }
 }
 
-// Función para mostrar/ocultar área de cotejo
 function toggleCotejo(seccion) {
     const contentElement = document.getElementById(`content_${seccion}`);
     const cotejoElement = document.getElementById(`cotejo_${seccion}`);
@@ -65,13 +67,11 @@ function toggleCotejo(seccion) {
         const isHidden = cotejoElement.classList.contains('hidden');
         
         if (isHidden) {
-            // Mostrar cotejo al lado
             contentElement.classList.remove('grid-cols-1');
             contentElement.classList.add('grid-cols-2');
             cotejoElement.classList.remove('hidden');
             toggleText.textContent = 'Ocultar Cotejo';
         } else {
-            // Ocultar cotejo
             contentElement.classList.remove('grid-cols-2');
             contentElement.classList.add('grid-cols-1');
             cotejoElement.classList.add('hidden');
@@ -80,7 +80,6 @@ function toggleCotejo(seccion) {
     }
 }
 
-// Función para mostrar/ocultar panel de historial
 function toggleHistorial() {
     const contenidoHistorial = document.getElementById('contenido_historial');
     const toggleIcon = document.getElementById('toggle_icon_historial');
@@ -90,12 +89,10 @@ function toggleHistorial() {
         const isHidden = contenidoHistorial.classList.contains('hidden');
         
         if (isHidden) {
-            // Mostrar historial
             contenidoHistorial.classList.remove('hidden');
             toggleIcon.style.transform = 'rotate(180deg)';
             toggleText.textContent = 'Ocultar Historial';
         } else {
-            // Ocultar historial
             contenidoHistorial.classList.add('hidden');
             toggleIcon.style.transform = 'rotate(0deg)';
             toggleText.textContent = 'Ver Historial';
@@ -103,9 +100,7 @@ function toggleHistorial() {
     }
 }
 
-// Función para mostrar mensajes de error
 function mostrarError(mensaje) {
-    // Crear o actualizar elemento de error
     let errorElement = document.getElementById('error-mensaje');
     if (!errorElement) {
         errorElement = document.createElement('div');
@@ -128,7 +123,6 @@ function mostrarError(mensaje) {
         </div>
     `;
     
-    // Auto-remover después de 5 segundos
     setTimeout(() => {
         if (errorElement && errorElement.parentElement) {
             errorElement.remove();
@@ -136,7 +130,6 @@ function mostrarError(mensaje) {
     }, 5000);
 }
 
-// Cargar estados iniciales al cargar la página
 document.addEventListener('DOMContentLoaded', async function() {
     const tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');
     if (!tramiteId) return;
@@ -145,40 +138,51 @@ document.addEventListener('DOMContentLoaded', async function() {
     if (window.esPersonaMoral) {
         secciones.push('constitucion', 'accionistas', 'apoderado');
     }
-    // NO incluir 'archivos' aquí - se maneja en archivos-tiempo-real.js
     
-    // Cargar estado de cada sección
     for (const seccion of secciones) {
         try {
             const response = await fetch(`/revisiones/${tramiteId}/seccion/estado?seccion=${seccion}`);
             const data = await response.json();
             
-            if (data.evaluada) {
-                const comentarioField = document.getElementById(`comentario_${seccion}`);
-                if (comentarioField && data.comentario) {
-                    comentarioField.value = data.comentario;
-                }
+            const comentarioField = document.getElementById(`comentario_${seccion}`);
+            if (comentarioField && data.comentario) {
+                comentarioField.value = data.comentario;
+            }
+            
+            const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
+            if (sectionElement) {
+                sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
                 
-                const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
-                if (sectionElement) {
-                    sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
-                    sectionElement.classList.add(data.estado === 'Aprobado' ? 'seccion-aprobada' : 'seccion-rechazada');
+                if (data.evaluada) {
+                    if (data.estado === 'Aprobado') {
+                        sectionElement.classList.add('seccion-aprobada');
+                    } else if (data.estado === 'Rechazado') {
+                        sectionElement.classList.add('seccion-rechazada');
+                    } else if (data.estado === 'Pendiente') {
+                        sectionElement.classList.add('seccion-pendiente');
+                    }
+                } else {
+                    sectionElement.classList.add('seccion-pendiente');
                 }
-                
-                const estadoEl = document.getElementById(`estado_${seccion}`);
-                if (estadoEl) {
+            }
+            
+            const estadoEl = document.getElementById(`estado_${seccion}`);
+            if (estadoEl) {
+                if (data.evaluada) {
                     estadoEl.textContent = data.estado;
                     estadoEl.className = `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         data.estado === 'Aprobado' ? 'bg-green-100 text-green-800' : 
                         data.estado === 'Rechazado' ? 'bg-red-100 text-red-800' : 
+                        data.estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-gray-100 text-gray-600'
                     }`;
+                } else {
+                    estadoEl.textContent = 'Pendiente';
+                    estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
                 }
             }
         } catch (error) {
             console.error(`Error al cargar estado de ${seccion}:`, error);
         }
     }
-});
-
-// Las funciones de decisiones finales se han movido a decisiones-finales.js 
+}); 

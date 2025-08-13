@@ -1,11 +1,9 @@
-// Funciones para decisiones finales de revisión digital
 class DecisionesFinales {
     constructor() {
         this.tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');
         this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
     }
 
-    // Validar que todas las secciones estén aprobadas
     async validarSeccionesAprobadas() {
         if (!this.tramiteId) return false;
 
@@ -19,7 +17,6 @@ class DecisionesFinales {
         }
     }
 
-    // Aprobar y agendar cita
     async aprobarYAgendarCita() {
         const todasAprobadas = await this.validarSeccionesAprobadas();
         
@@ -35,7 +32,6 @@ class DecisionesFinales {
         );
     }
 
-    // Rechazar para corrección
     rechazarParaCorreccion() {
         this.mostrarConfirmacion(
             'Rechazar para Corrección',
@@ -44,7 +40,6 @@ class DecisionesFinales {
         );
     }
 
-    // Rechazar completamente
     rechazarTramite() {
         this.mostrarConfirmacion(
             'Rechazar Trámite',
@@ -53,16 +48,12 @@ class DecisionesFinales {
         );
     }
 
-    // Ejecutar la decisión seleccionada
     async ejecutarDecision(accion) {
         let comentarioGeneral = document.getElementById('comentario_general')?.value || '';
         
-        // Convertir string vacío a null
         if (comentarioGeneral === '') {
             comentarioGeneral = null;
         }
-        
-        // Log para debugging
         
         try {
             const response = await fetch(`/revisiones/${this.tramiteId}/${accion}`, {
@@ -77,7 +68,6 @@ class DecisionesFinales {
             const result = await response.json();
 
             if (result.success) {
-                // Mostrar modal de éxito directamente
                 this.mostrarModalExito(result.message);
             } else {
                 this.mostrarError(result.message);
@@ -88,7 +78,6 @@ class DecisionesFinales {
         }
     }
 
-    // Mostrar modal de confirmación
     mostrarConfirmacion(titulo, mensaje, callback) {
         if (typeof showConfirmModal === 'function') {
             showConfirmModal(titulo, mensaje, null, callback);
@@ -99,7 +88,6 @@ class DecisionesFinales {
         }
     }
 
-    // Mostrar mensaje de error
     mostrarError(mensaje) {
         if (typeof mostrarError === 'function') {
             mostrarError(mensaje);
@@ -108,7 +96,6 @@ class DecisionesFinales {
         }
     }
 
-    // Mostrar mensaje de éxito
     mostrarExito(mensaje) {
         if (typeof mostrarExito === 'function') {
             mostrarExito(mensaje);
@@ -117,9 +104,7 @@ class DecisionesFinales {
         }
     }
 
-    // Mostrar modal de éxito
     mostrarModalExito(mensaje) {
-        // Crear modal dinámicamente
         const modalHtml = `
             <div id="modal-exito-dinamico" class="fixed z-50 inset-0 overflow-y-auto">
                 <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -171,17 +156,14 @@ class DecisionesFinales {
             </div>
         `;
         
-        // Agregar modal al body
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 }
 
-// Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
     window.decisionesFinales = new DecisionesFinales();
 });
 
-// Funciones globales para el modal
 function cerrarModalExito() {
     const modal = document.getElementById('modal-exito-dinamico');
     if (modal) {
@@ -194,7 +176,6 @@ function aceptarExito() {
     window.location.href = '/revisiones';
 }
 
-// Funciones globales para compatibilidad
 window.aprobarYAgendarCita = () => window.decisionesFinales?.aprobarYAgendarCita();
 window.rechazarParaCorreccion = () => window.decisionesFinales?.rechazarParaCorreccion();
 window.rechazarTramite = () => window.decisionesFinales?.rechazarTramite(); 

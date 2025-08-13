@@ -170,12 +170,10 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Evaluación de secciones (como en revisión digital)
 function evaluarSeccion(seccion, decision) {
     const textarea = document.getElementById(`comentario_${seccion}`);
     const comentario = textarea ? textarea.value.trim() : '';
     
-    // Verificar automáticamente el estado de los documentos
     const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
     let tieneRechazados = false;
     let tienePendientes = false;
@@ -189,38 +187,34 @@ function evaluarSeccion(seccion, decision) {
         }
     });
     
-    // Si hay documentos rechazados, automáticamente rechazar la sección
     if (tieneRechazados) {
         decision = 'Rechazado';
         mostrarNotificacion('La sección se ha marcado automáticamente como Rechazada porque hay documentos rechazados.', 'warning');
     }
-    // Si hay documentos pendientes y se intenta aprobar, no permitir
     else if (tienePendientes && decision === 'Aprobado') {
         mostrarNotificacion('No se puede aprobar la sección porque hay documentos pendientes de evaluación.', 'error');
         return;
     }
     
-    // Actualizar UI visualmente
     const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
     if (sectionElement) {
-        sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
+        sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
         if (decision === 'Aprobado') {
             sectionElement.classList.add('seccion-aprobada');
         } else if (decision === 'Rechazado') {
             sectionElement.classList.add('seccion-rechazada');
+        } else if (decision === 'Pendiente') {
+            sectionElement.classList.add('seccion-pendiente');
         }
     }
     
-    // Feedback visual
     mostrarNotificacion(`Sección ${seccion} evaluada como: ${decision}`, 
                        decision === 'Aprobado' ? 'success' : 'warning');
     
-    // Guardar en localStorage para persistencia
     localStorage.setItem(`revision_presencial_${seccion}_decision`, decision);
     localStorage.setItem(`revision_presencial_${seccion}_comentario`, comentario);
 }
 
-// Evaluación de documentos presenciales (mantener compatibilidad)
 function evaluarDocumentosPresencial(decision) {
     evaluarSeccion('archivos', decision);
 }
@@ -259,9 +253,7 @@ if (formRevisionPresencial) {
 });
 }
 
-// Funciones para decisiones finales
 function aprobarTramite() {
-    // Verificar que no haya archivos rechazados
     const archivosRechazados = document.querySelectorAll('[id^="estado_archivo_"]');
     let tieneRechazados = false;
     
@@ -276,24 +268,19 @@ function aprobarTramite() {
         return;
     }
     
-    // Mostrar modal de confirmación específico para aprobar
     const modalAprobar = document.getElementById('modal-confirmacion-aprobar');
     if (modalAprobar) {
         modalAprobar.classList.remove('hidden');
         
-        // Configurar el botón de confirmar
         const confirmBtn = modalAprobar.querySelector('[data-behavior="commit"]');
         const cancelBtns = modalAprobar.querySelectorAll('[data-behavior="cancel"]');
         
-        // Remover event listeners previos
         confirmBtn.replaceWith(confirmBtn.cloneNode(true));
         cancelBtns.forEach(btn => btn.replaceWith(btn.cloneNode(true)));
         
-        // Obtener los nuevos elementos
         const newConfirmBtn = modalAprobar.querySelector('[data-behavior="commit"]');
         const newCancelBtns = modalAprobar.querySelectorAll('[data-behavior="cancel"]');
         
-        // Agregar event listener para confirmar
         newConfirmBtn.addEventListener('click', function() {
             const comentarios = document.getElementById('comentario_archivos').value;
             
@@ -333,21 +320,18 @@ function aprobarTramite() {
             modalAprobar.classList.add('hidden');
         });
         
-        // Agregar event listeners para cancelar
         newCancelBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 modalAprobar.classList.add('hidden');
             });
         });
         
-        // Cerrar modal al hacer clic fuera
         modalAprobar.addEventListener('click', function(e) {
             if (e.target === modalAprobar) {
                 modalAprobar.classList.add('hidden');
             }
         });
         
-        // Cerrar modal con Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && !modalAprobar.classList.contains('hidden')) {
                 modalAprobar.classList.add('hidden');
@@ -366,15 +350,12 @@ function rechazarTramite() {
         const confirmBtn = modalRechazar.querySelector('[data-behavior="commit"]');
         const cancelBtns = modalRechazar.querySelectorAll('[data-behavior="cancel"]');
         
-        // Remover event listeners previos
         confirmBtn.replaceWith(confirmBtn.cloneNode(true));
         cancelBtns.forEach(btn => btn.replaceWith(btn.cloneNode(true)));
         
-        // Obtener los nuevos elementos
         const newConfirmBtn = modalRechazar.querySelector('[data-behavior="commit"]');
         const newCancelBtns = modalRechazar.querySelectorAll('[data-behavior="cancel"]');
         
-        // Agregar event listener para confirmar
         newConfirmBtn.addEventListener('click', function() {
             const comentarios = document.getElementById('comentario_archivos').value;
             
@@ -406,21 +387,18 @@ function rechazarTramite() {
             modalRechazar.classList.add('hidden');
         });
         
-        // Agregar event listeners para cancelar
         newCancelBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 modalRechazar.classList.add('hidden');
             });
         });
         
-        // Cerrar modal al hacer clic fuera
         modalRechazar.addEventListener('click', function(e) {
             if (e.target === modalRechazar) {
                 modalRechazar.classList.add('hidden');
             }
         });
         
-        // Cerrar modal con Escape
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && !modalRechazar.classList.contains('hidden')) {
                 modalRechazar.classList.add('hidden');
@@ -429,24 +407,17 @@ function rechazarTramite() {
     }
 }
 
-// Cargar datos guardados al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     cargarDatosGuardados();
-    
-    // Configurar observador para cambios automáticos en estados de documentos
     configurarObservadorEstadosDocumentos();
 });
 
-// Configurar observador para detectar cambios en estados de documentos
 function configurarObservadorEstadosDocumentos() {
-    // Observar cambios en elementos que contengan estados de archivos
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'childList' || mutation.type === 'characterData') {
-                // Verificar si el cambio afecta a elementos de estado de archivos
                 const target = mutation.target;
                 if (target.id && target.id.startsWith('estado_archivo_')) {
-                    // Pequeño delay para asegurar que el cambio se haya completado
                     setTimeout(() => {
                         actualizarEstadoSeccionAutomaticamente();
                     }, 100);
@@ -455,7 +426,6 @@ function configurarObservadorEstadosDocumentos() {
         });
     });
     
-    // Observar todos los elementos de estado de archivos
     const elementosEstado = document.querySelectorAll('[id^="estado_archivo_"]');
     elementosEstado.forEach(elemento => {
         observer.observe(elemento, {
@@ -479,14 +449,15 @@ function cargarDatosGuardados() {
                 textarea.value = comentario;
             }
             
-            // Aplicar estado visual
             const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
             if (sectionElement) {
-                sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
+                sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
                 if (decision === 'Aprobado') {
                     sectionElement.classList.add('seccion-aprobada');
                 } else if (decision === 'Rechazado') {
                     sectionElement.classList.add('seccion-rechazada');
+                } else if (decision === 'Pendiente') {
+                    sectionElement.classList.add('seccion-pendiente');
                 }
             }
         }
@@ -501,7 +472,6 @@ function limpiarDatosGuardados() {
     });
 }
 
-// Función para verificar el estado de los archivos
 function verificarEstadoArchivos() {
     const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
     let aprobados = 0;
@@ -523,19 +493,16 @@ function verificarEstadoArchivos() {
         }
     });
     
-    // Mostrar resumen en consola para debugging
     console.log(`Archivos: ${aprobados} aprobados, ${rechazados} rechazados, ${pendientes} pendientes`);
     
     return { aprobados, rechazados, pendientes };
 }
 
-// Función para verificar si se puede aprobar
 function sePuedeAprobar() {
     const estado = verificarEstadoArchivos();
     return estado.rechazados === 0 && estado.pendientes === 0;
 }
 
-// Función para actualizar automáticamente el estado de la sección cuando cambian los documentos
 function actualizarEstadoSeccionAutomaticamente() {
     const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
     let tieneRechazados = false;
@@ -553,19 +520,16 @@ function actualizarEstadoSeccionAutomaticamente() {
         }
     });
     
-    // Si hay documentos rechazados, automáticamente rechazar la sección
     if (tieneRechazados) {
         evaluarSeccion('archivos', 'Rechazado');
     }
-    // Si todos están aprobados, automáticamente aprobar la sección
     else if (todosAprobados && archivosEstados.length > 0) {
         evaluarSeccion('archivos', 'Aprobado');
     }
-    // Si hay pendientes, mantener estado neutral
     else if (tienePendientes) {
         const sectionElement = document.querySelector('[data-section="archivos"]');
         if (sectionElement) {
-            sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada');
+            sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
         }
         localStorage.removeItem('revision_presencial_archivos_decision');
     }
@@ -617,10 +581,16 @@ window.actualizarEstadoSeccionAutomaticamente = actualizarEstadoSeccionAutomatic
     background-color: #fef2f2;
 }
 
+.seccion-pendiente {
+    border-left: 4px solid #eab308;
+    background-color: #fefce8;
+}
+
 /* Responsive improvements for very small screens */
 @media (max-width: 480px) {
     .seccion-aprobada,
-    .seccion-rechazada {
+    .seccion-rechazada,
+    .seccion-pendiente {
         border-left-width: 3px;
     }
 }

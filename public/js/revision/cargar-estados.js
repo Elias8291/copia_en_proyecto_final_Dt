@@ -65,19 +65,26 @@ class RevisionDigitalEstados {
         if (comentarioEl) comentarioEl.value = datos.comentario || '';
         
         if (estadoEl) {
-            estadoEl.textContent = datos.estado;
-            estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-            
-            if (datos.estado === 'Aprobado') {
-                estadoEl.classList.add('bg-green-100', 'text-green-800');
-            } else if (datos.estado === 'Rechazado') {
-                estadoEl.classList.add('bg-red-100', 'text-red-800');
+            if (!datos || !datos.ya_evaluada) {
+                estadoEl.textContent = 'Pendiente';
+                estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
             } else {
-                estadoEl.classList.add('bg-gray-100', 'text-gray-600');
-            }
-            
-            if (datos.ya_evaluada) {
-                estadoEl.innerHTML += ' <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+                estadoEl.textContent = datos.estado;
+                estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+                
+                if (datos.estado === 'Aprobado') {
+                    estadoEl.classList.add('bg-green-100', 'text-green-800');
+                } else if (datos.estado === 'Rechazado') {
+                    estadoEl.classList.add('bg-red-100', 'text-red-800');
+                } else if (datos.estado === 'Pendiente') {
+                    estadoEl.classList.add('bg-yellow-100', 'text-yellow-800');
+                } else {
+                    estadoEl.classList.add('bg-gray-100', 'text-gray-600');
+                }
+                
+                if (datos.ya_evaluada) {
+                    estadoEl.innerHTML += ' <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+                }
             }
         }
     }
@@ -89,19 +96,26 @@ class RevisionDigitalEstados {
         const comentarioEl = document.getElementById(`comentario_${seccion}`);
         
         if (estadoEl) {
-            estadoEl.textContent = datos.estado;
-            estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-            
-            if (datos.estado === 'Aprobado') {
-                estadoEl.classList.add('bg-green-100', 'text-green-800');
-            } else if (datos.estado === 'Rechazado') {
-                estadoEl.classList.add('bg-red-100', 'text-red-800');
+            if (!datos || !datos.ya_evaluada) {
+                estadoEl.textContent = 'Pendiente';
+                estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
             } else {
-                estadoEl.classList.add('bg-gray-100', 'text-gray-600');
-            }
-            
-            if (datos.ya_evaluada) {
-                estadoEl.innerHTML += ' <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+                estadoEl.textContent = datos.estado;
+                estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+                
+                if (datos.estado === 'Aprobado') {
+                    estadoEl.classList.add('bg-green-100', 'text-green-800');
+                } else if (datos.estado === 'Rechazado') {
+                    estadoEl.classList.add('bg-red-100', 'text-red-800');
+                } else if (datos.estado === 'Pendiente') {
+                    estadoEl.classList.add('bg-yellow-100', 'text-yellow-800');
+                } else {
+                    estadoEl.classList.add('bg-gray-100', 'text-gray-600');
+                }
+                
+                if (datos.ya_evaluada) {
+                    estadoEl.innerHTML += ' <svg class="w-3 h-3 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>';
+                }
             }
         }
         
@@ -134,7 +148,6 @@ class RevisionDigitalEstados {
     mostrarMensajes() {
         const evaluadas = Object.values(this.seccionesEvaluadas).filter(s => s.ya_evaluada);
         
-        // Solo mostrar un mensaje general si hay revisiones anteriores
         if (this.revisionesAnteriores.total_revisiones > 0) {
             const ultima = this.revisionesAnteriores.ultima_revision;
             this.insertarMensaje(`
@@ -198,5 +211,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-window.RevisionDigitalEstados = RevisionDigitalEstados; 
 window.RevisionDigitalEstados = RevisionDigitalEstados; 

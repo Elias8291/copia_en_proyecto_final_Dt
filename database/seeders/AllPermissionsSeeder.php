@@ -4,12 +4,17 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AllPermissionsSeeder extends Seeder
 {
     public function run(): void
     {
+        // Primero eliminar todos los permisos existentes
         Permission::query()->delete();
+        
+        // También eliminar todos los roles existentes para empezar limpio
+        Role::query()->delete();
 
         $allPermissions = [
             'usuarios.ver' => 'Ver usuarios',
@@ -55,15 +60,19 @@ class AllPermissionsSeeder extends Seeder
             'proveedores.crear' => 'Crear proveedores',
             'proveedores.editar' => 'Editar proveedores',
             'proveedores.eliminar' => 'Eliminar proveedores',
+            'proveedores.reportes.trimestrales' => 'Ver reportes trimestrales de proveedores',
 
             'dashboard.ver' => 'Ver dashboard',
         ];
 
+        // Crear los nuevos permisos
         foreach ($allPermissions as $permission => $description) {
-            Permission::create([
+            Permission::firstOrCreate([
                 'name' => $permission,
                 'guard_name' => 'web'
             ]);
         }
+
+        $this->command->info('Todos los permisos anteriores han sido eliminados y se han creado ' . count($allPermissions) . ' nuevos permisos.');
     }
 }

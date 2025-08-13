@@ -7,6 +7,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 
             @if($tramitePendiente)
+                @php
+                    $statusEnum = \App\Enums\TramiteStatus::tryFrom($tramitePendiente->status);
+                    $statusLabel = $statusEnum ? $statusEnum->label() : $tramitePendiente->status;
+                @endphp
                 @if($tramitePendiente->status === 'Para_Correccion')
                     <!-- Vista Simplificada para Correcciones -->
                     <div class="max-w-4xl mx-auto">
@@ -83,26 +87,8 @@
                         <div class="absolute inset-0 bg-gradient-to-r from-[#8a1f40]/20 to-[#9D2449]/30"></div>
                         <div class="relative z-10">
                             <div class="flex items-center justify-center text-center">
-                                <div class="space-y-3">
-                                    <div class="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-lg mx-auto">
-                                        <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <h1 class="text-2xl font-bold text-white mb-1">Trámite #{{ $tramitePendiente->id }}</h1>
-                                        <p class="text-lg text-gray-200 font-medium">{{ ucfirst($tramitePendiente->tipo_tramite) }}</p>
-                                    </div>
-                                    @php
-                                        $statusEnum = \App\Enums\TramiteStatus::tryFrom($tramitePendiente->status);
-                                        $statusLabel = $statusEnum ? $statusEnum->label() : $tramitePendiente->status;
-                                    @endphp
-                                    <div class="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold text-white border border-white/20 shadow-sm">
-                                        <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        {{ $statusLabel }}
-                                    </div>
+                                <div>
+                                    <h1 class="text-3xl font-bold text-white">Estado del Trámite</h1>
                                 </div>
                             </div>
                         </div>
@@ -125,7 +111,7 @@
                                     <p class="text-gray-600">Detalles de su solicitud</p>
                                 </div>
                                 
-                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                                     <div class="text-center">
                                         <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                                             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,24 +132,14 @@
                                         <p class="text-sm font-bold text-gray-800">{{ $tramitePendiente->fecha_inicio->format('d/m/Y') }}</p>
                                     </div>
                                     
-                                    <div class="text-center">
-                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                                            </svg>
-                                        </div>
-                                        <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Paso Actual</p>
-                                        <p class="text-sm font-bold text-gray-800">{{ $tramitePendiente->paso_actual ?? 1 }}</p>
-                                </div>
-                                
-                                    <div class="text-center">
+                                    <div class="text-center col-span-2 md:col-span-1">
                                                 <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-2">
                                                     <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                         </div>
                                                 <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Estado Actual</p>
-                                                <p class="text-sm font-bold text-gray-800">Pendiente</p>
+                                                <p class="text-sm font-bold text-gray-800">{{ $statusLabel }}</p>
                                     </div>
                                         </div>
 
@@ -328,10 +304,10 @@
                     </div>
 
                     <!-- Botón de Acción -->
-                    <div class="flex justify-center pt-6">
+                    <div class="flex justify-center py-8">
                         <a href="{{ route('tramites.index') }}" 
-                           class="inline-flex items-center px-6 py-3 bg-[#9D2449] hover:bg-[#B91C1C] text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           class="inline-flex items-center px-8 py-4 bg-[#9D2449] hover:bg-[#B91C1C] text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-lg">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                             </svg>
                             Volver a Trámites
