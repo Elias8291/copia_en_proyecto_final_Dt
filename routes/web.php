@@ -1,30 +1,24 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\QRExtractorController;
 use App\Http\Controllers\Auth\{ForgotPasswordController, ResetPasswordController, RegisterController, LoginController};
 use App\Http\Controllers\{
     VerificationController,
-    TramiteController,
     UserController,
-    ActividadesController,
-    CatalogoArchivoController,
-    RevisionController,
     RolesController,
     RoleController,
+    ProfileController,
+    TramiteController,
+    RevisionController,
     NotificacionController,
-    ProfileController
+    CitasController,
+    ArchivoController
 };
-use App\Http\Controllers\Api\QRExtractorController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-*/
-
-// ============================================================================
-// RUTAS PÚBLICAS
-// ============================================================================
 
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
@@ -64,12 +58,15 @@ Route::post('/reenviar-verificacion', [VerificationController::class, 'resend'])
 // RUTAS AUTENTICADAS
 // ============================================================================
 
-Route::middleware('auth')->group(function () {
+// Ruta de prueba para Tailwind CSS
+Route::get('/test-tailwind', function () {
+    return view('test-tailwind');
+})->name('test-tailwind');
 
+
+Route::middleware(['auth'])->group(function () {
     // Dashboard
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     // Perfil de usuario
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -78,28 +75,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/update', [ProfileController::class, 'update'])->name('update');
     });
 
-    // Notificaciones
-    Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
-
-    // ============================================================================
-    // MÓDULO DE TRÁMITES
-    // ============================================================================
-
-    Route::prefix('tramites')->name('tramites.')->group(function () {
-        Route::get('/', [TramiteController::class, 'index'])->name('index');
-        Route::get('/constancia/{tipo}', [TramiteController::class, 'constancia'])->name('constancia');
-        Route::post('/constancia/{tipo}', [TramiteController::class, 'procesarConstancia'])->name('procesarConstancia');
-        Route::get('/formulario/{tipo}', [TramiteController::class, 'formulario'])->name('formulario');
-        Route::post('/{tipo}', [TramiteController::class, 'store'])->name('store');
-        Route::get('/exito', [TramiteController::class, 'exito'])->name('exito');
-        Route::get('/estado', function () {
-            return view('tramites.estado');
-        })->name('estado');
-    });
-
-    // ============================================================================
-    // MÓDULO DE USUARIOS
-    // ============================================================================
+    // Mi Estado
+    Route::get('/mi-estado', [\App\Http\Controllers\MiEstadoController::class, 'index'])->name('mi-estado');
 
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
@@ -113,122 +90,144 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{user}/force', [UserController::class, 'forceDelete'])->name('force-delete');
     });
 
-    // ============================================================================
-    // MÓDULO DE ROLES
-    // ============================================================================
-
+   
     Route::prefix('roles')->name('roles.')->group(function () {
         Route::get('/', [RolesController::class, 'index'])->name('index');
         Route::get('/crear', [RolesController::class, 'create'])->name('create');
         Route::post('/', [RolesController::class, 'store'])->name('store');
+        Route::get('/{role}', [RolesController::class, 'show'])->name('show');
         Route::get('/{role}/editar', [RolesController::class, 'edit'])->name('edit');
         Route::put('/{role}', [RolesController::class, 'update'])->name('update');
         Route::delete('/{role}', [RolesController::class, 'destroy'])->name('destroy');
     });
 
-    // ============================================================================
-    // MÓDULO DE ACTIVIDADES ECONÓMICAS
-    // ============================================================================
+    // Rutas para Citas
+    Route::prefix('citas')->name('citas.')->group(function () {
+        Route::get('/', [CitasController::class, 'index'])->name('index');
+        Route::get('/crear', [CitasController::class, 'create'])->name('create');
+        Route::post('/', [CitasController::class, 'store'])->name('store');
+        Route::get('/{cita}', [CitasController::class, 'show'])->name('show');
+        Route::get('/{cita}/editar', [CitasController::class, 'edit'])->name('edit');
+        Route::put('/{cita}', [CitasController::class, 'update'])->name('update');
+        Route::delete('/{cita}', [CitasController::class, 'destroy'])->name('destroy');
+        
+        // Acciones específicas
+        Route::patch('/{cita}/asistida', [CitasController::class, 'marcarAsistida'])->name('marcar-asistida');
+        Route::patch('/{cita}/no-asistio', [CitasController::class, 'marcarNoAsistio'])->name('marcar-no-asistio');
+        Route::patch('/{cita}/cancelar', [CitasController::class, 'cancelar'])->name('cancelar');
+    });
 
-    Route::get('/actividades/buscar', [ActividadesController::class, 'buscador'])->name('actividades.buscar');
+    Route::prefix('tramites')->name('tramites.')->group(function () {
+        Route::get('/', [TramiteController::class, 'index'])->name('index');
+        Route::get('/cargar-constancia/{tipo}', [TramiteController::class, 'cargarConstancia'])->name('cargar-constancia');
+        Route::post('/procesar-constancia', [TramiteController::class, 'procesarConstancia'])->name('procesar-constancia');
+        Route::get('/create', [TramiteController::class, 'create'])->name('create');
+        Route::post('/', [TramiteController::class, 'store'])->name('store');
+        Route::get('/estado', [TramiteController::class, 'estado'])->name('estado');
+        Route::get('/{tramite}/edit', [TramiteController::class, 'edit'])->name('edit');
+        Route::put('/{tramite}', [TramiteController::class, 'update'])->name('update');
+        
 
-    // ============================================================================
-    // MÓDULO DE CATÁLOGO DE ARCHIVOS
-    // ============================================================================
+    });
 
-    Route::prefix('archivos')->name('archivos.')->group(function () {
-    Route::get('/', [CatalogoArchivoController::class, 'index'])->name('index');
-    Route::get('/create', [CatalogoArchivoController::class, 'create'])->name('create');
-    Route::post('/', [CatalogoArchivoController::class, 'store'])->name('store');
-    Route::get('/{archivo}', [CatalogoArchivoController::class, 'show'])->name('show');
-    Route::get('/{archivo}/edit', [CatalogoArchivoController::class, 'edit'])->name('edit');
-    Route::put('/{archivo}', [CatalogoArchivoController::class, 'update'])->name('update');
-    Route::delete('/{archivo}', [CatalogoArchivoController::class, 'destroy'])->name('destroy');
-});
-
-Route::prefix('roles')->name('roles.')->group(function () {
-    Route::get('/', [RoleController::class, 'index'])->name('index');
-    Route::get('/create', [RoleController::class, 'create'])->name('create');
-    Route::post('/', [RoleController::class, 'store'])->name('store');
-    Route::get('/{role}', [RoleController::class, 'show'])->name('show');
-    Route::get('/{role}/edit', [RoleController::class, 'edit'])->name('edit');
-    Route::put('/{role}', [RoleController::class, 'update'])->name('update');
-    Route::delete('/{role}', [RoleController::class, 'destroy'])->name('destroy');
-});
-
-    // =========================================================================
-    // MÓDULO DE CITAS
-    // =========================================================================
-    Route::resource('citas', \App\Http\Controllers\CitaController::class);
-
-    // =========================================================================
-    // MÓDULO DE DÍAS INHÁBILES
-    // =========================================================================
-    Route::resource('dias-inhabiles', \App\Http\Controllers\DiaInhabilController::class);
-    Route::post('/dias-inhabiles/verificar-fecha', [\App\Http\Controllers\DiaInhabilController::class, 'verificarFechaHabil'])->name('dias-inhabiles.verificar-fecha');
-    Route::get('/dias-inhabiles/proximos-dias', [\App\Http\Controllers\DiaInhabilController::class, 'proximosDiasHabiles'])->name('dias-inhabiles.proximos-dias');
-
-
-    // ============================================================================
-    // MÓDULO DE REVISIÓN DE TRÁMITES
-    // ============================================================================
-
-    Route::middleware(['auth'])->prefix('revision')->name('revision.')->group(function () {
+    // Rutas para revisiones
+    Route::prefix('revisiones')->name('revisiones.')->group(function () {
         Route::get('/', [RevisionController::class, 'index'])->name('index');
+        Route::get('/{tramite}/seleccionar-tipo', [RevisionController::class, 'seleccionarTipoRevision'])->name('seleccionar-tipo');
+        Route::post('/{tramite}/iniciar', [RevisionController::class, 'iniciarRevision'])->name('iniciar');
+        Route::get('/{tramite}/revisar', [RevisionController::class, 'revisarTramite'])->name('revisar');
         
-        // Ruta principal que maneja todos los tipos de revisión
-        Route::get('/{tramite}/{tipo?}', [RevisionController::class, 'revisarTramite'])
-            ->where('tipo', 'seleccion-tipo|documentos-presencial|revision-digital')
-            ->name('revisar');
+        // Ruta para procesar revisión digital
+        Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
+    Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
         
-        // Rutas de documentos y archivos
-        Route::middleware(['auth'])->get('/documentos/{tramite}/{archivo}/{filename}', [RevisionController::class, 'verDocumento'])->name('verDocumento');
-        Route::post('/documento/{archivo}/comentario', [RevisionController::class, 'actualizarComentarioDocumento'])->name('documento.comentario');
-        Route::post('/documento/{archivo}/estado', [RevisionController::class, 'actualizarEstadoDocumento'])->name('documento.estado');
-        Route::get('/documento/{archivo}/estado', [RevisionController::class, 'obtenerEstadoDocumento'])->name('documento.estado.get');
+        // Rutas para gestión de citas
+        Route::post('/{tramite}/agendar-cita', [RevisionController::class, 'agendarCita'])->name('agendar-cita');
+        Route::post('/cita/{cita}/reagendar', [RevisionController::class, 'reagendarCita'])->name('reagendar-cita');
+        Route::get('/horarios-disponibles', [RevisionController::class, 'obtenerHorariosDisponibles'])->name('horarios-disponibles');
         
-        // Rutas de secciones y comentarios
-        Route::post('/seccion/comentario', [\App\Http\Controllers\RevisionSeccionController::class, 'store'])->name('seccion.comentario');
-        Route::get('/seccion/{tramite}/{seccion}', [\App\Http\Controllers\RevisionSeccionController::class, 'show'])->name('seccion.show');
+        Route::get('/{tramite}/ver-historico', [RevisionController::class, 'verTramiteHistorico'])->name('ver-historico');
+        Route::get('/archivo/{id}', [RevisionController::class, 'mostrarArchivo'])->name('mostrar-archivo')->where('id', '[0-9]+');
         
-        // Ruta para comentario general
-        Route::post('/comentario-general', [RevisionController::class, 'guardarComentarioGeneral'])->name('comentario-general');
+        // Rutas para evaluación de secciones
+        Route::get('/{tramite}/seccion/estado', [RevisionController::class, 'obtenerEstadoSeccion'])->name('seccion.estado');
+        Route::post('/{tramite}/seccion/evaluar', [RevisionController::class, 'evaluarSeccion'])->name('seccion.evaluar');
+        Route::get('/{tramite}/estado-general', [RevisionController::class, 'obtenerEstadoGeneral'])->name('estado.general');
         
-        // Rutas de información y estado
-        Route::get('/{tramite}/informacion-identidad', [RevisionController::class, 'obtenerInformacionIdentidad'])->name('informacion-identidad');
-        Route::post('/{tramite}/cambiar-estado', [RevisionController::class, 'cambiarEstadoTramite'])->name('cambiar-estado');
-        Route::get('/{tramite}/historial-estados', [RevisionController::class, 'historialEstados'])->name('historial-estados');
+        // Rutas para decisiones finales
+        Route::post('/{tramite}/aprobar-y-agendar', [RevisionController::class, 'aprobarYAgendarCita'])->name('aprobar-y-agendar');
+        Route::post('/{tramite}/rechazar-correccion', [RevisionController::class, 'rechazarParaCorreccion'])->name('rechazar-correccion');
+        Route::post('/{tramite}/rechazar-completo', [RevisionController::class, 'rechazarCompleto'])->name('rechazar-completo');
+        
+        // Rutas para revisión presencial
+        Route::post('/{tramite}/aprobar', [RevisionController::class, 'aprobar'])->name('aprobar');
+        Route::post('/{tramite}/rechazar', [RevisionController::class, 'rechazarTramite'])->name('rechazar');
+
+// Limpiar sesión de éxito
+Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionExito'])->name('limpiar-sesion-exito');
+        
+        // Ruta para limpiar sesiones
+        Route::post('/limpiar-sesiones', [RevisionController::class, 'limpiarSesiones'])->name('limpiar-sesiones');
     });
 
+    // Rutas para oficios
+    Route::prefix('oficios')->name('oficios.')->group(function () {
+        Route::get('/descargar', [App\Http\Controllers\OficioController::class, 'descargar'])->name('descargar');
+        Route::get('/validar/{tramite}', [App\Http\Controllers\OficioController::class, 'validar'])->name('validar');
+        Route::get('/proveedor/{proveedor}', [App\Http\Controllers\OficioController::class, 'porProveedor'])->name('por-proveedor');
+        Route::get('/tramite/{tramite}', [App\Http\Controllers\OficioController::class, 'porTramite'])->name('por-tramite');
+        Route::post('/{oficio}/estado', [App\Http\Controllers\OficioController::class, 'actualizarEstado'])->name('actualizar-estado');
+    });
 
-
-    // ============================================================================
-    // MÓDULO DE NOTIFICACIONES 
-    // ============================================================================
-
-    Route::middleware(['auth'])->prefix('notificaciones')->name('notificaciones.')->group(function () {
+    // Rutas para notificaciones
+    Route::prefix('notificaciones')->name('notificaciones.')->group(function () {
         Route::get('/', [NotificacionController::class, 'index'])->name('index');
-        Route::get('/contador', [NotificacionController::class, 'contador'])->name('contador');
-        Route::get('/header', [NotificacionController::class, 'header'])->name('header');
+        Route::get('/{notificacion}', [NotificacionController::class, 'show'])->name('show');
+        Route::post('/{notificacion}/marcar-leida', [NotificacionController::class, 'marcarLeida'])->name('marcar-leida');
+        Route::delete('/{notificacion}', [NotificacionController::class, 'destroy'])->name('eliminar');
         Route::post('/marcar-todas-leidas', [NotificacionController::class, 'marcarTodasLeidas'])->name('marcar-todas-leidas');
-        Route::post('/marcar-leida', [NotificacionController::class, 'marcarComoLeida'])->name('marcar-leida');
-        Route::post('/eliminar-leidas', [NotificacionController::class, 'eliminarLeidas'])->name('eliminar-leidas');
-        Route::post('/eliminar', [NotificacionController::class, 'eliminarNotificacion'])->name('eliminar');
-        Route::get('/usuario', [NotificacionController::class, 'getUserNotifications'])->name('usuario');
+        
+        // Rutas AJAX
+        Route::get('/api/conteo-no-leidas', [NotificacionController::class, 'conteoNoLeidas'])->name('conteo-no-leidas');
+        Route::get('/api/recientes', [NotificacionController::class, 'recientes'])->name('recientes');
+        Route::get('/api/no-leidas', [NotificacionController::class, 'noLeidas'])->name('no-leidas');
+        Route::get('/api/recientes-dropdown', [NotificacionController::class, 'recientesParaDropdown'])->name('recientes-dropdown');
+        Route::post('/api/marcar-vistas-leidas', [NotificacionController::class, 'marcarVistasComoLeidas'])->name('marcar-vistas-leidas');
+        
+        // Rutas administrativas
+        Route::get('/crear', [NotificacionController::class, 'create'])->name('create');
+        Route::post('/', [NotificacionController::class, 'store'])->name('store');
+        Route::get('/{notificacion}/editar', [NotificacionController::class, 'edit'])->name('edit');
+        Route::put('/{notificacion}', [NotificacionController::class, 'update'])->name('update');
+        Route::post('/limpiar-antiguas', [NotificacionController::class, 'limpiarAntiguas'])->name('limpiar-antiguas');
     });
-    
-});
 
-// ============================================================================
-// API ROUTES
-// ============================================================================
+    // Rutas para archivos
+    Route::prefix('archivos')->name('archivos.')->group(function () {
+        Route::get('/', [ArchivoController::class, 'index'])->name('index');
+        Route::get('/create', [ArchivoController::class, 'create'])->name('create');
+        Route::post('/', [ArchivoController::class, 'store'])->name('store');
+        Route::get('/{archivo}', [ArchivoController::class, 'show'])->name('show');
+        Route::get('/{archivo}/edit', [ArchivoController::class, 'edit'])->name('edit');
+        Route::put('/{archivo}', [ArchivoController::class, 'update'])->name('update');
+        Route::delete('/{archivo}', [ArchivoController::class, 'destroy'])->name('destroy');
+        Route::get('/{archivo}/download', [ArchivoController::class, 'download'])->name('download');
+        Route::patch('/{archivo}/status', [ArchivoController::class, 'updateStatus'])->name('update-status');
+        Route::get('/tramite/{tramite}', [ArchivoController::class, 'getArchivosFromTramite'])->name('by-tramite');
+        Route::post('/guardar-individual', [ArchivoController::class, 'guardarIndividual'])->name('guardar-individual');
+    });
+
+});
 
 Route::prefix('api')->group(function () {
     Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
     Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
 });
 
-// QR Extractor sin CSRF (ruta especial)
+// Rutas para el extractor de QR (sin prefijo api)
+Route::post('/scrape-sat-data', [QRExtractorController::class, 'scrapeFromUrl']);
+
 Route::post('/extract-qr-url-web', [QRExtractorController::class, 'extractQrFromPdf'])
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
     ->name('extract.qr.web');
+

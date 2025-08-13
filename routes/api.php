@@ -1,55 +1,50 @@
 <?php
 
 use App\Http\Controllers\ActividadesController;
-use App\Http\Controllers\Api\ErrorController;
 use App\Http\Controllers\Api\QRExtractorController;
-use App\Http\Controllers\CatalogoArchivoController;
+// use App\Http\Controllers\CatalogoArchivoController;
+use App\Http\Controllers\CatalogoActividadController;
+use App\Http\Controllers\RevisionController;
 use App\Http\Controllers\UbicacionController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
 
-// Validation Routes
 Route::controller(\App\Http\Controllers\UserController::class)->group(function () {
     Route::get('/validate/email', 'validateEmail');
     Route::get('/validate/rfc', 'validateRfc');
 });
 
-// Actividades Routes
-Route::controller(ActividadesController::class)->group(function () {
-    Route::get('/actividades/buscar', 'buscar');
-    Route::get('/actividades/por-ids', 'porIds');
-});
+// Documentos por tipo de persona (sin autenticación para el modal)
+// Route::get('/documentos/{tipoPersona}', [CatalogoArchivoController::class, 'porTipoPersona']);
 
-// Ubicación Routes
-Route::controller(UbicacionController::class)->group(function () {
-    Route::post('/ubicacion/codigo-postal', 'buscarPorCodigoPostal');
-    Route::get('/ubicacion/estados', 'getEstados');
-    Route::post('/ubicacion/municipios', 'getMunicipiosPorEstado');
-    Route::post('/ubicacion/localidades', 'getLocalidadesPorMunicipio');
-});
-
-Route::middleware(['auth:sanctum'])->prefix('archivos')->name('archivos.')->group(function () {
-    Route::get('/buscar', [CatalogoArchivoController::class, 'buscar'])->name('buscar');
-    Route::get('/estadisticas', [CatalogoArchivoController::class, 'estadisticas'])->name('estadisticas');
-});
-
+// QR Extraction Route (sin middleware de autenticación)
 Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
 
-// Error Testing Routes (only in development)
-if (app()->environment(['local', 'development'])) {
-    Route::get('/test-error', [ErrorController::class, 'apiTest']);
-    Route::post('/test-error', [ErrorController::class, 'apiTest']);
-}
+// Catálogo de actividades
+Route::get('/catalogo/actividades', [CatalogoActividadController::class, 'buscar']);
 
-// API Error handling routes (fallback)
-Route::fallback([ErrorController::class, 'notFound']);
+// Ubicación API routes
+Route::prefix('ubicacion')->group(function () {
+    Route::post('/buscar-codigo-postal', [UbicacionController::class, 'buscarPorCodigoPostal']);
+    Route::get('/estados', [UbicacionController::class, 'getEstados']);
+    Route::post('/municipios-por-estado', [UbicacionController::class, 'getMunicipiosPorEstado']);
+    Route::post('/localidades-por-municipio', [UbicacionController::class, 'getLocalidadesPorMunicipio']);
+});
+
+// Revisiones API routes
+Route::prefix('revisiones')->group(function () {
+    Route::get('/{tramite}/estados', [RevisionController::class, 'obtenerEstadosRevision']);
+});
+
+// Citas de Revisión API routes
+Route::prefix('citas')->middleware('auth')->group(function () {
+    Route::post('/agendar-revision', [\App\Http\Controllers\CitasController::class, 'agendarRevision']);
+});
+
+// Revisores API routes
+Route::prefix('revisores')->middleware('auth')->group(function () {
+    Route::post('/disponibles', [\App\Http\Controllers\Api\RevisoresController::class, 'obtenerDisponibles']);
+});
+
+
+
