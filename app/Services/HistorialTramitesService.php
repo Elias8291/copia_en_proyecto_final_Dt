@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Tramite;
 use App\Models\Proveedor;
+use App\Enums\TramiteStatus;
 use Illuminate\Support\Collection;
 
 class HistorialTramitesService
@@ -59,10 +60,14 @@ class HistorialTramitesService
         
         return [
             'total' => $tramites->count(),
-            'aprobados' => $tramites->where('status', 'Aprobado')->count(),
-            'rechazados' => $tramites->where('status', 'Rechazado')->count(),
-            'pendientes' => $tramites->where('status', 'Pendiente')->count(),
-            'en_revision' => $tramites->where('status', 'En Revisión')->count(),
+            'aprobados' => $tramites->where('status', TramiteStatus::APROBADO->value)->count(),
+            'rechazados' => $tramites->where('status', TramiteStatus::RECHAZADO->value)->count(),
+            'pendientes' => $tramites->where('status', TramiteStatus::PENDIENTE->value)->count(),
+            'en_revision' => $tramites->whereIn('status', [
+                TramiteStatus::REVISION_DIGITAL->value,
+                TramiteStatus::REVISION_PRESENCIAL->value,
+                TramiteStatus::REVISION_DOMICILIARIA->value
+            ])->count(),
         ];
     }
 

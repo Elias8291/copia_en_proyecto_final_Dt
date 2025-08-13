@@ -44,52 +44,33 @@
             </div>
         </div>
 
-        <!-- Simbología de Estados -->
-        <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            <div class="flex flex-wrap items-center gap-6 text-sm">
-                <span class="font-medium text-gray-700">Estados:</span>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span class="text-gray-600">Aprobado</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <span class="text-gray-600">Pendiente</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <span class="text-gray-600">Rechazado</span>
-                </div>
-            </div>
-        </div>
 
-        <form id="formRevisionCompleta" method="POST" action="{{ route('revisiones.procesar-digital', $tramite) }}">
-            @csrf
-            <!-- Campos ocultos para cada sección -->
-            <input type="hidden" name="secciones[datos_generales][decision]" id="decision_datos_generales" value="Pendiente">
-            <input type="hidden" name="secciones[datos_generales][comentario]" id="comentario_datos_generales_hidden" value="">
+
+        <!-- Campos ocultos para cada sección -->
+        <input type="hidden" name="secciones[datos_generales][decision]" id="decision_datos_generales" value="Pendiente">
+        <input type="hidden" name="secciones[datos_generales][comentario]" id="comentario_datos_generales_hidden" value="">
+        
+        <input type="hidden" name="secciones[actividades][decision]" id="decision_actividades" value="Pendiente">
+        <input type="hidden" name="secciones[actividades][comentario]" id="comentario_actividades_hidden" value="">
+        
+        <input type="hidden" name="secciones[domicilio][decision]" id="decision_domicilio" value="Pendiente">
+        <input type="hidden" name="secciones[domicilio][comentario]" id="comentario_domicilio_hidden" value="">
+        
+        @if($viewModel->isPersonaMoral())
+            <input type="hidden" name="secciones[constitucion][decision]" id="decision_constitucion" value="Pendiente">
+            <input type="hidden" name="secciones[constitucion][comentario]" id="comentario_constitucion_hidden" value="">
             
-            <input type="hidden" name="secciones[actividades][decision]" id="decision_actividades" value="Pendiente">
-            <input type="hidden" name="secciones[actividades][comentario]" id="comentario_actividades_hidden" value="">
+            <input type="hidden" name="secciones[accionistas][decision]" id="decision_accionistas" value="Pendiente">
+            <input type="hidden" name="secciones[accionistas][comentario]" id="comentario_accionistas_hidden" value="">
             
-            <input type="hidden" name="secciones[domicilio][decision]" id="decision_domicilio" value="Pendiente">
-            <input type="hidden" name="secciones[domicilio][comentario]" id="comentario_domicilio_hidden" value="">
-            
-            @if($viewModel->isPersonaMoral())
-                <input type="hidden" name="secciones[constitucion][decision]" id="decision_constitucion" value="Pendiente">
-                <input type="hidden" name="secciones[constitucion][comentario]" id="comentario_constitucion_hidden" value="">
-                
-                <input type="hidden" name="secciones[accionistas][decision]" id="decision_accionistas" value="Pendiente">
-                <input type="hidden" name="secciones[accionistas][comentario]" id="comentario_accionistas_hidden" value="">
-                
-                <input type="hidden" name="secciones[apoderado][decision]" id="decision_apoderado" value="Pendiente">
-                <input type="hidden" name="secciones[apoderado][comentario]" id="comentario_apoderado_hidden" value="">
-            @endif
-            
-            <input type="hidden" name="secciones[archivos][decision]" id="decision_archivos" value="Pendiente">
-            <input type="hidden" name="secciones[archivos][comentario]" id="comentario_archivos_hidden" value="">
-            
-            <input type="hidden" name="comentario_general" id="comentario_general_hidden" value="">
+            <input type="hidden" name="secciones[apoderado][decision]" id="decision_apoderado" value="Pendiente">
+            <input type="hidden" name="secciones[apoderado][comentario]" id="comentario_apoderado_hidden" value="">
+        @endif
+        
+        <input type="hidden" name="secciones[archivos][decision]" id="decision_archivos" value="Pendiente">
+        <input type="hidden" name="secciones[archivos][comentario]" id="comentario_archivos_hidden" value="">
+        
+        <input type="hidden" name="comentario_general" id="comentario_general_hidden" value="">
             
         <div class="p-6">
             <!-- Información del trámite -->
@@ -130,6 +111,25 @@
                             <span class="text-xs text-red-600">{{ $estadisticasHistorial['rechazados'] }} rechazados</span>
                             <span class="text-xs text-orange-600">{{ $estadisticasHistorial['pendientes'] }} pendientes</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simbología de Estados -->
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+                <div class="flex flex-wrap items-center gap-6 text-sm">
+                    <span class="font-medium text-gray-700">Estados:</span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        <span class="text-gray-600">Aprobado</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <span class="text-gray-600">Pendiente</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <span class="text-gray-600">Rechazado</span>
                     </div>
                 </div>
             </div>
@@ -584,12 +584,10 @@
                         :showCorrecciones="true"
                         :showRechazar="true"
                         layout="flex"
-                        formId="formRevisionCompleta"
                     />
                 </div>
             </div>
         </div>
-        </form>
         </div>
     </div>
 
@@ -710,6 +708,7 @@ window.esPersonaMoral = @json($viewModel->isPersonaMoral());
 
 <script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
 <script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
+<script src="{{ asset('js/revision/cargar-estados.js') }}"></script>
 <script src="{{ asset('js/revision/decisiones-finales.js') }}"></script>
 
 <script>
@@ -743,5 +742,13 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
 
 // Hacer la función disponible globalmente
 window.mostrarNotificacion = mostrarNotificacion;
+
+// Inicializar sistema de carga de estados
+document.addEventListener('DOMContentLoaded', function() {
+    const tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');
+    if (tramiteId) {
+        window.revisionDigitalEstados = new RevisionDigitalEstados(tramiteId);
+    }
+});
 </script>
 @endsection

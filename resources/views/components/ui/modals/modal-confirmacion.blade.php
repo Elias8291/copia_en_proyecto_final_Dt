@@ -105,7 +105,9 @@
                     if (onConfirmCallback && typeof onConfirmCallback === 'function') {
                         onConfirmCallback();
                     } else if (formToSubmit) {
-                        formToSubmit.submit();
+                        // Disparar el evento submit del formulario para que sea interceptado por nuestro JavaScript
+                        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+                        formToSubmit.dispatchEvent(submitEvent);
                     }
                     hideConfirmModal();
                 });

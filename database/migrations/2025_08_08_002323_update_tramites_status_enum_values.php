@@ -35,10 +35,9 @@ return new class extends Migration
             // Revertir a los valores originales
             $table->enum('status', [
                 'Pendiente', 
-                'En_Revision', 
+                'Revision_Digital', 
                 'Aprobado', 
                 'Rechazado', 
-                'Por_Cotejar', 
                 'Para_Correccion', 
                 'Cancelado'
             ])->default('Pendiente')->change();

@@ -5,8 +5,7 @@
     'textoAprobar' => 'Aprobar y Agendar Cita',
     'textoCorrecciones' => 'Rechazar y Para Corrección',
     'textoRechazar' => 'Rechazar Trámite',
-    'layout' => 'grid', // grid, flex
-    'formId' => 'formRevisionCompleta'
+    'layout' => 'grid' // grid, flex
 ])
 
 @php

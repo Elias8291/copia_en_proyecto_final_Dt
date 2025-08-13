@@ -399,12 +399,12 @@ class RevisionService
         $totalSecciones = count($secciones);
         
         // Determinar estado del trámite
-        $estado = 'En_Revision';
+        $estado = TramiteStatus::REVISION_DIGITAL->value;
         if ($seccionesEvaluadas === $totalSecciones) {
             if ($seccionesRechazadas > 0) {
-                $estado = 'Para_Correccion';
+                $estado = TramiteStatus::PARA_CORRECCION->value;
             } else {
-                $estado = 'Aprobado';
+                $estado = TramiteStatus::APROBADO->value;
             }
         }
         

@@ -108,11 +108,44 @@ class ArchivosEvaluacion {
             
             if (!response.ok) throw new Error('Error en la petición');
             
-            this.evaluarSeccionDocumentos();
+            // Solo actualizar el estado visual de la sección, sin enviar peticiones adicionales
+            this.actualizarEstadoSeccionVisual();
+            
+            // Mostrar notificación de éxito
+            if (typeof mostrarNotificacion === 'function') {
+                mostrarNotificacion(`Archivo evaluado como ${decision}`, 'success');
+            }
             
         } catch (error) {
             console.error('Error:', error);
+            if (typeof mostrarNotificacion === 'function') {
+                mostrarNotificacion('Error al evaluar el archivo', 'error');
+            }
         }
+    }
+
+    actualizarEstadoSeccionVisual() {
+        const archivos = document.querySelectorAll('[id^="estado_archivo_"]');
+        const estados = Array.from(archivos).map(el => el.textContent.trim());
+        
+        let decisionSeccion = 'Aprobado';
+        let comentarioSeccion = 'Todos los documentos están correctos';
+        
+        if (estados.includes('Rechazado')) {
+            decisionSeccion = 'Rechazado';
+            comentarioSeccion = 'Algunos documentos requieren corrección';
+        } else if (estados.includes('Pendiente')) {
+            decisionSeccion = 'Pendiente';
+            comentarioSeccion = 'Faltan documentos por revisar';
+        }
+    
+        const comentarioField = document.getElementById('comentario_archivos');
+        if (comentarioField) {
+            comentarioField.value = comentarioSeccion;
+        }
+        
+        // Solo actualizar el estado visual, sin enviar peticiones al servidor
+        this.actualizarEstadoSeccionManual('archivos', decisionSeccion);
     }
 
     evaluarSeccionDocumentos() {

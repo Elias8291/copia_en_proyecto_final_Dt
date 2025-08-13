@@ -246,26 +246,43 @@ class RevisionController extends Controller
                 ]);
             }
 
-            // Determinar estado final del trámite
-            $estadoGeneral = $this->revisionService->obtenerEstadoGeneral($tramite->id);
+            // Verificar si solo se están evaluando archivos (sin cambios en secciones)
+            $soloArchivos = empty($secciones) && !empty($archivos);
             
-            // Actualizar estado del trámite
-            $tramite->update([
-                'status' => $estadoGeneral['estado']
-            ]);
+            if (!$soloArchivos) {
+                // Determinar estado final del trámite solo si hay cambios en secciones
+                $estadoGeneral = $this->revisionService->obtenerEstadoGeneral($tramite->id);
+                
+                // Actualizar estado del trámite
+                $tramite->update([
+                    'status' => $estadoGeneral['estado']
+                ]);
 
-            \Log::info("Estado final del trámite: " . $estadoGeneral['estado']);
-            \Log::info("=== FIN PROCESAMIENTO DE REVISIÓN DIGITAL ===");
+                \Log::info("Estado final del trámite: " . $estadoGeneral['estado']);
+                \Log::info("=== FIN PROCESAMIENTO DE REVISIÓN DIGITAL ===");
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Revisión digital procesada correctamente',
-                'data' => [
-                    'estado_tramite' => $estadoGeneral['estado'],
-                    'secciones_evaluadas' => $estadoGeneral['seccionesEvaluadas'],
-                    'total_secciones' => $estadoGeneral['totalSecciones']
-                ]
-            ]);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Revisión digital procesada correctamente',
+                    'data' => [
+                        'estado_tramite' => $estadoGeneral['estado'],
+                        'secciones_evaluadas' => $estadoGeneral['seccionesEvaluadas'],
+                        'total_secciones' => $estadoGeneral['totalSecciones']
+                    ]
+                ]);
+            } else {
+                // Solo se evaluaron archivos, no mostrar mensaje de éxito
+                \Log::info("Solo se evaluaron archivos, no se cambió el estado del trámite");
+                \Log::info("=== FIN EVALUACIÓN DE ARCHIVOS ===");
+
+                return response()->json([
+                    'success' => true,
+                    'message' => null,
+                    'data' => [
+                        'solo_archivos' => true
+                    ]
+                ]);
+            }
 
         } catch (\Exception $e) {
             \Log::error("Error en procesarRevisionDigital: " . $e->getMessage());
