@@ -364,8 +364,8 @@ function validateEditArchivo(input) {
     
     // Validar tipo y tamaño
     const maxSizes = {
-        'pdf': 10 * 1024 * 1024,
-        'mp4': 50 * 1024 * 1024,
+        'pdf': 5 * 1024 * 1024,
+        'mp4': 10 * 1024 * 1024,
         'png': 5 * 1024 * 1024,
         'mp3': 10 * 1024 * 1024,
         'jpg': 5 * 1024 * 1024,

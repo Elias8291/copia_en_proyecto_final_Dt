@@ -11,6 +11,22 @@ use Carbon\Carbon;
 // Servicio para gestión de RFC y proveedores
 class RfcProveedorService
 {
+    public function esPersonaMoral(?string $tipoPersona, ?string $rfc): bool
+    {
+        if ($tipoPersona === 'Moral') {
+            return true;
+        }
+        if ($rfc) {
+            return $this->determinarTipoPersona($rfc) === 'Moral';
+        }
+        return false;
+    }
+
+    public function obtenerTipoPersonaDesdeInputs(?string $tipoPersona, ?string $rfc): string
+    {
+        return $this->esPersonaMoral($tipoPersona, $rfc) ? 'Moral' : 'Física';
+    }
+
     // Determinar tipo de persona por RFC
     public function determinarTipoPersona(string $rfc): string
     {

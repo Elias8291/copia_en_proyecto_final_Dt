@@ -388,44 +388,47 @@ function setupFieldEvents(field, validator) {
 
 // Validar archivos según el catálogo dinámico
 function setupArchivosValidation() {
-    // Configurar validación para todos los inputs de archivo
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    
-    fileInputs.forEach(input => {
+    // Helper para evitar listeners duplicados
+    function attachFileInputListener(input) {
+        if (!input || input.dataset.listenerAttached === 'true') return;
         input.addEventListener('change', function(e) {
             const files = e.target.files;
             if (files && files.length > 0) {
                 validateArchivo(input, files[0]);
             }
-            actualizarEstadoArchivos();
+            scheduleArchivosUpdate();
         });
-    });
+        input.dataset.listenerAttached = 'true';
+    }
+
+    // Configurar validación para todos los inputs de archivo (sin duplicar listeners)
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(attachFileInputListener);
     
     // Observar cambios dinámicos en el contenedor de archivos
     const archivosContainer = document.querySelector('.grid');
     if (archivosContainer) {
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList') {
-                    const newFileInputs = archivosContainer.querySelectorAll('input[type="file"]');
-                    newFileInputs.forEach(input => {
-                        input.addEventListener('change', function(e) {
-                            const files = e.target.files;
-                            if (files && files.length > 0) {
-                                validateArchivo(input, files[0]);
-                            }
-                            actualizarEstadoArchivos();
-                        });
-                    });
-                }
+                if (mutation.type !== 'childList') return;
+
+                // Solo procesar nodos agregados para evitar re-escuchar todo el árbol
+                mutation.addedNodes.forEach(node => {
+                    if (!(node instanceof Element)) return;
+                    if (node.matches && node.matches('input[type="file"]')) {
+                        attachFileInputListener(node);
+                    }
+                    const nestedInputs = node.querySelectorAll ? node.querySelectorAll('input[type="file"]') : [];
+                    nestedInputs.forEach(attachFileInputListener);
+                });
             });
         });
-        
+
         observer.observe(archivosContainer, { childList: true, subtree: true });
     }
     
-    // Validación inicial
-    actualizarEstadoArchivos();
+    // Validación inicial (con ligera desbounced para evitar thrashing de UI)
+    scheduleArchivosUpdate();
 }
 
 // Validar archivo individual
@@ -489,7 +492,7 @@ function showFileError(fileInput, message) {
     
     // Agregar indicador visual de error
     const errorIndicator = document.createElement('div');
-    errorIndicator.className = 'absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center';
+    errorIndicator.className = 'absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center file-status-indicator';
     errorIndicator.innerHTML = '<i class="fas fa-times text-white text-xs"></i>';
     borderContainer.style.position = 'relative';
     borderContainer.appendChild(errorIndicator);
@@ -513,7 +516,7 @@ function showFileSuccess(fileInput, message) {
     
     // Agregar indicador visual de éxito
     const successIndicator = document.createElement('div');
-    successIndicator.className = 'absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center';
+    successIndicator.className = 'absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center file-status-indicator';
     successIndicator.innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
     borderContainer.style.position = 'relative';
     borderContainer.appendChild(successIndicator);
@@ -533,7 +536,7 @@ function clearFileError(fileInput) {
     
     const existingError = container.querySelector('.file-error-message');
     const existingSuccess = container.querySelector('.file-success-message');
-    const existingIndicator = borderContainer.querySelector('.absolute');
+    const existingIndicator = borderContainer.querySelector('.file-status-indicator');
     
     if (existingError) {
         existingError.remove();
@@ -548,6 +551,22 @@ function clearFileError(fileInput) {
     // Restaurar borde normal
     borderContainer.classList.remove('border-red-500', 'border-green-500');
     borderContainer.classList.add('border-gray-300');
+}
+
+// Pequeño debounce para actualizar el estado de archivos sin saturar el hilo principal
+let __archivosUpdateTimeoutId = null;
+function scheduleArchivosUpdate() {
+    if (__archivosUpdateTimeoutId) {
+        clearTimeout(__archivosUpdateTimeoutId);
+    }
+    __archivosUpdateTimeoutId = setTimeout(() => {
+        __archivosUpdateTimeoutId = null;
+        try {
+            actualizarEstadoArchivos();
+        } catch (_) {
+            // Ignorar errores de actualización silenciosamente
+        }
+    }, 50);
 }
 
 // Calcular el total de porcentajes de participación de accionistas

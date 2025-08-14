@@ -114,17 +114,36 @@ class RevisionController extends Controller
     public function mostrarArchivo(int $id)
     {
         try {
-            $archivo = Archivo::find($id);
+            $archivo = Archivo::with(['tramite'])->find($id);
             if (!$archivo) {
                 return response("Archivo con ID {$id} NO EXISTE en la base de datos", 404);
+            }
+
+            // Autorización básica: dueño del trámite o roles de revisión/administración
+            $user = auth()->user();
+            $isOwner = $user && $user->relationLoaded('proveedor')
+                ? optional($user->proveedor)->id === optional($archivo->tramite)->proveedor_id
+                : (method_exists($user, 'proveedor') && optional($user->proveedor)->id === optional($archivo->tramite)->proveedor_id);
+
+            $isReviewer = $user && (
+                $user->hasRole('Revisor Digital') ||
+                $user->hasRole('Revisor Presencial') ||
+                $user->hasRole('Revisor Domiciliario')
+            );
+
+            $isAdmin = $user && (
+                $user->hasRole('Super Administrador') ||
+                $user->hasRole('Administrador')
+            );
+
+            if (!($isOwner || $isReviewer || $isAdmin)) {
+                return response('No autorizado para ver este archivo', 403);
             }
             
             // Posibles ubicaciones donde puede estar el archivo
             $posiblesRutas = [
-                $archivo->ruta,                           // Ruta original en BD
-                'public/' . $archivo->ruta,               // Con prefijo public/
-                'tramites/' . basename($archivo->ruta),   // Solo en carpeta tramites/
-                'public/tramites/' . basename($archivo->ruta), // En public/tramites/
+                ltrim($archivo->ruta, '/'),
+                'public/' . ltrim($archivo->ruta, '/'),
             ];
             
             $rutaCorrecta = null;
@@ -139,12 +158,20 @@ class RevisionController extends Controller
                 return response("Archivo NO encontrado en ninguna ubicación", 404);
             }
             
-            $mimeType = Storage::mimeType($rutaCorrecta);
-            $contenido = Storage::get($rutaCorrecta);
-            
-            return response($contenido)
-                ->header('Content-Type', $mimeType)
-                ->header('Content-Disposition', 'inline; filename="' . $archivo->nombre_original . '"');
+            // Servir desde almacenamiento PRIVADO de forma segura
+            $mimeType = Storage::mimeType($rutaCorrecta) ?: 'application/octet-stream';
+            $stream = Storage::readStream($rutaCorrecta);
+            if (!$stream) {
+                return response('No se pudo abrir el archivo', 404);
+            }
+            return response()->stream(function() use ($stream) {
+                fpassthru($stream);
+            }, 200, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . addslashes($archivo->nombre_original) . '"',
+                'X-Content-Type-Options' => 'nosniff',
+                'X-Frame-Options' => 'DENY'
+            ]);
                 
         } catch (\Exception $e) {
             return response('Error: ' . $e->getMessage(), 404);

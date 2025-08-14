@@ -275,8 +275,8 @@
         <div class="mt-6 bg-gray-50 rounded-lg p-4">
             <h5 class="font-medium text-gray-900 mb-2">Formatos permitidos:</h5>
             <ul class="text-sm text-gray-600 space-y-1">
-                <li>• <strong>PDF:</strong> Para documentos legales (máx. 10MB)</li>
-                <li>• <strong>MP4:</strong> Para videos (máx. 50MB)</li>
+                <li>• <strong>PDF:</strong> Para documentos legales (máx. 5MB)</li>
+                <li>• <strong>MP4:</strong> Para videos (máx. 10MB)</li>
                 <li>• <strong>PNG:</strong> Para imágenes (máx. 5MB)</li>
                 <li>• <strong>MP3:</strong> Para audio (máx. 10MB)</li>
             </ul>
