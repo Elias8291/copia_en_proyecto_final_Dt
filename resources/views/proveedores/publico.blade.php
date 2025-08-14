@@ -70,206 +70,151 @@
     <div class="min-h-screen">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
             
-            <!-- Header Elegante -->
-            <div class="bg-white rounded-xl shadow-lg border border-red-100 mb-6 max-w-4xl mx-auto overflow-hidden relative">
-                <!-- Decoración de fondo -->
-                <div class="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full -translate-y-10 translate-x-10 opacity-50"></div>
-                <div class="absolute bottom-0 left-0 w-16 h-16 bg-gradient-to-tr from-red-50 to-red-100 rounded-full translate-y-8 -translate-x-8 opacity-50"></div>
-                
-                <div class="primary-red-bg px-4 py-4 relative overflow-hidden">
-                    <div class="relative z-10">
-                        <div class="flex items-center justify-center text-center">
-                            <div class="space-y-2">
-                                <div class="w-12 h-12 bg-white/90 rounded-xl flex items-center justify-center shadow-lg mx-auto backdrop-blur-sm">
-                                    <svg class="w-6 h-6 primary-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h1 class="text-xl font-bold text-white mb-1">Proveedor #{{ $proveedor->pv_numero ?? $proveedor->id }}</h1>
-                                    <p class="text-base text-red-100 font-medium">{{ $proveedor->razon_social ?? $proveedor->rfc }}</p>
-                                </div>
-                                <div class="inline-flex items-center px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-semibold text-white border border-white/30">
-                                    <svg class="w-3 h-3 mr-1 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Información Pública
-                                </div>
-                            </div>
-                        </div>
+
+        <!-- Card Estilo Documento Oficial -->
+        <div class="bg-white shadow-lg border border-gray-300 max-w-4xl mx-auto overflow-hidden">
+            
+            <!-- Header con Logo -->
+            <div class="bg-white border-b-4 border-[#B91C1C] py-4 px-6">
+                <div class="flex items-center justify-between">
+                    <!-- Logo -->
+                    <div class="flex items-center">
+                        <img src="{{ asset('images/logoColor.png') }}" alt="Logo" class="h-12 w-auto">
+                    </div>
+                    <!-- Título del documento -->
+                    <div class="text-right">
+                        <h2 class="text-lg font-semibold text-black">Información del Proveedor</h2>
                     </div>
                 </div>
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="p-8 bg-gray-50">
                 
-                <!-- Información de Validación -->
-                <div class="p-4 bg-red-50">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <!-- Datos Principales del Proveedor -->
+                <div class="bg-white border border-gray-300 rounded-lg p-6 mb-6">
+                    <!-- Fila 1: Información Principal -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <!-- Razón Social -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center mb-2">
+                                <svg class="w-4 h-4 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
                                 </svg>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Razón Social / Nombre</label>
                             </div>
-                            <div>
-                                <p class="text-xs primary-red">Validado el</p>
-                                <p class="text-sm font-semibold primary-red">{{ now()->format('d/m/Y H:i') }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $proveedor->razon_social ?? $proveedor->rfc }}</p>
+                        </div>
+                        
+                        <!-- Número PV -->
+                        <div class="text-center">
+                            <div class="flex items-center justify-center mb-2">
+                                <svg class="w-4 h-4 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/>
+                                </svg>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Número PV</label>
+                            </div>
+                            <p class="text-3xl font-bold text-[#B91C1C]">{{ $proveedor->pv_numero ?? '001' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Fila 2: RFC y Tipo de Persona -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <!-- RFC -->
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <svg class="w-4 h-4 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide">RFC</label>
+                            </div>
+                            <p class="text-lg font-mono font-bold text-gray-900 bg-gray-100 px-3 py-2 rounded">{{ $proveedor->rfc }}</p>
+                        </div>
+                        
+                        <!-- Tipo de Persona -->
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <svg class="w-4 h-4 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Tipo de Persona</label>
+                            </div>
+                            <span class="inline-block px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-lg">
+                                {{ $proveedor->tipo_persona ?? 'Física' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Fila 3: Estado y Fechas -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Estado -->
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <svg class="w-4 h-4 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                                </svg>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Estado en Padrón</label>
+                            </div>
+                            <span class="inline-block px-4 py-2 text-sm font-bold text-white bg-green-600 rounded-lg">
+                                {{ $proveedor->estado_padron ?? 'Activo' }}
+                            </span>
+                        </div>
+
+                        <!-- Fechas Importantes -->
+                        <div>
+                            <div class="flex items-center mb-2">
+                                <svg class="w-4 h-4 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zM4 9h12v8H4V9z"/>
+                                </svg>
+                                <label class="text-xs font-semibold text-gray-700 uppercase tracking-wide">Vigencia</label>
+                            </div>
+                            <div class="text-sm text-gray-800">
+                                <p><span class="font-medium">Inicio:</span> {{ $proveedor->fecha_alta_padron ? $proveedor->fecha_alta_padron->format('d/m/Y') : ($proveedor->fecha_registro ? $proveedor->fecha_registro->format('d/m/Y') : 'No especificada') }}</p>
+                                <p><span class="font-medium">Vence:</span> {{ $proveedor->fecha_vencimiento_padron ? $proveedor->fecha_vencimiento_padron->format('d/m/Y') : 'No especificada' }}</p>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <p class="text-xs primary-red">Estado</p>
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
-                                {{ $proveedor->estado_padron === 'Activo' ? 'bg-emerald-100 text-emerald-800' : 
-                                   ($proveedor->estado_padron === 'Pendiente' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
-                                {{ $proveedor->estado_padron ?? 'No especificado' }}
-                            </span>
-                        </div>
                     </div>
                 </div>
-            </div>
-        <!-- Datos del Proveedor -->
-        <div class="bg-white rounded-xl shadow-lg border border-red-100 mb-6 max-w-4xl mx-auto overflow-hidden relative">
-            <!-- Decoración de fondo -->
-            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
-            <div class="absolute bottom-0 left-0 w-12 h-12 bg-gradient-to-tr from-slate-50 to-slate-100 rounded-full translate-y-6 -translate-x-6 opacity-50"></div>
-            
-            <!-- Header de Datos -->
-            <div class="bg-slate-100 px-4 py-3 border-b border-red-200 relative z-10">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 primary-red-bg-light rounded-lg flex items-center justify-center mr-3">
-                        <svg class="w-4 h-4 primary-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-800">Datos del Proveedor</h2>
-                        <p class="text-slate-600 text-sm">Información oficial registrada</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Contenido de Datos -->
-            <div class="p-4 bg-white relative z-10">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold primary-red uppercase tracking-wide mb-1">Razón Social</label>
-                            <p class="text-sm font-semibold text-slate-800">{{ $proveedor->razon_social ?? 'No especificada' }}</p>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold primary-red uppercase tracking-wide mb-1">RFC</label>
-                            <p class="text-sm font-mono font-semibold text-slate-800">{{ $proveedor->rfc }}</p>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold primary-red uppercase tracking-wide mb-1">Número de Proveedor</label>
-                            <p class="text-sm font-bold primary-red">{{ $proveedor->pv_numero ?? 'Pendiente' }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-xs font-semibold primary-red uppercase tracking-wide mb-1">Tipo de Persona</label>
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $proveedor->tipo_persona === 'Moral' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700' }}">
-                                {{ $proveedor->tipo_persona }}
-                            </span>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold primary-red uppercase tracking-wide mb-1">Estado en Padrón</label>
-                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
-                                {{ $proveedor->estado_padron === 'Activo' ? 'bg-emerald-100 text-emerald-700' : 
-                                   ($proveedor->estado_padron === 'Pendiente' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700') }}">
-                                {{ $proveedor->estado_padron ?? 'No especificado' }}
-                            </span>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-semibold primary-red uppercase tracking-wide mb-1">Fecha de Registro</label>
-                            <p class="text-sm text-slate-700">{{ $proveedor->fecha_registro ? $proveedor->fecha_registro->format('d/m/Y') : 'No especificada' }}</p>
-                        </div>
-                        
-                        @if($proveedor->fecha_vencimiento_padron)
-                        <div>
-                            <label class="block text-xs font-semibold primary-red uppercase tracking-wide mb-1">Vigencia hasta</label>
-                            <p class="text-sm text-slate-700">{{ $proveedor->fecha_vencimiento_padron->format('d/m/Y') }}</p>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Domicilio -->
-        @if($direcciones->count() > 0)
-        <div class="bg-white rounded-xl shadow-lg border border-red-100 mb-6 max-w-4xl mx-auto overflow-hidden relative">
-            <!-- Decoración de fondo -->
-            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
-            <div class="absolute bottom-0 left-0 w-12 h-12 bg-gradient-to-tr from-slate-50 to-slate-100 rounded-full translate-y-6 -translate-x-6 opacity-50"></div>
-            
-            <!-- Header Domicilio -->
-            <div class="bg-slate-100 px-4 py-3 border-b border-red-200 relative z-10">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 primary-red-bg-light rounded-lg flex items-center justify-center mr-3">
-                        <svg class="w-4 h-4 primary-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-800">Domicilio</h3>
-                        <p class="text-slate-600 text-sm">Ubicación registrada</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Contenido Domicilio -->
-            <div class="p-4 bg-white relative z-10">
-                <div class="space-y-3">
+                <!-- Domicilio -->
+                @if($direcciones->count() > 0)
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Domicilio</h3>
                     @foreach($direcciones as $direccion)
-                    <div class="border-l-4 border-[#9D2449] pl-3 bg-red-50 rounded-r-lg p-3 shadow-sm">
-                        <p class="font-semibold text-slate-800 text-sm mb-1">
-                            {{ $direccion->calle }} {{ $direccion->numero_exterior }}
-                            @if($direccion->numero_interior)
-                                Int. {{ $direccion->numero_interior }}
-                            @endif
-                        </p>
-                        <p class="text-slate-600 text-sm mb-1">
-                            {{ $direccion->colonia_asentamiento }}, {{ $direccion->municipio }}
-                        </p>
-                        <p class="text-slate-500 text-sm">
-                            {{ $direccion->estado->nombre ?? '' }} C.P. {{ $direccion->codigo_postal }}
+                    <div class="bg-white border border-gray-300 rounded p-3">
+                        <p class="text-sm text-gray-800">
+                            {{ $direccion->calle }} {{ $direccion->numero_exterior }}@if($direccion->numero_interior), Int. {{ $direccion->numero_interior }}@endif, {{ $direccion->colonia_asentamiento }}, {{ $direccion->municipio }}, {{ $direccion->estado->nombre ?? '' }} C.P. {{ $direccion->codigo_postal }}
                         </p>
                     </div>
                     @endforeach
                 </div>
-            </div>
-        </div>
-        @endif
+                @endif
 
-        <!-- Footer Elegante -->
-        <div class="mt-6">
-            <div class="bg-white rounded-xl shadow-lg border border-red-100 max-w-4xl mx-auto overflow-hidden relative">
-                <!-- Decoración de fondo -->
-                <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full -translate-y-8 translate-x-8 opacity-50"></div>
-                <div class="absolute bottom-0 left-0 w-12 h-12 bg-gradient-to-tr from-slate-50 to-slate-100 rounded-full translate-y-6 -translate-x-6 opacity-50"></div>
-                
-                <div class="bg-slate-100 px-4 py-3 border-b border-red-200 relative z-10">
-                    <div class="text-center">
-                        <div class="w-8 h-8 primary-red-bg rounded-lg flex items-center justify-center shadow-sm mx-auto mb-2">
-                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                            </svg>
+                <!-- Actividades Económicas -->
+                @if($ultimoTramite && $ultimoTramite->actividades->count() > 0)
+                <div class="mb-6">
+                    <h3 class="text-sm font-bold text-gray-800 mb-3">Actividades Económicas</h3>
+                    <div class="space-y-2">
+                        @foreach($ultimoTramite->actividades as $actividadProveedor)
+                        <div class="bg-white border border-gray-300 rounded p-3">
+                            <p class="text-xs text-gray-800">
+                                {{ $actividadProveedor->actividad->descripcion ?? $actividadProveedor->actividad->nombre ?? 'Comercio al por mayor de maquinaria, equipo y mobiliario para actividades agropecuarias, industriales, de servicios y comerciales, y de otra maquinaria y equipo de uso general.' }}
+                            </p>
                         </div>
-                        <h3 class="text-base font-bold text-slate-800 mb-1">Información Oficial</h3>
-                        <p class="text-sm text-slate-600">Esta información es de carácter público y oficial</p>
+                        @endforeach
                     </div>
                 </div>
-                <div class="p-4 text-center bg-white relative z-10">
-                    <p class="text-xs text-slate-500">Sistema de Gestión de Proveedores - {{ now()->format('Y') }}</p>
-                    <p class="text-xs text-slate-400 mt-1">Validado el {{ now()->format('d/m/Y H:i:s') }}</p>
+                @endif
+
+                <!-- Footer -->
+                <div class="text-center mt-8 pt-4 border-t border-gray-300">
+                    <p class="text-xs font-bold text-gray-600">Información Oficial</p>
+                    <p class="text-xs text-gray-500">Esta información es de carácter público y oficial</p>
                 </div>
             </div>
         </div>
+
+
     </div>
     </div>
 

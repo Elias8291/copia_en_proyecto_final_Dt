@@ -7,23 +7,22 @@
     <style>
         @page {
             size: 8.5in 11in;
-            margin: 0;
+            margin: 1cm 2.54cm 2.54cm 2.54cm; 
         }
         
         body {
             font-family: Arial, Helvetica, sans-serif;
             margin: 0;
             padding: 0;
-            width: 216mm;
-            height: 279mm;
             position: relative;
             background: white;
             font-size: 8pt;
+            line-height: 1.4;
         }
         .logo {
             position: absolute;
-            top: 8mm;
-            left: 8mm;
+            top: 0mm;
+            left: 0mm;
             width: 70mm;
             height: auto;
         }
@@ -35,8 +34,8 @@
 
         .logo-lateral {
             position: absolute;
-            top: -12mm;
-            right: 9mm;
+            top: -20mm;
+            right: -24mm;
             width: 36mm;
             height: 100%;
             z-index: 1;
@@ -50,8 +49,8 @@
 
         .lema-constitucional {
             position: absolute;
-            top: 25mm;
-            left: 50mm;
+            top: 20mm;
+            left: 42mm;
             width: 116mm;
             text-align: center;
             font-style: italic;
@@ -60,9 +59,9 @@
 
         .origen-oficio-asunto-fecha {
             position: absolute;
-            top: 38mm;
-            left: 32mm;
-            width: 152mm;
+            top: 33mm;
+            left: 0mm;
+            width: 160mm;
             font-size: 8pt;
             text-align: right;
             line-height: 1.2;
@@ -72,8 +71,8 @@
 
         .destinatario {
             position: absolute;
-            top: 60mm;
-            left: 8mm;
+            top: 55mm;
+            left: 0mm;
             width: 130mm;
             font-size: 8pt;
             font-weight: bold;
@@ -86,9 +85,9 @@
         
         .contenido-principal {
             position: absolute;
-            top: 83mm;
-            left: 8mm;
-            width: 176mm;
+            top: 78mm;
+            left: 0mm;
+            width: 160mm;
             font-size: 8pt;
             text-align: justify;
             line-height: 1.4;
@@ -97,8 +96,8 @@
 
         .firma {
             position: absolute;
-            top: 210mm;
-            left: 25mm;
+            top: 200mm;
+            left: 0mm;
             width: 160mm;
             text-align: center;
             font-size: 8pt;
@@ -113,9 +112,9 @@
         
         .footer {
             position: absolute;
-            bottom: 17mm;
-            left: 19mm;
-            width: 180mm;
+            bottom: 0mm;
+            left: 0mm;
+            width: 160mm;
             font-size: 5pt;
             font-weight: bold;
             line-height: 1.2;
@@ -123,18 +122,18 @@
 
         .copias {
             position: absolute;
-            top: 228mm;
-            left: 19mm;
+            top: 225mm;
+            left: 0mm;
             font-size: 5pt;
             line-height: 1.2;
         }
         
         .qr-code {
             position: absolute;
-            bottom: 30mm;
-            right: 25mm;
-            width: 20mm;
-            height: 20mm;
+            top: 215mm;
+            left: -20mm;
+            width: 22mm;
+            height: 22mm;
         }
         
         .qr-code img {
@@ -142,15 +141,7 @@
             height: 100%;
         }
         
-        .qr-text {
-            position: absolute;
-            bottom: 28mm;
-            right: 25mm;
-            width: 20mm;
-            text-align: center;
-            font-size: 3pt;
-            color: #666;
-        }
+
 
         .text-center { text-align: center; }
         .text-justify { text-align: justify; }
@@ -213,9 +204,9 @@
     </div>
 
     <div class="contenido-principal">
-        Se hace referencia a su solicitud de registro ante el Padrón de Proveedores de la Administración Pública Estatal y anexos que acompaña fechada el {{ $fechaInicioTramite ? $fechaInicioTramite->format('d') . ' de ' . $fechaInicioTramite->translatedFormat('F') . ' de ' . $fechaInicioTramite->format('Y') : '' }}, recibida en esta Dirección de Recursos Materiales el {{ $fechaGeneracionDocumento ? $fechaGeneracionDocumento->format('d') . ' de ' . $fechaGeneracionDocumento->translatedFormat('F') . ' de ' . $fechaGeneracionDocumento->format('Y') : '' }}.
+        Se hace referencia a su solicitud de registro ante el Padrón de Proveedores de la Administración Pública Estatal y anexos que acompaña fechada el {{ $fechaInicioTramiteEspanol }}, recibida en esta Dirección de Recursos Materiales el {{ $fechaGeneracionDocumentoEspanol }}.
         <br><br>
-        Sobre el particular, y en atención a la misma, una vez revisada y analizada, así como cotejados los documentos presentados en original, se informa que se procedió al registro ante el Padrón de Proveedores de la Administración Pública Estatal, de la persona física "{{ isset($datosGenerales) && $datosGenerales && $datosGenerales->razon_social ? strtoupper($datosGenerales->razon_social) : '' }}", cuyo giro y/o clasificación se establece de manera enunciativa mas no limitativa como a continuación se describe "{{ isset($datosGenerales) && $datosGenerales && $datosGenerales->giro ? strtoupper($datosGenerales->giro) : 'COMERCIO EN GENERAL' }}", y demás actividades comerciales, profesionales, mercantiles o de negocios de conformidad con sus actividades económicas y su objeto social registrado y autorizado, con cédula de inscripción {{ isset($proveedor) && $proveedor && $proveedor->pv_numero ? $proveedor->pv_numero : '' }} asignada, que lo acredita como Proveedor Estatal, cuya vigencia será anual a partir del {{ isset($fechaVigenciaProveedor) && $fechaVigenciaProveedor ? $fechaVigenciaProveedor->format('d') . ' DE ' . strtoupper($fechaVigenciaProveedor->translatedFormat('F')) . ' DE ' . $fechaVigenciaProveedor->format('Y') : '' }} hasta el {{ isset($fechaVigenciaProveedor) && $fechaVigenciaProveedor ? $fechaVigenciaProveedor->addYear()->format('d') . ' DE ' . strtoupper($fechaVigenciaProveedor->addYear()->translatedFormat('F')) . ' DE ' . $fechaVigenciaProveedor->addYear()->format('Y') : '' }}, dejando constancia de ello, en el expediente respectivo.
+        Sobre el particular, y en atención a la misma, una vez revisada y analizada, así como cotejados los documentos presentados en original, se informa que se procedió al registro ante el Padrón de Proveedores de la Administración Pública Estatal, de la persona física "{{ isset($datosGenerales) && $datosGenerales && $datosGenerales->razon_social ? strtoupper($datosGenerales->razon_social) : '' }}", cuyas actividades económicas son las que se describen en su constancia de situación fiscal, con cédula de inscripción {{ isset($proveedor) && $proveedor && $proveedor->pv_numero ? $proveedor->pv_numero : '' }} asignada, que lo acredita como Proveedor Estatal, cuya vigencia será anual a partir del {{ strtoupper($fechaVigenciaInicioEspanol) }} hasta el {{ strtoupper($fechaVigenciaFinEspanol) }}, dejando constancia de ello, en el expediente respectivo.
         <br><br>
         Así mismo, se informa que, para renovar este registro, deberá presentar su solicitud dentro de los siete días hábiles previos a su vencimiento, en caso de que omita presentar dicha solicitud en el plazo indicado, se cancelará el registro a su vencimiento, sin perjuicio de lo anterior, podrá formular una nueva solicitud de inscripción, es importante puntualizar que en cualquier tiempo siempre que se encuentre vigente su registro, deberá comunicar a esta Secretaría a través de esta Dirección, las modificaciones legales, de capacidad técnica, económica o productiva y aquellas que puedan implicar un cambio en su giro y/o clasificación.
         <br><br>
@@ -252,8 +243,6 @@
     <div class="qr-code">
         {!! $qrCode !!}
     </div>
-    <div class="qr-text">
-        Validar documento
-    </div>
+
 </body>
 </html> 

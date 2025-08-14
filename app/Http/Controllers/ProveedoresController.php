@@ -479,15 +479,22 @@ class ProveedoresController extends Controller
     /**
      * Mostrar información pública del proveedor (sin autenticación)
      * Esta ruta es utilizada por el QR code en los oficios
+     * Muestra los datos del último trámite procesado
      */
     public function publico(Proveedor $proveedor)
     {
         // Cargar relaciones necesarias
         $proveedor->load(['direcciones.estado']);
         
+        // Obtener el último trámite del proveedor para mostrar información actualizada
+        $ultimoTramite = $proveedor->tramites()
+            ->with(['datosGenerales', 'actividades.actividad', 'direcciones'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
         // Obtener direcciones del proveedor
         $direcciones = $proveedor->direcciones;
         
-        return view('proveedores.publico', compact('proveedor', 'direcciones'));
+        return view('proveedores.publico', compact('proveedor', 'direcciones', 'ultimoTramite'));
     }
 }

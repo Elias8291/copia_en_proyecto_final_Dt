@@ -55,15 +55,17 @@ class RegenerarOficio extends Command
             $oficioService = app(OficioService::class);
             $oficio = $oficioService->generarOficioParaTramite($tramite);
             
+            // Generar URL pública del proveedor (donde apunta el QR)
+            $urlPublicaQR = route('proveedores.publico', $tramite->proveedor->id);
+            $urlPublicaQR = str_replace('http://localhost', 'http://127.0.0.1:8000', $urlPublicaQR);
+            
             $this->info("✅ Oficio regenerado exitosamente:");
             $this->line("- Número de oficio: {$oficio->numero_oficio}");
             $this->line("- ID del oficio: {$oficio->id}");
             $this->line("- URL de descarga: {$oficio->url}");
             
-            // Verificar si el PDF fue generado
-            if ($oficio->url) {
-                $this->info("🔗 QR Code apunta a: {$oficio->url}");
-            }
+            // Mostrar URL del QR Code
+            $this->info("🔗 QR Code apunta a: {$urlPublicaQR}");
             
             // Verificar archivos generados
             $oficiosDir = storage_path('app/public/oficios');

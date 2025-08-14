@@ -113,10 +113,15 @@ class OficioService
                 'actividades' => $actividades,
                 'accionistas' => $accionistas,
                 'contactos' => $contactos,
-                'fechaTexto' => Carbon::now()->format('d/m/Y'),
+                'fechaTexto' => $this->formatearFechaEspanol(Carbon::now()),
                 'fechaInicioTramite' => $tramite->fecha_inicio,
                 'fechaGeneracionDocumento' => Carbon::now(),
                 'fechaVigenciaProveedor' => $proveedor->fecha_vencimiento_padron ?? Carbon::now()->addYear(),
+                // Fechas formateadas en español para el contenido del oficio
+                'fechaInicioTramiteEspanol' => $tramite->fecha_inicio ? $this->formatearFechaEspanol($tramite->fecha_inicio) : $this->formatearFechaEspanol(Carbon::now()->subDay()),
+                'fechaGeneracionDocumentoEspanol' => $this->formatearFechaEspanol(Carbon::now()),
+                'fechaVigenciaInicioEspanol' => $this->formatearFechaEspanol($proveedor->fecha_alta_padron ?? Carbon::now()),
+                'fechaVigenciaFinEspanol' => $this->formatearFechaEspanol(($proveedor->fecha_vencimiento_padron ?? Carbon::now()->addYear())),
                 'qrCode' => $this->generarQrCode($tramite)
             ];
 
@@ -129,7 +134,8 @@ class OficioService
                 'apoderados_count' => $apoderadosLegales->count(),
                 'actividades_count' => $actividades->count(),
                 'accionistas_count' => $accionistas->count(),
-                'contactos_count' => $contactos->count()
+                'contactos_count' => $contactos->count(),
+                'fechaTexto' => $datos['fechaTexto']
             ]);
 
             // Verificar que todos los datos del trámite estén disponibles
@@ -177,47 +183,45 @@ class OficioService
 
     /**
      * Generar código QR para validación del documento usando endroid/qr-code
-     * El QR apunta a la URL de descarga del oficio para verificación
+     * El QR apunta a la vista pública del proveedor para verificación oficial
      */
     private function generarQrCode(Tramite $tramite): string
     {
         try {
-            // Generar nombre del archivo del oficio
-            $nombreArchivo = $this->generarNombreArchivoOficio($tramite);
+            // URL para ver la información pública del proveedor (verificación oficial)
+            $urlPublica = route('proveedores.publico', $tramite->proveedor->id);
             
-            // URL para descargar el oficio (verificación oficial)
-            $urlDescarga = route('oficios.descargar', [
-                'tramite_id' => $tramite->id,
-                'proveedor_id' => $tramite->proveedor->id,
-                'archivo' => $nombreArchivo
-            ]);
+            // Forzar la URL correcta para desarrollo
+            $urlPublica = str_replace('http://localhost', 'http://127.0.0.1:8000', $urlPublica);
             
             Log::info('Generando QR code para oficio', [
                 'tramite_id' => $tramite->id,
                 'proveedor_id' => $tramite->proveedor->id,
-                'nombre_archivo' => $nombreArchivo,
-                'url_descarga' => $urlDescarga
+                'url_publica' => $urlPublica
             ]);
 
-            // Usar endroid/qr-code para generar el QR
+            // Usar endroid/qr-code para generar el QR con máxima calidad
             $writer = new \Endroid\QrCode\Writer\PngWriter();
-            $qrCode = \Endroid\QrCode\QrCode::create($urlDescarga)
-                ->setSize(150)
-                ->setMargin(10);
+            $qrCode = \Endroid\QrCode\QrCode::create($urlPublica)
+                ->setSize(400)  // Tamaño grande para máxima nitidez
+                ->setMargin(20)  // Margen adecuado
+                ->setErrorCorrectionLevel(\Endroid\QrCode\ErrorCorrectionLevel::High); // Máxima corrección de errores
 
             $result = $writer->write($qrCode);
             
             // Convertir a base64 para incluir en el PDF como imagen HTML
             $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($result->getString());
             
-            // Retornar HTML con la imagen base64 para que se muestre en el PDF
-            $qrCodeHtml = '<img src="' . $qrCodeBase64 . '" alt="QR Code" style="width: 100%; height: 100%;" />';
+            // Retornar HTML con estilo para que esté justo arriba del texto C.c.p.- Expediente y Minutario, 2cm más a la izquierda
+            $qrCodeHtml = '<div style="position: fixed; bottom: 90px; left: 20px; z-index: 99999 !important; padding: 2px;">
+                <img src="' . $qrCodeBase64 . '" alt="QR Code de Verificación" style="width: 75px; height: 75px; display: block; opacity: 1.0; filter: contrast(1.1);" />
+            </div>';
 
             Log::info('QR code generado exitosamente', [
                 'tramite_id' => $tramite->id,
                 'proveedor_id' => $tramite->proveedor->id,
                 'qr_html_length' => strlen($qrCodeHtml),
-                'url_descarga' => $urlDescarga
+                'url_publica' => $urlPublica
             ]);
 
             return $qrCodeHtml;
@@ -231,13 +235,14 @@ class OficioService
             ]);
             
             // Fallback: devolver un mensaje de texto si falla la generación del QR
-            $nombreArchivo = $this->generarNombreArchivoOficio($tramite);
-            $urlFallback = route('oficios.descargar', [
-                'tramite_id' => $tramite->id,
-                'proveedor_id' => $tramite->proveedor->id,
-                'archivo' => $nombreArchivo
-            ]);
-            return '<div style="text-align: center; font-size: 6pt; padding: 10px;">QR no disponible<br/>Descargar: ' . $urlFallback . '</div>';
+            $urlFallback = route('proveedores.publico', $tramite->proveedor->id);
+            // Forzar la URL correcta para desarrollo
+            $urlFallback = str_replace('http://localhost', 'http://127.0.0.1:8000', $urlFallback);
+            return '<div style="position: fixed; bottom: 90px; left: 20px; z-index: 99999 !important; padding: 2px; width: 75px; height: 75px; display: flex; align-items: center; justify-content: center; text-align: center; background: #f44336; color: white; border-radius: 4px;">
+                <div>
+                    <p style="margin: 0; font-size: 8px; font-weight: bold;">QR ERROR</p>
+                </div>
+            </div>';
         }
     }
 
@@ -258,6 +263,9 @@ class OficioService
             'proveedor_id' => $proveedor->id,
             'archivo' => $nombreArchivo
         ]);
+
+        // Forzar la URL correcta para desarrollo
+        $url = str_replace('http://localhost', 'http://127.0.0.1:8000', $url);
 
         Log::info('URL de oficio generada', [
             'tramite_id' => $tramite->id,
@@ -447,7 +455,7 @@ class OficioService
         $razonSocial = $datosGenerales ? $datosGenerales->razon_social : $proveedor->razon_social;
         $rfc = $proveedor->rfc;
         $numeroProveedor = $proveedor->pv_numero;
-        $fecha = Carbon::now()->format('d/m/Y');
+        $fecha = $this->formatearFechaEspanol(Carbon::now());
 
         $contenido = "
         OFICIO DE ASIGNACIÓN DE PROVEEDOR
@@ -473,5 +481,39 @@ class OficioService
         ";
 
         return trim($contenido);
+    }
+
+    /**
+     * Formatear fecha en español
+     */
+    private function formatearFechaEspanol(Carbon $fecha): string
+    {
+        $meses = [
+            1 => 'enero',
+            2 => 'febrero', 
+            3 => 'marzo',
+            4 => 'abril',
+            5 => 'mayo',
+            6 => 'junio',
+            7 => 'julio',
+            8 => 'agosto',
+            9 => 'septiembre',
+            10 => 'octubre',
+            11 => 'noviembre',
+            12 => 'diciembre'
+        ];
+
+        $dia = $fecha->day;
+        $mes = $meses[$fecha->month];
+        $año = $fecha->year;
+
+        $fechaEspanol = "{$dia} de {$mes} de {$año}";
+        
+        Log::info('Fecha formateada en español', [
+            'fecha_original' => $fecha->toDateString(),
+            'fecha_español' => $fechaEspanol
+        ]);
+
+        return $fechaEspanol;
     }
 } 
