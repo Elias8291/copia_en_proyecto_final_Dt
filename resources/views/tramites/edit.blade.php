@@ -29,7 +29,7 @@
 </style>
 
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-    <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
+    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-4">
@@ -143,19 +143,18 @@
                 @endif
 
                 <!-- Datos Generales -->
-                <div class="mb-8" data-section="datos_generales">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
-                        @php
-                            $estadoSeccion = $estadosSecciones['datos_generales'] ?? 'Pendiente';
-                            $esEditable = $estadoSeccion === 'Rechazado';
-                        @endphp
-                        <span class="px-3 py-1 rounded-full text-xs font-medium 
-                            @if($estadoSeccion === 'Rechazado') bg-red-100 text-red-800 @elseif($estadoSeccion === 'Aprobado') bg-green-100 text-green-800 @else bg-gray-100 text-gray-600 @endif">
-                            {{ $estadoSeccion }}
+                @php
+                    $estadoSeccion = $estadosSecciones['datos_generales'] ?? 'Pendiente';
+                    $esEditable = $estadoSeccion === 'Rechazado';
+                @endphp
+                @if($estadoSeccion === 'Rechazado')
+                <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="datos_generales">
+                    <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                            Corregir
                         </span>
                     </div>
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                         @include('components.forms.datos-generales', [
                             'editable' => $esEditable, 
                             'datosConstancia' => $viewModel
@@ -163,7 +162,6 @@
                     </div>
                     
                     <!-- Comentarios del Revisor -->
-                    @if($estadoSeccion === 'Rechazado')
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="datos_generales">
                         <x-revision.textarea-comentarios 
                             seccion="datos_generales"
@@ -173,30 +171,31 @@
                             :soloLectura="true"
                         />
                     </div>
-                    @endif
                 </div>
+                @endif
+
+                <div class="border-t border-gray-200 my-8"></div>
 
                 <!-- Actividades Económicas -->
-                <div class="mb-8" data-section="actividades">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Actividades Económicas</h2>
-                        @php
-                            $estadoSeccion = $estadosSecciones['actividades'] ?? 'Pendiente';
-                            $esEditable = $estadoSeccion === 'Rechazado';
-                        @endphp
-                        <span class="px-3 py-1 rounded-full text-xs font-medium 
-                            @if($estadoSeccion === 'Rechazado') bg-red-100 text-red-800 @elseif($estadoSeccion === 'Aprobado') bg-green-100 text-green-800 @else bg-gray-100 text-gray-600 @endif">
-                            {{ $estadoSeccion }}
+                @php
+                    $estadoSeccion = $estadosSecciones['actividades'] ?? 'Pendiente';
+                    $esEditable = $estadoSeccion === 'Rechazado';
+                @endphp
+                @if($estadoSeccion === 'Rechazado')
+                <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="actividades">
+                    <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                            Corregir
                         </span>
                     </div>
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                         @include('components.forms.actividades-economicas', [
-                            'editable' => $esEditable
+                            'editable' => $esEditable,
+                            'actividadesSeleccionadas' => $viewModel
                         ])
                     </div>
                     
                     <!-- Comentarios del Revisor -->
-                    @if($estadoSeccion === 'Rechazado')
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="actividades">
                         <x-revision.textarea-comentarios 
                             seccion="actividades"
@@ -206,25 +205,24 @@
                             :soloLectura="true"
                         />
                     </div>
-                    @endif
                 </div>
+                @endif
 
                 <div class="border-t border-gray-200 my-8"></div>
 
                 <!-- Domicilio -->
-                <div class="mb-8" data-section="domicilio">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Domicilio</h2>
-                        @php
-                            $estadoSeccion = $estadosSecciones['domicilio'] ?? 'Pendiente';
-                            $esEditable = $estadoSeccion === 'Rechazado';
-                        @endphp
-                        <span class="px-3 py-1 rounded-full text-xs font-medium 
-                            @if($estadoSeccion === 'Rechazado') bg-red-100 text-red-800 @elseif($estadoSeccion === 'Aprobado') bg-green-100 text-green-800 @else bg-gray-100 text-gray-600 @endif">
-                            {{ $estadoSeccion }}
+                @php
+                    $estadoSeccion = $estadosSecciones['domicilio'] ?? 'Pendiente';
+                    $esEditable = $estadoSeccion === 'Rechazado';
+                @endphp
+                @if($estadoSeccion === 'Rechazado')
+                <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="domicilio">
+                    <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                            Corregir
                         </span>
                     </div>
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
+                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                         @include('components.forms.domicilio', [
                             'editable' => $esEditable, 
                             'datosConstancia' => $viewModel
@@ -232,7 +230,6 @@
                     </div>
                     
                     <!-- Comentarios del Revisor -->
-                    @if($estadoSeccion === 'Rechazado')
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="domicilio">
                         <x-revision.textarea-comentarios 
                             seccion="domicilio"
@@ -242,34 +239,32 @@
                             :soloLectura="true"
                         />
                     </div>
-                    @endif
                 </div>
+                @endif
 
                 @if($tramite->proveedor->tipo_persona === 'Moral')
                     <div class="border-t border-gray-200 my-8"></div>
 
                     <!-- Constitución -->
-                    <div class="mb-8" data-section="constitucion">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-gray-800">Constitución</h2>
-                            @php
-                                $estadoSeccion = $estadosSecciones['constitucion'] ?? 'Pendiente';
-                                $esEditable = $estadoSeccion === 'Rechazado';
-                            @endphp
-                            <span class="px-3 py-1 rounded-full text-xs font-medium 
-                                @if($estadoSeccion === 'Rechazado') bg-red-100 text-red-800 @elseif($estadoSeccion === 'Aprobado') bg-green-100 text-green-800 @else bg-gray-100 text-gray-600 @endif">
-                                {{ $estadoSeccion }}
+                    @php
+                        $estadoSeccion = $estadosSecciones['constitucion'] ?? 'Pendiente';
+                        $esEditable = $estadoSeccion === 'Rechazado';
+                    @endphp
+                    @if($estadoSeccion === 'Rechazado')
+                    <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="constitucion">
+                        <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                                Corregir
                             </span>
                         </div>
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
-                                                    @include('components.forms.constitucion', [
-                            'editable' => $esEditable,
-                            'datosConstitucion' => $viewModel
-                        ])
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.constitucion', [
+                                'editable' => $esEditable,
+                                'datosConstitucion' => $viewModel
+                            ])
                         </div>
                         
                         <!-- Comentarios del Revisor -->
-                        @if($estadoSeccion === 'Rechazado')
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="constitucion">
                             <x-revision.textarea-comentarios 
                                 seccion="constitucion"
@@ -279,31 +274,31 @@
                                 :soloLectura="true"
                             />
                         </div>
-                        @endif
                     </div>
+                    @endif
+
+                    <div class="border-t border-gray-200 my-8"></div>
 
                     <!-- Accionistas -->
-                    <div class="mb-8" data-section="accionistas">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-gray-800">Accionistas</h2>
-                            @php
-                                $estadoSeccion = $estadosSecciones['accionistas'] ?? 'Pendiente';
-                                $esEditable = $estadoSeccion === 'Rechazado';
-                            @endphp
-                            <span class="px-3 py-1 rounded-full text-xs font-medium 
-                                @if($estadoSeccion === 'Rechazado') bg-red-100 text-red-800 @elseif($estadoSeccion === 'Aprobado') bg-green-100 text-green-800 @else bg-gray-100 text-gray-600 @endif">
-                                {{ $estadoSeccion }}
+                    @php
+                        $estadoSeccion = $estadosSecciones['accionistas'] ?? 'Pendiente';
+                        $esEditable = $estadoSeccion === 'Rechazado';
+                    @endphp
+                    @if($estadoSeccion === 'Rechazado')
+                    <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="accionistas">
+                        <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                                Corregir
                             </span>
                         </div>
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
-                                                    @include('components.forms.accionistas', [
-                            'editable' => $esEditable,
-                            'accionistas' => $viewModel
-                        ])
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.accionistas', [
+                                'editable' => $esEditable,
+                                'accionistas' => $viewModel
+                            ])
                         </div>
                         
                         <!-- Comentarios del Revisor -->
-                        @if($estadoSeccion === 'Rechazado')
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="accionistas">
                             <x-revision.textarea-comentarios 
                                 seccion="accionistas"
@@ -313,31 +308,31 @@
                                 :soloLectura="true"
                             />
                         </div>
-                        @endif
                     </div>
+                    @endif
+
+                    <div class="border-t border-gray-200 my-8"></div>
 
                     <!-- Apoderado Legal -->
-                    <div class="mb-8" data-section="apoderado">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-xl font-bold text-gray-800">Apoderado Legal</h2>
-                            @php
-                                $estadoSeccion = $estadosSecciones['apoderado'] ?? 'Pendiente';
-                                $esEditable = $estadoSeccion === 'Rechazado';
-                            @endphp
-                            <span class="px-3 py-1 rounded-full text-xs font-medium 
-                                @if($estadoSeccion === 'Rechazado') bg-red-100 text-red-800 @elseif($estadoSeccion === 'Aprobado') bg-green-100 text-green-800 @else bg-gray-100 text-gray-600 @endif">
-                                {{ $estadoSeccion }}
+                    @php
+                        $estadoSeccion = $estadosSecciones['apoderado'] ?? 'Pendiente';
+                        $esEditable = $estadoSeccion === 'Rechazado';
+                    @endphp
+                    @if($estadoSeccion === 'Rechazado')
+                    <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="apoderado">
+                        <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                                Corregir
                             </span>
                         </div>
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 @if(!$esEditable) opacity-50 @endif">
-                                                    @include('components.forms.apoderado', [
-                            'editable' => $esEditable,
-                            'datosApoderado' => $viewModel
-                        ])
+                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
+                            @include('components.forms.apoderado', [
+                                'editable' => $esEditable,
+                                'datosApoderado' => $viewModel
+                            ])
                         </div>
                         
                         <!-- Comentarios del Revisor -->
-                        @if($estadoSeccion === 'Rechazado')
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="apoderado">
                             <x-revision.textarea-comentarios 
                                 seccion="apoderado"
@@ -347,49 +342,29 @@
                                 :soloLectura="true"
                             />
                         </div>
-                        @endif
                     </div>
+                    @endif
                 @endif
 
                 <div class="border-t border-gray-200 my-8"></div>
 
-                <!-- Corrección de Archivos -->
-                <div class="mb-8" data-section="archivos-correccion">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Corrección de Archivos</h2>
-                        <div class="flex items-center space-x-2">
-                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium border border-red-200">
-                                🔧 Modo Corrección
-                            </span>
-                        </div>
+                <!-- Archivos -->
+                @if(count($archivosRechazados) > 0)
+                <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="archivos-correccion">
+                    <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+                            Corregir
+                        </span>
                     </div>
-                    
-                    <!-- Información básica -->
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
-                        <p class="text-xs text-gray-600">
-                            <strong>Solo archivos rechazados ✏️ permiten subir nuevo documento.</strong>
-                        </p>
-                    </div>
-                    
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                         <x-revision.evaluacion-archivos 
-                            :archivosSubidos="$archivosSubidos"
+                            :archivosSubidos="$archivosRechazados"
                             seccion="archivos_correccion"
                             :modoCorreccion="true"
                         />
                     </div>
-                    
-                    <!-- Comentarios del Revisor -->
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="archivos-correccion">
-                        <x-revision.textarea-comentarios 
-                            seccion="archivos_correccion"
-                            placeholder="Observaciones del revisor..."
-                            label-text="Observaciones:"
-                            :rows="2"
-                            :soloLectura="true"
-                        />
-                    </div>
                 </div>
+                @endif
 
                 <!-- Botón de envío -->
                 <div class="flex justify-center bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -504,6 +479,10 @@ function getEstadoArchivo(archivoId) {
 <!-- Scripts de revisión digital -->
 <script src="{{ asset('js/revision-digital.js') }}"></script>
 <script src="{{ asset('js/revision/cargar-estados.js') }}"></script>
+
+<!-- Scripts de validación -->
+<script type="module" src="{{ asset('js/validations/edit-form-validator.js') }}"></script>
+<script src="{{ asset('js/validations/edit-form-conditional.js') }}"></script>
 
 <script>
 // Inicializar sistema de revisión para el formulario de edición

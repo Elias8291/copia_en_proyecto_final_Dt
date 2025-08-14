@@ -102,11 +102,21 @@ class FormDataViewModel
         $formateadas = [];
         
         foreach ($actividades as $actividad) {
-            $formateadas[] = [
-                'id' => $actividad['id'] ?? $actividad['actividad_id'] ?? null,
-                'nombre' => $actividad['nombre'] ?? $actividad['descripcion'] ?? '',
-                'codigo' => $actividad['codigo'] ?? '',
-            ];
+            // Si la actividad tiene una relación anidada con 'actividad'
+            if (isset($actividad['actividad']) && is_array($actividad['actividad'])) {
+                $formateadas[] = [
+                    'id' => $actividad['actividad']['id'] ?? null,
+                    'nombre' => $actividad['actividad']['nombre'] ?? '',
+                    'codigo' => $actividad['actividad']['codigo'] ?? '',
+                ];
+            } else {
+                // Formato directo (fallback)
+                $formateadas[] = [
+                    'id' => $actividad['id'] ?? $actividad['actividad_id'] ?? null,
+                    'nombre' => $actividad['nombre'] ?? $actividad['descripcion'] ?? '',
+                    'codigo' => $actividad['codigo'] ?? '',
+                ];
+            }
         }
         
         return $formateadas;

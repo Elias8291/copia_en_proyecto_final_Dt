@@ -6,6 +6,7 @@ use App\Http\Requests\ProcesarConstanciaRequest;
 use App\Http\Requests\TramiteFormRequest;
 use App\Services\Tramites\TramiteService;
 use App\Services\Tramites\ConstanciaService;
+use App\Services\Tramites\CorreccionService;
 use App\Services\RfcProveedorService;
 use App\ViewModels\TramiteViewModel;
 use App\ViewModels\FormDataViewModel;
@@ -16,15 +17,18 @@ class TramiteController extends Controller
 {
     private TramiteService $tramiteService;
     private ConstanciaService $constanciaService;
+    private CorreccionService $correccionService;
     private RfcProveedorService $rfcProveedorService;
 
     public function __construct(
         TramiteService $tramiteService, 
-        ConstanciaService $constanciaService, 
+        ConstanciaService $constanciaService,
+        CorreccionService $correccionService,
         RfcProveedorService $rfcProveedorService
     ) {
         $this->tramiteService = $tramiteService;
         $this->constanciaService = $constanciaService;
+        $this->correccionService = $correccionService;
         $this->rfcProveedorService = $rfcProveedorService;
     }
 
@@ -532,7 +536,7 @@ class TramiteController extends Controller
                 'apoderadosLegales.instrumentoNotarial.estado', 
                 'accionistas', 
                 'contactos', 
-                'actividades', 
+                'actividades.actividad', 
                 'direcciones.coordenada', 
                 'archivos.catalogoArchivo',
                 'datosConstitutivos.instrumentoNotarial.estado'
@@ -638,7 +642,11 @@ class TramiteController extends Controller
             
             $viewModel = new FormDataViewModel($formData);
                     
-                    // Cargar estados de las secciones para determinar cuáles son editables
+                    // Usar el CorreccionService para obtener secciones que necesitan corrección
+                    $seccionesParaCorregir = $this->correccionService->obtenerSeccionesParaCorreccion($tramite);
+                    $resumenCorrecciones = $this->correccionService->obtenerResumenCorrecciones($tramite);
+                    
+                    // Cargar estados de las secciones desde la base de datos
                     $estadosSecciones = [];
                     $secciones = ['datos_generales', 'actividades', 'domicilio', 'contacto', 'archivos'];
                     if ($tramite->proveedor->tipo_persona === 'Moral') {
@@ -646,7 +654,11 @@ class TramiteController extends Controller
                     }
                     
                     foreach ($secciones as $seccion) {
-                        $estadosSecciones[$seccion] = 'Pendiente'; // Por defecto
+                        $revision = \App\Models\SeccionRevision::where('tramite_id', $tramite->id)
+                            ->where('seccion', $seccion)
+                            ->first();
+                        
+                        $estadosSecciones[$seccion] = $revision ? $revision->estado : 'Pendiente';
                     }
                     
                     // Cargar estados de archivos individuales desde la base de datos
@@ -684,6 +696,11 @@ class TramiteController extends Controller
                     // Preparar archivos para el componente de evaluación usando el método reutilizable
                     $archivosSubidos = $this->prepararArchivosParaCotejo($tramite->archivos);
                     
+                    // Filtrar solo archivos rechazados para la corrección
+                    $archivosRechazados = collect($archivosSubidos)->filter(function($archivo) {
+                        return ($archivo['status'] ?? 'Pendiente') === 'Rechazado';
+                    })->toArray();
+                    
                     return view('tramites.edit', compact(
                         'tramite', 
                         'viewModel',
@@ -698,7 +715,8 @@ class TramiteController extends Controller
                         'estadosSecciones',
                         'estadosArchivos',
                         'comentariosArchivos',
-                        'archivosSubidos'
+                        'archivosSubidos',
+                        'archivosRechazados'
                     ));
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -767,8 +785,8 @@ class TramiteController extends Controller
                     ->with('error', 'Este trámite no requiere correcciones');
             }
             
-            // Actualizar el trámite usando el servicio
-            $tramiteActualizado = $this->tramiteService->actualizarTramite($tramite, $request);
+            // Actualizar el trámite usando el CorreccionService
+            $tramiteActualizado = $this->correccionService->procesarCorreccion($tramite, $request);
             
             Log::info('TramiteController: Trámite actualizado exitosamente', [
                 'tramite_id' => $tramite->id,

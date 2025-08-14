@@ -61,16 +61,29 @@ class ActividadesService
      */
     public function actualizar(Tramite $tramite, Request $request): void
     {
-        if ($request->filled('actividades')) {
-            // Eliminar actividades existentes
-            $tramite->actividades()->delete();
-            
-            // Agregar nuevas actividades
-            foreach ($request->actividades as $actividadId) {
-                $tramite->actividades()->create([
-                    'actividad_id' => $actividadId,
+        $actividadesSeleccionadas = $request->input('actividades_seleccionadas');
+        
+        if (!$actividadesSeleccionadas) {
+            return;
+        }
+        
+        $actividadesArray = json_decode($actividadesSeleccionadas, true);
+        
+        if (!is_array($actividadesArray)) {
+            return;
+        }
+        
+        // Eliminar actividades existentes
+        $tramite->actividades()->delete();
+        
+        // Agregar nuevas actividades
+        foreach ($actividadesArray as $actividad) {
+            if (isset($actividad['id'])) {
+                ActividadProveedor::create([
                     'proveedor_id' => $tramite->proveedor_id,
-                    'status' => 'pendiente'
+                    'tramite_id' => $tramite->id,
+                    'actividad_id' => $actividad['id'],
+                    'status' => 'pendiente',
                 ]);
             }
         }

@@ -438,11 +438,13 @@ function validateArchivo(fileInput, file) {
     clearFileError(fileInput);
     
     // Obtener el tipo de archivo esperado del input
-    const expectedType = fileInput.getAttribute('accept')?.replace('.', '') || '';
+    const acceptAttribute = fileInput.getAttribute('accept') || '';
+    const expectedTypes = acceptAttribute.split(',').map(type => type.trim().replace('.', ''));
     
     // Validar tipo de archivo
-    if (expectedType && fileExtension !== expectedType) {
-        showFileError(fileInput, `Debe ser un archivo ${expectedType.toUpperCase()}`);
+    if (expectedTypes.length > 0 && !expectedTypes.includes(fileExtension)) {
+        const allowedTypes = expectedTypes.map(type => type.toUpperCase()).join(', ');
+        showFileError(fileInput, `Debe ser un archivo ${allowedTypes}`);
         return false;
     }
     
@@ -475,13 +477,22 @@ function showFileError(fileInput, message) {
     
     const errorDiv = document.createElement('div');
     errorDiv.className = 'text-red-600 text-sm mt-1 file-error-message';
-    errorDiv.textContent = message;
+    errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle mr-1"></i>${message}`;
     
     const container = fileInput.closest('.bg-white') || fileInput.parentNode;
     container.appendChild(errorDiv);
     
-    // Marcar el input como inválido
-    fileInput.classList.add('border-red-500');
+    // Marcar el contenedor como inválido
+    const borderContainer = fileInput.closest('.border-dashed') || container;
+    borderContainer.classList.remove('border-green-500', 'border-gray-300');
+    borderContainer.classList.add('border-red-500');
+    
+    // Agregar indicador visual de error
+    const errorIndicator = document.createElement('div');
+    errorIndicator.className = 'absolute top-2 right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center';
+    errorIndicator.innerHTML = '<i class="fas fa-times text-white text-xs"></i>';
+    borderContainer.style.position = 'relative';
+    borderContainer.appendChild(errorIndicator);
 }
 
 // Mostrar éxito en archivo
@@ -490,29 +501,39 @@ function showFileSuccess(fileInput, message) {
     
     const successDiv = document.createElement('div');
     successDiv.className = 'text-green-600 text-sm mt-1 file-success-message';
-    successDiv.textContent = message;
+    successDiv.innerHTML = `<i class="fas fa-check mr-1"></i>${message}`;
     
     const container = fileInput.closest('.bg-white') || fileInput.parentNode;
     container.appendChild(successDiv);
     
-    // Marcar el input como válido
-    fileInput.classList.remove('border-red-500');
-    fileInput.classList.add('border-green-500');
+    // Marcar el contenedor como válido
+    const borderContainer = fileInput.closest('.border-dashed') || container;
+    borderContainer.classList.remove('border-red-500', 'border-gray-300');
+    borderContainer.classList.add('border-green-500');
     
-    // Remover mensaje de éxito después de 2 segundos
+    // Agregar indicador visual de éxito
+    const successIndicator = document.createElement('div');
+    successIndicator.className = 'absolute top-2 right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center';
+    successIndicator.innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+    borderContainer.style.position = 'relative';
+    borderContainer.appendChild(successIndicator);
+    
+    // Remover mensaje de éxito después de 3 segundos pero mantener el borde verde
     setTimeout(() => {
         if (successDiv.parentNode) {
             successDiv.remove();
         }
-        fileInput.classList.remove('border-green-500');
-    }, 2000);
+    }, 3000);
 }
 
 // Limpiar errores de archivo
 function clearFileError(fileInput) {
     const container = fileInput.closest('.bg-white') || fileInput.parentNode;
+    const borderContainer = fileInput.closest('.border-dashed') || container;
+    
     const existingError = container.querySelector('.file-error-message');
     const existingSuccess = container.querySelector('.file-success-message');
+    const existingIndicator = borderContainer.querySelector('.absolute');
     
     if (existingError) {
         existingError.remove();
@@ -520,8 +541,13 @@ function clearFileError(fileInput) {
     if (existingSuccess) {
         existingSuccess.remove();
     }
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
     
-    fileInput.classList.remove('border-red-500', 'border-green-500');
+    // Restaurar borde normal
+    borderContainer.classList.remove('border-red-500', 'border-green-500');
+    borderContainer.classList.add('border-gray-300');
 }
 
 // Calcular el total de porcentajes de participación de accionistas
@@ -555,7 +581,8 @@ function actualizarEstadoArchivos() {
             const fileName = file.name;
             const fileSize = file.size;
             const fileExtension = fileName.split('.').pop().toLowerCase();
-            const expectedType = input.getAttribute('accept')?.replace('.', '') || '';
+            const acceptAttribute = input.getAttribute('accept') || '';
+            const expectedTypes = acceptAttribute.split(',').map(type => type.trim().replace('.', ''));
             
             // Validar tipo y tamaño
             const maxSizes = {
@@ -569,7 +596,7 @@ function actualizarEstadoArchivos() {
             
             const maxSize = maxSizes[fileExtension] || 10 * 1024 * 1024;
             
-            if (fileExtension === expectedType && fileSize <= maxSize) {
+            if (expectedTypes.includes(fileExtension) && fileSize <= maxSize) {
                 archivosValidos++;
             }
         }

@@ -14,7 +14,7 @@
         }
     } elseif ($actividadesSeleccionadas instanceof \App\ViewModels\FormDataViewModel) {
         // Para FormDataViewModel (datos de revisión)
-        $actividadesArray = $actividadesSeleccionadas->getActividades();
+        $actividadesArray = $actividadesSeleccionadas->getActividadesForm();
     } elseif (!empty($datos)) {
         // Si no hay old() pero hay datos, usar los datos
         $actividadesArray = $datos;
@@ -92,7 +92,7 @@
             @if($editable)
             <!-- Input oculto para enviar datos -->
             <input type="hidden" name="actividades_seleccionadas" id="actividades-json" value="{{ old('actividades_seleccionadas', '[]') }}">
-            @error('actividades')
+            @error('actividades_seleccionadas')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
             

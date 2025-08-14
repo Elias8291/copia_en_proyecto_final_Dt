@@ -245,49 +245,12 @@ class TramiteService
 
     /**
      * Actualizar un trámite existente con correcciones
+     * Usa el CorreccionService para manejar las correcciones de manera inteligente
      */
     public function actualizarTramite(Tramite $tramite, Request $request): Tramite
     {
-        return DB::transaction(function () use ($tramite, $request) {
-            Log::info('TramiteService: Iniciando actualización de trámite', [
-                'tramite_id' => $tramite->id,
-                'user_id' => auth()->id()
-            ]);
-
-            // 1. Actualizar datos generales usando el servicio específico
-            $this->datosGeneralesService->actualizar($tramite, $request);
-
-            // 2. Actualizar domicilio usando el servicio específico
-            $this->domicilioService->actualizar($tramite, $request);
-
-            // 3. Actualizar actividades económicas usando el servicio específico
-            $this->actividadesService->actualizar($tramite, $request);
-
-            // 4. Actualizar datos específicos según tipo de persona
-            if ($tramite->proveedor->tipo_persona === 'Moral') {
-                $this->constitucionService->actualizar($tramite, $request);
-                $this->accionistasService->actualizar($tramite, $request);
-                $this->apoderadoService->actualizar($tramite, $request);
-            }
-
-            // 5. Actualizar archivos si se proporcionaron nuevos
-            if ($request->hasFile('archivos')) {
-                $this->archivosService->actualizar($tramite, $request);
-            }
-
-            // 6. Cambiar estado del trámite a pendiente para nueva revisión
-            $tramite->update([
-                'status' => 'Pendiente',
-                'observaciones' => null,  // Limpiar observaciones anteriores
-                'correcciones_count' => $tramite->correcciones_count + 1
-            ]);
-
-            Log::info('TramiteService: Trámite actualizado exitosamente', [
-                'tramite_id' => $tramite->id,
-                'correcciones_count' => $tramite->correcciones_count
-            ]);
-
-            return $tramite->fresh();
-        });
+        // Usar el CorreccionService para procesar las correcciones
+        $correccionService = app(CorreccionService::class);
+        return $correccionService->procesarCorreccion($tramite, $request);
     }
 }
