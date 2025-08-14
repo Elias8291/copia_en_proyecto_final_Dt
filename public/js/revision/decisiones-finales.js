@@ -118,7 +118,7 @@ class DecisionesFinales {
                         role="dialog" aria-modal="true" aria-labelledby="modal-headline">
                         
                         <div class="hidden sm:block absolute top-0 right-0 pt-4 pr-4">
-                            <button type="button" onclick="cerrarModalExito()" class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <button type="button" id="btn-cerrar-modal-exito" class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <span class="sr-only">Close</span>
                                 <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -146,7 +146,7 @@ class DecisionesFinales {
                         
                         <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                             <button type="button" 
-                                    onclick="aceptarExito()"
+                                    id="btn-aceptar-exito"
                                     class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm">
                                 Ver Trámites
                             </button>
@@ -157,6 +157,25 @@ class DecisionesFinales {
         `;
         
         document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        // Agregar event listeners después de crear el modal
+        const btnCerrar = document.getElementById('btn-cerrar-modal-exito');
+        const btnAceptar = document.getElementById('btn-aceptar-exito');
+        
+        if (btnCerrar) {
+            btnCerrar.addEventListener('click', () => {
+                cerrarModalExito();
+            });
+        }
+        
+        if (btnAceptar) {
+            btnAceptar.addEventListener('click', () => {
+                console.log('Botón Aceptar presionado - Redirigiendo...');
+                cerrarModalExito();
+                // Redirigir inmediatamente
+                window.location.href = '/revisiones';
+            });
+        }
     }
 }
 
@@ -171,10 +190,19 @@ function cerrarModalExito() {
     }
 }
 
+// Asegurar que la función esté disponible globalmente
+window.cerrarModalExito = cerrarModalExito;
+
 function aceptarExito() {
     cerrarModalExito();
-    window.location.href = '/revisiones';
+    // Pequeño delay para asegurar que el modal se cierre antes de redirigir
+    setTimeout(() => {
+        window.location.href = '/revisiones';
+    }, 100);
 }
+
+// Asegurar que la función esté disponible globalmente
+window.aceptarExito = aceptarExito;
 
 window.aprobarYAgendarCita = () => window.decisionesFinales?.aprobarYAgendarCita();
 window.rechazarParaCorreccion = () => window.decisionesFinales?.rechazarParaCorreccion();

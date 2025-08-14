@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Proveedor extends Model
 {
@@ -13,6 +14,7 @@ class Proveedor extends Model
     protected $fillable = [
         'usuario_id',
         'pv_numero',
+        'token_publico',
         'rfc',
         'razon_social',
         'tipo_persona',
@@ -105,5 +107,45 @@ class Proveedor extends Model
         }
 
         return $this;
+    }
+
+    /**
+     * Generar token público seguro para URLs
+     */
+    public function generarTokenPublico(): string
+    {
+        do {
+            $token = Str::random(32) . hash('sha256', $this->id . $this->rfc . now()->timestamp);
+            $token = substr($token, 0, 64); // Limitar a 64 caracteres
+        } while (self::where('token_publico', $token)->exists());
+
+        $this->update(['token_publico' => $token]);
+        
+        \Log::info('Token público generado', [
+            'proveedor_id' => $this->id,
+            'token_length' => strlen($token)
+        ]);
+
+        return $token;
+    }
+
+    /**
+     * Obtener o generar token público
+     */
+    public function obtenerTokenPublico(): string
+    {
+        if (empty($this->token_publico)) {
+            return $this->generarTokenPublico();
+        }
+        
+        return $this->token_publico;
+    }
+
+    /**
+     * Buscar proveedor por token público
+     */
+    public static function buscarPorToken(string $token): ?self
+    {
+        return self::where('token_publico', $token)->first();
     }
 } 

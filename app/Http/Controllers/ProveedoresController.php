@@ -21,7 +21,7 @@ class ProveedoresController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['publico']);
+        $this->middleware('auth')->except(['publico', 'publicoPorToken']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.ver')->only(['index', 'show']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.crear')->only(['create', 'store']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.editar')->only(['edit', 'update']);
@@ -483,6 +483,42 @@ class ProveedoresController extends Controller
      */
     public function publico(Proveedor $proveedor)
     {
+        // Cargar relaciones necesarias
+        $proveedor->load(['direcciones.estado']);
+        
+        // Obtener el último trámite del proveedor para mostrar información actualizada
+        $ultimoTramite = $proveedor->tramites()
+            ->with(['datosGenerales', 'actividades.actividad', 'direcciones'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
+        // Obtener direcciones del proveedor
+        $direcciones = $proveedor->direcciones;
+        
+        return view('proveedores.publico', compact('proveedor', 'direcciones', 'ultimoTramite'));
+    }
+
+    /**
+     * Mostrar información pública del proveedor usando token seguro
+     * Esta ruta es más segura ya que no expone el ID del proveedor
+     */
+    public function publicoPorToken(string $token)
+    {
+        // Buscar proveedor por token
+        $proveedor = Proveedor::buscarPorToken($token);
+        
+        if (!$proveedor) {
+            abort(404, 'Proveedor no encontrado o token inválido');
+        }
+        
+        // Log de acceso para auditoría
+        \Log::info('Acceso a información pública por token', [
+            'token' => substr($token, 0, 8) . '...', // Solo primeros 8 caracteres por seguridad
+            'proveedor_id' => $proveedor->id,
+            'ip' => request()->ip(),
+            'user_agent' => request()->userAgent()
+        ]);
+        
         // Cargar relaciones necesarias
         $proveedor->load(['direcciones.estado']);
         

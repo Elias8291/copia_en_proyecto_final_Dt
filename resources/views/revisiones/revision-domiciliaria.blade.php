@@ -33,7 +33,6 @@
         </div>
 
         <div class="p-6">
-            <!-- Información del trámite y revisión -->
             <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
@@ -56,7 +55,7 @@
             </div>
 
             @if($revision)
-            <!-- Información de la revisión guardada -->
+        
             <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -76,7 +75,7 @@
                 </div>
             </div>
             @else
-            <!-- Revisión temporal (no guardada) -->
+        
             <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-3">
@@ -95,7 +94,7 @@
             </div>
             @endif
 
-            <!-- Mensaje específico para revisión domiciliaria -->
+        
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                 <div class="flex items-center space-x-3">
                     <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +108,7 @@
                 </div>
             </div>
 
-            <!-- Domicilio - Verificación en Sitio -->
+        
             <div class="mb-6" data-section="domicilio">
                 <div class="mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Verificación Domiciliaria</h2>
@@ -122,7 +121,7 @@
                     ])
                 </div>
                 
-                <!-- Área de Decisión por Sección -->
+            
                 <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
                     <div class="flex items-center justify-between mb-3">
                         <h4 class="text-sm font-medium text-gray-700">Decisión - Verificación Domiciliaria</h4>
@@ -137,7 +136,7 @@
                             rows="4"></textarea>
                     </div>
                     
-                    <!-- Checklist de verificación -->
+                
                     <div class="mb-4 p-3 bg-gray-50 rounded-lg">
                         <h5 class="text-sm font-medium text-gray-700 mb-2">Checklist de Verificación:</h5>
                         <div class="space-y-2 text-xs">
@@ -168,7 +167,7 @@
                 </div>
             </div>
 
-            <!-- Panel de decisión -->
+        
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6 mb-6 border-t-4 border-emerald-500">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Decisión de Revisión Domiciliaria</h3>
                 
@@ -202,7 +201,6 @@
     </div>
 </div>
 
-<!-- Navegación flotante simplificada -->
 <div class="fixed bottom-6 right-6 space-y-2 z-40">
     <button type="button" onclick="scrollToTop()" 
             class="w-12 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors">
@@ -218,7 +216,7 @@ function scrollToTop() {
 window.scrollToTop = scrollToTop;
 </script>
 
-<!-- Modal de confirmación -->
+    
 <x-ui.modals.modal-confirmacion 
     id="modal-confirmacion-decision"
     title="Confirmar Decisión"

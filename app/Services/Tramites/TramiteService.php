@@ -122,9 +122,7 @@ class TramiteService
             Log::info('TramiteService: Proveedor gestionado exitosamente', [
                 'accion' => $resultadoGestion['accion'],
                 'proveedor_id' => $resultadoGestion['proveedor']->id,
-                'numero_proveedor' => $resultadoGestion['numero_proveedor'],
-                'fecha_registro' => $resultadoGestion['fecha_registro'],
-                'fecha_vencimiento' => $resultadoGestion['fecha_vencimiento']
+                'numero_proveedor' => $resultadoGestion['numero_proveedor']
             ]);
 
             return $resultadoGestion['proveedor'];

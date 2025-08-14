@@ -113,9 +113,16 @@ class ArchivosEvaluacion {
             // Solo actualizar el estado visual de la sección, sin enviar peticiones adicionales
             this.actualizarEstadoSeccionVisual();
             
-            // Mostrar solo el mensaje del backend cuando sea exitoso
-            if (result.success && result.message && typeof mostrarNotificacion === 'function') {
-                mostrarNotificacion(result.message, 'success');
+            // Mostrar mensaje y redirigir después de un breve delay
+            if (result.success && result.message) {
+                if (typeof mostrarNotificacionYRedirigir === 'function') {
+                    mostrarNotificacionYRedirigir(result.message, 'success');
+                } else if (typeof mostrarNotificacion === 'function') {
+                    mostrarNotificacion(result.message, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/revisiones';
+                    }, 1500);
+                }
             }
             
         } catch (error) {
@@ -172,9 +179,18 @@ class ArchivosEvaluacion {
         
         setTimeout(() => {
             if (typeof evaluarSeccion === 'function') {
+                // La función evaluarSeccion ya maneja la redirección
                 evaluarSeccion('archivos', decisionSeccion);
             } else {
                 this.actualizarEstadoSeccionManual('archivos', decisionSeccion);
+                // Redirigir después de actualizar el estado manual
+                if (typeof mostrarNotificacionYRedirigir === 'function') {
+                    mostrarNotificacionYRedirigir(`Sección de archivos marcada como ${decisionSeccion}`, 'success');
+                } else {
+                    setTimeout(() => {
+                        window.location.href = '/revisiones';
+                    }, 1500);
+                }
             }
         }, 100);
     }

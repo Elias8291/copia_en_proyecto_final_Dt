@@ -2,7 +2,6 @@
 
 @section('title', 'Corregir Trámite')
 
-<!-- Meta tag para el ID del trámite -->
 <meta name="tramite-id" content="{{ $tramite->id }}">
 
 @section('content')
@@ -79,7 +78,6 @@
                 </div>
             @endif
 
-            <!-- Información Básica -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4 text-sm">
@@ -88,12 +86,11 @@
                         <span><strong>Persona:</strong> {{ $tramite->proveedor->tipo_persona === 'Moral' ? 'Moral' : 'Física' }}</span>
                     </div>
                     <div class="text-xs text-gray-500">
-                        Solo secciones rechazadas ✏️ son editables
+                        Solo secciones rechazadas ,son editables
                     </div>
                 </div>
             </div>
 
-            <!-- Observaciones del Revisor -->
             @if($tramite->observaciones)
             <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mb-6">
                 <div class="flex items-start">
@@ -112,10 +109,8 @@
                 @csrf
                 @method('PUT')
                 
-                <!-- Campo oculto para tipo de trámite -->
                 <input type="hidden" name="tipo_tramite" value="{{ $tramite->tipo_tramite }}">
                 
-                <!-- Campos ocultos para comentarios y estados -->
                 <input type="hidden" name="secciones[datos_generales][decision]" id="decision_datos_generales" value="Pendiente">
                 <input type="hidden" name="secciones[datos_generales][comentario]" id="comentario_datos_generales" value="">
                 
@@ -142,7 +137,6 @@
                     <input type="hidden" name="secciones[apoderado][comentario]" id="comentario_apoderado" value="">
                 @endif
 
-                <!-- Datos Generales -->
                 @php
                     $estadoSeccion = $estadosSecciones['datos_generales'] ?? 'Pendiente';
                     $esEditable = $estadoSeccion === 'Rechazado';
@@ -161,7 +155,6 @@
                         ])
                     </div>
                     
-                    <!-- Comentarios del Revisor -->
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="datos_generales">
                         <x-revision.textarea-comentarios 
                             seccion="datos_generales"
@@ -176,7 +169,6 @@
 
                 <div class="border-t border-gray-200 my-8"></div>
 
-                <!-- Actividades Económicas -->
                 @php
                     $estadoSeccion = $estadosSecciones['actividades'] ?? 'Pendiente';
                     $esEditable = $estadoSeccion === 'Rechazado';
@@ -195,7 +187,6 @@
                         ])
                     </div>
                     
-                    <!-- Comentarios del Revisor -->
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="actividades">
                         <x-revision.textarea-comentarios 
                             seccion="actividades"
@@ -210,7 +201,6 @@
 
                 <div class="border-t border-gray-200 my-8"></div>
 
-                <!-- Domicilio -->
                 @php
                     $estadoSeccion = $estadosSecciones['domicilio'] ?? 'Pendiente';
                     $esEditable = $estadoSeccion === 'Rechazado';
@@ -229,7 +219,6 @@
                         ])
                     </div>
                     
-                    <!-- Comentarios del Revisor -->
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="domicilio">
                         <x-revision.textarea-comentarios 
                             seccion="domicilio"
@@ -245,7 +234,6 @@
                 @if($tramite->proveedor->tipo_persona === 'Moral')
                     <div class="border-t border-gray-200 my-8"></div>
 
-                    <!-- Constitución -->
                     @php
                         $estadoSeccion = $estadosSecciones['constitucion'] ?? 'Pendiente';
                         $esEditable = $estadoSeccion === 'Rechazado';
@@ -264,7 +252,6 @@
                             ])
                         </div>
                         
-                        <!-- Comentarios del Revisor -->
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="constitucion">
                             <x-revision.textarea-comentarios 
                                 seccion="constitucion"
@@ -278,8 +265,6 @@
                     @endif
 
                     <div class="border-t border-gray-200 my-8"></div>
-
-                    <!-- Accionistas -->
                     @php
                         $estadoSeccion = $estadosSecciones['accionistas'] ?? 'Pendiente';
                         $esEditable = $estadoSeccion === 'Rechazado';
@@ -298,7 +283,6 @@
                             ])
                         </div>
                         
-                        <!-- Comentarios del Revisor -->
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="accionistas">
                             <x-revision.textarea-comentarios 
                                 seccion="accionistas"
@@ -313,7 +297,6 @@
 
                     <div class="border-t border-gray-200 my-8"></div>
 
-                    <!-- Apoderado Legal -->
                     @php
                         $estadoSeccion = $estadosSecciones['apoderado'] ?? 'Pendiente';
                         $esEditable = $estadoSeccion === 'Rechazado';
@@ -332,7 +315,6 @@
                             ])
                         </div>
                         
-                        <!-- Comentarios del Revisor -->
                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mt-3" data-seccion="apoderado">
                             <x-revision.textarea-comentarios 
                                 seccion="apoderado"
@@ -348,7 +330,6 @@
 
                 <div class="border-t border-gray-200 my-8"></div>
 
-                <!-- Archivos -->
                 @if(count($archivosRechazados) > 0)
                 <div class="mb-8 border-2 border-red-500 rounded-lg" data-section="archivos-correccion">
                     <div class="flex items-center justify-center mb-4 p-4 bg-red-50 border-b border-red-200">
@@ -366,7 +347,6 @@
                 </div>
                 @endif
 
-                <!-- Botón de envío -->
                 <div class="flex justify-center bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
                     <div class="flex space-x-4">
                         <a href="{{ route('tramites.estado') }}" 
@@ -385,7 +365,6 @@
     </div>
 </div>
 
-<!-- Botones de navegación ocultos para el formulario de edición -->
 <div class="fixed bottom-6 right-6 space-y-2 z-40" style="display: none;">
     <button type="button" id="btn-prev" onclick="navigateSection('prev')" 
             class="w-12 h-12 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors">
@@ -398,23 +377,19 @@
 </div>
 
 <script>
-// Para el formulario de edición, mostrar todas las secciones
 document.addEventListener('DOMContentLoaded', function() {
     const sections = document.querySelectorAll('[data-section]');
     
-    // Mostrar todas las secciones
     sections.forEach((section) => {
         section.style.display = 'block';
     });
     
-    // Ocultar los botones de navegación ya que no son necesarios
     const navButtons = document.querySelector('.fixed.bottom-6.right-6');
     if (navButtons) {
         navButtons.style.display = 'none';
     }
 });
 
-// Función para actualizar el nombre del archivo seleccionado
 function updateFileName(input, nameElementId) {
     const nameElement = document.getElementById(nameElementId);
     if (input.files && input.files[0]) {
@@ -422,7 +397,7 @@ function updateFileName(input, nameElementId) {
         nameElement.textContent = `Archivo seleccionado: ${fileName}`;
         nameElement.classList.remove('hidden');
         
-        // Cambiar el color del borde del contenedor para indicar que se seleccionó un archivo
+                          
         const container = input.closest('.border-dashed');
         if (container) {
             container.classList.remove('border-red-300', 'border-gray-300');
@@ -433,16 +408,13 @@ function updateFileName(input, nameElementId) {
     }
 }
 
-// Función para validar que solo se suban archivos en secciones editables
 function validateFileUpload(input) {
     const container = input.closest('.border-dashed');
-    if (container) {
-        // Verificar si el contenedor tiene opacidad reducida (no editable)
+    if (container) { 
         const computedStyle = window.getComputedStyle(container);
         const opacity = parseFloat(computedStyle.opacity);
         
         if (opacity < 1) {
-            // Si la sección no es editable, limpiar el input y mostrar mensaje
             input.value = '';
             alert('Este archivo no se puede modificar en modo de corrección. Solo los archivos rechazados permiten subir nuevos documentos.');
             return false;
@@ -451,11 +423,9 @@ function validateFileUpload(input) {
     return true;
 }
 
-// Función para validar archivos en la sección de corrección
 function validateFileUploadCorreccion(input) {
     const container = input.closest('.border-dashed');
     if (container) {
-        // En la sección de corrección, solo permitir archivos rechazados
         const archivoId = input.getAttribute('data-archivo-id');
         const estadoArchivo = getEstadoArchivo(archivoId);
         
@@ -468,44 +438,34 @@ function validateFileUploadCorreccion(input) {
     return true;
 }
 
-// Función para obtener el estado de un archivo (simulada)
 function getEstadoArchivo(archivoId) {
-    // Esta función debería obtener el estado real del archivo desde el servidor
-    // Por ahora, retornamos 'Rechazado' para archivos que tienen el atributo data-archivo-id
     return 'Rechazado';
 }
 </script>
 
-<!-- Scripts de revisión digital -->
 <script src="{{ asset('js/revision-digital.js') }}"></script>
 <script src="{{ asset('js/revision/cargar-estados.js') }}"></script>
 
-<!-- Scripts de validación -->
 <script type="module" src="{{ asset('js/validations/edit-form-validator.js') }}"></script>
 <script src="{{ asset('js/validations/edit-form-conditional.js') }}"></script>
 
 <script>
-// Inicializar sistema de revisión para el formulario de edición
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar el sistema de carga de estados si existe
     if (typeof RevisionDigitalEstados !== 'undefined') {
         const tramiteId = {{ $tramite->id }};
         window.revisionEstados = new RevisionDigitalEstados(tramiteId);
     }
     
-    // Agregar event listeners para sincronización de comentarios
     const textareas = document.querySelectorAll('[id^="textarea_"]');
     textareas.forEach(textarea => {
         const seccion = textarea.id.replace('textarea_', '');
         
-        // Sincronizar en tiempo real mientras el usuario escribe
         textarea.addEventListener('input', function() {
             if (typeof sincronizarComentario === 'function') {
                 sincronizarComentario(seccion);
             }
         });
         
-        // Sincronizar cuando pierde el foco
         textarea.addEventListener('blur', function() {
             if (typeof sincronizarComentario === 'function') {
                 sincronizarComentario(seccion);
@@ -513,12 +473,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Para el formulario de edición, solo sincronizar comentarios si es necesario
     const form = document.getElementById('tramite-form');
     if (form) {
         form.addEventListener('submit', function(e) {
-            // Sincronizar todos los comentarios antes de enviar si es necesario
-            textareas.forEach(textarea => {
+                textareas.forEach(textarea => {
                 const seccion = textarea.id.replace('textarea_', '');
                 if (typeof sincronizarComentario === 'function') {
                     sincronizarComentario(seccion);
@@ -527,7 +485,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Agregar event listeners para archivos de corrección
     const archivosCorreccion = document.querySelectorAll('input[name^="documentos_correccion"]');
     archivosCorreccion.forEach(input => {
         input.addEventListener('change', function() {

@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="/css/tramite-forms.css">
     <link rel="stylesheet" href="/css/form-validator.css">
     <link rel="stylesheet" href="/css/global-input-styles.css">
+    <link rel="stylesheet" href="/css/loading-effects.css">
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 

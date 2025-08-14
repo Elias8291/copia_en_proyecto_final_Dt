@@ -55,8 +55,9 @@ class RegenerarOficio extends Command
             $oficioService = app(OficioService::class);
             $oficio = $oficioService->generarOficioParaTramite($tramite);
             
-            // Generar URL pública del proveedor (donde apunta el QR)
-            $urlPublicaQR = route('proveedores.publico', $tramite->proveedor->id);
+            // Generar URL pública del proveedor con token seguro (donde apunta el QR)
+            $tokenSeguro = $tramite->proveedor->obtenerTokenPublico();
+            $urlPublicaQR = route('proveedores.publico.token', $tokenSeguro);
             $urlPublicaQR = str_replace('http://localhost', 'http://127.0.0.1:8000', $urlPublicaQR);
             
             $this->info("✅ Oficio regenerado exitosamente:");

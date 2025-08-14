@@ -306,12 +306,12 @@ class RevisionController extends Controller
             $resultado = $decisionesService->aprobarYAgendarCita($tramiteId, $comentarioGeneral);
             
             if ($resultado['success']) {
-                return response()->json($resultado);
+                return redirect()->route('revisiones.index')->with('success', $resultado['message']);
             }
             
-            return response()->json($resultado);
+            return redirect()->back()->with('error', $resultado['message']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al aprobar el trámite: ' . $e->getMessage()]);
+            return redirect()->back()->with('error', 'Error al aprobar el trámite: ' . $e->getMessage());
         }
     }
 
@@ -326,12 +326,12 @@ class RevisionController extends Controller
             $resultado = $decisionesService->rechazarParaCorreccion($tramiteId, $comentarioGeneral);
             
             if ($resultado['success']) {
-                return response()->json($resultado);
+                return redirect()->route('revisiones.index')->with('success', $resultado['message']);
             }
             
-            return response()->json($resultado);
+            return redirect()->back()->with('error', $resultado['message']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al rechazar el trámite: ' . $e->getMessage()]);
+            return redirect()->back()->with('error', 'Error al rechazar el trámite: ' . $e->getMessage());
         }
     }
 
@@ -346,12 +346,12 @@ class RevisionController extends Controller
             $resultado = $decisionesService->rechazarCompleto($tramiteId, $comentarioGeneral);
             
             if ($resultado['success']) {
-                return response()->json($resultado);
+                return redirect()->route('revisiones.index')->with('success', $resultado['message']);
             }
             
-            return response()->json($resultado);
+            return redirect()->back()->with('error', $resultado['message']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Error al rechazar el trámite: ' . $e->getMessage()]);
+            return redirect()->back()->with('error', 'Error al rechazar el trámite: ' . $e->getMessage());
         }
     }
 

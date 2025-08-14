@@ -23,10 +23,7 @@
             }
         @endphp
 
-        <!-- Contenedor Principal Blanco -->
         <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            
-            <!-- Mensajes de Sesión -->
             @if(session('success'))
                 <div class="bg-green-50 border-b border-green-200 p-4">
                     <div class="flex items-center">
@@ -57,18 +54,15 @@
                 </div>
             @endif
 
-            <!-- Header Principal -->
             <div class="bg-gradient-to-r from-white to-gray-50 border-b border-gray-200">
                 <div class="px-8 py-6 flex items-center justify-between">
                     <div class="flex items-center space-x-4">
-                        <!-- Logo -->
                         <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
                             <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                             </svg>
                         </div>
                         
-                        <!-- Título y subtítulo -->
                         <div>
                             <h1 class="text-3xl font-bold text-gray-900">Trámites Disponibles</h1>
                             <p class="text-gray-600 text-base mt-1">
@@ -81,7 +75,6 @@
                         </div>
                     </div>
                     
-                    <!-- Botón Historial -->
                     <button onclick="openHistorialModal()" class="inline-flex items-center px-6 py-3 text-sm font-medium text-[#9d2449] bg-white border-2 border-[#9d2449] rounded-xl hover:bg-[#9d2449] hover:text-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -91,29 +84,23 @@
                 </div>
             </div>
 
-            <!-- Contenido Principal -->
             <div class="p-8">
-                <!-- Sección Principal de Trámites -->
                 <div class="text-center mb-12">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Seleccione un Tipo de Trámite</h2>
                     <p class="text-gray-600 text-xl max-w-3xl mx-auto">Elija una de las siguientes opciones para proceder con su solicitud.</p>
                 </div>
 
-                <!-- Grid de Tarjetas de Trámites -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
                     
-                    <!-- Tarjeta 1: Inscripción al Padrón -->
-                    <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
-                        <!-- Borde superior activo -->
+                    <div class="bg-white rounded-2xl shadow-lg border-2 border-orange-200 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
                         @if($tieneTramitePendiente)
-                            <div class="h-2 bg-gradient-to-r from-orange-500 to-orange-700"></div>
+                            <div class="h-2 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
                         @else
                             <div class="h-2 bg-gradient-to-r from-[#9d2449] to-[#8a1f40]"></div>
                         @endif
                         
                         <div class="p-6">
                             @if($tieneTramitePendiente)
-                                <!-- Mensaje de trámite en curso -->
                                 <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                     <div class="flex items-center">
                                         <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,7 +113,6 @@
                                 </div>
                             @endif
                             
-                            <!-- Icono y contenido -->
                             <div class="flex items-start space-x-4">
                                 <div class="bg-gradient-to-br from-[#9d2449] to-[#8a1f40] rounded-xl p-3 flex-shrink-0 shadow-lg">
                                     <svg class="w-6 h-6" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
@@ -142,12 +128,10 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón -->
                             <div class="mt-6">
                                 @if($tieneTramitePendiente)
-                                    <!-- Botón "Ver detalles" cuando hay trámite pendiente -->
                                     <a href="{{ route('tramites.estado') }}" 
-                                       class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-700 text-white text-sm font-semibold rounded-xl hover:from-orange-600 hover:to-orange-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                       class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white text-sm font-semibold rounded-xl hover:from-orange-700 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -155,7 +139,6 @@
                                         Ver detalles del trámite
                                     </a>
                                 @else
-                                    <!-- Botón "Iniciar Trámite" cuando no hay trámite pendiente -->
                                     <a href="{{ route('tramites.cargar-constancia', 'inscripcion') }}" 
                                        class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-[#9d2449] to-[#8a1f40] text-white text-sm font-semibold rounded-xl hover:from-[#8a1f40] hover:to-[#7a1a37] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
                                         Iniciar Trámite
@@ -168,20 +151,16 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta 2: Renovación de Registro -->
                     <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-300 overflow-hidden opacity-75 scale-95">
-                        <!-- Borde superior gris -->
                         <div class="h-2 bg-gradient-to-r from-gray-300 to-gray-400"></div>
                         
                         <div class="p-6">
-                            <!-- Tag No Disponible -->
                             <div class="flex justify-end mb-4">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                                     No Disponible
                                 </span>
                             </div>
                             
-                            <!-- Icono y contenido -->
                             <div class="flex items-start space-x-4">
                                 <div class="bg-gray-200 rounded-xl p-3 flex-shrink-0">
                                     <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +176,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón deshabilitado -->
                             <div class="mt-6">
                                 <button disabled class="w-full inline-flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed border-2 border-gray-200">
                                     No Disponible
@@ -206,20 +184,16 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta 3: Actualización de Datos -->
                     <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-300 overflow-hidden opacity-75 scale-95">
-                        <!-- Borde superior gris -->
                         <div class="h-2 bg-gradient-to-r from-gray-300 to-gray-400"></div>
                         
                         <div class="p-6">
-                            <!-- Tag No Disponible -->
                             <div class="flex justify-end mb-4">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                                     No Disponible
                                 </span>
                             </div>
                             
-                            <!-- Icono y contenido -->
                             <div class="flex items-start space-x-4">
                                 <div class="bg-gray-200 rounded-xl p-3 flex-shrink-0">
                                     <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,7 +209,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón deshabilitado -->
                             <div class="mt-6">
                                 <button disabled class="w-full inline-flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed border-2 border-gray-200">
                                     No Disponible
@@ -250,11 +223,9 @@
     </div>
 </div>
 
-<!-- Modal de Historial -->
 <div id="historialModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <!-- Header del Modal -->
             <div class="bg-[#9d2449] text-white px-6 py-4 flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,9 +240,7 @@
                 </button>
             </div>
 
-            <!-- Contenido del Modal -->
             <div class="p-6">
-                <!-- Resumen superior -->
                 <div class="flex items-center justify-between mb-6 p-4 bg-gray-50 rounded-xl">
                     <div class="flex items-center space-x-3">
                         <span class="text-gray-700 font-medium">Total de trámites</span>
@@ -287,26 +256,20 @@
                     </div>
                 </div>
 
-                <!-- Lista de trámites -->
                 <div class="space-y-4 max-h-[60vh] overflow-y-auto">
                     @if($historialTramites->isNotEmpty())
                         @foreach($historialTramites as $tramite)
                             <div class="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors">
                                 <div class="flex items-start space-x-3">
-                                    <!-- Indicador de estado -->
                                     <div class="w-3 h-3 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                                     
                                     <div class="flex-1">
-                                        <!-- Nombre y badges -->
                                         <div class="flex items-center space-x-3 mb-2">
                                             <h3 class="font-bold text-gray-900 text-lg">{{ strtoupper($tramite['razon_social'] ?? 'Sin datos') }}</h3>
-                                            
-                                            <!-- Badge tipo de trámite -->
                                             <span class="bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm font-medium">
                                                 {{ ucfirst($tramite['tipo_tramite'] ?? 'N/A') }}
                                             </span>
                                             
-                                            <!-- Badge estado -->
                                             @php
                                                 $estadoColors = [
                                                     'Pendiente' => 'bg-yellow-100 text-yellow-800',
@@ -337,7 +300,6 @@
                                             </span>
                                         </div>
                                         
-                                        <!-- Fecha y hora -->
                                         <div class="text-gray-600 text-sm mb-2">
                                             @if(isset($tramite['created_at']))
                                                 @if($tramite['created_at'] instanceof \Carbon\Carbon)
@@ -350,7 +312,6 @@
                                             @endif
                                         </div>
 
-                                        <!-- Información del oficio (si existe) -->
                                         @if(isset($tramite['oficio']) && $tramite['oficio'])
                                             <div class="text-gray-600 text-sm mb-2">
                                                 <div class="flex items-center">
@@ -365,9 +326,7 @@
                                         
 
                                         
-                                        <!-- Botones de acción -->
                                         <div class="flex items-center space-x-3">
-                                            <!-- Botón ver estado -->
                                             @if(isset($tramite['id']))
                                                 <a href="{{ route('tramites.estado', $tramite['id']) }}" 
                                                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 transition-colors">
@@ -379,7 +338,6 @@
                                                 </a>
                                             @endif
 
-                                            <!-- Botón ver oficio (solo si existe) -->
                                             @if(isset($tramite['oficio']) && $tramite['oficio'] && isset($tramite['oficio']['url']))
                                                 <a href="{{ $tramite['oficio']['url'] }}" 
                                                    target="_blank"
@@ -396,7 +354,6 @@
                             </div>
                         @endforeach
                     @else
-                        <!-- Mensaje cuando no hay historial -->
                         <div class="text-center py-8">
                             <div class="flex items-center justify-center mb-4">
                                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
@@ -416,7 +373,6 @@
                 </div>
             </div>
 
-            <!-- Footer del Modal -->
             <div class="bg-gray-50 px-6 py-4 flex items-center justify-between">
                 <div class="text-gray-600 text-sm">
                     Haga clic en 'Ver detalles' para más información
@@ -429,7 +385,6 @@
     </div>
 </div>
 
-<!-- JavaScript para el modal -->
 <script>
 function openHistorialModal() {
     document.getElementById('historialModal').classList.remove('hidden');
@@ -441,22 +396,18 @@ function closeHistorialModal() {
     document.body.style.overflow = 'auto';
 }
 
-// Cerrar modal al hacer clic fuera de él
 document.getElementById('historialModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeHistorialModal();
     }
 });
 
-// Cerrar modal con la tecla Escape
+                
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeHistorialModal();
     }
 });
- </script>
-            </div>
-        </div>
-    </div>
-</div>
+</script>
+
 @endsection

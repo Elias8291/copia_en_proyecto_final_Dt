@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 
+// Servicio para gestión de revisiones de trámites
 class RevisionService
 {
     protected CitasService $citasService;
@@ -28,12 +29,10 @@ class RevisionService
         $this->notificacionService = $notificacionService;
     }
 
-    /**
-     * Obtener trámites pendientes de revisión
-     */
+    // Obtener trámites pendientes con filtros
     public function obtenerTramitesPendientes(Request $request)
     {
-        $query = Tramite::with(['proveedor', 'revisiones'])
+        $query = Tramite::with(['proveedor', 'revisiones', 'datosGenerales', 'contactos'])
             ->whereIn('status', [
                 TramiteStatus::PENDIENTE->value,
                 TramiteStatus::REVISION_DIGITAL->value,
@@ -41,31 +40,188 @@ class RevisionService
                 TramiteStatus::REVISION_DOMICILIARIA->value
             ]);
 
-        // Filtros
-        if ($request->filled('fecha_inicio')) {
-            $query->whereDate('created_at', '>=', $request->fecha_inicio);
-        }
-
-        if ($request->filled('fecha_fin')) {
-            $query->whereDate('created_at', '<=', $request->fecha_fin);
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('rfc')) {
-            $query->whereHas('proveedor', function ($q) use ($request) {
-                $q->where('rfc', 'like', '%' . $request->rfc . '%');
+        // Búsqueda general por RFC, razón social o CURP
+        if ($request->filled('search')) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                // Buscar en datos del proveedor
+                $q->whereHas('proveedor', function ($proveedorQuery) use ($searchTerm) {
+                    $proveedorQuery->where('rfc', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('razon_social', 'like', '%' . $searchTerm . '%');
+                })
+                // Buscar en datos generales del trámite
+                ->orWhereHas('datosGenerales', function ($datosQuery) use ($searchTerm) {
+                    $datosQuery->where('curp', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('razon_social', 'like', '%' . $searchTerm . '%');
+                })
+                // Buscar en contactos
+                ->orWhereHas('contactos', function ($contactoQuery) use ($searchTerm) {
+                    $contactoQuery->where('nombre_contacto', 'like', '%' . $searchTerm . '%')
+                        ->orWhere('correo_electronico', 'like', '%' . $searchTerm . '%');
+                });
             });
         }
 
-        return $query->orderBy('created_at', 'desc')->paginate(15);
+        // Filtro por estado específico
+        if ($request->filled('estado')) {
+            $query->where('status', $request->estado);
+        }
+
+        // Filtro por tipo de trámite
+        if ($request->filled('tipo_tramite')) {
+            $query->where('tipo_tramite', $request->tipo_tramite);
+        }
+
+        // Filtros de fecha
+        if ($request->filled('fecha_desde')) {
+            $query->whereDate('created_at', '>=', $request->fecha_desde);
+        }
+
+        if ($request->filled('fecha_hasta')) {
+            $query->whereDate('created_at', '<=', $request->fecha_hasta);
+        }
+
+        // Filtros de fecha predefinidos
+        if ($request->filled('rango_fecha')) {
+            $this->aplicarRangoFecha($query, $request->rango_fecha);
+        }
+
+        // Filtros de antigüedad
+        if ($request->filled('antiguedad')) {
+            $this->aplicarFiltroAntiguedad($query, $request->antiguedad);
+        }
+
+        // Filtro de prioridad por tipo
+        if ($request->filled('tipo_prioridad')) {
+            switch ($request->tipo_prioridad) {
+                case 'renovacion':
+                    $query->where('tipo_tramite', 'Renovacion');
+                    break;
+                case 'nuevo':
+                    $query->where('tipo_tramite', 'Inscripcion');
+                    break;
+                case 'correccion':
+                    $query->where('status', TramiteStatus::PARA_CORRECCION->value);
+                    break;
+            }
+        }
+
+        // Filtro por asignación
+        if ($request->filled('asignado_a')) {
+            $this->aplicarFiltroAsignacion($query, $request->asignado_a);
+        }
+
+        // Solo mis trámites asignados
+        if ($request->filled('mis_tramites') && $request->mis_tramites) {
+            $query->whereHas('revisiones', function ($q) {
+                $q->where('revisor_id', auth()->id());
+            });
+        }
+
+        // Ordenamiento
+        $ordenarPor = $request->get('ordenar_por', 'fecha_desc');
+        $this->aplicarOrdenamiento($query, $ordenarPor);
+
+        // Paginación dinámica
+        $perPage = $request->get('per_page', 15);
+        return $query->paginate($perPage)->appends($request->all());
     }
 
-    /**
-     * Obtener datos para selección de tipo de revisión
-     */
+    // Aplicar rango de fecha predefinido
+    private function aplicarRangoFecha($query, $rango)
+    {
+        $now = now();
+        switch ($rango) {
+            case 'hoy':
+                $query->whereDate('created_at', $now->toDateString());
+                break;
+            case 'ayer':
+                $query->whereDate('created_at', $now->subDay()->toDateString());
+                break;
+            case 'semana':
+                $query->whereBetween('created_at', [$now->subWeek()->startOfDay(), $now->endOfDay()]);
+                break;
+            case 'mes':
+                $query->whereBetween('created_at', [$now->subMonth()->startOfDay(), $now->endOfDay()]);
+                break;
+            case 'trimestre':
+                $query->whereBetween('created_at', [$now->subMonths(3)->startOfDay(), $now->endOfDay()]);
+                break;
+        }
+    }
+
+    // Aplicar filtro de antigüedad
+    private function aplicarFiltroAntiguedad($query, $antiguedad)
+    {
+        $now = now();
+        switch ($antiguedad) {
+            case 'hoy':
+                $query->whereDate('created_at', $now->toDateString());
+                break;
+            case 'semana':
+                $query->whereBetween('created_at', [$now->subWeek()->startOfDay(), $now->endOfDay()]);
+                break;
+            case 'mes':
+                $query->whereBetween('created_at', [$now->subMonth()->startOfDay(), $now->endOfDay()]);
+                break;
+            case 'urgente':
+                $query->where('created_at', '<=', $now->subDays(7));
+                break;
+            case 'muy_urgente':
+                $query->where('created_at', '<=', $now->subDays(15));
+                break;
+        }
+    }
+
+    // Aplicar filtro de asignación
+    private function aplicarFiltroAsignacion($query, $asignacion)
+    {
+        switch ($asignacion) {
+            case 'mi_usuario':
+                $query->whereHas('revisiones', function ($q) {
+                    $q->where('revisor_id', auth()->id());
+                });
+                break;
+            case 'sin_asignar':
+                $query->whereDoesntHave('revisiones')
+                    ->orWhereHas('revisiones', function ($q) {
+                        $q->whereNull('revisor_id');
+                    });
+                break;
+            case 'otros':
+                $query->whereHas('revisiones', function ($q) {
+                    $q->whereNotNull('revisor_id')
+                      ->where('revisor_id', '!=', auth()->id());
+                });
+                break;
+        }
+    }
+
+    // Aplicar ordenamiento
+    private function aplicarOrdenamiento($query, $ordenarPor)
+    {
+        switch ($ordenarPor) {
+            case 'fecha_asc':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'prioridad':
+                // Ordenar por antigüedad (más antiguos primero = mayor prioridad)
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'estado':
+                $query->orderBy('status', 'asc')->orderBy('created_at', 'desc');
+                break;
+            case 'tipo':
+                $query->orderBy('tipo_tramite', 'asc')->orderBy('created_at', 'desc');
+                break;
+            case 'fecha_desc':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+    }
+
+    // Obtener datos para selección de tipo de revisión
     public function obtenerDatosSeleccionTipo(int $tramiteId): array
     {
         $tramite = Tramite::with(['proveedor', 'revisiones'])->findOrFail($tramiteId);
@@ -74,7 +230,6 @@ class RevisionService
         $informacionCita = $this->obtenerInformacionCita($tramiteId);
         $personaResponsable = $this->obtenerPersonaResponsable($tramite);
         
-        // Buscar revisión existente
         $revisionExistente = RevisionTramite::where('tramite_id', $tramiteId)
             ->where('estado', '!=', 'Finalizada')
             ->orderBy('created_at', 'desc')
@@ -89,9 +244,7 @@ class RevisionService
         ];
     }
 
-    /**
-     * Iniciar revisión
-     */
+    // Iniciar proceso de revisión
     public function iniciarRevision(int $tramiteId, string $tipoRevision): void
     {
         $tramite = Tramite::findOrFail($tramiteId);
@@ -105,7 +258,6 @@ class RevisionService
         
         $tramite->update(['status' => $nuevoEstado]);
         
-        // Buscar la revisión existente para este trámite y tipo
         $revision = RevisionTramite::where('tramite_id', $tramiteId)
             ->where('tipo_revision', $tipoRevision)
             ->where('estado', '!=', 'Finalizada')
@@ -113,7 +265,6 @@ class RevisionService
             ->first();
         
         if ($revision) {
-            // Si no hay revisor asignado y el usuario actual tiene el rol correspondiente, asignarlo
             if (!$revision->revisor_id) {
                 $usuarioActual = Auth::user();
                 $rolRequerido = match($tipoRevision) {
@@ -129,15 +280,8 @@ class RevisionService
                         'estado' => 'En_Proceso',
                         'fecha_inicio' => now()
                     ]);
-                    
-                    \Log::info('Revisor asignado automáticamente a la revisión', [
-                        'tramite_id' => $tramiteId,
-                        'tipo_revision' => $tipoRevision,
-                        'revisor_id' => $usuarioActual->id
-                    ]);
                 }
             } else {
-                // Si ya hay revisor asignado, solo cambiar el estado a En_Proceso
                 $revision->update([
                     'estado' => 'En_Proceso',
                     'fecha_inicio' => now()
@@ -146,9 +290,7 @@ class RevisionService
         }
     }
 
-    /**
-     * Obtener datos base para cualquier tipo de revisión
-     */
+    // Obtener datos base para revisión
     protected function obtenerDatosRevisionBase(int $tramiteId): array
     {
         $tramite = Tramite::with(['proveedor', 'datosGenerales' => function($query) {
@@ -170,24 +312,11 @@ class RevisionService
         ];
     }
 
-    /**
-     * Prepara los datos de archivos para el cotejo
-     */
+    // Preparar archivos para cotejo
     protected function prepararArchivosParaCotejo($archivos): array
     {
-        \Log::info("=== PREPARANDO ARCHIVOS PARA COTEJO ===");
-        \Log::info("Total archivos recibidos: " . $archivos->count());
-        
         $archivosPreparados = $archivos->filter(function($archivo) {
-            $exists = Storage::exists($archivo->ruta);
-            \Log::info("Archivo ID {$archivo->id}: {$archivo->nombre_original}");
-            \Log::info("  Ruta: {$archivo->ruta}");
-            \Log::info("  Existe en storage: " . ($exists ? 'SI' : 'NO'));
-            \Log::info("  Storage path completo: " . storage_path('app/' . $archivo->ruta));
-            \Log::info("  Archivo físico existe: " . (file_exists(storage_path('app/' . $archivo->ruta)) ? 'SI' : 'NO'));
-            
-            // Temporalmente, vamos a incluir todos los archivos para debugging
-            return true; // Cambiar de return Storage::exists($archivo->ruta); a return true;
+            return Storage::exists($archivo->ruta);
         })->map(function($archivo) {
             return [
                 'id' => $archivo->id,
@@ -203,16 +332,10 @@ class RevisionService
             ];
         })->values()->toArray();
         
-        \Log::info("Total archivos preparados: " . count($archivosPreparados));
-        \Log::info("Archivos preparados: " . json_encode($archivosPreparados, JSON_PRETTY_PRINT));
-        \Log::info("=== FIN PREPARACIÓN ARCHIVOS COTEJO ===");
-        
         return $archivosPreparados;
     }
 
-    /**
-     * Obtener vista de revisión según el tipo
-     */
+    // Obtener vista según tipo de revisión
     public function obtenerVistaRevision(string $tipoRevision): string
     {
         return match($tipoRevision) {
@@ -223,12 +346,9 @@ class RevisionService
         };
     }
 
-    /**
-     * Determinar tipos de revisión disponibles
-     */
+    // Determinar tipos disponibles según estado
     private function determinarTiposRevisionDisponibles(Tramite $tramite): array
     {
-        // Si el trámite ya está en algún tipo de revisión, solo permitir ese tipo
         if ($tramite->status === TramiteStatus::REVISION_DIGITAL->value) {
             return ['Digital'];
         }
@@ -241,18 +361,14 @@ class RevisionService
             return ['Domiciliaria'];
         }
 
-        // Si está pendiente, permitir todos los tipos
         if ($tramite->status === TramiteStatus::PENDIENTE->value) {
             return ['Digital', 'Presencial', 'Domiciliaria'];
         }
 
-        // Para otros estados, no permitir ningún tipo de revisión
         return [];
     }
 
-    /**
-     * Obtener información de cita
-     */
+    // Obtener información de cita
     private function obtenerInformacionCita(int $tramiteId): ?array
     {
         $cita = Cita::where('tramite_id', $tramiteId)
@@ -272,9 +388,7 @@ class RevisionService
         ];
     }
 
-    /**
-     * Obtener persona responsable del trámite
-     */
+    // Obtener persona responsable
     private function obtenerPersonaResponsable($tramite): ?array
     {
         $contacto = $tramite->contactos()->first();
@@ -291,9 +405,7 @@ class RevisionService
         ];
     }
 
-    /**
-     * Obtener datos de revisión según el tipo
-     */
+    // Obtener datos según tipo de revisión
     public function obtenerDatosRevision(int $tramiteId, string $tipoRevision): array
     {
         return match($tipoRevision) {
@@ -304,15 +416,13 @@ class RevisionService
         };
     }
 
-    /**
-     * Obtener datos para vista de solo lectura
-     */
+    // Obtener datos para vista solo lectura
     public function obtenerDatosVistaSoloLectura(int $tramiteId): array
     {
         return $this->obtenerDatosRevisionBase($tramiteId);
     }
 
-    // Obtener estado de evaluación de una sección específica
+    // Obtener estado de evaluación de sección
     public function obtenerEstadoSeccion(int $tramiteId, string $seccion): array
     {
         $seccionRevision = \App\Models\SeccionRevision::where('tramite_id', $tramiteId)
@@ -334,7 +444,7 @@ class RevisionService
         ];
     }
 
-    // Evaluar una sección específica
+    // Evaluar sección específica
     public function evaluarSeccion(int $tramiteId, array $datos): array
     {
         $seccionRevision = \App\Models\SeccionRevision::updateOrCreate(
@@ -367,7 +477,6 @@ class RevisionService
         }
         $secciones[] = 'archivos';
         
-        // Obtener información detallada de cada sección
         $seccionesDetalle = [];
         foreach ($secciones as $seccion) {
             $revision = \App\Models\SeccionRevision::where('tramite_id', $tramiteId)
@@ -398,7 +507,6 @@ class RevisionService
         
         $totalSecciones = count($secciones);
         
-        // Determinar estado del trámite
         $estado = TramiteStatus::REVISION_DIGITAL->value;
         if ($seccionesEvaluadas === $totalSecciones) {
             if ($seccionesRechazadas > 0) {
@@ -408,7 +516,6 @@ class RevisionService
             }
         }
         
-        // Verificar si todas las secciones están aprobadas
         $todasAprobadas = ($seccionesEvaluadas === $totalSecciones) && ($seccionesAprobadas === $totalSecciones);
         
         return [
@@ -423,7 +530,7 @@ class RevisionService
         ];
     }
     
-    // Obtener nombre legible de la sección
+    // Obtener nombre legible de sección
     private function obtenerNombreSeccion(string $seccion): string
     {
         return match($seccion) {
@@ -438,38 +545,29 @@ class RevisionService
         };
     }
 
-    /**
-     * Agendar cita para revisión
-     */
+    // Agendar cita
     public function agendarCita(int $tramiteId, array $datos)
     {
         return $this->citasService->agendarCita($tramiteId, $datos);
     }
 
-    /**
-     * Reagendar cita existente
-     */
+    // Reagendar cita existente
     public function reagendarCita(int $citaId, array $datos)
     {
         return $this->citasService->reagendarCita($citaId, $datos);
     }
 
-    /**
-     * Obtener horarios disponibles para una fecha
-     */
+    // Obtener horarios disponibles
     public function obtenerHorariosDisponibles(string $fecha, string $tipo = 'Presencial'): array
     {
         return $this->citasService->obtenerHorariosDisponibles($fecha, $tipo);
     }
 
-    /**
-     * Obtener secciones evaluadas para carga AJAX
-     */
+    // Obtener secciones evaluadas para AJAX
     public function obtenerSeccionesEvaluadas(int $tramiteId): array
     {
         $tramite = Tramite::findOrFail($tramiteId);
         
-        // Definir secciones según tipo de persona
         $secciones = ['datos_generales', 'actividades', 'domicilio'];
         if ($tramite->proveedor->tipo_persona === 'Moral') {
             $secciones = array_merge($secciones, ['constitucion', 'accionistas', 'apoderado']);
@@ -490,7 +588,6 @@ class RevisionService
                 'evaluado_por' => $revision ? $revision->revisado_por : null
             ];
             
-            // Si es la sección de archivos, agregar información de archivos individuales
             if ($seccion === 'archivos') {
                 $archivos = \App\Models\Archivo::where('tramite_id', $tramiteId)->get();
                 $archivosIndividuales = [];
@@ -512,14 +609,11 @@ class RevisionService
         return $seccionesEvaluadas;
     }
 
-    /**
-     * Obtener información de revisiones anteriores
-     */
+    // Obtener revisiones anteriores del proveedor
     public function obtenerInformacionRevisionesAnteriores(int $tramiteId): array
     {
         $tramite = Tramite::findOrFail($tramiteId);
         
-        // Obtener revisiones anteriores del mismo proveedor
         $revisionesAnteriores = Tramite::where('proveedor_id', $tramite->proveedor->id)
             ->where('id', '!=', $tramiteId)
             ->with(['revisiones.revisor'])
@@ -543,4 +637,4 @@ class RevisionService
         
         return $revisionesAnteriores;
     }
-} 
+}

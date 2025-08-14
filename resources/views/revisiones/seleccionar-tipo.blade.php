@@ -5,8 +5,6 @@
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="max-w-7xl mx-auto">
-        
-        <!-- Contenido Principal -->
         <div class="bg-white shadow-sm rounded-lg border border-gray-200">
             <div class="p-6 border-b border-gray-200/70">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -37,7 +35,7 @@
 
 
 
-            <!-- Opciones de tipo de revisión -->
+
             <div class="space-y-6">
                 <div class="text-center mb-8">
                     <h2 class="text-xl font-semibold text-gray-800 mb-2">Selecciona el tipo de revisión</h2>
@@ -47,16 +45,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     
                     @php
-                        // Determinar qué tipo de revisión está activo basado en el status del trámite
                         $statusActivo = $tramite->status;
                         $revisionDigitalActiva = $statusActivo === 'Revision_Digital';
                         $revisionPresencialActiva = $statusActivo === 'Revision_Presencial';
                         $revisionDomiciliariaActiva = $statusActivo === 'Revision_Domiciliaria';
                     @endphp
-                    
-                    <!-- Tarjeta 1: Revisión Digital -->
                     <div class="bg-white rounded-2xl shadow-lg border-2 {{ $revisionDigitalActiva ? 'border-gray-200' : 'border-gray-300' }} overflow-hidden {{ $revisionDigitalActiva ? 'hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2' : 'opacity-75 scale-95' }}">
-                        <!-- Borde superior -->
+
                         @if($revisionDigitalActiva)
                             <div class="h-2 bg-gradient-to-r from-[#9d2449] to-[#8a1f40]"></div>
                         @else
@@ -97,7 +92,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón -->
+
                             <div class="mt-6">
                                 @if($revisionDigitalActiva)
                                     <form method="POST" action="{{ route('revisiones.iniciar', $tramite->id) }}" class="inline-block w-full">
@@ -120,9 +115,9 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta 2: Revisión Presencial -->
+
                     <div class="bg-white rounded-2xl shadow-lg border-2 {{ $revisionPresencialActiva ? 'border-gray-200' : 'border-gray-300' }} overflow-hidden {{ $revisionPresencialActiva ? 'hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2' : 'opacity-75 scale-95' }}">
-                        <!-- Borde superior -->
+
                         @if($revisionPresencialActiva)
                             <div class="h-2 bg-gradient-to-r from-[#8a1f40] to-[#7a1a37]"></div>
                         @else
@@ -131,7 +126,7 @@
                         
                         <div class="p-6">
                             @if(!$revisionPresencialActiva)
-                                <!-- Tag No Disponible -->
+
                                 <div class="flex justify-end mb-4">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                                         No Disponible
@@ -139,7 +134,7 @@
                                 </div>
                             @endif
                             
-                            <!-- Icono y contenido -->
+
                             <div class="flex items-start space-x-4">
                                 @if($revisionPresencialActiva)
                                     <div class="bg-gradient-to-br from-[#8a1f40] to-[#7a1a37] rounded-xl p-3 flex-shrink-0 shadow-lg">
@@ -166,7 +161,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Botón -->
+
                             <div class="mt-6">
                                 @if($revisionPresencialActiva)
                                     <form method="POST" action="{{ route('revisiones.iniciar', $tramite->id) }}" class="inline-block w-full">
@@ -189,9 +184,9 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta 3: Revisión Domiciliaria -->
+
                     <div class="bg-white rounded-2xl shadow-lg border-2 {{ $revisionDomiciliariaActiva ? 'border-gray-200' : 'border-gray-300' }} overflow-hidden {{ $revisionDomiciliariaActiva ? 'hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2' : 'opacity-75 scale-95' }}">
-                        <!-- Borde superior -->
+
                         @if($revisionDomiciliariaActiva)
                             <div class="h-2 bg-gradient-to-r from-gray-400 to-gray-500"></div>
                         @else
@@ -200,7 +195,7 @@
                         
                         <div class="p-6">
                             @if(!$revisionDomiciliariaActiva)
-                                <!-- Tag No Disponible -->
+
                                 <div class="flex justify-end mb-4">
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                                         No Disponible
@@ -208,7 +203,7 @@
                                 </div>
                             @endif
                             
-                            <!-- Icono y contenido -->
+
                             <div class="flex items-start space-x-4">
                                 @if($revisionDomiciliariaActiva)
                                     <div class="bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl p-3 flex-shrink-0 shadow-lg">
@@ -231,8 +226,6 @@
                                     </p>
                                 </div>
                             </div>
-                            
-                            <!-- Botón -->
                             <div class="mt-6">
                                 @if($revisionDomiciliariaActiva)
                                     <form method="POST" action="{{ route('revisiones.iniciar', $tramite->id) }}" class="inline-block w-full">
@@ -256,8 +249,6 @@
                     </div>
 
                 </div>
-
-
             </div>
         </div>
     </div>

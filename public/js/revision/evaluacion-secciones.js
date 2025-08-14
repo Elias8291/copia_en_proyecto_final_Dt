@@ -36,6 +36,8 @@ async function evaluarSeccion(seccion, estado) {
         });
 
         if (response.ok) {
+            const result = await response.json();
+            
             const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
             if (sectionElement) {
                 sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
@@ -57,6 +59,12 @@ async function evaluarSeccion(seccion, estado) {
                     estado === 'Pendiente' ? 'bg-yellow-100 text-yellow-800' :
                     'bg-gray-100 text-gray-600'
                 }`;
+            }
+            
+            // Mostrar mensaje sin redirigir (solo para evaluaciones de secciones)
+            const mensaje = result.message || `Sección ${seccion} marcada como ${estado}`;
+            if (typeof mostrarNotificacion === 'function') {
+                mostrarNotificacion(mensaje, 'success');
             }
         }
     } catch (error) {
@@ -135,6 +143,20 @@ function mostrarError(mensaje) {
         }
     }, 5000);
 }
+
+// Función global para mostrar notificación y redirigir
+function mostrarNotificacionYRedirigir(mensaje, tipo = 'success', delay = 1500) {
+    if (typeof mostrarNotificacion === 'function') {
+        mostrarNotificacion(mensaje, tipo);
+    }
+    
+    setTimeout(() => {
+        window.location.href = '/revisiones';
+    }, delay);
+}
+
+// Hacer la función disponible globalmente
+window.mostrarNotificacionYRedirigir = mostrarNotificacionYRedirigir;
 
 document.addEventListener('DOMContentLoaded', async function() {
     const tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');

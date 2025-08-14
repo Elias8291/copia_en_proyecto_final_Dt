@@ -102,7 +102,24 @@ class Tramite extends Model
    
     public function getRazonSocial()
     {
+        // Primero intentar obtener de datos generales más recientes
         $datosGenerales = $this->getDatosGeneralesRecientes();
-        return $datosGenerales ? $datosGenerales->razon_social : null;
+        if ($datosGenerales && !empty($datosGenerales->razon_social)) {
+            return $datosGenerales->razon_social;
+        }
+        
+        // Si no hay datos generales o está vacío, usar del proveedor
+        if ($this->proveedor && !empty($this->proveedor->razon_social)) {
+            return $this->proveedor->razon_social;
+        }
+        
+        // Como última opción, buscar en cualquier dato general disponible
+        $cualquierDatoGeneral = $this->datosGenerales()
+            ->whereNotNull('razon_social')
+            ->where('razon_social', '!=', '')
+            ->orderBy('created_at', 'desc')
+            ->first();
+            
+        return $cualquierDatoGeneral ? $cualquierDatoGeneral->razon_social : 'Sin razón social';
     }
 } 

@@ -8,7 +8,7 @@
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
-        <!-- Header de Revisión -->
+
         @php
             $tipoRevisionLabel = match($tipoRevision) {
                 'Digital' => 'Revisión Digital',
@@ -18,7 +18,7 @@
             };
         @endphp
         
-        <!-- Header de Revisión -->
+
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-4">
@@ -46,7 +46,7 @@
 
 
 
-        <!-- Campos ocultos para cada sección -->
+
         <input type="hidden" name="secciones[datos_generales][decision]" id="decision_datos_generales" value="Pendiente">
         <input type="hidden" name="secciones[datos_generales][comentario]" id="comentario_datos_generales_hidden" value="">
         
@@ -73,7 +73,6 @@
         <input type="hidden" name="comentario_general" id="comentario_general_hidden" value="">
             
         <div class="p-4 sm:p-6 lg:p-8">
-            <!-- Información del trámite -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6 mb-6">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div class="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -94,7 +93,6 @@
                 </div>
             </div>
 
-            <!-- Panel de Historial -->
             <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div class="w-10 h-10 bg-[#9d2449] rounded-full flex items-center justify-center flex-shrink-0">
@@ -115,7 +113,6 @@
                 </div>
             </div>
 
-            <!-- Simbología de Estados -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
                 <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-6 text-sm">
                     <span class="font-medium text-gray-700">Estados:</span>
@@ -134,13 +131,14 @@
                 </div>
             </div>
 
-            <!-- Separador Inicial -->
             <x-ui.separador-simple margin="my-8" color="border-indigo-300" />
 
-            <!-- Datos Generales -->
             <div class="mb-8" data-section="datos_generales">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
+                        <span id="estado_datos_generales" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                    </div>
                     <button type="button" onclick="toggleCotejo('datos_generales')" 
                             class="inline-flex items-center justify-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,9 +162,7 @@
                             'seccion' => 'datos_generales'
                         ])
                     </div>
-                </div>
-                
-                <!-- Área de comentarios -->
+                </div> 
                 <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mt-6">
                     <div class="mb-3">
                         <h4 class="text-sm font-medium text-gray-700">Comentarios - Datos Generales</h4>
@@ -179,7 +175,6 @@
                     ></textarea>
                 </div>
                     
-                <!-- Botones de decisión -->
                 <x-revision.botones-evaluacion 
                     seccion="datos_generales"
                     titulo="Datos Generales"
@@ -191,14 +186,16 @@
 
             <x-ui.separador-simple margin="my-8" color="border-emerald-300" />
 
-            <!-- Actividades Económicas -->
             <div class="mb-8" data-section="actividades">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-bold text-gray-800">Actividades Económicas</h2>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold text-gray-800">Actividades Económicas</h2>
+                        <span id="estado_actividades" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                    </div>
                     <button type="button" onclick="toggleCotejo('actividades')" 
                             class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                         <span id="toggle_text_actividades">Mostrar Cotejo</span>
@@ -220,7 +217,6 @@
                     </div>
                 </div>
                 
-                <!-- Área de comentarios -->
                 <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
                     <div class="mb-3">
                         <h4 class="text-sm font-medium text-gray-700">Comentarios - Actividades</h4>
@@ -233,7 +229,6 @@
                     ></textarea>
                 </div>
                     
-                <!-- Botones de decisión -->
                 <x-revision.botones-evaluacion 
                     seccion="actividades"
                     titulo="Actividades Económicas"
@@ -248,7 +243,10 @@
             <!-- Domicilio -->
             <div class="mb-8" data-section="domicilio">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-xl font-bold text-gray-800">Domicilio</h2>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold text-gray-800">Domicilio</h2>
+                        <span id="estado_domicilio" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                    </div>
                     <button type="button" onclick="toggleCotejo('domicilio')" 
                             class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,7 +272,6 @@
                     </div>
                 </div>
                 
-                <!-- Área de comentarios -->
                 <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
                     <div class="mb-3">
                         <h4 class="text-sm font-medium text-gray-700">Comentarios - Domicilio</h4>
@@ -287,7 +284,6 @@
                     ></textarea>
                 </div>
                     
-                <!-- Botones de decisión -->
                 <x-revision.botones-evaluacion 
                     seccion="domicilio"
                     titulo="Domicilio"
@@ -300,10 +296,12 @@
             @if($viewModel->isPersonaMoral())
                 <x-ui.separador-simple margin="my-8" color="border-purple-300" />
 
-                <!-- Constitución -->
                 <div class="mb-8" data-section="constitucion">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Constitución</h2>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-xl font-bold text-gray-800">Constitución</h2>
+                            <span id="estado_constitucion" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                        </div>
                         <button type="button" onclick="toggleCotejo('constitucion')" 
                                 class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -329,7 +327,6 @@
                         </div>
                     </div>
                     
-                    <!-- Área de comentarios -->
                     <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
                         <div class="mb-3">
                             <h4 class="text-sm font-medium text-gray-700">Comentarios - Constitución</h4>
@@ -342,7 +339,6 @@
                         ></textarea>
                     </div>
                         
-                    <!-- Botones de decisión -->
                     <x-revision.botones-evaluacion 
                         seccion="constitucion"
                         titulo="Constitución"
@@ -354,10 +350,12 @@
 
                 <x-ui.separador-simple margin="my-8" color="border-rose-300" />
 
-                <!-- Accionistas -->
                 <div class="mb-8" data-section="accionistas">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Accionistas</h2>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-xl font-bold text-gray-800">Accionistas</h2>
+                            <span id="estado_accionistas" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                        </div>
                         <button type="button" onclick="toggleCotejo('accionistas')" 
                                 class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -383,7 +381,6 @@
                         </div>
                     </div>
                     
-                    <!-- Área de comentarios -->
                     <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
                         <div class="mb-3">
                             <h4 class="text-sm font-medium text-gray-700">Comentarios - Accionistas</h4>
@@ -395,8 +392,7 @@
                             rows="3"
                         ></textarea>
                     </div>
-                        
-                    <!-- Botones de decisión -->
+
                     <x-revision.botones-evaluacion 
                         seccion="accionistas"
                         titulo="Accionistas"
@@ -408,10 +404,12 @@
 
                 <x-ui.separador-simple margin="my-8" color="border-cyan-300" />
 
-                <!-- Apoderado Legal -->
                 <div class="mb-8" data-section="apoderado">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Apoderado Legal</h2>
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-xl font-bold text-gray-800">Apoderado Legal</h2>
+                            <span id="estado_apoderado" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                        </div>
                         <button type="button" onclick="toggleCotejo('apoderado')" 
                                 class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -437,7 +435,6 @@
                         </div>
                     </div>
                     
-                    <!-- Área de comentarios -->
                     <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
                         <div class="mb-3">
                             <h4 class="text-sm font-medium text-gray-700">Comentarios - Apoderado</h4>
@@ -450,7 +447,6 @@
                         ></textarea>
                     </div>
                         
-                    <!-- Botones de decisión -->
                     <x-revision.botones-evaluacion 
                         seccion="apoderado"
                         titulo="Apoderado Legal"
@@ -463,16 +459,17 @@
 
             <x-ui.separador-simple margin="my-8" color="border-slate-400" />
 
-            <!-- Archivos -->
             <div class="mb-6" data-section="archivos">
                 <div class="mb-4">
-                    <h2 class="text-xl font-bold text-gray-800">Archivos</h2>
+                    <div class="flex items-center gap-3">
+                        <h2 class="text-xl font-bold text-gray-800">Archivos</h2>
+                        <span id="estado_archivos" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pendiente</span>
+                    </div>
                 </div>
                 
                 <div class="space-y-4 mb-6">
                     @foreach($archivosSubidos as $archivo)
                     <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow" data-archivo-id="{{ $archivo['id'] ?? 0 }}">
-                        <!-- Header del archivo -->
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3 flex-1 min-w-0">
                                 <div class="flex-shrink-0">
@@ -502,7 +499,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Estado y botón de ver documento -->
                             <div class="flex items-center gap-3">
                                 <span id="estado_archivo_{{ $archivo['id'] ?? 0 }}" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
                                     Pendiente
@@ -520,7 +516,6 @@
                             </div>
                         </div>
                         
-                        <!-- Comentario -->
                         <div class="mb-4">
                             <textarea 
                                 id="textarea_archivo_{{ $archivo['id'] ?? 0 }}"
@@ -530,7 +525,6 @@
                             ></textarea>
                         </div>
                         
-                        <!-- Botones de decisión -->
                         <div class="flex items-center gap-3">
                             <button onclick="window.archivosEvaluacion?.evaluarArchivo({{ $archivo['id'] ?? 0 }}, 'Aprobado')" 
                                     class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200">
@@ -551,7 +545,6 @@
                     @endforeach
                 </div>
                 
-                <!-- Área de comentarios -->
                 <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
                     <div class="mb-3">
                         <h4 class="text-sm font-medium text-gray-700">Comentarios - Archivos</h4>
@@ -564,7 +557,6 @@
                     ></textarea>
                 </div>
                     
-                <!-- Botones de decisión -->
                 <x-revision.botones-evaluacion 
                     seccion="archivos"
                     titulo="Archivos"
@@ -574,7 +566,6 @@
                 />
             </div>
 
-            <!-- Comentarios Generales -->
             <div class="mt-8">
                 <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
                     <div class="mb-4">
@@ -590,7 +581,6 @@
                 </div>
             </div>
 
-            <!-- Botones de Decisión Final -->
             <div class="mt-8">
                 <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
                     <div class="mb-4">
@@ -610,7 +600,6 @@
         </div>
     </div>
 
-<!-- Estados de sección con Tailwind -->
 <style>
 .seccion-aprobada {
     border-left: 4px solid #10b981;
@@ -628,12 +617,11 @@
 }
 </style>
 
-<!-- JavaScript -->
 <script>
 window.esPersonaMoral = @json($viewModel->isPersonaMoral());
 </script>
 
-<!-- Modal de Confirmación -->
+
 <x-ui.modals.modal-confirmacion 
     id="modal-confirmacion-decision"
     title="Confirmar acción"
@@ -644,7 +632,6 @@ window.esPersonaMoral = @json($viewModel->isPersonaMoral());
     cancelClass="bg-white border-gray-300 text-gray-700 hover:text-gray-500 focus:ring-blue-500"
 />
 
-<!-- Modal de Éxito -->
 <x-ui.modals.modal-exito />
 
 
@@ -652,12 +639,10 @@ window.esPersonaMoral = @json($viewModel->isPersonaMoral());
 <script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
 <script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 <script src="{{ asset('js/revision/cargar-estados.js') }}"></script>
-<script src="{{ asset('js/revision/decisiones-finales.js') }}"></script>
 
 <script>
-// Función para mostrar notificaciones (compacta)
-function mostrarNotificacion(mensaje, tipo = 'info') {
-    // Acortar mensajes largos
+     
+function mostrarNotificacion(mensaje, tipo = 'info') {     
     let mensajeCorto = mensaje;
     if (mensaje.length > 50) {
         mensajeCorto = mensaje.substring(0, 47) + '...';
@@ -673,22 +658,16 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
     
     document.body.appendChild(div);
     
-    // Mostrar notificación
     setTimeout(() => div.classList.remove('opacity-0'), 100);
-    
-    // Ocultar después de 2.5 segundos
+ 
     setTimeout(() => {
         div.classList.add('opacity-0');
         setTimeout(() => document.body.removeChild(div), 300);
     }, 2500);
 }
 
-// Hacer la función disponible globalmente
 window.mostrarNotificacion = mostrarNotificacion;
 
-
-
-// Inicializar sistema de carga de estados
 document.addEventListener('DOMContentLoaded', function() {
     const tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');
     if (tramiteId) {
