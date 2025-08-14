@@ -220,6 +220,10 @@ function showFinalSubmitButton() {
             btnEnviar.addEventListener('click', handleFormSubmit);
             // Validar términos y condiciones al mostrar el botón
             validarTerminosYCondicionesFinal();
+            const checkboxTerminos = document.getElementById('acepto_terminos');
+            if (checkboxTerminos) {
+                checkboxTerminos.addEventListener('change', validarTerminosYCondicionesFinal);
+            }
         }
     } else {
         navigation.innerHTML = `

@@ -236,6 +236,10 @@ class TramiteCreateForm {
                         const btnEnviarFinal = document.getElementById('btn-enviar-tramite-final');
                         if (btnEnviarFinal) {
                             this.validarTerminosYCondiciones();
+                            const checkbox = document.getElementById('acepto_terminos');
+                            if (checkbox) {
+                                checkbox.addEventListener('change', this.validarTerminosYCondiciones);
+                            }
                         }
                     }
                 });

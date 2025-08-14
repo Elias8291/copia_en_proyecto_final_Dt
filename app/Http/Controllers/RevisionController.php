@@ -30,9 +30,7 @@ class RevisionController extends Controller
         $this->revisionPresencialService = $revisionPresencialService;
         $this->decisionesFinalesService = $decisionesFinalesService;
 
-        // Middleware de permisos para revisiones
-        $this->middleware(PermissionMiddleware::class . ':revisiones.ver')->only(['index', 'seleccionarTipoRevision', 'verTramiteHistorico', 'mostrarArchivo', 'obtenerEstadoSeccion', 'obtenerEstadoGeneral', 'obtenerEstadosRevision']);
-        $this->middleware(PermissionMiddleware::class . ':revisiones.revisar')->only(['iniciarRevision', 'revisarTramite', 'agendarCita', 'reagendarCita', 'obtenerHorariosDisponibles', 'evaluarSeccion', 'procesarRevisionDigital', 'aprobarYAgendarCita', 'rechazarParaCorreccion', 'rechazarCompleto', 'aprobar', 'rechazarTramite', 'procesarRevisionPresencial']);
+        // Sin middleware de permisos: acceso abierto (solo autenticación por rutas)
     }
 
     /** Listar trámites para revisión */
