@@ -461,4 +461,86 @@ class RevisionService
     {
         return $this->citasService->obtenerHorariosDisponibles($fecha, $tipo);
     }
+
+    /**
+     * Obtener secciones evaluadas para carga AJAX
+     */
+    public function obtenerSeccionesEvaluadas(int $tramiteId): array
+    {
+        $tramite = Tramite::findOrFail($tramiteId);
+        
+        // Definir secciones según tipo de persona
+        $secciones = ['datos_generales', 'actividades', 'domicilio'];
+        if ($tramite->proveedor->tipo_persona === 'Moral') {
+            $secciones = array_merge($secciones, ['constitucion', 'accionistas', 'apoderado']);
+        }
+        $secciones[] = 'archivos';
+        
+        $seccionesEvaluadas = [];
+        
+        foreach ($secciones as $seccion) {
+            $revision = SeccionRevision::where('tramite_id', $tramiteId)
+                ->where('seccion', $seccion)
+                ->first();
+            
+            $seccionesEvaluadas[$seccion] = [
+                'estado' => $revision ? $revision->estado : 'Pendiente',
+                'comentario' => $revision ? $revision->comentario : null,
+                'fecha_evaluacion' => $revision ? $revision->created_at : null,
+                'evaluado_por' => $revision ? $revision->revisado_por : null
+            ];
+            
+            // Si es la sección de archivos, agregar información de archivos individuales
+            if ($seccion === 'archivos') {
+                $archivos = \App\Models\Archivo::where('tramite_id', $tramiteId)->get();
+                $archivosIndividuales = [];
+                
+                foreach ($archivos as $archivo) {
+                    $archivosIndividuales[$archivo->id] = [
+                        'estado' => $archivo->status ?? 'Pendiente',
+                        'comentario' => $archivo->comentario_revision ?? null,
+                        'fecha_evaluacion' => $archivo->updated_at,
+                        'evaluado_por' => $archivo->revisado_por,
+                        'ya_evaluada' => !empty($archivo->status) && $archivo->status !== 'Pendiente'
+                    ];
+                }
+                
+                $seccionesEvaluadas[$seccion]['archivos_individuales'] = $archivosIndividuales;
+            }
+        }
+        
+        return $seccionesEvaluadas;
+    }
+
+    /**
+     * Obtener información de revisiones anteriores
+     */
+    public function obtenerInformacionRevisionesAnteriores(int $tramiteId): array
+    {
+        $tramite = Tramite::findOrFail($tramiteId);
+        
+        // Obtener revisiones anteriores del mismo proveedor
+        $revisionesAnteriores = Tramite::where('proveedor_id', $tramite->proveedor->id)
+            ->where('id', '!=', $tramiteId)
+            ->with(['revisiones.revisor'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function($tramiteAnterior) {
+                return [
+                    'id' => $tramiteAnterior->id,
+                    'status' => $tramiteAnterior->status,
+                    'created_at' => $tramiteAnterior->created_at->format('d/m/Y'),
+                    'tipo_tramite' => $tramiteAnterior->tipo_tramite,
+                    'revisiones_count' => $tramiteAnterior->revisiones->count(),
+                    'ultima_revision' => $tramiteAnterior->revisiones->first() ? [
+                        'fecha' => $tramiteAnterior->revisiones->first()->created_at->format('d/m/Y'),
+                        'revisor' => $tramiteAnterior->revisiones->first()->revisor->name ?? 'N/A'
+                    ] : null
+                ];
+            })
+            ->toArray();
+        
+        return $revisionesAnteriores;
+    }
 } 

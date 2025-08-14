@@ -17,7 +17,7 @@ class RevisionDigitalEstados {
     }
 
     async cargarDatos() {
-        const response = await fetch(`/api/revisiones/${this.tramiteId}/estados`, {
+        const response = await fetch(`/revisiones/${this.tramiteId}/estados`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
@@ -52,25 +52,22 @@ class RevisionDigitalEstados {
 
     actualizarArchivo(archivoId, datos) {
         const textareaEl = document.getElementById(`textarea_archivo_${archivoId}`);
-        const decisionEl = document.getElementById(`decision_archivo_${archivoId}`);
-        const comentarioEl = document.getElementById(`comentario_archivo_${archivoId}`);
         const estadoEl = document.getElementById(`estado_archivo_${archivoId}`);
         
+        // Actualizar textarea con comentario
         if (textareaEl && datos.comentario) {
             textareaEl.value = datos.comentario;
             textareaEl.placeholder = `Comentario anterior: ${datos.comentario}`;
         }
         
-        if (decisionEl) decisionEl.value = datos.estado;
-        if (comentarioEl) comentarioEl.value = datos.comentario || '';
-        
+        // Actualizar estado del archivo
         if (estadoEl) {
             if (!datos || !datos.ya_evaluada) {
                 estadoEl.textContent = 'Pendiente';
-                estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800';
+                estadoEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800';
             } else {
                 estadoEl.textContent = datos.estado;
-                estadoEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
+                estadoEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium';
                 
                 if (datos.estado === 'Aprobado') {
                     estadoEl.classList.add('bg-green-100', 'text-green-800');
@@ -87,6 +84,29 @@ class RevisionDigitalEstados {
                 }
             }
         }
+        
+        // Mostrar información del revisor si existe
+        if (datos.ya_evaluada && datos.evaluado_por) {
+            this.mostrarRevisorArchivo(archivoId, datos);
+        }
+    }
+
+    mostrarRevisorArchivo(archivoId, datos) {
+        // Buscar el contenedor del archivo
+        const archivoContainer = document.querySelector(`[data-archivo-id="${archivoId}"]`);
+        if (!archivoContainer) return;
+        
+        // Crear elemento de información del revisor
+        const infoEl = document.createElement('div');
+        infoEl.className = 'text-xs text-gray-500 mt-1';
+        infoEl.innerHTML = `Evaluado por: ${datos.evaluado_por} - ${new Date(datos.fecha_evaluacion).toLocaleDateString()}`;
+        
+        // Remover información anterior si existe
+        const existing = archivoContainer.querySelector('.text-xs.text-gray-500');
+        if (existing) existing.remove();
+        
+        // Agregar la nueva información
+        archivoContainer.appendChild(infoEl);
     }
 
     actualizarSeccion(seccion, datos) {
@@ -211,4 +231,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-window.RevisionDigitalEstados = RevisionDigitalEstados; 
+window.RevisionDigitalEstados = RevisionDigitalEstados;

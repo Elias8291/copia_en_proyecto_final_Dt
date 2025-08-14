@@ -1,5 +1,52 @@
 @props(['datos' => [], 'editable' => false, 'datosConstancia' => null])
 
+<style>
+    /* Asegurar que el contenedor de domicilio mantenga el mapa dentro */
+    [data-seccion="domicilio"] {
+        position: relative;
+        overflow: visible;
+    }
+    
+    /* Contenedor específico del mapa en domicilio */
+    [data-seccion="domicilio"] .relative.space-y-2 {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    /* Asegurar que el mapa se mantenga dentro de su contenedor */
+    [data-seccion="domicilio"] #mapa {
+        position: relative !important;
+        overflow: hidden !important;
+        z-index: 1 !important;
+        contain: layout style paint;
+    }
+    
+    /* Contenedor del mapa Leaflet */
+    [data-seccion="domicilio"] #mapa .leaflet-container {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        z-index: 1 !important;
+        contain: layout style paint;
+    }
+    
+    /* Controles del mapa */
+    [data-seccion="domicilio"] #mapa .leaflet-control-container {
+        position: absolute !important;
+        z-index: 2 !important;
+        pointer-events: auto;
+    }
+    
+    /* Popups del mapa */
+    [data-seccion="domicilio"] #mapa .leaflet-popup {
+        position: absolute !important;
+        z-index: 3 !important;
+    }
+</style>
+
 @php
     if ($datosConstancia instanceof \App\ViewModels\TramiteViewModel) {
         $datosFinales = $datosConstancia->getDatosDomicilioForm($datos);

@@ -31,7 +31,7 @@ class RevisionController extends Controller
         $this->decisionesFinalesService = $decisionesFinalesService;
 
         // Middleware de permisos para revisiones
-        $this->middleware(PermissionMiddleware::class . ':revisiones.ver')->only(['index', 'seleccionarTipoRevision', 'verTramiteHistorico', 'mostrarArchivo', 'obtenerEstadoSeccion', 'obtenerEstadoGeneral']);
+        $this->middleware(PermissionMiddleware::class . ':revisiones.ver')->only(['index', 'seleccionarTipoRevision', 'verTramiteHistorico', 'mostrarArchivo', 'obtenerEstadoSeccion', 'obtenerEstadoGeneral', 'obtenerEstadosRevision']);
         $this->middleware(PermissionMiddleware::class . ':revisiones.revisar')->only(['iniciarRevision', 'revisarTramite', 'agendarCita', 'reagendarCita', 'obtenerHorariosDisponibles', 'evaluarSeccion', 'procesarRevisionDigital', 'aprobarYAgendarCita', 'rechazarParaCorreccion', 'rechazarCompleto', 'aprobar', 'rechazarTramite', 'procesarRevisionPresencial']);
     }
 
@@ -518,5 +518,58 @@ class RevisionController extends Controller
     {
         session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Obtener estados de revisión para carga AJAX
+     */
+    public function obtenerEstadosRevision(int $tramiteId)
+    {
+        try {
+            \Log::info("=== INICIANDO obtenerEstadosRevision ===");
+            \Log::info("Tramite ID: " . $tramiteId);
+            \Log::info("Usuario autenticado: " . (auth()->check() ? auth()->user()->name : 'No autenticado'));
+            
+            // Verificar autenticación
+            if (!auth()->check()) {
+                \Log::warning("Usuario no autenticado");
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuario no autenticado'
+                ], 401);
+            }
+            
+            // Verificar que el trámite existe
+            $tramite = Tramite::findOrFail($tramiteId);
+            \Log::info("Trámite encontrado: " . $tramite->id);
+            
+            // Obtener secciones evaluadas
+            $seccionesEvaluadas = $this->revisionService->obtenerSeccionesEvaluadas($tramiteId);
+            \Log::info("Secciones evaluadas obtenidas: " . count($seccionesEvaluadas));
+            
+            // Obtener información de revisiones anteriores
+            $revisionesAnteriores = $this->revisionService->obtenerInformacionRevisionesAnteriores($tramiteId);
+            \Log::info("Revisiones anteriores obtenidas: " . count($revisionesAnteriores));
+            
+            $response = [
+                'success' => true,
+                'seccionesEvaluadas' => $seccionesEvaluadas,
+                'revisionesAnteriores' => $revisionesAnteriores
+            ];
+            
+            \Log::info("Respuesta preparada: " . json_encode($response));
+            \Log::info("=== FIN obtenerEstadosRevision ===");
+            
+            return response()->json($response);
+            
+        } catch (\Exception $e) {
+            \Log::error("Error en obtenerEstadosRevision: " . $e->getMessage());
+            \Log::error("Stack trace: " . $e->getTraceAsString());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al obtener estados de revisión: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

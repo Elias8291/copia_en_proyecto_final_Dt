@@ -31,10 +31,5 @@ Route::prefix('ubicacion')->group(function () {
     Route::post('/localidades-por-municipio', [UbicacionController::class, 'getLocalidadesPorMunicipio']);
 });
 
-// Revisiones API routes
-Route::prefix('revisiones')->group(function () {
-    Route::get('/{tramite}/estados', [RevisionController::class, 'obtenerEstadosRevision']);
-});
-
 
 

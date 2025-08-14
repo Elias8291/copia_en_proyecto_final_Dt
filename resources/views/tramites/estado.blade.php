@@ -12,40 +12,80 @@
                     $statusLabel = $statusEnum ? $statusEnum->label() : $tramitePendiente->status;
                 @endphp
                 @if($tramitePendiente->status === 'Para_Correccion')
-                    <!-- Vista Simplificada para Correcciones -->
-                    <div class="max-w-4xl mx-auto">
+                    <!-- Vista para Correcciones con mismo diseño que estado normal -->
+                    <div class="max-w-6xl mx-auto">
                         <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                            <!-- Header para Correcciones -->
-                            <div class="bg-gradient-to-br from-red-600 to-red-800 p-6 relative overflow-hidden border-b border-gray-200">
-                                <div class="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-600/30"></div>
+                            <!-- Header Elegante -->
+                            <div class="bg-gradient-to-br from-[#9D2449] to-[#B91C1C] p-6 relative overflow-hidden border-b border-gray-200">
+                                <div class="absolute inset-0 bg-gradient-to-r from-[#8a1f40]/20 to-[#9D2449]/30"></div>
                                 <div class="relative z-10">
                                     <div class="flex items-center justify-center text-center">
-                                        <div class="space-y-3">
-                                            <div class="w-16 h-16 bg-white rounded-xl flex items-center justify-center shadow-lg mx-auto">
-                                                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <h1 class="text-2xl font-bold text-white mb-1">Trámite #{{ $tramitePendiente->id }}</h1>
-                                                <p class="text-lg text-gray-200 font-medium">{{ ucfirst($tramitePendiente->tipo_tramite) }}</p>
-                                            </div>
-                                            <div class="inline-flex items-center px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-semibold text-white border border-white/20 shadow-sm">
-                                                <svg class="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                                </svg>
-                                                Para Corrección
-                                            </div>
+                                        <div>
+                                            <h1 class="text-3xl font-bold text-white">Corregir</h1>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Contenido de Correcciones -->
+                            <!-- Contenido Principal -->
                             <div class="p-6">
-                                <div class="text-center mb-6">
-                                    <h3 class="text-xl font-bold text-gray-800 mb-2">Su trámite requiere correcciones</h3>
-                                    <p class="text-gray-600">Revise los detalles y realice las correcciones necesarias</p>
+
+                                <!-- Información del Trámite -->
+                                <div class="space-y-6 mb-6">
+                                    <!-- Datos del Trámite -->
+                                    <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm">
+                                        <div class="text-center mb-6">
+                                            <div class="w-12 h-12 bg-[#9D2449] rounded-lg flex items-center justify-center shadow-md mx-auto mb-3">
+                                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                            </div>
+                                            <h3 class="text-xl font-bold text-gray-800 mb-2">Información del Trámite</h3>
+                                            <p class="text-gray-600">Detalles de su solicitud</p>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                                            <div class="text-center">
+                                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V7a2 2 0 012-2h4a2 2 0 012 2v4m-6 0v4a2 2 0 002 2h4a2 2 0 002-2v-4m-6 0v4a2 2 0 002 2h4a2 2 0 002-2v-4"></path>
+                                                    </svg>
+                                                </div>
+                                                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Tipo de Trámite</p>
+                                                <p class="text-sm font-bold text-gray-800">{{ ucfirst($tramitePendiente->tipo_tramite) }}</p>
+                                            </div>
+                                            
+                                            <div class="text-center">
+                                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                </div>
+                                                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Fecha de Inicio</p>
+                                                <p class="text-sm font-bold text-gray-800">{{ $tramitePendiente->fecha_inicio->format('d/m/Y') }}</p>
+                                            </div>
+                                            
+                                            <div class="text-center col-span-2 md:col-span-1">
+                                                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                                    </svg>
+                                                </div>
+                                                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Estado Actual</p>
+                                                <p class="text-sm font-bold text-gray-800">{{ $statusLabel }}</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Estado Actual Detallado -->
+                                        <div class="mt-6 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4 border border-red-200">
+                                            <div class="flex items-center justify-center space-x-2">
+                                                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                                                <p class="text-sm text-gray-700 font-medium">
+                                                    <strong>Requiere corrección:</strong> Su solicitud necesita ajustes antes de continuar con el proceso
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 @if($tramitePendiente->observaciones)
@@ -68,7 +108,7 @@
                                 <!-- Botón de Corrección -->
                                 <div class="text-center">
                                     <a href="{{ route('tramites.edit', $tramitePendiente->id) }}" 
-                                       class="inline-flex items-center px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-lg">
+                                       class="inline-flex items-center px-8 py-4 bg-[#9D2449] hover:bg-[#B91C1C] text-white font-semibold rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl text-lg">
                                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>

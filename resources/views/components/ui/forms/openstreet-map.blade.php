@@ -6,7 +6,7 @@
 ])
 
 <div class="relative space-y-2">
-    <div id="mapa" class="rounded border" style="height: {{ $height }};"></div>
+    <div id="mapa" class="rounded border overflow-hidden" style="height: {{ $height }}; position: relative; z-index: 1;"></div>
 
     @if($editable)
         <button type="button" id="ubicacion-btn" class="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -19,6 +19,47 @@
 @once
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        /* Corregir el posicionamiento del mapa */
+        #mapa {
+            position: relative !important;
+            overflow: hidden !important;
+            z-index: 1 !important;
+        }
+        
+        #mapa .leaflet-container {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 1 !important;
+        }
+        
+        /* Asegurar que los controles del mapa se mantengan dentro del contenedor */
+        #mapa .leaflet-control-container {
+            position: absolute !important;
+            z-index: 2 !important;
+        }
+        
+        #mapa .leaflet-control-zoom {
+            position: absolute !important;
+            top: 10px !important;
+            right: 10px !important;
+            z-index: 2 !important;
+        }
+        
+        /* Asegurar que los popups se mantengan dentro del contenedor */
+        #mapa .leaflet-popup {
+            position: absolute !important;
+            z-index: 3 !important;
+        }
+        
+        /* Contenedor padre debe tener overflow hidden */
+        .relative.space-y-2 {
+            overflow: hidden !important;
+        }
+    </style>
 @endonce
 
 <script>
@@ -41,7 +82,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
-            map = L.map('mapa').setView([lat, lng], 13);
+            // Asegurar que el contenedor tenga las propiedades correctas
+            mapContainer.style.position = 'relative';
+            mapContainer.style.overflow = 'hidden';
+            mapContainer.style.zIndex = '1';
+
+            map = L.map('mapa', {
+                zoomControl: true,
+                scrollWheelZoom: editable,
+                doubleClickZoom: editable,
+                boxZoom: false,
+                keyboard: false,
+                dragging: editable,
+                touchZoom: editable
+            }).setView([lat, lng], 13);
+            
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
@@ -58,8 +113,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('ubicacion-btn')?.addEventListener('click', getLocation);
             }
 
+            // Forzar el redimensionamiento del mapa
             setTimeout(() => {
-                if (map) map.invalidateSize();
+                if (map) {
+                    map.invalidateSize();
+                    // Asegurar que el mapa se mantenga dentro del contenedor
+                    const leafletContainer = mapContainer.querySelector('.leaflet-container');
+                    if (leafletContainer) {
+                        leafletContainer.style.position = 'absolute';
+                        leafletContainer.style.top = '0';
+                        leafletContainer.style.left = '0';
+                        leafletContainer.style.right = '0';
+                        leafletContainer.style.bottom = '0';
+                    }
+                }
             }, 100);
 
         } catch (error) {
@@ -160,7 +227,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.addEventListener('resize', () => {
         if (map) {
-            setTimeout(() => map.invalidateSize(), 100);
+            setTimeout(() => {
+                map.invalidateSize();
+                // Asegurar que el mapa se mantenga dentro del contenedor después del redimensionamiento
+                const mapContainer = document.getElementById('mapa');
+                const leafletContainer = mapContainer?.querySelector('.leaflet-container');
+                if (leafletContainer) {
+                    leafletContainer.style.position = 'absolute';
+                    leafletContainer.style.top = '0';
+                    leafletContainer.style.left = '0';
+                    leafletContainer.style.right = '0';
+                    leafletContainer.style.bottom = '0';
+                }
+            }, 100);
+        }
+    });
+
+    // Evento personalizado para forzar la inicialización del mapa
+    window.addEventListener('forceMapInitialization', () => {
+        if (!map) {
+            setTimeout(initMap, 100);
+        } else {
+            map.invalidateSize();
         }
     });
 });

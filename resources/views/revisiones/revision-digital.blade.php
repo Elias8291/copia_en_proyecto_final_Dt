@@ -72,16 +72,16 @@
         
         <input type="hidden" name="comentario_general" id="comentario_general_hidden" value="">
             
-        <div class="p-6">
+        <div class="p-4 sm:p-6 lg:p-8">
             <!-- Información del trámite -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div class="w-12 h-12 bg-blue-200 rounded-lg flex items-center justify-center flex-shrink-0">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-0">
                         <h3 class="text-lg font-bold text-gray-800">Inscripción</h3>
                         <p class="text-sm text-gray-600">
                             @if($viewModel->isPersonaMoral())
@@ -95,29 +95,29 @@
             </div>
 
             <!-- Panel de Historial -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 bg-[#9d2449] rounded-full flex items-center justify-center">
+            <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div class="w-10 h-10 bg-[#9d2449] rounded-full flex items-center justify-center flex-shrink-0">
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         </svg>
                     </div>
-                    <div>
+                    <div class="flex-1 min-w-0">
                         <h3 class="text-lg font-bold text-gray-800">Historial ({{ $estadisticasHistorial['total'] }})</h3>
                         <p class="text-sm text-gray-600">RFC: {{ $tramite->proveedor->rfc }}</p>
-                        <div class="flex space-x-4 mt-1">
-                            <span class="text-xs text-green-600">{{ $estadisticasHistorial['aprobados'] }} aprobados</span>
-                            <span class="text-xs text-red-600">{{ $estadisticasHistorial['rechazados'] }} rechazados</span>
-                            <span class="text-xs text-orange-600">{{ $estadisticasHistorial['pendientes'] }} pendientes</span>
+                        <div class="flex flex-wrap gap-2 sm:gap-4 mt-2">
+                            <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">{{ $estadisticasHistorial['aprobados'] }} aprobados</span>
+                            <span class="text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">{{ $estadisticasHistorial['rechazados'] }} rechazados</span>
+                            <span class="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">{{ $estadisticasHistorial['pendientes'] }} pendientes</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Simbología de Estados -->
-            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-                <div class="flex flex-wrap items-center gap-6 text-sm">
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
+                <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-6 text-sm">
                     <span class="font-medium text-gray-700">Estados:</span>
                     <div class="flex items-center gap-2">
                         <div class="w-3 h-3 rounded-full bg-green-500"></div>
@@ -139,10 +139,10 @@
 
             <!-- Datos Generales -->
             <div class="mb-8" data-section="datos_generales">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                     <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
                     <button type="button" onclick="toggleCotejo('datos_generales')" 
-                            class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
+                            class="inline-flex items-center justify-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -167,7 +167,7 @@
                 </div>
                 
                 <!-- Área de comentarios -->
-                <div class="bg-white border border-gray-200 rounded-lg p-4 mt-4">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mt-6">
                     <div class="mb-3">
                         <h4 class="text-sm font-medium text-gray-700">Comentarios - Datos Generales</h4>
                     </div>
@@ -469,11 +469,12 @@
                     <h2 class="text-xl font-bold text-gray-800">Archivos</h2>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                <div class="space-y-4 mb-6">
                     @foreach($archivosSubidos as $archivo)
-                    <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                    <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow" data-archivo-id="{{ $archivo['id'] ?? 0 }}">
+                        <!-- Header del archivo -->
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center gap-3 flex-1 min-w-0">
                                 <div class="flex-shrink-0">
                                     @if(str_contains(strtolower($archivo['tipo_archivo'] ?? ''), 'pdf'))
                                         <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -500,40 +501,58 @@
                                     <p class="text-xs text-gray-500">{{ $archivo['tipo_archivo'] ?? 'Sin tipo' }}</p>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="flex items-center justify-between mb-3">
-                            <span id="estado_archivo_{{ $archivo['id'] ?? 0 }}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                Pendiente
-                            </span>
-                            <div class="flex space-x-1">
-                                <button onclick="evaluarArchivo({{ $archivo['id'] ?? 0 }}, 'Aprobado')" 
-                                        class="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                            
+                            <!-- Estado y botón de ver documento -->
+                            <div class="flex items-center gap-3">
+                                <span id="estado_archivo_{{ $archivo['id'] ?? 0 }}" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                    Pendiente
+                                </span>
+                                <a href="{{ route('revisiones.mostrar-archivo', $archivo['id'] ?? 0) }}" 
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
-                                </button>
-                                <button onclick="evaluarArchivo({{ $archivo['id'] ?? 0 }}, 'Rechazado')" 
-                                        class="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </button>
+                                    Ver
+                                </a>
                             </div>
                         </div>
                         
-                        <textarea 
-                            id="textarea_archivo_{{ $archivo['id'] ?? 0 }}"
-                            placeholder="Comentario sobre este archivo..."
-                            class="w-full px-2 py-1.5 border border-gray-200 rounded text-xs resize-none focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449]"
-                            rows="2"
-                        ></textarea>
+                        <!-- Comentario -->
+                        <div class="mb-4">
+                            <textarea 
+                                id="textarea_archivo_{{ $archivo['id'] ?? 0 }}"
+                                placeholder="Comentario sobre este archivo..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-sm"
+                                rows="3"
+                            ></textarea>
+                        </div>
+                        
+                        <!-- Botones de decisión -->
+                        <div class="flex items-center gap-3">
+                            <button onclick="evaluarArchivo({{ $archivo['id'] ?? 0 }}, 'Aprobado')" 
+                                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Aprobar
+                            </button>
+                            <button onclick="evaluarArchivo({{ $archivo['id'] ?? 0 }}, 'Rechazado')" 
+                                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                                Rechazar
+                            </button>
+                        </div>
                     </div>
                     @endforeach
                 </div>
                 
                 <!-- Área de comentarios -->
-                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
                     <div class="mb-3">
                         <h4 class="text-sm font-medium text-gray-700">Comentarios - Archivos</h4>
                     </div>
@@ -557,7 +576,7 @@
 
             <!-- Comentarios Generales -->
             <div class="mt-8">
-                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
                     <div class="mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">Comentarios Generales</h3>
                         <p class="text-sm text-gray-600">Observaciones generales sobre toda la revisión</p>
@@ -573,7 +592,7 @@
 
             <!-- Botones de Decisión Final -->
             <div class="mt-8">
-                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
                     <div class="mb-4">
                         <h3 class="text-lg font-semibold text-gray-800">Decisión Final</h3>
                         <p class="text-sm text-gray-600">Tomar decisión final sobre el trámite</p>
@@ -591,7 +610,7 @@
         </div>
     </div>
 
-<!-- CSS para estados de sección -->
+<!-- Estados de sección con Tailwind -->
 <style>
 .seccion-aprobada {
     border-left: 4px solid #10b981;
@@ -606,84 +625,6 @@
 .seccion-pendiente {
     border-left: 4px solid #eab308;
     background-color: #fefce8;
-}
-
-/* Estilos para notificaciones */
-.fixed {
-    position: fixed;
-}
-
-.top-4 {
-    top: 1rem;
-}
-
-.right-4 {
-    right: 1rem;
-}
-
-.p-4 {
-    padding: 1rem;
-}
-
-.rounded-lg {
-    border-radius: 0.5rem;
-}
-
-.shadow-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.z-50 {
-    z-index: 50;
-}
-
-.text-white {
-    color: white;
-}
-
-.transition-opacity {
-    transition-property: opacity;
-}
-
-.duration-300 {
-    transition-duration: 300ms;
-}
-
-.opacity-100 {
-    opacity: 1;
-}
-
-.opacity-0 {
-    opacity: 0;
-}
-
-.bg-green-500 {
-    background-color: #10b981;
-}
-
-.bg-yellow-500 {
-    background-color: #eab308;
-}
-
-.bg-red-500 {
-    background-color: #ef4444;
-}
-
-.bg-blue-500 {
-    background-color: #3b82f6;
-}
-
-.max-w-xs {
-    max-width: 20rem;
-}
-
-.text-sm {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-}
-
-.p-3 {
-    padding: 0.75rem;
 }
 </style>
 
@@ -706,6 +647,8 @@ window.esPersonaMoral = @json($viewModel->isPersonaMoral());
 <!-- Modal de Éxito -->
 <x-ui.modals.modal-exito />
 
+
+
 <script src="{{ asset('js/revision/evaluacion-secciones.js') }}"></script>
 <script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 <script src="{{ asset('js/revision/cargar-estados.js') }}"></script>
@@ -721,7 +664,7 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
     }
     
     const div = document.createElement('div');
-    div.className = `fixed top-4 right-4 p-3 rounded-lg shadow-lg z-50 text-white transition-opacity duration-300 max-w-xs text-sm ${
+    div.className = `fixed top-4 right-4 p-3 rounded-lg shadow-lg z-50 text-white transition-all duration-300 max-w-xs text-sm opacity-0 ${
         tipo === 'success' ? 'bg-green-500' :
         tipo === 'warning' ? 'bg-yellow-500' :
         tipo === 'error' ? 'bg-red-500' : 'bg-blue-500'
@@ -731,7 +674,7 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
     document.body.appendChild(div);
     
     // Mostrar notificación
-    setTimeout(() => div.classList.add('opacity-100'), 100);
+    setTimeout(() => div.classList.remove('opacity-0'), 100);
     
     // Ocultar después de 2.5 segundos
     setTimeout(() => {
@@ -742,6 +685,8 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
 
 // Hacer la función disponible globalmente
 window.mostrarNotificacion = mostrarNotificacion;
+
+
 
 // Inicializar sistema de carga de estados
 document.addEventListener('DOMContentLoaded', function() {

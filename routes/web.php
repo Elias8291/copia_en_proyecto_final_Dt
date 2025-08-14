@@ -156,6 +156,9 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{tramite}/seccion/evaluar', [RevisionController::class, 'evaluarSeccion'])->name('seccion.evaluar');
         Route::get('/{tramite}/estado-general', [RevisionController::class, 'obtenerEstadoGeneral'])->name('estado.general');
         
+        // Ruta para obtener estados de revisión (AJAX)
+        Route::get('/{tramite}/estados', [RevisionController::class, 'obtenerEstadosRevision'])->name('estados');
+        
         // Rutas para decisiones finales
         Route::post('/{tramite}/aprobar-y-agendar', [RevisionController::class, 'aprobarYAgendarCita'])->name('aprobar-y-agendar');
         Route::post('/{tramite}/rechazar-correccion', [RevisionController::class, 'rechazarParaCorreccion'])->name('rechazar-correccion');
