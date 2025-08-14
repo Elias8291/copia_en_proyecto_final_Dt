@@ -22,8 +22,8 @@ class NotificacionSeeder extends Seeder
             $this->command->info('No hay usuarios registrados. Creando usuario de prueba...');
             $usuario = User::create([
                 'nombre' => 'Usuario Prueba',
-                'correo' => 'prueba@notificaciones.com',
-                'rfc' => 'ABCD123456EF7',
+                'correo' => 'usuario.prueba@oaxaca.gob.mx',
+                'rfc' => 'USUP850101OAX123',
                 'password' => bcrypt('password'),
                 'confirmacion' => true,
                 'ultimo_acceso' => now()

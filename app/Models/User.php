@@ -35,6 +35,11 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Notificacion::class, 'usuario_id');
     }
 
+    public function tramitesAsignados()
+    {
+        return $this->hasMany(Tramite::class, 'revisor_digital_id');
+    }
+
     /**
      * Get the email address where password reset links are sent.
      *

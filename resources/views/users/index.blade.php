@@ -90,9 +90,11 @@
                                         id="rol" 
                                         class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
                                     <option value="">Todos los roles</option>
-                                    <option value="admin" {{ request('rol') == 'admin' ? 'selected' : '' }}>Administrador</option>
-                                    <option value="user" {{ request('rol') == 'user' ? 'selected' : '' }}>Usuario</option>
-                                    <option value="moderator" {{ request('rol') == 'moderator' ? 'selected' : '' }}>Moderador</option>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->name }}" {{ request('rol') == $role->name ? 'selected' : '' }}>
+                                            {{ $role->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
                             </div>
 
@@ -103,8 +105,8 @@
                                         class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
                                     <option value="">Todos los estados</option>
                                     <option value="activo" {{ request('estado') == 'activo' ? 'selected' : '' }}>Activo</option>
-                                    <option value="inactivo" {{ request('estado') == 'inactivo' ? 'selected' : '' }}>Inactivo</option>
                                     <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                    <option value="inactivo" {{ request('estado') == 'inactivo' ? 'selected' : '' }}>Eliminado</option>
                                 </select>
                             </div>
 
@@ -207,7 +209,7 @@
 
                         @if(request('estado'))
                         <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
-                            Estado: {{ ucfirst(request('estado')) }}
+                            Estado: {{ request('estado') === 'inactivo' ? 'Eliminado' : ucfirst(request('estado')) }}
                             <a href="{{ request()->fullUrlWithQuery(['estado' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
                                 <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -276,8 +278,16 @@
                             </td>
                             <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
                                 @php
-                                    $statusClass = $user->email_verified_at ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
-                                    $statusText = $user->email_verified_at ? 'Verificado' : 'Pendiente';
+                                    if ($user->deleted_at) {
+                                        $statusClass = 'bg-red-100 text-red-800';
+                                        $statusText = 'Eliminado';
+                                    } elseif ($user->email_verified_at) {
+                                        $statusClass = 'bg-green-100 text-green-800';
+                                        $statusText = 'Activo';
+                                    } else {
+                                        $statusClass = 'bg-yellow-100 text-yellow-800';
+                                        $statusText = 'Pendiente';
+                                    }
                                 @endphp
                                 <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-sm font-medium {{ $statusClass }}">
                                     {{ $statusText }}
@@ -354,8 +364,16 @@
                     </div>
                     <div class="flex-shrink-0 ml-1 sm:ml-2 md:ml-3">
                         @php
-                            $statusClass = $user->email_verified_at ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100';
-                            $statusText = $user->email_verified_at ? 'Verificado' : 'Pendiente';
+                            if ($user->deleted_at) {
+                                $statusClass = 'text-red-800 bg-red-100';
+                                $statusText = 'Eliminado';
+                            } elseif ($user->email_verified_at) {
+                                $statusClass = 'text-green-800 bg-green-100';
+                                $statusText = 'Activo';
+                            } else {
+                                $statusClass = 'text-yellow-800 bg-yellow-100';
+                                $statusText = 'Pendiente';
+                            }
                         @endphp
                         <span class="px-1 sm:px-1.5 md:px-2 lg:px-2.5 py-0.5 sm:py-1 md:py-1.5 text-xs sm:text-sm md:text-base font-medium rounded-full {{ $statusClass }} whitespace-nowrap">
                             {{ $statusText }}

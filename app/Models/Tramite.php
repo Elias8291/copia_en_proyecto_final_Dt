@@ -12,6 +12,7 @@ class Tramite extends Model
     
     protected $fillable = [
         'proveedor_id',
+        'revisor_digital_id',
         'tipo_tramite',
         'status',
         'fecha_inicio',
@@ -31,6 +32,11 @@ class Tramite extends Model
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
+    }
+
+    public function revisorDigital(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'revisor_digital_id');
     }
 
     public function datosGenerales(): HasMany

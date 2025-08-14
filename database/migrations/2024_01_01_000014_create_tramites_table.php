@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('tramites', function (Blueprint $table) {
             $table->id();
             $table->foreignId('proveedor_id')->constrained('proveedores')->onDelete('cascade');
+            $table->foreignId('revisor_digital_id')->nullable()->constrained('users')->onDelete('set null');
             $table->enum('tipo_tramite', ['Inscripcion', 'Renovacion', 'Actualizacion']);
             $table->enum('status', [
                 'Pendiente',

@@ -11,15 +11,15 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             RoleSeeder::class,
+            UserSeeder::class,
             RolesAndPermissionsSeeder::class,
             ArchivosPermissionsSeeder::class,
-            UserSeeder::class,
             PaisSeeder::class,
             EstadosSeeder::class,
             MunicipioSeeder::class,
             LocalidadSeeder::class,
             TiposAsentamientoSeeder::class,
-            // AsentamientosSeeder::class, // Temporarily commented out due to large dataset
+            AsentamientosSeeder::class,
             SectoresSeeder::class,
            ActividadesEconomicasSeeder::class,
            CatalogoArchivoSeeder::class,

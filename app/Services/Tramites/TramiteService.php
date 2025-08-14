@@ -170,14 +170,50 @@ class TramiteService
 
     private function crearTramiteBase(Proveedor $proveedor, Request $request): Tramite
     {
+        // Obtener un revisor digital disponible
+        $revisorDigital = $this->obtenerRevisorDigitalDisponible();
+        
         return Tramite::create([
             'proveedor_id' => $proveedor->id,
+            'revisor_digital_id' => $revisorDigital ? $revisorDigital->id : null,
             'tipo_tramite' => $request->tipo_tramite ?? 'Inscripcion',
             'status' => 'Revision_Digital',
             'fecha_inicio' => now(),
             'correcciones_count' => 0,
             'paso_actual' => 1,
         ]);
+    }
+
+    /**
+     * Obtiene un revisor digital disponible para asignar al trámite
+     * Prioriza a los revisores con menos trámites asignados
+     */
+    private function obtenerRevisorDigitalDisponible(): ?User
+    {
+        try {
+            // Buscar usuarios con el rol 'Revisor Digital'
+            $revisorDigital = User::role('Revisor Digital')
+                ->withCount(['tramitesAsignados' => function($query) {
+                    $query->whereIn('status', ['Revision_Digital', 'Para_Correccion']);
+                }])
+                ->orderBy('tramites_asignados_count', 'asc')
+                ->first();
+            
+            Log::info('TramiteService: Revisor digital asignado', [
+                'revisor_id' => $revisorDigital ? $revisorDigital->id : null,
+                'revisor_nombre' => $revisorDigital ? $revisorDigital->nombre : 'No disponible',
+                'tramites_asignados' => $revisorDigital ? $revisorDigital->tramites_asignados_count : 0
+            ]);
+            
+            return $revisorDigital;
+            
+        } catch (\Exception $e) {
+            Log::error('TramiteService: Error al obtener revisor digital', [
+                'error' => $e->getMessage()
+            ]);
+            
+            return null;
+        }
     }
 
     private function guardarSeccionesUltraOptimizado(Tramite $tramite, Proveedor $proveedor, Request $request): void

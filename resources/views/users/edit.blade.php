@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8 -mt-4">
-    <!-- Header mejorado -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
         <div class="p-4 border-b border-gray-100">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -31,13 +30,11 @@
         </div>
     </div>
 
-    <!-- Form Compacto -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50">
         <form action="{{ route('users.update', $user) }}" method="POST" class="space-y-4 p-4">
                     @csrf
                     @method('PUT')
                     
-            <!-- Información Personal -->
             <div class="border-b border-gray-100 pb-4">
                 <div class="flex items-center mb-3">
                     <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
@@ -49,7 +46,6 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <!-- Nombre -->
                     <div class="space-y-1">
                         <label for="nombre" class="block text-base font-medium text-gray-700">
                             Nombre Completo <span class="text-red-500">*</span>
@@ -77,7 +73,6 @@
                         @enderror
                         </div>
 
-                    <!-- Correo -->
                     <div class="space-y-1">
                         <label for="correo" class="block text-base font-medium text-gray-700">
                             Correo Electrónico <span class="text-red-500">*</span>
@@ -106,7 +101,6 @@
                     </div>
                         </div>
 
-                        <!-- RFC -->
                 <div class="mt-3 space-y-1">
                     <label for="rfc" class="block text-base font-medium text-gray-700">
                                 RFC
@@ -142,7 +136,6 @@
                 </div>
             </div>
 
-            <!-- Contraseña -->
             <div class="border-b border-gray-100 pb-4">
                 <div class="flex items-center mb-3">
                     <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
@@ -160,7 +153,6 @@
                 </p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Contraseña -->
                     <div class="space-y-1">
                         <label for="password" class="block text-base font-medium text-gray-700">
                             Nueva Contraseña
@@ -190,7 +182,6 @@
                         @enderror
                     </div>
 
-                    <!-- Confirmar Contraseña -->
                     <div class="space-y-1">
                         <label for="password_confirmation" class="block text-base font-medium text-gray-700">
                             Confirmar Nueva Contraseña
@@ -214,7 +205,6 @@
                 </div>
             </div>
 
-            <!-- Roles -->
             <div class="pb-4">
                 <div class="flex items-center mb-3">
                     <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
@@ -272,7 +262,6 @@
                 </div>
             </div>
 
-            <!-- Información del Usuario -->
             <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200/60">
                 <div class="flex items-center mb-2">
                     <div class="w-4 h-4 bg-gradient-to-br from-primary to-primary-dark rounded-md flex items-center justify-center mr-2">
@@ -300,7 +289,6 @@
                         </div>
                     </div>
 
-                    <!-- Botones -->
             <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-100">
                         <a href="{{ route('users.index') }}" 
                    class="inline-flex items-center justify-center px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
@@ -328,41 +316,32 @@ function togglePassword(inputId) {
     input.type = type;
 }
 
-// Función para mejorar la funcionalidad de los checkboxes de roles
 document.addEventListener('DOMContentLoaded', function() {
-    // Obtener todos los checkboxes de roles
     const roleCheckboxes = document.querySelectorAll('.role-checkbox');
     
-    // Función para actualizar el estado visual del checkbox
     function updateCheckboxVisual(checkbox) {
         const label = checkbox.nextElementSibling;
         const checkboxDiv = label.querySelector('.role-checkbox-visual');
         const checkIcon = checkboxDiv.querySelector('.role-check-icon');
         
         if (checkbox.checked) {
-            // Marcar como seleccionado
             label.classList.add('border-gray-400', 'bg-gray-100', 'ring-1', 'ring-gray-300');
             checkboxDiv.classList.add('border-gray-500', 'bg-gray-500');
             checkIcon.classList.remove('hidden');
         } else {
-            // Desmarcar
             label.classList.remove('border-gray-400', 'bg-gray-100', 'ring-1', 'ring-gray-300');
             checkboxDiv.classList.remove('border-gray-500', 'bg-gray-500');
             checkIcon.classList.add('hidden');
         }
     }
     
-    // Agregar event listener a cada checkbox
     roleCheckboxes.forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
             updateCheckboxVisual(this);
         });
         
-        // Inicializar el estado visual
         updateCheckboxVisual(checkbox);
     });
-    
-    // Agregar funcionalidad de click en las etiquetas
     const roleLabels = document.querySelectorAll('.role-label');
     roleLabels.forEach(function(label) {
         label.addEventListener('click', function(e) {

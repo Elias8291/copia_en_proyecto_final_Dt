@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-200/50 p-8 -mt-4">
-    <!-- Header mejorado -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 mb-4">
         <div class="p-4 border-b border-gray-100">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -39,9 +38,7 @@
         </div>
     </div>
 
-    <!-- Información del Usuario -->
     <div class="bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 overflow-hidden">
-        <!-- Header del Card -->
         <div class="bg-gradient-to-r from-slate-100 to-slate-50 px-4 py-3 border-b border-slate-200">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-primary to-primary-dark rounded-xl flex items-center justify-center">
@@ -62,9 +59,7 @@
             </div>
         </div>
 
-        <!-- Contenido -->
         <div class="p-4 space-y-4">
-            <!-- Información Personal -->
             <div class="border-b border-gray-100 pb-4">
                 <div class="flex items-center mb-3">
                     <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
@@ -112,7 +107,6 @@
                 @endif
             </div>
 
-            <!-- Roles y Permisos -->
             <div class="border-b border-gray-100 pb-4">
                 <div class="flex items-center mb-3">
                     <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">
@@ -152,7 +146,6 @@
                 </div>
             </div>
 
-            <!-- Información del Sistema -->
             <div>
                 <div class="flex items-center mb-3">
                     <div class="w-5 h-5 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-2">

@@ -25,22 +25,38 @@ class UserController extends Controller
     {
         $query = User::with('roles');
     
+        // Búsqueda por nombre, email o RFC
         if ($request->filled('search')) {
             $query->where(fn ($q) => $q->where('nombre', 'like', "%{$request->search}%")
                 ->orWhere('correo', 'like', "%{$request->search}%")
                 ->orWhere('rfc', 'like', "%{$request->search}%"));
         }
     
+        // Filtro por rol
         if ($request->filled('rol')) {
             $query->whereHas('roles', fn ($q) => $q->where('name', $request->rol));
         }
     
-        $query->when($request->filled('estado'), fn ($q) => $request->estado === 'activo' 
-            ? $q->whereNull('deleted_at')
-            : $q->withTrashed()->whereNotNull('deleted_at'), 
-            fn ($q) => $q->whereNull('deleted_at'));
+        // Filtro por estado (activo/inactivo)
+        if ($request->filled('estado')) {
+            if ($request->estado === 'activo') {
+                $query->whereNull('deleted_at');
+            } elseif ($request->estado === 'inactivo') {
+                $query->withTrashed()->whereNotNull('deleted_at');
+            } elseif ($request->estado === 'pendiente') {
+                $query->whereNull('email_verified_at');
+            }
+        } else {
+            // Por defecto mostrar solo usuarios activos
+            $query->whereNull('deleted_at');
+        }
     
-        $users = $query->orderBy('nombre')->paginate(10)->withQueryString()->through(
+        // Filtro por año de registro
+        if ($request->filled('año')) {
+            $query->whereYear('created_at', $request->año);
+        }
+    
+        $users = $query->orderBy('nombre')->paginate($request->get('per_page', 15))->withQueryString()->through(
             fn ($user) => (object) [
                 'id' => $user->id,
                 'name' => $user->nombre,
@@ -52,8 +68,11 @@ class UserController extends Controller
                 'deleted_at' => $user->deleted_at,
             ]
         );
+
+        // Obtener todos los roles disponibles para el filtro
+        $roles = Role::orderBy('name')->get();
     
-        return view('users.index', compact('users'));
+        return view('users.index', compact('users', 'roles'));
     }
 
     public function create()
