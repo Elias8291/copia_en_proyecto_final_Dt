@@ -9,7 +9,6 @@ use App\Services\Tramites\TramiteService;
 use App\Services\Tramites\ConstanciaService;
 use App\Services\Tramites\CorreccionService;
 use App\Services\RfcProveedorService;
-use App\Services\Tramites\TramiteViewDataService;
 use App\ViewModels\TramiteViewModel;
 use App\ViewModels\FormDataViewModel;
 use Illuminate\Http\Request;
@@ -21,20 +20,17 @@ class TramiteController extends Controller
     private ConstanciaService $constanciaService;
     private CorreccionService $correccionService;
     private RfcProveedorService $rfcProveedorService;
-    private TramiteViewDataService $tramiteViewDataService;
 
     public function __construct(
         TramiteService $tramiteService, 
         ConstanciaService $constanciaService,
         CorreccionService $correccionService,
-        RfcProveedorService $rfcProveedorService,
-        TramiteViewDataService $tramiteViewDataService
+        RfcProveedorService $rfcProveedorService
     ) {
         $this->tramiteService = $tramiteService;
         $this->constanciaService = $constanciaService;
         $this->correccionService = $correccionService;
         $this->rfcProveedorService = $rfcProveedorService;
-        $this->tramiteViewDataService = $tramiteViewDataService;
     }
 
     public function index()
@@ -492,20 +488,174 @@ class TramiteController extends Controller
     public function edit($tramiteId)
     {
         try {
-            $tramite = \App\Models\Tramite::findOrFail($tramiteId);
+            $tramite = Tramite::findOrFail($tramiteId);
             $data = $this->tramiteViewDataService->prepareEditData($tramite);
 
-            // Reutilizar la vista de creación en modo corrección
-            return view('tramites.create', $data);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return view('tramites.edit', $data);
+        } catch (ModelNotFoundException $e) {
             return redirect()->route('tramites.index')
                 ->with('error', 'El trámite especificado no existe');
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             return redirect()->route('tramites.estado')
                 ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             return redirect()->route('tramites.index')
                 ->with('error', 'Error al cargar el formulario de edición.');
+        }
+    }
+
+    /**
+     * Update the specified trámite in storage.
+     */
+            if ($tramite->proveedor->tipo_persona === 'Moral') {
+                // Preparar datos de constitución con instrumento notarial
+                $datosConstitutivos = $tramite->datosConstitutivos->first();
+                $constitucionData = [];
+                
+                if ($datosConstitutivos) {
+                    $constitucionData = $datosConstitutivos->toArray();
+                    
+                    // Agregar datos del instrumento notarial si existe
+                    if ($datosConstitutivos->instrumentoNotarial) {
+                        $instrumentoNotarial = $datosConstitutivos->instrumentoNotarial;
+                        $constitucionData = array_merge($constitucionData, [
+                            'numero_escritura' => $instrumentoNotarial->numero_escritura ?? '',
+                            'numero_escritura_constitutiva' => $instrumentoNotarial->numero_escritura_constitutiva ?? '',
+                            'fecha_constitucion' => $instrumentoNotarial->fecha_constitucion ?? '',
+                            'nombre_notario' => $instrumentoNotarial->nombre_notario ?? '',
+                            'numero_notario' => $instrumentoNotarial->numero_notario ?? '',
+                            'estado_id' => $instrumentoNotarial->estado_id ?? '',
+                            'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
+                            'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
+                            'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
+                        ]);
+                    }
+                }
+                
+                $formData['constitucion'] = $constitucionData;
+                $formData['accionistas'] = $tramite->accionistas->toArray();
+                
+                // Preparar datos del apoderado con instrumento notarial
+                $apoderado = $tramite->apoderadosLegales->first();
+                $apoderadoData = [];
+                
+                if ($apoderado) {
+                    $apoderadoData = $apoderado->toArray();
+                    
+                    // Agregar datos del instrumento notarial si existe
+                    if ($apoderado->instrumentoNotarial) {
+                        $instrumentoNotarial = $apoderado->instrumentoNotarial;
+                        $apoderadoData = array_merge($apoderadoData, [
+                            'numero_escritura' => $instrumentoNotarial->numero_escritura ?? '',
+                            'numero_escritura_poder' => $instrumentoNotarial->numero_escritura_constitutiva ?? '',
+                            'fecha_poder' => $instrumentoNotarial->fecha_constitucion ?? '',
+                            'nombre_notario_poder' => $instrumentoNotarial->nombre_notario ?? '',
+                            'numero_notario_poder' => $instrumentoNotarial->numero_notario ?? '',
+                            'estado_id' => $instrumentoNotarial->estado_id ?? '',
+                            'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
+                            'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
+                            'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
+                        ]);
+                    }
+                }
+                
+                $formData['apoderado'] = $apoderadoData;
+            }
+            
+            $viewModel = new FormDataViewModel($formData);
+                    
+                    // Usar el CorreccionService para obtener secciones que necesitan corrección
+                    $seccionesParaCorregir = $this->correccionService->obtenerSeccionesParaCorreccion($tramite);
+                    $resumenCorrecciones = $this->correccionService->obtenerResumenCorrecciones($tramite);
+                    
+                    // Cargar estados de las secciones desde la base de datos
+                    $estadosSecciones = [];
+                    $secciones = ['datos_generales', 'actividades', 'domicilio', 'contacto', 'archivos'];
+                    if ($tramite->proveedor->tipo_persona === 'Moral') {
+                        $secciones = array_merge($secciones, ['constitucion', 'accionistas', 'apoderado']);
+                    }
+                    
+                    foreach ($secciones as $seccion) {
+                        $revision = \App\Models\SeccionRevision::where('tramite_id', $tramite->id)
+                            ->where('seccion', $seccion)
+                            ->first();
+                        
+                        $estadosSecciones[$seccion] = $revision ? $revision->estado : 'Pendiente';
+                    }
+                    
+                    // Cargar estados de archivos individuales desde la base de datos
+                    $estadosArchivos = [];
+                    $comentariosArchivos = [];
+                    
+                    foreach ($archivosRequeridos as $archivo) {
+                        // Buscar el archivo cargado para este trámite
+                        $archivoCargado = $tramite->archivos()
+                            ->where('catalogo_archivo_id', $archivo->id)
+                            ->first();
+                        
+                        if ($archivoCargado) {
+                            $estadosArchivos[$archivo->id] = $archivoCargado->status ?? 'Pendiente';
+                            $comentariosArchivos[$archivo->id] = $archivoCargado->comentario_revision ?? '';
+                        } else {
+                            $estadosArchivos[$archivo->id] = 'Pendiente';
+                            $comentariosArchivos[$archivo->id] = '';
+                        }
+                    }
+                    
+                    Log::info('TramiteController: Vista de edición cargada exitosamente', [
+                        'tramite_id' => $tramite->id,
+                        'tipo_persona' => $tipoPersona,
+                        'archivos_requeridos_count' => $archivosRequeridos->count(),
+                        'estados_secciones' => $estadosSecciones,
+                        'datos_constitutivos_existe' => $tramite->datosConstitutivos->count() > 0,
+                        'apoderados_existe' => $tramite->apoderadosLegales->count() > 0,
+                        'accionistas_count' => $tramite->accionistas->count(),
+                        'form_data_keys' => array_keys($formData),
+                        'constitucion_data' => $formData['constitucion'] ?? 'no_data',
+                        'apoderado_data' => $formData['apoderado'] ?? 'no_data'
+                    ]);
+                    
+                    // Preparar archivos para el componente de evaluación usando el método reutilizable
+                    $archivosSubidos = $this->prepararArchivosParaCotejo($tramite->archivos);
+                    
+                    // Filtrar solo archivos rechazados para la corrección
+                    $archivosRechazados = collect($archivosSubidos)->filter(function($archivo) {
+                        return ($archivo['status'] ?? 'Pendiente') === 'Rechazado';
+                    })->toArray();
+                    
+                    // Reutilizar la vista create.blade.php en modo corrección
+                    return view('tramites.create', compact(
+                        'tramite',
+                        'viewModel', 
+                        'seccionesParaCorregir',
+                        'resumenCorrecciones',
+                        'archivosRequeridos'
+                    ))->with([
+                        'modoCorreccion' => true,
+                        'tipoPersona' => $tramite->proveedor->tipo_persona,
+                        'esEditable' => true
+                    ]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::error('TramiteController: Trámite no encontrado', [
+                'tramite_id' => $tramiteId,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->route('tramites.index')
+                ->with('error', 'El trámite especificado no existe');
+                
+        } catch (\Exception $e) {
+            Log::error('TramiteController: Error al mostrar formulario de edición', [
+                'tramite_id' => $tramiteId,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->route('tramites.index')
+                ->with('error', 'Error al cargar el formulario de edición: ' . $e->getMessage());
         }
     }
 

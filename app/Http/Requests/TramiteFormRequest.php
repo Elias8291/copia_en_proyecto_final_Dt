@@ -127,8 +127,23 @@ class TramiteFormRequest extends FormRequest
                 // En modo normal, son obligatorios
                 $esModoCorreccion = $this->esModoCorreccion();
                 $regla = $esModoCorreccion ? 'nullable' : 'required';
-                
-                $rules[$nombreCampo] = $regla . '|file|mimes:' . $tiposMime . '|max:102400'; // 100MB max
+
+                // Tamaños máximos por tipo (en KB)
+                $maxSizesKb = [
+                    'pdf' => 5120,   // 5MB
+                    'mp4' => 10240,  // 10MB
+                    'png' => 5120,   // 5MB
+                    'jpg' => 5120,   // 5MB
+                    'jpeg' => 5120,  // 5MB
+                    'gif' => 5120,   // 5MB
+                    'webp' => 5120,  // 5MB
+                    'mp3' => 10240,  // 10MB
+                ];
+
+                $tipoArchivo = is_string($archivo->tipo_archivo) ? strtolower($archivo->tipo_archivo) : '';
+                $maxKb = $maxSizesKb[$tipoArchivo] ?? 5120; // por defecto 5MB
+
+                $rules[$nombreCampo] = $regla . '|file|mimes:' . $tiposMime . '|max:' . $maxKb;
             }
         } catch (\Exception $e) {
             \Log::error('Error al obtener reglas de archivos dinámicas', [
@@ -160,7 +175,22 @@ class TramiteFormRequest extends FormRequest
                 $messages[$nombreCampo . '.required'] = "El archivo '{$archivo->nombre}' es obligatorio.";
                 $messages[$nombreCampo . '.file'] = "El archivo '{$archivo->nombre}' debe ser un archivo válido.";
                 $messages[$nombreCampo . '.mimes'] = "El archivo '{$archivo->nombre}' debe ser de tipo: {$tiposPermitidos}.";
-                $messages[$nombreCampo . '.max'] = "El archivo '{$archivo->nombre}' no puede ser mayor a 100MB.";
+
+                // Mensaje de tamaño máximo dinámico por tipo
+                $maxSizesKb = [
+                    'pdf' => 5120,
+                    'mp4' => 10240,
+                    'png' => 5120,
+                    'jpg' => 5120,
+                    'jpeg' => 5120,
+                    'gif' => 5120,
+                    'webp' => 5120,
+                    'mp3' => 10240,
+                ];
+                $tipoArchivo = is_string($archivo->tipo_archivo) ? strtolower($archivo->tipo_archivo) : '';
+                $maxKb = $maxSizesKb[$tipoArchivo] ?? 5120;
+                $maxMb = (int) round($maxKb / 1024);
+                $messages[$nombreCampo . '.max'] = "El archivo '{$archivo->nombre}' no puede ser mayor a {$maxMb}MB.";
             }
         } catch (\Exception $e) {
             \Log::error('Error al obtener mensajes de archivos dinámicos', [

@@ -349,12 +349,7 @@ class TramiteCreateForm {
 }
 
 // Funciones globales para compatibilidad
-window.abrirModalTerminos = function() {
-    const modal = document.getElementById('modal-terminos-servicio');
-    if (modal) {
-        modal.classList.remove('hidden');
-    }
-}
+// Modal de términos eliminado
 
 window.validarTerminosYCondicionesFinal = function() {
     if (window.tramiteForm) {

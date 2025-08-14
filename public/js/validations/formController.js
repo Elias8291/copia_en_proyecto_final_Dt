@@ -352,8 +352,8 @@ class FormController {
         
         // Validar tamaño según el tipo de archivo
         const maxSizes = {
-            'pdf': 10 * 1024 * 1024,    // 10MB para PDF
-            'mp4': 50 * 1024 * 1024,    // 50MB para MP4
+            'pdf': 5 * 1024 * 1024,     // 5MB para PDF
+            'mp4': 10 * 1024 * 1024,    // 10MB para MP4
             'png': 5 * 1024 * 1024,     // 5MB para PNG
             'mp3': 10 * 1024 * 1024,    // 10MB para MP3
             'jpg': 5 * 1024 * 1024,     // 5MB para JPG

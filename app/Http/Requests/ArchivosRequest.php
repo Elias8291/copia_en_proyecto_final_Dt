@@ -28,7 +28,18 @@ class ArchivosRequest extends FormRequest
         // Crear reglas para cada archivo requerido
         foreach ($archivosRequeridos as $archivo) {
             $nombreCampo = 'documentos.' . \Str::slug($archivo->nombre);
-            $rules[$nombreCampo] = 'required|file|mimes:pdf,png,jpg,jpeg,mp3,mp4|max:51200';
+            // Tamaños máximos por tipo (en KB)
+            $maxSizesKb = [
+                'pdf' => 5120,   // 5MB
+                'mp4' => 10240,  // 10MB
+                'png' => 5120,   // 5MB
+                'jpg' => 5120,   // 5MB
+                'jpeg' => 5120,  // 5MB
+                'mp3' => 10240,  // 10MB
+            ];
+            $tipoArchivo = is_string($archivo->tipo_archivo) ? strtolower($archivo->tipo_archivo) : '';
+            $maxKb = $maxSizesKb[$tipoArchivo] ?? 5120; // por defecto 5MB
+            $rules[$nombreCampo] = 'required|file|mimes:pdf,png,jpg,jpeg,mp3,mp4|max:' . $maxKb;
         }
         
         return $rules;
@@ -53,7 +64,20 @@ class ArchivosRequest extends FormRequest
             $messages[$nombreCampo . '.required'] = "El archivo '{$archivo->nombre}' es obligatorio.";
             $messages[$nombreCampo . '.file'] = "El archivo '{$archivo->nombre}' debe ser válido.";
             $messages[$nombreCampo . '.mimes'] = "El archivo '{$archivo->nombre}' debe ser PDF, PNG, JPG, MP3 o MP4.";
-            $messages[$nombreCampo . '.max'] = "El archivo '{$archivo->nombre}' no puede ser mayor a 50MB.";
+
+            // Mensaje dinámico según tipo
+            $maxSizesKb = [
+                'pdf' => 5120,
+                'mp4' => 10240,
+                'png' => 5120,
+                'jpg' => 5120,
+                'jpeg' => 5120,
+                'mp3' => 10240,
+            ];
+            $tipoArchivo = is_string($archivo->tipo_archivo) ? strtolower($archivo->tipo_archivo) : '';
+            $maxKb = $maxSizesKb[$tipoArchivo] ?? 5120;
+            $maxMb = (int) round($maxKb / 1024);
+            $messages[$nombreCampo . '.max'] = "El archivo '{$archivo->nombre}' no puede ser mayor a {$maxMb}MB.";
         }
         
         return $messages;

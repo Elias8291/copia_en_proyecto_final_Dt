@@ -70,7 +70,7 @@
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach($archivosFiltrados as $archivo)
-                <div class="bg-red-50 border-2 border-dashed border-red-300 rounded-lg p-4 hover:border-red-400 transition-colors">
+                <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#9D2449] transition-colors">
                     <div class="text-center">
                         <!-- Icono según tipo de archivo -->
                         <div class="w-12 h-12 bg-[#9D2449]/10 rounded-full flex items-center justify-center mx-auto mb-3">

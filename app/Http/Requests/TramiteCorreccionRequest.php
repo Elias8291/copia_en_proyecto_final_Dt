@@ -23,7 +23,8 @@ class TramiteCorreccionRequest extends FormRequest
         if ($this->hasFile('documentos_correccion')) {
             foreach ($this->file('documentos_correccion', []) as $archivoId => $file) {
                 if ($file) {
-                    $rules["documentos_correccion.{$archivoId}"] = 'file|mimes:pdf,png,jpg,jpeg|max:10240';
+                    // 5MB para PDF e imágenes; mantener 10MB cuando aplique en mensajes
+                    $rules["documentos_correccion.{$archivoId}"] = 'file|mimes:pdf,png,jpg,jpeg|max:5120';
                 }
             }
         }
@@ -41,7 +42,7 @@ class TramiteCorreccionRequest extends FormRequest
                 if ($file) {
                     $messages["documentos_correccion.{$archivoId}.file"] = 'El archivo debe ser un archivo válido.';
                     $messages["documentos_correccion.{$archivoId}.mimes"] = 'El archivo debe ser de tipo: PDF, PNG, JPG, JPEG.';
-                    $messages["documentos_correccion.{$archivoId}.max"] = 'El archivo no puede ser mayor a 10MB.';
+                    $messages["documentos_correccion.{$archivoId}.max"] = 'El archivo no puede ser mayor a 5MB.';
                 }
             }
         }

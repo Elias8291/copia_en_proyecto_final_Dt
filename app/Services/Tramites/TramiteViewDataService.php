@@ -55,6 +55,13 @@ class TramiteViewDataService
             'archivos' => $tramite->archivos->toArray(),
         ];
 
+        // Asegurar que el RFC esté disponible en datos_generales para el ViewModel
+        if (!isset($formData['datos_generales']['rfc']) || empty($formData['datos_generales']['rfc'])) {
+            if ($tramite->proveedor && !empty($tramite->proveedor->rfc)) {
+                $formData['datos_generales']['rfc'] = $tramite->proveedor->rfc;
+            }
+        }
+
         if ($tramite->proveedor && $tramite->proveedor->tipo_persona === 'Moral') {
             $datosConstitutivos = $tramite->datosConstitutivos->first();
             $constitucionData = [];

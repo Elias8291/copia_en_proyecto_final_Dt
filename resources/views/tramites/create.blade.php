@@ -493,7 +493,7 @@
                                                    class="mt-1 h-4 w-4 text-[#9d2449] border-gray-300 rounded focus:ring-[#9d2449] focus:ring-2"
                                                    {{ old('acepto_terminos') ? 'checked' : '' }}>
                                             <label for="acepto_terminos" class="text-sm text-gray-700">
-                                                He leído y acepto los <a href="#" onclick="abrirModalTerminos()" class="text-[#9d2449] hover:underline">términos y condiciones</a> del trámite
+                                                He leído y acepto los términos y condiciones del trámite
                                             </label>
                                         </div>
                                         
@@ -521,8 +521,7 @@
     cancelText="Cancelar"
 />
 
-<!-- Modal de Términos de Servicio -->
-@include('components.modals.terminos-servicio', ['id' => 'modal-terminos-servicio'])
+<!-- Modal de Términos de Servicio eliminado por no ser necesario -->
 
 <!-- Scripts de validación y funcionalidad -->
 <script type="module" src="{{ asset('js/validations/index.js') }}"></script>

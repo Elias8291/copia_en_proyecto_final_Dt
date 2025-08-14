@@ -1,8 +1,4 @@
-/**
- * Validador de correcciones para trámites
- * Verifica que todas las correcciones requeridas estén completas
- */
-
+    
 class CorrectionValidator {
     constructor() {
         this.init();
@@ -14,19 +10,15 @@ class CorrectionValidator {
         });
     }
 
-    setupValidation() {
-        // Solo activar en modo corrección
+    setupValidation() { 
         if (!this.isCorrectionMode()) {
             return;
         }
 
-        // Observar cambios en el formulario
         this.observeFormChanges();
         
-        // Validar estado inicial
         this.validateCorrections();
         
-        // Interceptar la función de validación de términos
         this.interceptTermsValidation();
     }
 
@@ -38,17 +30,14 @@ class CorrectionValidator {
         const form = document.getElementById('tramite-form');
         if (!form) return;
 
-        // Observar cambios en inputs
         form.addEventListener('input', () => {
             setTimeout(() => this.validateCorrections(), 100);
         });
 
-        // Observar cambios en selects
         form.addEventListener('change', () => {
             setTimeout(() => this.validateCorrections(), 100);
         });
 
-        // Observar archivos subidos
         const fileInputs = form.querySelectorAll('input[type="file"]');
         fileInputs.forEach(input => {
             input.addEventListener('change', () => {
@@ -66,10 +55,9 @@ class CorrectionValidator {
         const filesValid = this.validateRequiredFiles();
         const termsAccepted = this.areTermsAccepted();
 
+        // No bloquear el envío por validaciones visuales: sólo exigir términos aceptados
         const allCorrectionsComplete = sectionsValid && filesValid;
-
-        // Actualizar estado del botón
-        this.updateSubmitButton(allCorrectionsComplete && termsAccepted);
+        this.updateSubmitButton(termsAccepted);
 
         return allCorrectionsComplete;
     }
@@ -89,14 +77,12 @@ class CorrectionValidator {
     }
 
     getRequiredSections() {
-        // Obtener secciones que requieren corrección desde el DOM
         const sectionElements = document.querySelectorAll('[data-step]');
         const sections = [];
 
         sectionElements.forEach(element => {
             const stepData = element.dataset.step;
             if (stepData !== undefined) {
-                // Determinar el tipo de sección basado en el contenido
                 if (element.querySelector('[name*="razon_social"], [name*="rfc"]')) {
                     sections.push('datos_generales');
                 } else if (element.querySelector('[name*="actividades"]')) {
@@ -115,7 +101,7 @@ class CorrectionValidator {
             }
         });
 
-        return [...new Set(sections)]; // Remover duplicados
+        return [...new Set(sections)];
     }
 
     isSectionValid(section) {
@@ -205,7 +191,6 @@ class CorrectionValidator {
         fileContainers.forEach(container => {
             const fileInput = container.querySelector('input[type="file"]');
             
-            // En modo corrección, solo validar archivos que fueron rechazados
             if (this.isCorrectionMode()) {
                 const statusIndicator = container.querySelector('.bg-red-100, .text-red-600, [data-status="Rechazado"]');
                 const isRejected = statusIndicator || container.textContent.includes('Rechazado');
@@ -219,7 +204,6 @@ class CorrectionValidator {
                     });
                 }
             } else {
-                // Modo creación normal
                 const isRequired = container.dataset.required === 'true' || 
                                  container.querySelector('.text-red-500') ||
                                  container.querySelector('[required]');
@@ -245,22 +229,19 @@ class CorrectionValidator {
     isFileValid(fileConfig) {
         const fileInput = fileConfig.input;
         
-        // Verificar si hay archivo nuevo subido
         if (fileInput.files && fileInput.files.length > 0) {
             return true;
         }
 
-        // En modo corrección, si es un archivo rechazado, DEBE tener nuevo archivo
+
         if (this.isCorrectionMode() && fileConfig.isRejected) {
             return false;
         }
 
-        // Verificar si hay archivo existente válido (para archivos no rechazados)
         const existingFileIndicator = fileConfig.container.querySelector('[data-existing-file], .file-link, a[href*="storage"]');
         const rejectedIndicator = fileConfig.container.querySelector('.bg-red-100, .text-red-600') || 
                                  fileConfig.container.textContent.includes('Rechazado');
         
-        // Si hay archivo existente y no está rechazado
         if (existingFileIndicator && !rejectedIndicator) {
             return true;
         }
@@ -282,7 +263,6 @@ class CorrectionValidator {
             submitButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
             submitButton.classList.add('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
             
-            // Actualizar texto si es modo corrección
             if (this.isCorrectionMode()) {
                 const buttonText = submitButton.querySelector('svg').nextSibling;
                 if (buttonText) {
@@ -297,20 +277,16 @@ class CorrectionValidator {
     }
 
     interceptTermsValidation() {
-        // Interceptar la función global de validación de términos
         const originalFunction = window.validarTerminosYCondicionesFinal;
         
         window.validarTerminosYCondicionesFinal = () => {
-            // Ejecutar validación original de términos
             if (originalFunction) {
                 originalFunction();
             }
             
-            // Ejecutar nuestra validación de correcciones
             this.validateCorrections();
         };
 
-        // También interceptar la función local
         const originalLocalFunction = window.validarTerminosYCondiciones;
         
         window.validarTerminosYCondiciones = () => {
@@ -323,9 +299,7 @@ class CorrectionValidator {
     }
 }
 
-// Configurar para modo corrección
 document.addEventListener('DOMContentLoaded', function() {
-    // Detectar si estamos en modo corrección
     const correctionMode = document.querySelector('[data-correction-mode]') || 
                           window.modoCorreccion === true;
     
@@ -334,5 +308,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Inicializar validador
 window.correctionValidator = new CorrectionValidator();
