@@ -520,13 +520,22 @@ class TramiteController extends Controller
             }
             
             // Verificar que el trámite esté en estado de corrección
-            if ($tramite->status !== 'Para_Correccion') {
+            if (!in_array($tramite->status, ['Para_Correccion', 'Rechazado'])) {
                 Log::warning('TramiteController: Trámite no está en estado de corrección', [
                     'tramite_status' => $tramite->status,
-                    'expected_status' => 'Para_Correccion'
+                    'expected_status' => ['Para_Correccion', 'Rechazado']
                 ]);
                 return redirect()->route('tramites.estado')
                     ->with('error', 'Este trámite no requiere correcciones');
+            }
+            
+            // Usar el CorreccionService para obtener secciones que necesitan corrección
+            $seccionesParaCorregir = $this->correccionService->obtenerSeccionesParaCorreccion($tramite);
+            $resumenCorrecciones = $this->correccionService->obtenerResumenCorrecciones($tramite);
+            
+            if (empty($seccionesParaCorregir)) {
+                return redirect()->route('tramites.estado')
+                    ->with('info', 'No hay secciones que necesiten corrección en este trámite.');
             }
             
             // Cargar relaciones adicionales
@@ -701,23 +710,18 @@ class TramiteController extends Controller
                         return ($archivo['status'] ?? 'Pendiente') === 'Rechazado';
                     })->toArray();
                     
-                    return view('tramites.edit', compact(
-                        'tramite', 
-                        'viewModel',
-                        'archivosRequeridos', 
-                        'tipoPersona',
-                        'actividadesDisponibles',
-                        'estados',
-                        'municipios',
-                        'asentamientos',
-                        'tiposAsentamiento',
-                        'paises',
-                        'estadosSecciones',
-                        'estadosArchivos',
-                        'comentariosArchivos',
-                        'archivosSubidos',
-                        'archivosRechazados'
-                    ));
+                    // Reutilizar la vista create.blade.php en modo corrección
+                    return view('tramites.create', compact(
+                        'tramite',
+                        'viewModel', 
+                        'seccionesParaCorregir',
+                        'resumenCorrecciones',
+                        'archivosRequeridos'
+                    ))->with([
+                        'modoCorreccion' => true,
+                        'tipoPersona' => $tramite->proveedor->tipo_persona,
+                        'esEditable' => true
+                    ]);
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::error('TramiteController: Trámite no encontrado', [
@@ -780,11 +784,21 @@ class TramiteController extends Controller
             }
             
             // Verificar que el trámite esté en estado de corrección
-            if ($tramite->status !== 'Para_Correccion') {
+            if (!in_array($tramite->status, ['Para_Correccion', 'Rechazado'])) {
                 return redirect()->route('tramites.estado')
                     ->with('error', 'Este trámite no requiere correcciones');
             }
             
+            // Debug del request
+            \Log::info('TramiteController: Request de corrección recibido', [
+                'tramite_id' => $tramite->id,
+                'has_files' => $request->hasFile('archivos'),
+                'has_documentos' => $request->hasFile('documentos'),
+                'archivos_keys' => $request->hasFile('archivos') ? array_keys($request->file('archivos')) : [],
+                'documentos_keys' => $request->hasFile('documentos') ? array_keys($request->file('documentos')) : [],
+                'all_files' => array_keys($request->allFiles())
+            ]);
+
             // Actualizar el trámite usando el CorreccionService
             $tramiteActualizado = $this->correccionService->procesarCorreccion($tramite, $request);
             

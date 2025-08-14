@@ -164,17 +164,37 @@ class ArchivosService extends BaseService
         $archivos = $request->file('archivos');
         
         if (!$archivos) {
+            Log::info('ArchivosService: No hay archivos para actualizar', [
+                'tramite_id' => $tramite->id
+            ]);
             return;
         }
         
+        Log::info('ArchivosService: Iniciando actualización de archivos', [
+            'tramite_id' => $tramite->id,
+            'archivos_recibidos' => array_keys($archivos)
+        ]);
+        
         foreach ($archivos as $catalogoId => $archivo) {
             if ($archivo && $archivo->isValid()) {
-                // Eliminar archivo anterior si existe
+                Log::info('ArchivosService: Procesando archivo', [
+                    'tramite_id' => $tramite->id,
+                    'catalogo_id' => $catalogoId,
+                    'nombre_archivo' => $archivo->getClientOriginalName()
+                ]);
+                
+                // Buscar archivo anterior
                 $archivoExistente = $tramite->archivos()
                     ->where('catalogo_archivo_id', $catalogoId)
                     ->first();
                 
                 if ($archivoExistente) {
+                    Log::info('ArchivosService: Eliminando archivo anterior', [
+                        'tramite_id' => $tramite->id,
+                        'archivo_id' => $archivoExistente->id,
+                        'status_anterior' => $archivoExistente->status
+                    ]);
+                    
                     // Eliminar archivo físico
                     if (file_exists(storage_path('app/public/' . $archivoExistente->ruta))) {
                         unlink(storage_path('app/public/' . $archivoExistente->ruta));
@@ -182,10 +202,61 @@ class ArchivosService extends BaseService
                     $archivoExistente->delete();
                 }
 
-                // Guardar nuevo archivo
-                $this->guardarArchivo($tramite, $archivo, $catalogoId);
+                // Guardar nuevo archivo con status Pendiente
+                $this->guardarArchivoCorreccion($tramite, $archivo, $catalogoId);
+            } else {
+                Log::warning('ArchivosService: Archivo inválido', [
+                    'tramite_id' => $tramite->id,
+                    'catalogo_id' => $catalogoId
+                ]);
             }
         }
+        
+        Log::info('ArchivosService: Actualización completada', [
+            'tramite_id' => $tramite->id
+        ]);
+    }
+
+    /**
+     * Guardar un archivo específico para correcciones
+     */
+    public function guardarArchivoCorreccion(Tramite $tramite, $archivo, $catalogoId): void
+    {
+        $catalogoArchivo = CatalogoArchivo::find($catalogoId);
+        
+        if (!$catalogoArchivo) {
+            Log::error('ArchivosService: Catálogo de archivo no encontrado', [
+                'tramite_id' => $tramite->id,
+                'catalogo_id' => $catalogoId
+            ]);
+            return;
+        }
+
+        $nombreUnico = $this->generarNombreUnico('doc', $tramite->id, $archivo->getClientOriginalName());
+        $ruta = $archivo->storeAs('tramites/' . $tramite->id, $nombreUnico, 'public');
+
+        $nuevoArchivo = Archivo::create([
+            'tramite_id' => $tramite->id,
+            'proveedor_id' => $tramite->proveedor_id,
+            'catalogo_archivo_id' => $catalogoId,
+            'nombre_original' => $archivo->getClientOriginalName(),
+            'nombre_archivo' => $nombreUnico,
+            'ruta' => $ruta,
+            'extension' => $archivo->getClientOriginalExtension(),
+            'tamaño' => $archivo->getSize(),
+            'status' => 'Pendiente',
+            'comentario_revision' => null,
+            'revisado_por' => null,
+            'fecha_revision' => null
+        ]);
+
+        Log::info('ArchivosService: Archivo de corrección creado exitosamente', [
+            'tramite_id' => $tramite->id,
+            'archivo_id' => $nuevoArchivo->id,
+            'catalogo_id' => $catalogoId,
+            'status' => $nuevoArchivo->status,
+            'nombre_original' => $nuevoArchivo->nombre_original
+        ]);
     }
 
     /**

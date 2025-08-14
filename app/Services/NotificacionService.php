@@ -178,13 +178,14 @@ class NotificacionService
                 $notificacion = Notificacion::create([
                     'usuario_id' => $usuarioTramite->id,
                     'tipo' => 'exito',
-                    'titulo' => 'Proveedor Asignado',
-                    'mensaje' => "¡Excelente! Se le ha asignado el número de proveedor: {$numeroProveedor}. Se agendará automáticamente una cita para cotejo domiciliario.",
+                    'titulo' => '¡Trámite Aprobado - Proveedor Asignado!',
+                    'mensaje' => "¡Felicidades! Su trámite ha sido aprobado y se le ha asignado el número de proveedor: {$numeroProveedor}. Puede descargar su oficio oficial desde el estado del trámite.",
                     'datos_adicionales' => json_encode([
                         'tramite_id' => $tramite->id,
                         'numero_proveedor' => $numeroProveedor,
                         'fecha_asignacion' => now()->format('Y-m-d H:i:s'),
-                        'proveedor_id' => $tramite->proveedor->id
+                        'proveedor_id' => $tramite->proveedor->id,
+                        'tipo_tramite' => $tramite->tipo_tramite
                     ]),
                     'accion_url' => route('tramites.estado')
                 ]);

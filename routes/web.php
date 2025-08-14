@@ -28,6 +28,9 @@ Route::middleware('guest')->group(function () {
     })->name('welcome');
 });
 
+// Ruta pública para ver información de proveedores (sin autenticación)
+Route::get('/proveedor/{proveedor}/publico', [ProveedoresController::class, 'publico'])->name('proveedores.publico');
+
 // ============================================================================
 // AUTENTICACIÓN
 // ============================================================================

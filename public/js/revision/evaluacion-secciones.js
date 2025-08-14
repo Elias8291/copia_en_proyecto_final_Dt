@@ -3,13 +3,19 @@ async function evaluarSeccion(seccion, estado) {
         const archivos = document.querySelectorAll('[id^="estado_archivo_"]');
         const estados = Array.from(archivos).map(el => el.textContent.trim());
         
-        if (estados.includes('Rechazado')) {
-            mostrarError('No se puede aprobar la sección de documentos. Hay documentos rechazados que requieren corrección.');
+        // Contar archivos por estado
+        const rechazados = estados.filter(estado => estado === 'Rechazado').length;
+        const pendientes = estados.filter(estado => estado === 'Pendiente').length;
+        
+        if (rechazados > 0) {
+            const mensaje = `No se puede aprobar la sección de archivos porque hay ${rechazados} documento${rechazados > 1 ? 's' : ''} rechazado${rechazados > 1 ? 's' : ''}. Debe corregir o aprobar todos los documentos antes de aprobar la sección.`;
+            mostrarError(mensaje);
             return;
         }
         
-        if (estados.includes('Pendiente')) {
-            mostrarError('No se puede aprobar la sección de documentos. Hay documentos pendientes de revisión.');
+        if (pendientes > 0) {
+            const mensaje = `No se puede aprobar la sección de archivos porque hay ${pendientes} documento${pendientes > 1 ? 's' : ''} pendiente${pendientes > 1 ? 's' : ''} de evaluación. Debe evaluar todos los documentos antes de aprobar la sección.`;
+            mostrarError(mensaje);
             return;
         }
     }

@@ -304,10 +304,105 @@ class RfcProveedorService
         ];
     }
 
+    /**
+     * Generar número PV con formato PV + dígitos según nuevas reglas
+     * Solo para inscripción
+     */
+    public function generarNumeroPV(): string
+    {
+        try {
+            \Log::info("Generando número PV con nuevas reglas");
+            
+            // Obtener el último PV existente en el sistema
+            $ultimoPV = Proveedor::whereNotNull('pv_numero')
+                ->where('pv_numero', 'LIKE', 'PV%')
+                ->orderByRaw('CAST(SUBSTRING(pv_numero, 3) AS UNSIGNED) DESC')
+                ->first();
+            
+            \Log::info("Búsqueda de último PV", [
+                'encontrado' => $ultimoPV ? 'Sí' : 'No',
+                'ultimo_pv' => $ultimoPV ? $ultimoPV->pv_numero : null,
+                'ultimo_proveedor_id' => $ultimoPV ? $ultimoPV->id : null
+            ]);
+            
+            if (!$ultimoPV || !$ultimoPV->pv_numero) {
+                // Primer PV del sistema
+                $nuevoPV = 'PV901323';
+                \Log::info("Primer PV del sistema asignado: {$nuevoPV}");
+                return $nuevoPV;
+            }
+            
+            // Extraer componente numérico del último PV
+            $ultimoComponenteNumerico = substr($ultimoPV->pv_numero, 2); // Quitar "PV"
+            
+            // Obtener el siguiente número de proveedor (secuencial)
+            $siguienteNumero = $this->obtenerSiguienteNumeroProveedor();
+            
+            // Construir nuevo PV: PV + último componente + nuevo número
+            $nuevoPV = 'PV' . $ultimoComponenteNumerico . $siguienteNumero;
+            
+            // Validar que sea único
+            while (Proveedor::where('pv_numero', $nuevoPV)->exists()) {
+                $siguienteNumero = str_pad((int)$siguienteNumero + 1, 3, '0', STR_PAD_LEFT);
+                $nuevoPV = 'PV' . $ultimoComponenteNumerico . $siguienteNumero;
+            }
+            
+            // Validar formato
+            if (!preg_match('/^PV\d+$/', $nuevoPV)) {
+                throw new \Exception("El PV generado no cumple el formato requerido: {$nuevoPV}");
+            }
+            
+            \Log::info("Número PV generado", [
+                'ultimo_pv' => $ultimoPV->pv_numero,
+                'ultimo_componente' => $ultimoComponenteNumerico,
+                'numero_proveedor' => $siguienteNumero,
+                'nuevo_pv' => $nuevoPV
+            ]);
+            
+            return $nuevoPV;
+        } catch (\Exception $e) {
+            \Log::error("Error generando número PV", [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            throw $e;
+        }
+    }
+    
+    /**
+     * Obtener siguiente número de proveedor secuencial
+     */
+    private function obtenerSiguienteNumeroProveedor(): string
+    {
+        // Buscar el último número usado en cualquier PV
+        $ultimoProveedor = Proveedor::whereNotNull('pv_numero')
+            ->where('pv_numero', 'LIKE', 'PV%')
+            ->get()
+            ->map(function($p) {
+                // Extraer los últimos 3 dígitos como número de proveedor
+                $pv = $p->pv_numero;
+                if (strlen($pv) >= 6) { // Al menos PV + 3 dígitos
+                    return (int)substr($pv, -3);
+                }
+                return 0;
+            })
+            ->max();
+            
+        $siguienteNumero = $ultimoProveedor ? $ultimoProveedor + 1 : 1;
+        
+        return str_pad($siguienteNumero, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Método legacy para compatibilidad - ahora genera número de proveedor simple
+     * @deprecated Use generarNumeroPV() for new PV format
+     */
     public function generarNumeroProveedor(string $rfc): string
     {
         try {
-            \Log::info("Generando número de proveedor para RFC: {$rfc}");
+            \Log::info("Generando número de proveedor simple para RFC: {$rfc}");
             
             $ultimoProveedor = Proveedor::where('rfc', $rfc)
                 ->whereNotNull('pv_numero')
@@ -454,11 +549,10 @@ class RfcProveedorService
     {
         // Si no hay proveedor reutilizable, crear nuevo con estado pendiente
         if (!$proveedorReutilizable) {
-            $numeroProveedor = $this->generarNumeroProveedor($rfc);
-            
+            // No asignar pv_numero durante la creación, se asignará cuando se apruebe el trámite
             $nuevoProveedor = Proveedor::create([
                 'rfc' => $rfc,
-                'pv_numero' => $numeroProveedor,
+                'pv_numero' => null, // No asignar PV durante creación
                 'tipo_persona' => $datosProveedor['tipo_persona'] ?? 'Física',
                 'estado_padron' => 'Pendiente', // Estado pendiente hasta aprobación
                 'fecha_registro' => null, // Se asignará cuando se apruebe
@@ -468,9 +562,9 @@ class RfcProveedorService
                 'razon_social' => $datosProveedor['razon_social'] ?? null,
             ]);
 
-            \Log::info("Nuevo proveedor creado para inscripción (pendiente)", [
+            \Log::info("Nuevo proveedor creado para inscripción (pendiente, sin PV)", [
                 'rfc' => $rfc,
-                'pv_numero' => $numeroProveedor,
+                'pv_numero' => null,
                 'estado_padron' => 'Pendiente',
                 'fecha_registro' => null,
                 'fecha_vencimiento' => null
@@ -479,43 +573,42 @@ class RfcProveedorService
             return [
                 'accion' => 'creado_pendiente',
                 'proveedor' => $nuevoProveedor,
-                'numero_proveedor' => $numeroProveedor,
+                'numero_proveedor' => null, // Sin número PV hasta aprobación
                 'fecha_registro' => null,
                 'fecha_vencimiento' => null
             ];
         }
 
         // Si hay proveedor reutilizable, reutilizarlo pero mantener estado pendiente
-        // Si el proveedor no tiene número PV, generarlo
+        // No asignar PV durante la creación, se asignará cuando se apruebe
         if (!$proveedorReutilizable->pv_numero) {
-            $numeroProveedor = $this->generarNumeroProveedor($rfc);
             $proveedorReutilizable->update([
-                'pv_numero' => $numeroProveedor,
+                'pv_numero' => null, // No asignar PV durante creación
                 'estado_padron' => 'Pendiente', // Mantener pendiente hasta aprobación
                 'fecha_registro' => null, // Se asignará cuando se apruebe
                 'fecha_vencimiento_padron' => null, // Se asignará cuando se apruebe
                 'fecha_alta_padron' => null // Se asignará cuando se apruebe
             ]);
-            \Log::info("Número PV asignado a proveedor existente (pendiente)", [
+            \Log::info("Proveedor existente actualizado para inscripción (pendiente, sin PV)", [
                 'rfc' => $rfc,
                 'proveedor_id' => $proveedorReutilizable->id,
-                'pv_numero' => $numeroProveedor,
+                'pv_numero' => null,
                 'estado_padron' => 'Pendiente'
             ]);
         } else {
-            $numeroProveedor = $proveedorReutilizable->pv_numero;
-            // Actualizar estado a pendiente si no lo está
-            if ($proveedorReutilizable->estado_padron !== 'Pendiente') {
-                $proveedorReutilizable->update([
-                    'estado_padron' => 'Pendiente',
-                    'fecha_registro' => null,
-                    'fecha_vencimiento_padron' => null,
-                    'fecha_alta_padron' => null
-                ]);
-            }
+            // Para inscripción, no mantener PV existente, se asignará en aprobación
+            $numeroProveedor = null;
+            // Actualizar estado a pendiente y remover PV existente
+            $proveedorReutilizable->update([
+                'pv_numero' => null, // Remover PV existente para nueva inscripción
+                'estado_padron' => 'Pendiente',
+                'fecha_registro' => null,
+                'fecha_vencimiento_padron' => null,
+                'fecha_alta_padron' => null
+            ]);
         }
         
-        // Sincronizar datos con DatosGenerales después de asignar PV
+        // Sincronizar datos con DatosGenerales (sin PV hasta aprobación)
         // Buscar el trámite actual que está siendo procesado
         $tramiteActual = Tramite::where('proveedor_id', $proveedorReutilizable->id)
             ->whereIn('status', ['Pendiente', 'Revision_Digital', 'Revision_Presencial', 'Revision_Domiciliaria', 'Para_Correccion'])
@@ -527,10 +620,10 @@ class RfcProveedorService
             if ($datosGenerales) {
                 $proveedorReutilizable->sincronizarDatosGenerales($datosGenerales);
                 
-                \Log::info("Datos sincronizados después de asignar PV en inscripción (pendiente)", [
+                \Log::info("Datos sincronizados en inscripción (pendiente, sin PV)", [
                     'proveedor_id' => $proveedorReutilizable->id,
                     'tramite_actual_id' => $tramiteActual->id,
-                    'pv_numero' => $numeroProveedor,
+                    'pv_numero' => null,
                     'razon_social' => $datosGenerales->razon_social,
                     'datos_generales_id' => $datosGenerales->id,
                     'estado_padron' => 'Pendiente'
@@ -550,7 +643,7 @@ class RfcProveedorService
         return [
             'accion' => 'reutilizado_pendiente',
             'proveedor' => $proveedorReutilizable->fresh(),
-            'numero_proveedor' => $numeroProveedor,
+            'numero_proveedor' => null, // Sin PV hasta aprobación
             'fecha_registro' => null,
             'fecha_vencimiento' => null
         ];
@@ -829,18 +922,60 @@ class RfcProveedorService
     {
         try {
             $fechaActual = Carbon::now();
-            $fechaVencimiento = $fechaActual->copy()->addYears(3); // 3 años de vigencia
+            $tipoTramiteLower = strtolower($tipoTramite);
             
             $datosActualizacion = [
                 'estado_padron' => 'Activo',
-                'fecha_registro' => $fechaActual,
-                'fecha_vencimiento_padron' => $fechaVencimiento,
-                'fecha_alta_padron' => $fechaActual,
             ];
             
-            // Para renovación, mantener la fecha de registro original si existe
-            if ($tipoTramite === 'renovacion' && $proveedor->fecha_registro) {
-                $datosActualizacion['fecha_registro'] = $proveedor->fecha_registro;
+            // Asignar PV solo para inscripción y solo si no tiene uno
+            if ($tipoTramiteLower === 'inscripcion' && !$proveedor->pv_numero) {
+                $nuevoPV = $this->generarNumeroPV();
+                $datosActualizacion['pv_numero'] = $nuevoPV;
+                
+                \Log::info("PV asignado durante activación", [
+                    'proveedor_id' => $proveedor->id,
+                    'nuevo_pv' => $nuevoPV,
+                    'tipo_tramite' => $tipoTramite
+                ]);
+            }
+            
+            // Manejar vigencia según tipo de trámite
+            if ($tipoTramiteLower === 'inscripcion') {
+                // Vigencia de 1 año para inscripción
+                $fechaInicioVigencia = $fechaActual;
+                $fechaFinVigencia = $this->calcularFechaVencimiento($fechaInicioVigencia, 1);
+                
+                $datosActualizacion['fecha_registro'] = $fechaInicioVigencia;
+                $datosActualizacion['fecha_vencimiento_padron'] = $fechaFinVigencia;
+                
+                // fecha_alta_padron solo se asigna la primera vez
+                if (!$proveedor->fecha_alta_padron) {
+                    $datosActualizacion['fecha_alta_padron'] = $fechaActual;
+                }
+            } elseif ($tipoTramiteLower === 'renovacion') {
+                // Para renovación: vigencia de 1 año, mantener fecha_registro original si existe
+                $fechaInicioVigencia = $fechaActual;
+                $fechaFinVigencia = $this->calcularFechaVencimiento($fechaInicioVigencia, 1);
+                
+                if ($proveedor->fecha_registro) {
+                    $datosActualizacion['fecha_registro'] = $proveedor->fecha_registro;
+                } else {
+                    $datosActualizacion['fecha_registro'] = $fechaActual;
+                }
+                
+                $datosActualizacion['fecha_vencimiento_padron'] = $fechaFinVigencia;
+                
+                // No modificar fecha_alta_padron en renovación
+            } else {
+                // Para actualización: mantener fechas existentes o asignar actuales
+                $datosActualizacion['fecha_registro'] = $proveedor->fecha_registro ?: $fechaActual;
+                $datosActualizacion['fecha_vencimiento_padron'] = $proveedor->fecha_vencimiento_padron ?: $this->calcularFechaVencimiento($fechaActual, 1);
+                
+                // fecha_alta_padron solo se asigna la primera vez
+                if (!$proveedor->fecha_alta_padron) {
+                    $datosActualizacion['fecha_alta_padron'] = $fechaActual;
+                }
             }
             
             $proveedor->update($datosActualizacion);
@@ -848,11 +983,12 @@ class RfcProveedorService
             \Log::info("Proveedor activado exitosamente", [
                 'proveedor_id' => $proveedor->id,
                 'rfc' => $proveedor->rfc,
-                'pv_numero' => $proveedor->pv_numero,
+                'pv_numero' => $proveedor->fresh()->pv_numero,
                 'tipo_tramite' => $tipoTramite,
                 'estado_padron' => 'Activo',
-                'fecha_registro' => $fechaActual,
-                'fecha_vencimiento' => $fechaVencimiento
+                'fecha_registro' => $datosActualizacion['fecha_registro'],
+                'fecha_vencimiento' => $datosActualizacion['fecha_vencimiento_padron'],
+                'fecha_alta_padron' => $proveedor->fresh()->fecha_alta_padron
             ]);
             
             return true;
@@ -860,9 +996,28 @@ class RfcProveedorService
             \Log::error("Error al activar proveedor", [
                 'proveedor_id' => $proveedor->id,
                 'rfc' => $proveedor->rfc,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return false;
         }
+    }
+    
+    /**
+     * Calcular fecha de vencimiento respetando años bisiestos
+     */
+    private function calcularFechaVencimiento(Carbon $fechaInicio, int $años): Carbon
+    {
+        $fechaVencimiento = $fechaInicio->copy()->addYears($años);
+        
+        // Manejar caso especial del 29 de febrero
+        if ($fechaInicio->month === 2 && $fechaInicio->day === 29) {
+            // Si el año de vencimiento no es bisiesto, usar 28 de febrero
+            if (!$fechaVencimiento->isLeapYear()) {
+                $fechaVencimiento = $fechaVencimiento->setDay(28);
+            }
+        }
+        
+        return $fechaVencimiento;
     }
 } 

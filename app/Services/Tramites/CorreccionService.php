@@ -155,10 +155,16 @@ class CorreccionService
     {
         if ($request->hasFile('archivos')) {
             Log::info('CorreccionService: Actualizando archivos', [
-                'tramite_id' => $tramite->id
+                'tramite_id' => $tramite->id,
+                'archivos_subidos' => array_keys($request->file('archivos'))
             ]);
 
+            // Los archivos nuevos se crearán con status 'Pendiente' automáticamente
             $this->archivosService->actualizar($tramite, $request);
+            
+            Log::info('CorreccionService: Archivos corregidos procesados', [
+                'tramite_id' => $tramite->id
+            ]);
         }
     }
 
@@ -184,23 +190,10 @@ class CorreccionService
             );
         }
 
-        $this->actualizarEstadosArchivosCorreccion($tramite, $seccionesCorregidas);
-    }
-
-    /** Actualizar estados de archivos */
-    private function actualizarEstadosArchivosCorreccion(Tramite $tramite, array $seccionesCorregidas): void
-    {
+        // Los archivos nuevos se crean automáticamente con status 'Pendiente' en ArchivosService
         if (in_array('archivos', $seccionesCorregidas)) {
-            $tramite->archivos()->update([
-                'status' => 'Pendiente',
-                'comentario_revision' => null,
-                'revisado_por' => null,
-                'fecha_revision' => null
-            ]);
-
-            Log::info('CorreccionService: Archivos actualizados a Pendiente', [
-                'tramite_id' => $tramite->id,
-                'archivos_actualizados' => $tramite->archivos()->count()
+            Log::info('CorreccionService: Archivos corregidos - nuevos archivos creados con status Pendiente', [
+                'tramite_id' => $tramite->id
             ]);
         }
     }
@@ -208,20 +201,95 @@ class CorreccionService
     /** Obtener secciones para corrección */
     public function obtenerSeccionesParaCorreccion(Tramite $tramite): array
     {
+        $seccionesEncontradas = [];
+        
+        // Obtener secciones rechazadas con sus comentarios
         $seccionesRechazadas = SeccionRevision::where('tramite_id', $tramite->id)
             ->where('estado', 'Rechazado')
-            ->pluck('seccion')
-            ->toArray();
+            ->get();
 
+        \Log::info('CorreccionService: Secciones rechazadas en BD', [
+            'tramite_id' => $tramite->id,
+            'secciones_bd' => $seccionesRechazadas->map(function($s) {
+                return [
+                    'seccion' => $s->seccion,
+                    'estado' => $s->estado,
+                    'comentario' => $s->comentario
+                ];
+            })->toArray()
+        ]);
+
+        // Crear un mapa de secciones rechazadas para fácil acceso
+        $mapaSecciones = [];
+        foreach ($seccionesRechazadas as $seccion) {
+            $mapaSecciones[$seccion->seccion] = [
+                'seccion' => $seccion->seccion,
+                'nombre' => $this->obtenerNombreSeccion($seccion->seccion),
+                'comentario' => $seccion->comentario
+            ];
+        }
+
+        // Verificar archivos rechazados
         $archivosRechazados = $tramite->archivos()
             ->where('status', 'Rechazado')
             ->exists();
 
+        \Log::info('CorreccionService: Verificación de archivos rechazados', [
+            'tramite_id' => $tramite->id,
+            'archivos_rechazados' => $archivosRechazados,
+        ]);
+
         if ($archivosRechazados) {
-            $seccionesRechazadas[] = 'archivos';
+            $mapaSecciones['archivos'] = [
+                'seccion' => 'archivos',
+                'nombre' => 'Documentos',
+                'comentario' => 'Algunos archivos fueron rechazados y necesitan corrección'
+            ];
         }
 
-        return array_unique($seccionesRechazadas);
+        // Ordenar según el orden lógico del flujo del trámite
+        $ordenSecciones = [
+            'datos_generales',
+            'actividades', 
+            'domicilio',
+            'constitucion',
+            'accionistas',
+            'apoderado',
+            'archivos'
+        ];
+
+        // Construir array final ordenado
+        $secciones = [];
+        foreach ($ordenSecciones as $nombreSeccion) {
+            if (isset($mapaSecciones[$nombreSeccion])) {
+                $secciones[] = $mapaSecciones[$nombreSeccion];
+            }
+        }
+
+        \Log::info('CorreccionService: Secciones para corrección obtenidas', [
+            'tramite_id' => $tramite->id,
+            'secciones_encontradas' => $secciones,
+            'total_secciones' => count($secciones),
+            'orden_aplicado' => array_column($secciones, 'seccion')
+        ]);
+
+        return $secciones;
+    }
+
+    /** Obtener nombre legible de la sección */
+    private function obtenerNombreSeccion(string $seccion): string
+    {
+        $nombres = [
+            'datos_generales' => 'Datos Generales',
+            'actividades' => 'Actividades Económicas',
+            'domicilio' => 'Domicilio',
+            'constitucion' => 'Constitución',
+            'accionistas' => 'Accionistas',
+            'apoderado' => 'Apoderado Legal',
+            'archivos' => 'Documentos'
+        ];
+
+        return $nombres[$seccion] ?? ucfirst(str_replace('_', ' ', $seccion));
     }
 
     /** Verificar si tiene secciones para corregir */

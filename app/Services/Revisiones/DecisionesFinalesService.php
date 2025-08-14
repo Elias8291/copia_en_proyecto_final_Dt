@@ -231,11 +231,11 @@ class DecisionesFinalesService
                 
                 switch ($accion['accion']) {
                     case 'crear_nuevo':
-                        // Crear nuevo proveedor
-                        $numeroProveedor = $rfcProveedorService->generarNumeroProveedor($rfc);
-                        $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroProveedor);
+                        // Crear nuevo proveedor con PV
+                        $numeroPV = $rfcProveedorService->generarNumeroPV();
+                        $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroPV);
                         Log::info("Nuevo proveedor creado", [
-                            'numero_proveedor' => $numeroProveedor,
+                            'numero_pv' => $numeroPV,
                             'proveedor_id' => $proveedorAsignado->id
                         ]);
                         break;
@@ -253,11 +253,11 @@ class DecisionesFinalesService
                         break;
                         
                     case 'renovar_vencido':
-                        // Crear nuevo proveedor para renovación
-                        $numeroProveedor = $rfcProveedorService->generarNumeroProveedor($rfc);
-                        $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroProveedor);
+                        // Crear nuevo proveedor para renovación con PV
+                        $numeroPV = $rfcProveedorService->generarNumeroPV();
+                        $proveedorAsignado = $this->crearNuevoProveedor($tramite, $numeroPV);
                         Log::info("Nuevo proveedor creado para renovación", [
-                            'numero_proveedor' => $numeroProveedor,
+                            'numero_pv' => $numeroPV,
                             'proveedor_id' => $proveedorAsignado->id
                         ]);
                         break;
@@ -383,6 +383,10 @@ class DecisionesFinalesService
                     ? " Cita de cotejo domiciliario agendada para: {$resultadoCita['fecha_formateada']}"
                     : " No se pudo agendar la cita de cotejo domiciliario: {$resultadoCita['message']}";
 
+                // Notificar al usuario sobre la aprobación y asignación de proveedor
+                $notificacionService = app(\App\Services\NotificacionService::class);
+                $notificacionService->notificarProveedorAsignado($tramite, $numeroProveedor);
+
                 return [
                     'success' => true,
                     'message' => "Trámite aprobado exitosamente. Proveedor asignado: {$numeroProveedor}. Oficio generado: {$oficio->numero_oficio}.{$mensajeCita}",
@@ -507,10 +511,10 @@ class DecisionesFinalesService
     }
 
     /** Crear nuevo proveedor */
-    private function crearNuevoProveedor(Tramite $tramite, string $numeroProveedor): Proveedor
+    private function crearNuevoProveedor(Tramite $tramite, string $numeroPV): Proveedor
     {
         try {
-            Log::info("Creando nuevo proveedor para trámite {$tramite->id} con número PV: {$numeroProveedor}");
+            Log::info("Creando nuevo proveedor para trámite {$tramite->id} con número PV: {$numeroPV}");
             
             // Obtener datos del trámite de forma segura
             $datosGenerales = $tramite->datosGenerales->first();
@@ -557,11 +561,16 @@ class DecisionesFinalesService
                 throw new \Exception("No se puede crear un proveedor sin RFC. El proveedor actual no tiene RFC asignado.");
             }
             
+            // Calcular fechas con nuevas reglas
+            $fechaActual = now();
+            $fechaVencimiento = $this->calcularFechaVencimiento($fechaActual, 1); // 1 año de vigencia
+            
             Log::info("Creando proveedor con datos", [
                 'usuario_id' => $usuarioId,
                 'rfc' => $proveedorActual->rfc,
                 'tipo_persona' => $tipoPersona,
-                'pv_numero' => $numeroProveedor
+                'pv_numero' => $numeroPV,
+                'fecha_vencimiento' => $fechaVencimiento
             ]);
             
             try {
@@ -569,16 +578,20 @@ class DecisionesFinalesService
                     'usuario_id' => $usuarioId,
                     'rfc' => $proveedorActual->rfc,
                     'tipo_persona' => $tipoPersona,
-                    'pv_numero' => $numeroProveedor,
+                    'pv_numero' => $numeroPV,
                     'estado_padron' => 'Activo',
-                    'fecha_alta_padron' => now(),
-                    'fecha_vencimiento_padron' => now()->addYear(), // Vence en 1 año
+                    'fecha_registro' => $fechaActual,
+                    'fecha_alta_padron' => $fechaActual, // Solo se asigna la primera vez
+                    'fecha_vencimiento_padron' => $fechaVencimiento,
                 ]);
                 
                 Log::info("Proveedor creado exitosamente", [
                     'proveedor_id' => $proveedor->id,
-                    'numero_pv' => $numeroProveedor,
-                    'rfc' => $proveedor->rfc
+                    'numero_pv' => $numeroPV,
+                    'rfc' => $proveedor->rfc,
+                    'fecha_registro' => $fechaActual,
+                    'fecha_alta_padron' => $fechaActual,
+                    'fecha_vencimiento' => $fechaVencimiento
                 ]);
             } catch (\Exception $e) {
                 Log::error("Error al crear proveedor", [
@@ -627,5 +640,23 @@ class DecisionesFinalesService
                 // No lanzar excepción para no interrumpir el flujo principal
             }
         }
+    }
+    
+    /**
+     * Calcular fecha de vencimiento respetando años bisiestos
+     */
+    private function calcularFechaVencimiento(\Carbon\Carbon $fechaInicio, int $años): \Carbon\Carbon
+    {
+        $fechaVencimiento = $fechaInicio->copy()->addYears($años);
+        
+        // Manejar caso especial del 29 de febrero
+        if ($fechaInicio->month === 2 && $fechaInicio->day === 29) {
+            // Si el año de vencimiento no es bisiesto, usar 28 de febrero
+            if (!$fechaVencimiento->isLeapYear()) {
+                $fechaVencimiento = $fechaVencimiento->setDay(28);
+            }
+        }
+        
+        return $fechaVencimiento;
     }
 } 

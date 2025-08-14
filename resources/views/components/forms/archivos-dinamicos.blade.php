@@ -1,12 +1,27 @@
-@props(['editable' => false, 'archivosRequeridos' => [], 'tipoPersona' => 'Física', 'archivosCargados' => null, 'soloLectura' => false])
+@props(['editable' => false, 'archivosRequeridos' => [], 'tipoPersona' => 'Física', 'archivosCargados' => null, 'soloLectura' => false, 'modoCorreccion' => false, 'tramite' => null])
 
 @php
     // Asegurar que archivosRequeridos sea una colección
     $archivosRequeridosCollection = collect($archivosRequeridos ?? []);
+    
+    // Filtrar por tipo de persona
     $archivosFiltrados = $archivosRequeridosCollection->filter(function($archivo) use ($tipoPersona) {
         $tipo = is_array($archivo) ? ($archivo['tipo_persona'] ?? null) : ($archivo->tipo_persona ?? null);
         return $tipo === 'Ambas' || $tipo === $tipoPersona;
     });
+    
+    // Si está en modo corrección, filtrar solo los archivos rechazados
+    if ($modoCorreccion && $tramite) {
+        $archivosRechazadosIds = $tramite->archivos()
+            ->where('status', 'Rechazado')
+            ->pluck('catalogo_archivo_id')
+            ->toArray();
+            
+        $archivosFiltrados = $archivosFiltrados->filter(function($archivo) use ($archivosRechazadosIds) {
+            $archivoId = is_array($archivo) ? ($archivo['id'] ?? null) : ($archivo->id ?? null);
+            return in_array($archivoId, $archivosRechazadosIds);
+        });
+    }
 @endphp
 
 <div class="space-y-6" {{ $attributes }}>
@@ -17,8 +32,16 @@
             </svg>
         </div>
         <div>
-            <h3 class="text-lg font-semibold text-gray-900">Archivos Requeridos</h3>
-            <p class="text-sm text-gray-500">Documentación obligatoria para {{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}</p>
+            <h3 class="text-lg font-semibold text-gray-900">
+                {{ $modoCorreccion ? 'Archivos para Corrección' : 'Archivos Requeridos' }}
+            </h3>
+            <p class="text-sm text-gray-500">
+                @if($modoCorreccion)
+                    Solo se muestran los archivos que fueron rechazados y necesitan corrección
+                @else
+                    Documentación obligatoria para {{ $tipoPersona === 'Física' ? 'Persona Física' : 'Persona Moral' }}
+                @endif
+            </p>
         </div>
     </div>
 
@@ -32,10 +55,14 @@
                 </div>
                 <div class="ml-3">
                     <h3 class="text-sm font-medium text-[#9D2449]">
-                        Archivos Obligatorios
+                        {{ $modoCorreccion ? 'Archivos Rechazados' : 'Archivos Obligatorios' }}
                     </h3>
                     <div class="mt-2 text-sm text-[#9D2449]/80">
-                        <p>Complete la carga de todos los archivos marcados como obligatorios para continuar con el trámite.</p>
+                        @if($modoCorreccion)
+                            <p>Corrija los archivos que fueron rechazados subiendo nuevas versiones.</p>
+                        @else
+                            <p>Complete la carga de todos los archivos marcados como obligatorios para continuar con el trámite.</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -43,7 +70,7 @@
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach($archivosFiltrados as $archivo)
-                <div class="bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-[#9D2449] transition-colors">
+                <div class="bg-red-50 border-2 border-dashed border-red-300 rounded-lg p-4 hover:border-red-400 transition-colors">
                     <div class="text-center">
                         <!-- Icono según tipo de archivo -->
                         <div class="w-12 h-12 bg-[#9D2449]/10 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -100,14 +127,109 @@
                             </span>
                         </div>
                         
+                        @if($modoCorreccion && $tramite)
+                            @php
+                                $archivoActual = $tramite->archivos()
+                                    ->where('catalogo_archivo_id', $archivo->id)
+                                    ->first();
+                            @endphp
+                            
+                            @if($archivoActual)
+                                <!-- Estado del archivo -->
+                                <div class="mb-3">
+                                    @switch($archivoActual->status)
+                                        @case('Aprobado')
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                Aprobado
+                                            </span>
+                                            @break
+                                        @case('Rechazado')
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                </svg>
+                                                Rechazado
+                                            </span>
+                                            @break
+                                        @case('Pendiente')
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                Pendiente
+                                            </span>
+                                            @break
+                                        @default
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                Sin revisar
+                                            </span>
+                                    @endswitch
+                                </div>
+
+                                <!-- Información adicional del archivo -->
+                                <div class="mb-3 text-xs text-gray-600">
+                                    @if($archivoActual->nombre_original)
+                                        <p><strong>Archivo actual:</strong> {{ $archivoActual->nombre_original }}</p>
+                                    @endif
+                                    @if($archivoActual->fecha_subida)
+                                        <p><strong>Subido:</strong> {{ \Carbon\Carbon::parse($archivoActual->fecha_subida)->format('d/m/Y H:i') }}</p>
+                                    @endif
+                                    @if($archivoActual->tamaño)
+                                        <p><strong>Tamaño:</strong> {{ number_format($archivoActual->tamaño / 1024, 2) }} KB</p>
+                                    @endif
+                                </div>
+
+                                <!-- Comentario de revisión si existe -->
+                                @if($archivoActual->comentario_revision)
+                                    <div class="mb-3 p-2 {{ $archivoActual->status === 'Rechazado' ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200' }} border rounded-md">
+                                        <p class="text-xs {{ $archivoActual->status === 'Rechazado' ? 'text-red-700' : 'text-blue-700' }}">
+                                            <strong>{{ $archivoActual->status === 'Rechazado' ? 'Motivo del rechazo:' : 'Comentario:' }}</strong><br>
+                                            {{ $archivoActual->comentario_revision }}
+                                        </p>
+                                    </div>
+                                @endif
+
+                                <!-- Enlace para ver el archivo actual -->
+                                @if($archivoActual->ruta_archivo)
+                                    <div class="mb-3">
+                                        <a href="{{ route('revisiones.mostrar-archivo', $archivoActual->id) }}" 
+                                           target="_blank"
+                                           class="inline-flex items-center text-xs text-blue-600 hover:text-blue-800 underline">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                            Ver archivo actual
+                                        </a>
+                                    </div>
+                                @endif
+                            @else
+                                <!-- Si no hay archivo cargado -->
+                                <div class="mb-3">
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                        </svg>
+                                        No cargado
+                                    </span>
+                                </div>
+                            @endif
+                        @endif
+                        
                         <!-- Botón de carga -->
                         <label class="cursor-pointer group archivo-container">
                             <input type="file"
-                                name="documentos[{{ Str::slug($archivo->nombre) }}]"
+                                name="{{ $modoCorreccion ? 'archivos' : 'documentos' }}[{{ $archivo->id }}]"
                                 data-archivo-id="{{ $archivo->id }}"
                                 data-catalogo-id="{{ $archivo->id }}"
                                 accept=".{{ $archivo->tipo_archivo }}"
-                                class="hidden {{ $errors->has('documentos.' . Str::slug($archivo->nombre)) ? 'border-red-500' : '' }}"
+                                class="hidden {{ $errors->has(($modoCorreccion ? 'archivos' : 'documentos') . '.' . $archivo->id) ? 'border-red-500' : '' }}"
                                 onchange="updateFileName(this, '{{ Str::slug($archivo->nombre) }}-name')"
                                 required>
                             <span class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-gray-800 text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
@@ -293,23 +415,43 @@
             </div>
         @endif
     @else
-        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <div class="flex items-center space-x-3">
-                <div class="flex-shrink-0">
-                    <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                </div>
-                <div>
-                    <h3 class="text-lg font-medium text-yellow-800">
-                        No hay archivos configurados
-                    </h3>
-                    <p class="text-yellow-700">
-                        No se encontraron archivos requeridos para su tipo de persona.
-                    </p>
+        @if($modoCorreccion)
+            <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-green-800">
+                            No hay archivos para corregir
+                        </h3>
+                        <p class="text-green-700">
+                            Todos los archivos han sido aprobados o no hay archivos rechazados.
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
+        @else
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                        <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-yellow-800">
+                            No hay archivos configurados
+                        </h3>
+                        <p class="text-yellow-700">
+                            No se encontraron archivos requeridos para su tipo de persona.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
     @endif
 </div>
 

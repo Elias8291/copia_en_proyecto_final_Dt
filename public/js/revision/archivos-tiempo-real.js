@@ -108,12 +108,14 @@ class ArchivosEvaluacion {
             
             if (!response.ok) throw new Error('Error en la petición');
             
+            const result = await response.json();
+            
             // Solo actualizar el estado visual de la sección, sin enviar peticiones adicionales
             this.actualizarEstadoSeccionVisual();
             
-            // Mostrar notificación de éxito
-            if (typeof mostrarNotificacion === 'function') {
-                mostrarNotificacion(`Archivo evaluado como ${decision}`, 'success');
+            // Mostrar solo el mensaje del backend cuando sea exitoso
+            if (result.success && result.message && typeof mostrarNotificacion === 'function') {
+                mostrarNotificacion(result.message, 'success');
             }
             
         } catch (error) {
@@ -133,7 +135,7 @@ class ArchivosEvaluacion {
         
         if (estados.includes('Rechazado')) {
             decisionSeccion = 'Rechazado';
-            comentarioSeccion = 'Algunos documentos requieren corrección';
+            comentarioSeccion = 'La sección se ha marcado automáticamente como Rechazada porque hay documentos rechazados.';
         } else if (estados.includes('Pendiente')) {
             decisionSeccion = 'Pendiente';
             comentarioSeccion = 'Faltan documentos por revisar';
@@ -144,7 +146,7 @@ class ArchivosEvaluacion {
             comentarioField.value = comentarioSeccion;
         }
         
-        // Solo actualizar el estado visual, sin enviar peticiones al servidor
+        // Solo actualizar el estado visual, sin enviar peticiones al servidor ni mostrar notificaciones
         this.actualizarEstadoSeccionManual('archivos', decisionSeccion);
     }
 

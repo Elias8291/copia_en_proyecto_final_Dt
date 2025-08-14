@@ -69,19 +69,32 @@
     }
 </style>
 
-<div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
+<div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8" @if(isset($modoCorreccion) && $modoCorreccion) data-correction-mode="true" @endif>
     <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-4">
-                    <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                    </div>
+                    @if(isset($modoCorreccion) && $modoCorreccion)
+                        <div class="bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl p-3 shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </div>
+                    @else
+                        <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                    @endif
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Nuevo Trámite</h1>
-                        <p class="text-base text-gray-500 mt-1">Complete todos los pasos para crear un nuevo trámite</p>
+                        @if(isset($modoCorreccion) && $modoCorreccion)
+                            <h1 class="text-2xl font-bold text-gray-800">Corrección de Trámite</h1>
+                            <p class="text-base text-gray-500 mt-1">Complete las correcciones solicitadas</p>
+                        @else
+                            <h1 class="text-2xl font-bold text-gray-800">Nuevo Trámite</h1>
+                            <p class="text-base text-gray-500 mt-1">Complete todos los pasos para crear un nuevo trámite</p>
+                        @endif
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -106,6 +119,39 @@
             @if (session('error'))
                 <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                     <p class="text-red-800">{{ session('error') }}</p>
+                </div>
+            @endif
+
+            <!-- Información específica para modo corrección -->
+            @if(isset($modoCorreccion) && $modoCorreccion && isset($seccionesParaCorregir))
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">
+                                Secciones que Requieren Corrección
+                            </h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <p class="mb-2">Las siguientes secciones necesitan ser corregidas:</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    @foreach($seccionesParaCorregir as $seccion)
+                                        <li>
+                                            <strong>{{ $seccion['nombre'] }}</strong>
+                                            @if($seccion['comentario'])
+                                                <div class="mt-1 ml-4 text-xs bg-white rounded p-2 border border-blue-200">
+                                                    {{ $seccion['comentario'] }}
+                                                </div>
+                                            @endif
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             @endif
 
@@ -167,201 +213,299 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" id="tramite-form">
-                @csrf
+            @if(isset($modoCorreccion) && $modoCorreccion && isset($tramite))
+                <form method="POST" action="{{ route('tramites.update', $tramite->id) }}" enctype="multipart/form-data" id="tramite-form">
+                    @csrf
+                    @method('PUT')
+            @else
+                <form method="POST" action="{{ route('tramites.store') }}" enctype="multipart/form-data" id="tramite-form">
+                    @csrf
+            @endif
                 
                 <!-- Campo oculto para tipo de trámite -->
                 <input type="hidden" name="tipo_tramite" value="{{ session('tipo_tramite_seleccionado') }}">
                 
                 @php
-                    $totalSteps = $tipoPersona === 'Moral' ? 8 : 5;
-                    $steps = [
-                        [
-                            'title' => 'Datos Generales',
-                            'description' => 'Información básica del proveedor'
-                        ],
-                        [
-                            'title' => 'Actividades',
-                            'description' => 'Actividades económicas'
-                        ],
-                        [
-                            'title' => 'Domicilio',
-                            'description' => 'Dirección fiscal'
-                        ]
-                    ];
-                    
-                    if ($tipoPersona === 'Moral') {
-                        $steps[] = ['title' => 'Constitución', 'description' => 'Datos de constitución'];
-                        $steps[] = ['title' => 'Accionistas', 'description' => 'Información de accionistas'];
-                        $steps[] = ['title' => 'Apoderado', 'description' => 'Apoderado legal'];
+                    // En modo corrección, usar solo las secciones que necesitan corrección
+                    if (isset($modoCorreccion) && $modoCorreccion && isset($seccionesParaCorregir)) {
+                        $steps = [];
+                        $stepIndex = 0;
+                        
+                        foreach ($seccionesParaCorregir as $seccion) {
+                            switch ($seccion['seccion']) {
+                                case 'datos_generales':
+                                    $steps[] = [
+                                        'title' => 'Datos Generales',
+                                        'description' => 'Información básica del proveedor',
+                                        'seccion' => 'datos_generales',
+                                        'step_index' => $stepIndex++
+                                    ];
+                                    break;
+                                case 'actividades':
+                                    $steps[] = [
+                                        'title' => 'Actividades',
+                                        'description' => 'Actividades económicas',
+                                        'seccion' => 'actividades',
+                                        'step_index' => $stepIndex++
+                                    ];
+                                    break;
+                                case 'domicilio':
+                                    $steps[] = [
+                                        'title' => 'Domicilio',
+                                        'description' => 'Dirección fiscal',
+                                        'seccion' => 'domicilio',
+                                        'step_index' => $stepIndex++
+                                    ];
+                                    break;
+                                case 'constitucion':
+                                    if ($tipoPersona === 'Moral') {
+                                        $steps[] = [
+                                            'title' => 'Constitución',
+                                            'description' => 'Datos de constitución',
+                                            'seccion' => 'constitucion',
+                                            'step_index' => $stepIndex++
+                                        ];
+                                    }
+                                    break;
+                                case 'accionistas':
+                                    if ($tipoPersona === 'Moral') {
+                                        $steps[] = [
+                                            'title' => 'Accionistas',
+                                            'description' => 'Información de accionistas',
+                                            'seccion' => 'accionistas',
+                                            'step_index' => $stepIndex++
+                                        ];
+                                    }
+                                    break;
+                                case 'apoderado':
+                                    if ($tipoPersona === 'Moral') {
+                                        $steps[] = [
+                                            'title' => 'Apoderado',
+                                            'description' => 'Apoderado legal',
+                                            'seccion' => 'apoderado',
+                                            'step_index' => $stepIndex++
+                                        ];
+                                    }
+                                    break;
+                                case 'archivos':
+                                    $steps[] = [
+                                        'title' => 'Documentos',
+                                        'description' => 'Archivos requeridos',
+                                        'seccion' => 'archivos',
+                                        'step_index' => $stepIndex++
+                                    ];
+                                    break;
+                            }
+                        }
+                        
+                        // Siempre agregar confirmación al final
+                        $steps[] = [
+                            'title' => 'Confirmar Correcciones',
+                            'description' => 'Confirmación final',
+                            'seccion' => 'confirmacion',
+                            'step_index' => $stepIndex++
+                        ];
+                        
+                        $totalSteps = count($steps);
+                    } else {
+                        // Modo normal - todos los pasos
+                        $totalSteps = $tipoPersona === 'Moral' ? 8 : 5;
+                        $steps = [
+                            [
+                                'title' => 'Datos Generales',
+                                'description' => 'Información básica del proveedor',
+                                'seccion' => 'datos_generales',
+                                'step_index' => 0
+                            ],
+                            [
+                                'title' => 'Actividades',
+                                'description' => 'Actividades económicas',
+                                'seccion' => 'actividades',
+                                'step_index' => 1
+                            ],
+                            [
+                                'title' => 'Domicilio',
+                                'description' => 'Dirección fiscal',
+                                'seccion' => 'domicilio',
+                                'step_index' => 2
+                            ]
+                        ];
+                        
+                        if ($tipoPersona === 'Moral') {
+                            $steps[] = ['title' => 'Constitución', 'description' => 'Datos de constitución', 'seccion' => 'constitucion', 'step_index' => 3];
+                            $steps[] = ['title' => 'Accionistas', 'description' => 'Información de accionistas', 'seccion' => 'accionistas', 'step_index' => 4];
+                            $steps[] = ['title' => 'Apoderado', 'description' => 'Apoderado legal', 'seccion' => 'apoderado', 'step_index' => 5];
+                            $steps[] = ['title' => 'Documentos', 'description' => 'Archivos requeridos', 'seccion' => 'archivos', 'step_index' => 6];
+                            $steps[] = ['title' => 'Términos y Condiciones', 'description' => 'Confirmación final', 'seccion' => 'terminos', 'step_index' => 7];
+                        } else {
+                            $steps[] = ['title' => 'Documentos', 'description' => 'Archivos requeridos', 'seccion' => 'archivos', 'step_index' => 3];
+                            $steps[] = ['title' => 'Términos y Condiciones', 'description' => 'Confirmación final', 'seccion' => 'terminos', 'step_index' => 4];
+                        }
                     }
-                    
-                    $steps[] = ['title' => 'Documentos', 'description' => 'Archivos requeridos'];
-                    $steps[] = ['title' => 'Términos y Condiciones', 'description' => 'Confirmación final'];
                 @endphp
 
                 <!-- Componente de Steps -->
                 <x-navigation.steps :steps="$steps" :current-step="0" :total-steps="$totalSteps" />
 
                 <!-- Contenido de los pasos -->
-                <div class="step-content active" data-step="0">
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                        @include('components.forms.datos-generales', [
-                            'editable' => true, 
-                            'datosConstancia' => $viewModel
-                        ])
-                    </div>
-                </div>
-
-                <div class="step-content" data-step="1">
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                        @include('components.forms.actividades-economicas', ['editable' => true])
-                    </div>
-                </div>
-
-                <div class="step-content" data-step="2">
-                    <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                        @include('components.forms.domicilio', [
-                            'editable' => true, 
-                            'datosConstancia' => $viewModel
-                        ])
-                    </div>
-                </div>
-
-                @if($tipoPersona === 'Moral')
-                    <div class="step-content" data-step="3">
+                @foreach($steps as $index => $step)
+                    <div class="step-content {{ $index === 0 ? 'active' : '' }}" data-step="{{ $index }}">
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            @include('components.forms.constitucion', [
-                                'editable' => true,
-                                'datosConstitucion' => $viewModel ?? null
-                            ])
-                        </div>
-                    </div>
-
-                    <div class="step-content" data-step="4">
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            @include('components.forms.accionistas', [
-                                'editable' => true,
-                                'accionistas' => $viewModel ?? null
-                            ])
-                        </div>
-                    </div>
-
-                    <div class="step-content" data-step="5">
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            @include('components.forms.apoderado', [
-                                'editable' => true,
-                                'datosApoderado' => $viewModel ?? null
-                            ])
-                        </div>
-                    </div>
-
-                    <div class="step-content" data-step="6">
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            @include('components.forms.archivos-dinamicos', [
-                                'editable' => true, 
-                                'archivosRequeridos' => $archivosRequeridos,
-                                'tipoPersona' => $tipoPersona
-                            ])
-                        </div>
-                    </div>
-
-                    <div class="step-content" data-step="7">
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            <!-- Sección de Términos y Condiciones -->
-                            <div class="mb-6">
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Términos y Condiciones</h3>
-                                <p class="text-gray-600 mb-4">Antes de enviar su trámite, por favor lea y acepte los siguientes términos y condiciones:</p>
+                            @switch($step['seccion'])
+                                @case('datos_generales')
+                                    @include('components.forms.datos-generales', [
+                                        'editable' => true, 
+                                        'datosConstancia' => $viewModel
+                                    ])
+                                    
+                                    <!-- Comentario de la sección -->
+                                    @if(isset($modoCorreccion) && $modoCorreccion)
+                                        @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
+                                    @endif
+                                    @break
                                 
-                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 max-h-64 overflow-y-auto">
-                                    <div class="text-sm text-gray-700 space-y-3">
-                                        <p><strong>1. Veracidad de la Información:</strong> Declaro bajo protesta de decir verdad que toda la información proporcionada en este trámite es veraz, completa y actualizada.</p>
+                                @case('actividades')
+                                    @include('components.forms.actividades-economicas', [
+                                        'editable' => true,
+                                        'actividadesSeleccionadas' => $viewModel
+                                    ])
+                                    
+                                    <!-- Comentario de la sección -->
+                                    @if(isset($modoCorreccion) && $modoCorreccion)
+                                        @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
+                                    @endif
+                                    @break
+                                
+                                @case('domicilio')
+                                    @include('components.forms.domicilio', [
+                                        'editable' => true, 
+                                        'datosConstancia' => $viewModel
+                                    ])
+                                    
+                                    <!-- Comentario de la sección -->
+                                    @if(isset($modoCorreccion) && $modoCorreccion)
+                                        @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
+                                    @endif
+                                    @break
+                                
+                                @case('constitucion')
+                                    @include('components.forms.constitucion', [
+                                        'editable' => true,
+                                        'datosConstitucion' => $viewModel ?? null
+                                    ])
+                                    
+                                    <!-- Comentario de la sección -->
+                                    @if(isset($modoCorreccion) && $modoCorreccion)
+                                        @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
+                                    @endif
+                                    @break
+                                
+                                @case('accionistas')
+                                    @include('components.forms.accionistas', [
+                                        'editable' => true,
+                                        'accionistas' => $viewModel ?? null
+                                    ])
+                                    
+                                    <!-- Comentario de la sección -->
+                                    @if(isset($modoCorreccion) && $modoCorreccion)
+                                        @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
+                                    @endif
+                                    @break
+                                
+                                @case('apoderado')
+                                    @include('components.forms.apoderado', [
+                                        'editable' => true,
+                                        'datosApoderado' => $viewModel ?? null
+                                    ])
+                                    
+                                    <!-- Comentario de la sección -->
+                                    @if(isset($modoCorreccion) && $modoCorreccion)
+                                        @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
+                                    @endif
+                                    @break
+                                
+                                @case('archivos')
+                                    @include('components.forms.archivos-dinamicos', [
+                                        'editable' => true, 
+                                        'archivosRequeridos' => $archivosRequeridos,
+                                        'tipoPersona' => $tipoPersona,
+                                        'modoCorreccion' => isset($modoCorreccion) ? $modoCorreccion : false,
+                                        'tramite' => isset($tramite) ? $tramite : null
+                                    ])
+                                    
+                                    <!-- Comentario de la sección -->
+                                    @if(isset($modoCorreccion) && $modoCorreccion)
+                                        @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
+                                    @endif
+                                    @break
+                                
+                                @case('terminos')
+                                @case('confirmacion')
+                                    <!-- Sección de Términos y Condiciones / Confirmación -->
+                                    <div class="mb-6">
+                                        @if($step['seccion'] === 'confirmacion')
+                                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirmar Correcciones</h3>
+                                            <p class="text-gray-600 mb-4">Revise las correcciones realizadas antes de enviar:</p>
+                                            
+                                            <!-- Resumen de correcciones -->
+                                            @if(isset($resumenCorrecciones) && isset($seccionesParaCorregir))
+                                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                                                    <h4 class="font-medium text-gray-800 mb-2">Secciones que se están corrigiendo:</h4>
+                                                    <ul class="text-sm text-gray-600 space-y-1">
+                                                        @foreach($seccionesParaCorregir as $seccion)
+                                                            <li>• {{ $seccion['nombre'] }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                    @if(isset($resumenCorrecciones['total_correcciones']) && $resumenCorrecciones['total_correcciones'] > 0)
+                                                        <p class="text-xs text-gray-500 mt-2">
+                                                            Total de elementos a corregir: {{ $resumenCorrecciones['total_correcciones'] }}
+                                                        </p>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        @else
+                                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Términos y Condiciones</h3>
+                                            <p class="text-gray-600 mb-4">Antes de enviar su trámite, por favor lea y acepte los siguientes términos y condiciones:</p>
+                                        @endif
                                         
-                                        <p><strong>2. Documentación:</strong> Me comprometo a proporcionar toda la documentación requerida y a mantenerla actualizada durante el proceso de trámite.</p>
+                                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 max-h-64 overflow-y-auto">
+                                            <div class="text-sm text-gray-700 space-y-3">
+                                                <p><strong>1. Veracidad de la Información:</strong> Declaro bajo protesta de decir verdad que toda la información proporcionada en este trámite es veraz, completa y actualizada.</p>
+                                                
+                                                <p><strong>2. Documentación:</strong> Me comprometo a proporcionar toda la documentación requerida y a mantenerla actualizada durante el proceso de trámite.</p>
+                                                
+                                                <p><strong>3. Responsabilidad:</strong> Entiendo que soy responsable de la veracidad y completitud de toda la información proporcionada.</p>
+                                                
+                                                <p><strong>4. Confidencialidad:</strong> Autorizo el tratamiento de mis datos personales conforme a la Ley de Protección de Datos Personales.</p>
+                                                
+                                                <p><strong>5. Notificaciones:</strong> Acepto recibir notificaciones relacionadas con este trámite a través de los medios proporcionados.</p>
+                                                
+                                                <p><strong>6. Cumplimiento Normativo:</strong> Me comprometo a cumplir con todas las disposiciones legales y reglamentarias aplicables.</p>
+                                                
+                                                <p><strong>7. Revisión:</strong> Entiendo que el trámite será revisado y puedo ser contactado para aclaraciones o correcciones.</p>
+                                                
+                                                <p><strong>8. Finalización:</strong> El trámite se considerará completo una vez que toda la información y documentación sea validada.</p>
+                                            </div>
+                                        </div>
                                         
-                                        <p><strong>3. Responsabilidad:</strong> Entiendo que soy responsable de la veracidad y completitud de toda la información proporcionada.</p>
+                                        <div class="flex items-start space-x-3">
+                                            <input type="checkbox" id="acepto_terminos" name="acepto_terminos" value="1" 
+                                                   class="mt-1 h-4 w-4 text-[#9d2449] border-gray-300 rounded focus:ring-[#9d2449] focus:ring-2"
+                                                   {{ old('acepto_terminos') ? 'checked' : '' }}>
+                                            <label for="acepto_terminos" class="text-sm text-gray-700">
+                                                He leído y acepto los <a href="#" onclick="abrirModalTerminos()" class="text-[#9d2449] hover:underline">términos y condiciones</a> del trámite
+                                            </label>
+                                        </div>
                                         
-                                        <p><strong>4. Confidencialidad:</strong> Autorizo el tratamiento de mis datos personales conforme a la Ley de Protección de Datos Personales.</p>
-                                        
-                                        <p><strong>5. Notificaciones:</strong> Acepto recibir notificaciones relacionadas con este trámite a través de los medios proporcionados.</p>
-                                        
-                                        <p><strong>6. Cumplimiento Normativo:</strong> Me comprometo a cumplir con todas las disposiciones legales y reglamentarias aplicables.</p>
-                                        
-                                        <p><strong>7. Revisión:</strong> Entiendo que el trámite será revisado y puedo ser contactado para aclaraciones o correcciones.</p>
-                                        
-                                        <p><strong>8. Finalización:</strong> El trámite se considerará completo una vez que toda la información y documentación sea validada.</p>
+                                        @error('acepto_terminos')
+                                            <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
+                                        @enderror
                                     </div>
-                                </div>
-                                
-                                <div class="flex items-start space-x-3">
-                                    <input type="checkbox" id="acepto_terminos" name="acepto_terminos" value="1" 
-                                           class="mt-1 h-4 w-4 text-[#9d2449] border-gray-300 rounded focus:ring-[#9d2449] focus:ring-2"
-                                           {{ old('acepto_terminos') ? 'checked' : '' }}>
-                                    <label for="acepto_terminos" class="text-sm text-gray-700">
-                                        He leído y acepto los <a href="#" onclick="abrirModalTerminos()" class="text-[#9d2449] hover:underline">términos y condiciones</a> del trámite
-                                    </label>
-                                </div>
-                                
-                                @error('acepto_terminos')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
+                                    @break
+                            @endswitch
                         </div>
                     </div>
-                @else
-                    <div class="step-content" data-step="3">
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            @include('components.forms.archivos-dinamicos', [
-                                'editable' => true, 
-                                'archivosRequeridos' => $archivosRequeridos,
-                                'tipoPersona' => $tipoPersona
-                            ])
-                        </div>
-                    </div>
-
-                    <div class="step-content" data-step="4">
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                            <!-- Sección de Términos y Condiciones -->
-                            <div class="mb-6">
-                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Términos y Condiciones</h3>
-                                <p class="text-gray-600 mb-4">Antes de enviar su trámite, por favor lea y acepte los siguientes términos y condiciones:</p>
-                                
-                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4 max-h-64 overflow-y-auto">
-                                    <div class="text-sm text-gray-700 space-y-3">
-                                        <p><strong>1. Veracidad de la Información:</strong> Declaro bajo protesta de decir verdad que toda la información proporcionada en este trámite es veraz, completa y actualizada.</p>
-                                        
-                                        <p><strong>2. Documentación:</strong> Me comprometo a proporcionar toda la documentación requerida y a mantenerla actualizada durante el proceso de trámite.</p>
-                                        
-                                        <p><strong>3. Responsabilidad:</strong> Entiendo que soy responsable de la veracidad y completitud de toda la información proporcionada.</p>
-                                        
-                                        <p><strong>4. Confidencialidad:</strong> Autorizo el tratamiento de mis datos personales conforme a la Ley de Protección de Datos Personales.</p>
-                                        
-                                        <p><strong>5. Notificaciones:</strong> Acepto recibir notificaciones relacionadas con este trámite a través de los medios proporcionados.</p>
-                                        
-                                        <p><strong>6. Cumplimiento Normativo:</strong> Me comprometo a cumplir con todas las disposiciones legales y reglamentarias aplicables.</p>
-                                        
-                                        <p><strong>7. Revisión:</strong> Entiendo que el trámite será revisado y puedo ser contactado para aclaraciones o correcciones.</p>
-                                        
-                                        <p><strong>8. Finalización:</strong> El trámite se considerará completo una vez que toda la información y documentación sea validada.</p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-start space-x-3">
-                                    <input type="checkbox" id="acepto_terminos" name="acepto_terminos" value="1" 
-                                           class="mt-1 h-4 w-4 text-[#9d2449] border-gray-300 rounded focus:ring-[#9d2449] focus:ring-2"
-                                           {{ old('acepto_terminos') ? 'checked' : '' }}>
-                                    <label for="acepto_terminos" class="text-sm text-gray-700">
-                                        He leído y acepto los <a href="#" onclick="abrirModalTerminos()" class="text-[#9d2449] hover:underline">términos y condiciones</a> del trámite
-                                    </label>
-                                </div>
-                                
-                                @error('acepto_terminos')
-                                    <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                @endif
+                @endforeach
 
                 <!-- Navegación entre pasos -->
                 <div data-step-navigation></div>
@@ -380,437 +524,61 @@
 <!-- Modal de Términos de Servicio -->
 @include('components.modals.terminos-servicio', ['id' => 'modal-terminos-servicio'])
 
-<!-- Sistema de validación -->
+<!-- Scripts de validación y funcionalidad -->
 <script type="module" src="{{ asset('js/validations/index.js') }}"></script>
+<script src="{{ asset('js/tramites/data-loader.js') }}"></script>
+<script src="{{ asset('js/tramites/create-form.js') }}"></script>
+<script src="{{ asset('js/tramites/correction-validator.js') }}"></script>
+<script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 
+<!-- Configuración de datos del formulario -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Cargar datos de la constancia solo si no hay valores old() (errores de validación)
+    // Configurar datos del ViewModel
     @if(isset($viewModel))
-        const razonSocial = document.getElementById('razon_social');
-        const rfc = document.getElementById('rfc');
-        const curp = document.getElementById('curp');
-        
-        // Solo cargar datos de constancia si no hay valores old() (errores de validación)
-        if (razonSocial && !razonSocial.value) {
-            razonSocial.value = '{{ $viewModel->getDatosGenerales()["razon_social"] ?? "" }}';
-        }
-        if (rfc && !rfc.value) {
-            rfc.value = '{{ $viewModel->getDatosGenerales()["rfc"] ?? "" }}';
-        }
-        if (curp && !curp.value) {
-            curp.value = '{{ $viewModel->getDatosGenerales()["curp"] ?? "" }}';
-        }
-        
-        @php
-            $datosDomicilio = $viewModel->getDatosDomicilioForm();
-        @endphp
-        
-        const calle = document.getElementById('calle');
-        const numeroExterior = document.getElementById('numero_exterior');
-        const numeroInterior = document.getElementById('numero_interior');
-        const colonia = document.getElementById('colonia');
-        const codigoPostal = document.getElementById('codigo_postal');
-        const municipio = document.getElementById('municipio');
-        const estado = document.getElementById('estado');
-        
-        // Solo cargar datos de constancia si no hay valores old() (errores de validación)
-        if (calle && !calle.value) {
-            calle.value = '{{ $datosDomicilio["calle"] ?? "" }}';
-        }
-        if (numeroExterior && !numeroExterior.value) {
-            numeroExterior.value = '{{ $datosDomicilio["numero_exterior"] ?? "" }}';
-        }
-        if (numeroInterior && !numeroInterior.value) {
-            numeroInterior.value = '{{ $datosDomicilio["numero_interior"] ?? "" }}';
-        }
-        if (colonia && !colonia.value) {
-            colonia.value = '{{ $datosDomicilio["asentamiento"] ?? "" }}';
-        }
-        if (codigoPostal && !codigoPostal.value) {
-            codigoPostal.value = '{{ $datosDomicilio["codigo_postal"] ?? "" }}';
-        }
-        if (municipio && !municipio.value) {
-            municipio.value = '{{ $datosDomicilio["municipio"] ?? "" }}';
-        }
-        if (estado && !estado.value) {
-            estado.value = '{{ $datosDomicilio["estado"] ?? "" }}';
-        }
-    @endif
-
-    // Configurar el formulario con optimizaciones
-    const tramiteForm = document.getElementById('tramite-form');
-    
-    if (tramiteForm) {
-        tramiteForm.addEventListener('submit', function(e) {
-            console.log('Tramite Form: Iniciando envío del formulario');
-            
-            const btnEnviar = document.getElementById('btn-enviar-tramite-final');
-            if (btnEnviar) {
-                btnEnviar.disabled = true;
-                btnEnviar.classList.add('btn-enviar-loading');
-                btnEnviar.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Procesando...';
+        const viewModelData = {
+            datosGenerales: {
+                razon_social: '{{ $viewModel->getDatosGenerales()["razon_social"] ?? "" }}',
+                rfc: '{{ $viewModel->getDatosGenerales()["rfc"] ?? "" }}',
+                curp: '{{ $viewModel->getDatosGenerales()["curp"] ?? "" }}'
+            },
+            datosDomicilio: {
+                @php
+                    $datosDomicilio = $viewModel->getDatosDomicilioForm();
+                @endphp
+                calle: '{{ $datosDomicilio["calle"] ?? "" }}',
+                numero_exterior: '{{ $datosDomicilio["numero_exterior"] ?? "" }}',
+                numero_interior: '{{ $datosDomicilio["numero_interior"] ?? "" }}',
+                asentamiento: '{{ $datosDomicilio["asentamiento"] ?? "" }}',
+                codigo_postal: '{{ $datosDomicilio["codigo_postal"] ?? "" }}',
+                municipio: '{{ $datosDomicilio["municipio"] ?? "" }}',
+                estado: '{{ $datosDomicilio["estado"] ?? "" }}'
             }
-            
-            // Mostrar indicador de progreso
-            mostrarIndicadorProgreso();
-            
-            // Timeout reducido a 10 segundos (más realista)
-            setTimeout(() => {
-                if (btnEnviar && btnEnviar.disabled) {
-                    console.warn('Tramite Form: El formulario está tardando más de lo esperado');
-                    actualizarIndicadorProgreso('Procesando archivos...', 75, 'Finalizando proceso...');
-                }
-            }, 5000); // 5 segundos
-            
-            // Timeout de seguridad reducido a 15 segundos
-            setTimeout(() => {
-                if (btnEnviar && btnEnviar.disabled) {
-                    console.error('Tramite Form: El formulario parece estar colgado, reactivando botón');
-                    btnEnviar.disabled = false;
-                    btnEnviar.classList.remove('btn-enviar-loading');
-                    btnEnviar.innerHTML = `
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                        </svg>
-                        Enviar Trámite
-                    `;
-                    
-                    ocultarIndicadorProgreso(false);
-                    
-                    // Mostrar mensaje de error más específico
-                    const errorDiv = document.createElement('div');
-                    errorDiv.className = 'bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4';
-                    errorDiv.innerHTML = `
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                            </svg>
-                            <div>
-                                <p class="text-sm text-yellow-700">
-                                    <strong>Procesamiento lento:</strong> El envío está tardando más de lo normal. Esto puede deberse a:
-                                </p>
-                                <ul class="text-sm text-yellow-600 mt-1 ml-4 list-disc">
-                                    <li>Archivos grandes siendo procesados</li>
-                                    <li>Alta carga del servidor</li>
-                                    <li>Conexión lenta a internet</li>
-                                </ul>
-                                <p class="text-sm text-yellow-700 mt-2">
-                                    <strong>Recomendación:</strong> Espere unos segundos más. Si el problema persiste, intente nuevamente.
-                                </p>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Insertar el mensaje antes del formulario
-                    tramiteForm.insertBefore(errorDiv, tramiteForm.firstChild);
-                    
-                    // Remover el mensaje después de 15 segundos
-                    setTimeout(() => {
-                        if (errorDiv.parentNode) {
-                            errorDiv.remove();
-                        }
-                    }, 15000);
-                }
-            }, 15000); // 15 segundos de timeout
-            
-            // Detectar cuando el formulario se envía exitosamente
-            // Esto se ejecutará cuando la página se recargue con éxito
-            window.addEventListener('beforeunload', function() {
-                // Si llegamos aquí, significa que el formulario se está enviando
-                console.log('Tramite Form: Formulario enviándose...');
-            });
-        });
-    }
-    
-    // Función para mostrar indicador de progreso
-    function mostrarIndicadorProgreso() {
-        const progressDiv = document.createElement('div');
-        progressDiv.id = 'progress-indicator';
-        progressDiv.className = 'fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white z-50 shadow-lg';
-        progressDiv.innerHTML = `
-            <div class="flex items-center justify-center py-3 px-4">
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <div class="animate-spin rounded-full h-6 w-6 border-4 border-white border-t-transparent"></div>
-                        <div class="absolute inset-0 rounded-full h-6 w-6 border-2 border-blue-300 animate-pulse"></div>
-                    </div>
-                    <div class="flex flex-col">
-                        <span class="text-sm font-semibold" id="progress-text">Iniciando envío...</span>
-                        <span class="text-xs opacity-75" id="progress-subtitle">Por favor espere...</span>
-                    </div>
-                </div>
-                <div class="ml-6 w-40 bg-blue-700 rounded-full h-3 shadow-inner">
-                    <div class="bg-white h-3 rounded-full transition-all duration-300 shadow-sm" id="progress-bar" style="width: 10%"></div>
-                </div>
-                <div class="ml-4 text-xs font-medium" id="progress-percentage">10%</div>
-            </div>
-        `;
-        document.body.appendChild(progressDiv);
+        };
         
-        // Animar progreso inicial más rápido y con más feedback
-        setTimeout(() => {
-            actualizarIndicadorProgreso('Validando datos del formulario...', 25, 'Verificando información...');
-        }, 200);
+        // Configurar errores de validación
+        const validationErrors = [
+            @if($errors->any())
+                @foreach($errors->keys() as $field)
+                    '{{ $field }}',
+                @endforeach
+            @endif
+        ];
         
-        setTimeout(() => {
-            actualizarIndicadorProgreso('Procesando información del proveedor...', 45, 'Gestionando datos...');
-        }, 600);
-        
-        setTimeout(() => {
-            actualizarIndicadorProgreso('Guardando archivos...', 70, 'Procesando documentos...');
-        }, 1000);
-        
-        setTimeout(() => {
-            actualizarIndicadorProgreso('Finalizando trámite...', 90, 'Completando proceso...');
-        }, 1400);
-    }
-    
-    // Función para actualizar indicador de progreso
-    function actualizarIndicadorProgreso(texto, porcentaje, subtitulo = '') {
-        const progressText = document.getElementById('progress-text');
-        const progressSubtitle = document.getElementById('progress-subtitle');
-        const progressBar = document.getElementById('progress-bar');
-        const progressPercentage = document.getElementById('progress-percentage');
-        
-        if (progressText) progressText.textContent = texto;
-        if (progressSubtitle && subtitulo) progressSubtitle.textContent = subtitulo;
-        if (progressBar) progressBar.style.width = porcentaje + '%';
-        if (progressPercentage) progressPercentage.textContent = porcentaje + '%';
-        
-        // Efecto de pulso en el botón de envío
-        const btnEnviar = document.getElementById('btn-enviar-tramite-final');
-        if (btnEnviar) {
-            btnEnviar.classList.add('animate-pulse');
-        }
-    }
-    
-    // Función para ocultar indicador de progreso con efecto de éxito
-    function ocultarIndicadorProgreso(conExito = false) {
-        const progressDiv = document.getElementById('progress-indicator');
-        if (progressDiv) {
-            if (conExito) {
-                // Efecto de éxito antes de ocultar
-                progressDiv.className = 'fixed top-0 left-0 w-full bg-gradient-to-r from-green-600 to-green-800 text-white z-50 shadow-lg transition-all duration-500';
-                progressDiv.innerHTML = `
-                    <div class="flex items-center justify-center py-3 px-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="text-2xl">✅</div>
-                            <div class="flex flex-col">
-                                <span class="text-sm font-semibold">¡Trámite enviado exitosamente!</span>
-                                <span class="text-xs opacity-75">Redirigiendo...</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Ocultar después de mostrar el éxito
-                setTimeout(() => {
-                    progressDiv.remove();
-                }, 1500);
-            } else {
-                progressDiv.remove();
-            }
-        }
-        
-        // Remover efecto de pulso del botón
-        const btnEnviar = document.getElementById('btn-enviar-tramite-final');
-        if (btnEnviar) {
-            btnEnviar.classList.remove('animate-pulse', 'btn-enviar-loading');
-        }
-    }
-    
-    // Mostrar errores de validación en campos específicos
-    @if($errors->any())
-        @foreach($errors->keys() as $field)
-            var field = document.querySelector('[name="{{ $field }}"]');
-            if (field) {
-                field.classList.add('border-red-500');
-            }
-        @endforeach
+        // Inicializar cargador de datos
+        TramiteDataLoader.fromBladeData(viewModelData, validationErrors);
     @endif
     
-    // Asegurar que el mapa se redimensione correctamente cuando se navegue al step de domicilio
-    window.addEventListener('stepChanged', function(event) {
-        const currentStep = event.detail?.currentStep;
-        // El step de domicilio es el step 2 (índice 2)
-        if (currentStep === 2) {
-            setTimeout(() => {
-                const mapContainer = document.getElementById('mapa');
-                if (mapContainer) {
-                    // Forzar un redimensionamiento del mapa
-                    const map = mapContainer._leaflet_map;
-                    if (map) {
-                        map.invalidateSize();
-                    }
-                }
-            }, 200);
-        }
-    });
-});
-
-// Función para abrir el modal de términos
-function abrirModalTerminos() {
-    const modal = document.getElementById('modal-terminos-servicio');
-    if (modal) {
-        modal.classList.remove('hidden');
-    }
-}
-
-// Función global para validar términos y condiciones (usada por steps.blade.php)
-window.validarTerminosYCondicionesFinal = function() {
-    const checkboxTerminos = document.getElementById('acepto_terminos');
-    const btnEnviarFinal = document.getElementById('btn-enviar-tramite-final');
-    
-    if (checkboxTerminos && btnEnviarFinal) {
-        if (checkboxTerminos.checked) {
-            // Habilitar botón
-            btnEnviarFinal.disabled = false;
-            btnEnviarFinal.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            btnEnviarFinal.classList.add('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
-        } else {
-            // Deshabilitar botón
-            btnEnviarFinal.disabled = true;
-            btnEnviarFinal.classList.remove('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
-            btnEnviarFinal.classList.add('bg-gray-400', 'cursor-not-allowed');
-        }
-    }
-};
-
-// Función para validar términos y condiciones (para el botón dinámico)
-function validarTerminosYCondiciones() {
-    const checkboxTerminos = document.getElementById('acepto_terminos');
-    const btnEnviarFinal = document.getElementById('btn-enviar-tramite-final');
-    
-    if (checkboxTerminos && btnEnviarFinal) {
-        if (checkboxTerminos.checked) {
-            // Habilitar botón dinámico
-            btnEnviarFinal.disabled = false;
-            btnEnviarFinal.classList.remove('bg-gray-400', 'cursor-not-allowed');
-            btnEnviarFinal.classList.add('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
-        } else {
-            // Deshabilitar botón dinámico
-            btnEnviarFinal.disabled = true;
-            btnEnviarFinal.classList.remove('bg-[#9d2449]', 'hover:bg-[#8a1f40]');
-            btnEnviarFinal.classList.add('bg-gray-400', 'cursor-not-allowed');
-        }
-    }
-}
-
-// Agregar event listener para el checkbox de términos
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxTerminos = document.getElementById('acepto_terminos');
-    if (checkboxTerminos) {
-        checkboxTerminos.addEventListener('change', validarTerminosYCondiciones);
-        // Validar estado inicial
-        validarTerminosYCondiciones();
-    }
-    
-    // Observar cambios en el DOM para detectar cuando se agrega el botón dinámico
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                const btnEnviarFinal = document.getElementById('btn-enviar-tramite-final');
-                if (btnEnviarFinal) {
-                    validarTerminosYCondiciones();
-                }
-            }
-        });
-    });
-    
-    // Observar cambios en el contenedor de navegación
-    const navigationContainer = document.querySelector('[data-step-navigation]');
-    if (navigationContainer) {
-        observer.observe(navigationContainer, { childList: true, subtree: true });
-    }
-});
-
-// Script para archivos en tiempo real
-document.addEventListener('DOMContentLoaded', function() {
-    // Simular tramite ID (en creación será null, pero funciona para editar)
-    window.tramiteId = null; // Será null al crear, se asignará después del envío
-    
-    // Detectar si hay mensaje de éxito en la sesión SOLO si viene de un envío exitoso
+    // Configurar éxito del trámite
     @if(session('success') && session('tramite_creado') === true)
-        // Mostrar efecto de éxito solo si el trámite se creó exitosamente
-        mostrarEfectoExito();
+        window.tramiteCreado = true;
+    @endif
+    
+    // Configurar modo corrección
+    @if(isset($modoCorreccion) && $modoCorreccion)
+        window.modoCorreccion = true;
+        console.log('Modo corrección activado');
     @endif
 });
-
-// Función para mostrar efecto de éxito
-function mostrarEfectoExito() {
-    // Crear confeti
-    crearConfeti();
-    
-    // Crear overlay de éxito
-    const successOverlay = document.createElement('div');
-    successOverlay.id = 'success-overlay';
-    successOverlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    successOverlay.innerHTML = `
-        <div class="bg-white rounded-lg p-8 max-w-md mx-4 text-center shadow-2xl transform transition-all duration-500 scale-95 success-bounce">
-            <div class="text-6xl mb-4 success-bounce">🎉</div>
-            <h3 class="text-xl font-bold text-gray-800 mb-2">¡Trámite Creado Exitosamente!</h3>
-            <p class="text-gray-600 mb-6">Su trámite ha sido procesado y enviado correctamente.</p>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <p class="text-sm text-green-700">
-                    <strong>Estado:</strong> Procesado y enviado correctamente
-                </p>
-            </div>
-            <button onclick="cerrarEfectoExito()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200">
-                Continuar
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(successOverlay);
-    
-    // Animar entrada
-    setTimeout(() => {
-        const modal = successOverlay.querySelector('div');
-        modal.classList.remove('scale-95');
-        modal.classList.add('scale-100');
-    }, 100);
-}
-
-// Función para crear confeti
-function crearConfeti() {
-    const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
-    
-    for (let i = 0; i < 50; i++) {
-        setTimeout(() => {
-            const confetti = document.createElement('div');
-            confetti.className = 'confetti';
-            confetti.style.left = Math.random() * 100 + 'vw';
-            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            confetti.style.animationDelay = Math.random() * 3 + 's';
-            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
-            
-            document.body.appendChild(confetti);
-            
-            // Remover confeti después de la animación
-            setTimeout(() => {
-                if (confetti.parentNode) {
-                    confetti.remove();
-                }
-            }, 5000);
-        }, i * 100);
-    }
-}
-
-// Función para cerrar efecto de éxito
-function cerrarEfectoExito() {
-    const successOverlay = document.getElementById('success-overlay');
-    if (successOverlay) {
-        const modal = successOverlay.querySelector('div');
-        modal.classList.remove('scale-100');
-        modal.classList.add('scale-95');
-        
-        setTimeout(() => {
-            successOverlay.remove();
-        }, 300);
-    }
-}
 </script>
-
-<script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 @endsection 

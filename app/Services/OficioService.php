@@ -176,27 +176,69 @@ class OficioService
     }
 
     /**
-     * Generar código QR para validación del documento
+     * Generar código QR para validación del documento usando endroid/qr-code
+     * El QR apunta a la URL de descarga del oficio para verificación
      */
     private function generarQrCode(Tramite $tramite): string
     {
-        $datosQr = [
-            'tramite_id' => $tramite->id,
-            'proveedor_id' => $tramite->proveedor_id,
-            'numero_oficio' => Oficio::generarNumeroOficio(),
-            'fecha_generacion' => Carbon::now()->format('Y-m-d H:i:s'),
-            'url_validacion' => route('oficios.validar', $tramite->id)
-        ];
+        try {
+            // Generar nombre del archivo del oficio
+            $nombreArchivo = $this->generarNombreArchivoOficio($tramite);
+            
+            // URL para descargar el oficio (verificación oficial)
+            $urlDescarga = route('oficios.descargar', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor->id,
+                'archivo' => $nombreArchivo
+            ]);
+            
+            Log::info('Generando QR code para oficio', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor->id,
+                'nombre_archivo' => $nombreArchivo,
+                'url_descarga' => $urlDescarga
+            ]);
 
-        $qrData = json_encode($datosQr);
-        
-        // Generar QR usando la librería SimpleSoftwareIO/simple-qrcode
-        $qrCode = \QrCode::format('svg')
-            ->size(100)
-            ->margin(0)
-            ->generate($qrData);
+            // Usar endroid/qr-code para generar el QR
+            $writer = new \Endroid\QrCode\Writer\PngWriter();
+            $qrCode = \Endroid\QrCode\QrCode::create($urlDescarga)
+                ->setSize(150)
+                ->setMargin(10);
 
-        return $qrCode;
+            $result = $writer->write($qrCode);
+            
+            // Convertir a base64 para incluir en el PDF como imagen HTML
+            $qrCodeBase64 = 'data:image/png;base64,' . base64_encode($result->getString());
+            
+            // Retornar HTML con la imagen base64 para que se muestre en el PDF
+            $qrCodeHtml = '<img src="' . $qrCodeBase64 . '" alt="QR Code" style="width: 100%; height: 100%;" />';
+
+            Log::info('QR code generado exitosamente', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor->id,
+                'qr_html_length' => strlen($qrCodeHtml),
+                'url_descarga' => $urlDescarga
+            ]);
+
+            return $qrCodeHtml;
+
+        } catch (\Exception $e) {
+            Log::error('Error al generar QR code', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Fallback: devolver un mensaje de texto si falla la generación del QR
+            $nombreArchivo = $this->generarNombreArchivoOficio($tramite);
+            $urlFallback = route('oficios.descargar', [
+                'tramite_id' => $tramite->id,
+                'proveedor_id' => $tramite->proveedor->id,
+                'archivo' => $nombreArchivo
+            ]);
+            return '<div style="text-align: center; font-size: 6pt; padding: 10px;">QR no disponible<br/>Descargar: ' . $urlFallback . '</div>';
+        }
     }
 
     /**

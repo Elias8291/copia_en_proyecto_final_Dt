@@ -21,7 +21,7 @@ class ProveedoresController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['publico']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.ver')->only(['index', 'show']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.crear')->only(['create', 'store']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.editar')->only(['edit', 'update']);
@@ -474,5 +474,20 @@ class ProveedoresController extends Controller
         $nombreArchivo .= '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
         return Excel::download(new ReporteFiltradoExport($filtros, 'personalizado', $columnasSeleccionadas), $nombreArchivo);
+    }
+
+    /**
+     * Mostrar información pública del proveedor (sin autenticación)
+     * Esta ruta es utilizada por el QR code en los oficios
+     */
+    public function publico(Proveedor $proveedor)
+    {
+        // Cargar relaciones necesarias
+        $proveedor->load(['direcciones.estado']);
+        
+        // Obtener direcciones del proveedor
+        $direcciones = $proveedor->direcciones;
+        
+        return view('proveedores.publico', compact('proveedor', 'direcciones'));
     }
 }

@@ -8,7 +8,7 @@
 <!-- Container principal con padding responsive -->
 <div class="p-2 xs:p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10">
     <!-- Contenedor principal con ancho máximo y sombra -->
-    <div class="max-w-7xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
+    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <!-- Header con información del trámite -->
         <div class="p-3 xs:p-4 sm:p-5 md:p-6 lg:p-8 border-b border-gray-200/70">
             <!-- Layout flexible que se adapta a diferentes tamaños -->
@@ -74,12 +74,88 @@
                 <div class="mb-3 xs:mb-4 sm:mb-5">
                     <h2 class="text-base xs:text-lg sm:text-xl md:text-2xl font-bold text-gray-800 leading-tight">Documentos para Cotejo Presencial</h2>
                     <p class="text-xs xs:text-sm sm:text-base text-gray-600 mt-1 xs:mt-2">Verificación presencial de documentos originales</p>
+                </div>
+                
+                <div class="space-y-3 xs:space-y-4 mb-4 xs:mb-5 sm:mb-6">
+                    @foreach($archivosSubidos as $archivo)
+                    <div class="bg-white border border-gray-200 rounded-lg p-3 xs:p-4 hover:shadow-md transition-shadow" data-archivo-id="{{ $archivo['id'] ?? 0 }}">
+                        <!-- Header del archivo -->
+                        <div class="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-3 xs:gap-4 mb-3 xs:mb-4">
+                            <div class="flex items-center gap-2 xs:gap-3 flex-1 min-w-0">
+                                <div class="flex-shrink-0">
+                                    @if(str_contains(strtolower($archivo['tipo_archivo'] ?? ''), 'pdf'))
+                                        <div class="w-8 h-8 xs:w-10 xs:h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-4 h-4 xs:w-6 xs:h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                    @elseif(str_contains(strtolower($archivo['tipo_archivo'] ?? ''), 'image'))
+                                        <div class="w-8 h-8 xs:w-10 xs:h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-4 h-4 xs:w-6 xs:h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                    @else
+                                        <div class="w-8 h-8 xs:w-10 xs:h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-4 h-4 xs:w-6 xs:h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs xs:text-sm font-medium text-gray-900 truncate leading-tight">{{ $archivo['nombre_original'] ?? 'Sin nombre' }}</p>
+                                    <p class="text-xs text-gray-500">{{ $archivo['tipo_archivo'] ?? 'Sin tipo' }}</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Estado y botón de ver documento -->
+                            <div class="flex flex-col xs:flex-row items-start xs:items-center gap-2 xs:gap-3">
+                                <span id="estado_archivo_{{ $archivo['id'] ?? 0 }}" class="inline-flex items-center px-2 xs:px-3 py-1 rounded-full text-xs xs:text-sm font-medium bg-gray-100 text-gray-800">
+                                    Pendiente
+                                </span>
+                                <a href="{{ route('revisiones.mostrar-archivo', $archivo['id'] ?? 0) }}" 
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="inline-flex items-center px-2 xs:px-3 py-1 xs:py-2 bg-blue-600 text-white text-xs xs:text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 min-h-[44px] xs:min-h-auto">
+                                    <svg class="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                    Ver
+                                </a>
+                            </div>
                         </div>
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-3 xs:p-4 sm:p-5 md:p-6 lg:p-8">
-                    <x-revision.evaluacion-archivos 
-                        :archivosSubidos="$archivosSubidos"
-                        seccion="archivos"
-                    />
+                        
+                        <!-- Comentario -->
+                        <div class="mb-3 xs:mb-4">
+                            <textarea 
+                                id="textarea_archivo_{{ $archivo['id'] ?? 0 }}"
+                                placeholder="Comentario sobre este archivo..."
+                                class="w-full px-2 xs:px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 resize-none text-xs xs:text-sm"
+                                rows="3"
+                            ></textarea>
+                        </div>
+                        
+                        <!-- Botones de decisión -->
+                        <div class="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 xs:gap-3">
+                            <button onclick="evaluarArchivo({{ $archivo['id'] ?? 0 }}, 'Aprobado')" 
+                                    class="inline-flex items-center justify-center px-3 xs:px-4 py-2 bg-green-600 text-white text-xs xs:text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 min-h-[44px]">
+                                <svg class="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                                Aprobar
+                            </button>
+                            <button onclick="evaluarArchivo({{ $archivo['id'] ?? 0 }}, 'Rechazado')" 
+                                    class="inline-flex items-center justify-center px-3 xs:px-4 py-2 bg-red-600 text-white text-xs xs:text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 min-h-[44px]">
+                                <svg class="w-3 h-3 xs:w-4 xs:h-4 mr-1 xs:mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                                Rechazar
+                            </button>
+                        </div>
+                    </div>
+                    @endforeach
                 </div>
                 
                 <!-- Área de comentarios -->
@@ -174,26 +250,50 @@ function evaluarSeccion(seccion, decision) {
     const textarea = document.getElementById(`comentario_${seccion}`);
     const comentario = textarea ? textarea.value.trim() : '';
     
+    // Validación específica para la sección de archivos
+    if (seccion === 'archivos' && decision === 'Aprobado') {
+    const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
+        let rechazadosCount = 0;
+        let pendientesCount = 0;
+    
+    archivosEstados.forEach(estadoEl => {
+        const estado = estadoEl.textContent.trim();
+        if (estado === 'Rechazado') {
+                rechazadosCount++;
+        } else if (estado === 'Pendiente') {
+                pendientesCount++;
+            }
+        });
+        
+        // Validar documentos rechazados
+        if (rechazadosCount > 0) {
+            const mensaje = `No se puede aprobar la sección de archivos porque hay ${rechazadosCount} documento${rechazadosCount > 1 ? 's' : ''} rechazado${rechazadosCount > 1 ? 's' : ''}. Debe corregir o aprobar todos los documentos antes de aprobar la sección.`;
+            mostrarNotificacion(mensaje, 'error');
+            return;
+        }
+        
+        // Validar documentos pendientes
+        if (pendientesCount > 0) {
+            const mensaje = `No se puede aprobar la sección de archivos porque hay ${pendientesCount} documento${pendientesCount > 1 ? 's' : ''} pendiente${pendientesCount > 1 ? 's' : ''} de evaluación. Debe evaluar todos los documentos antes de aprobar la sección.`;
+            mostrarNotificacion(mensaje, 'error');
+        return;
+        }
+    }
+    
+    // Lógica automática para marcar como rechazada si hay documentos rechazados
     const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
     let tieneRechazados = false;
-    let tienePendientes = false;
     
     archivosEstados.forEach(estadoEl => {
         const estado = estadoEl.textContent.trim();
         if (estado === 'Rechazado') {
             tieneRechazados = true;
-        } else if (estado === 'Pendiente') {
-            tienePendientes = true;
         }
     });
     
-    if (tieneRechazados) {
+    if (tieneRechazados && decision !== 'Aprobado') {
         decision = 'Rechazado';
-        mostrarNotificacion('La sección se ha marcado automáticamente como Rechazada porque hay documentos rechazados.', 'warning');
-    }
-    else if (tienePendientes && decision === 'Aprobado') {
-        mostrarNotificacion('No se puede aprobar la sección porque hay documentos pendientes de evaluación.', 'error');
-        return;
+        // No mostrar notificación adicional, ya se mostró al evaluar el archivo individual
     }
     
     const sectionElement = document.querySelector(`[data-section="${seccion}"]`);
@@ -208,8 +308,7 @@ function evaluarSeccion(seccion, decision) {
         }
     }
     
-    mostrarNotificacion(`Sección ${seccion} evaluada como: ${decision}`, 
-                       decision === 'Aprobado' ? 'success' : 'warning');
+    // No mostrar notificación de sección, solo se muestra el mensaje del archivo individual
     
     localStorage.setItem(`revision_presencial_${seccion}_decision`, decision);
     localStorage.setItem(`revision_presencial_${seccion}_comentario`, comentario);
@@ -254,17 +353,28 @@ if (formRevisionPresencial) {
 }
 
 function aprobarTramite() {
-    const archivosRechazados = document.querySelectorAll('[id^="estado_archivo_"]');
-    let tieneRechazados = false;
+    const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
+    let rechazadosCount = 0;
+    let pendientesCount = 0;
     
-    archivosRechazados.forEach(estadoEl => {
-        if (estadoEl.textContent.trim() === 'Rechazado') {
-            tieneRechazados = true;
+    archivosEstados.forEach(estadoEl => {
+        const estado = estadoEl.textContent.trim();
+        if (estado === 'Rechazado') {
+            rechazadosCount++;
+        } else if (estado === 'Pendiente') {
+            pendientesCount++;
         }
     });
     
-    if (tieneRechazados) {
-        mostrarNotificacion('No se puede aprobar el trámite porque hay documentos rechazados. Debe corregir todos los documentos antes de aprobar.', 'error');
+    if (rechazadosCount > 0) {
+        const mensaje = `No se puede aprobar el trámite porque hay ${rechazadosCount} documento${rechazadosCount > 1 ? 's' : ''} rechazado${rechazadosCount > 1 ? 's' : ''}. Debe corregir o aprobar todos los documentos antes de aprobar el trámite.`;
+        mostrarNotificacion(mensaje, 'error');
+        return;
+    }
+    
+    if (pendientesCount > 0) {
+        const mensaje = `No se puede aprobar el trámite porque hay ${pendientesCount} documento${pendientesCount > 1 ? 's' : ''} pendiente${pendientesCount > 1 ? 's' : ''} de evaluación. Debe evaluar todos los documentos antes de aprobar el trámite.`;
+        mostrarNotificacion(mensaje, 'error');
         return;
     }
     
@@ -462,6 +572,30 @@ function cargarDatosGuardados() {
             }
         }
     });
+    
+    // Cargar estados de archivos individuales
+    const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
+    archivosEstados.forEach(estadoEl => {
+        const archivoId = estadoEl.id.replace('estado_archivo_', '');
+        const decision = localStorage.getItem(`archivo_${archivoId}_decision`);
+        const comentario = localStorage.getItem(`archivo_${archivoId}_comentario`);
+        
+        if (decision) {
+            estadoEl.textContent = decision;
+            estadoEl.className = `inline-flex items-center px-2 xs:px-3 py-1 rounded-full text-xs xs:text-sm font-medium ${
+                decision === 'Aprobado' ? 'bg-green-100 text-green-800' :
+                decision === 'Rechazado' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
+            }`;
+        }
+        
+        if (comentario) {
+            const textarea = document.getElementById(`textarea_archivo_${archivoId}`);
+            if (textarea) {
+                textarea.value = comentario;
+            }
+        }
+    });
 }
 
 function limpiarDatosGuardados() {
@@ -469,6 +603,14 @@ function limpiarDatosGuardados() {
     secciones.forEach(seccion => {
         localStorage.removeItem(`revision_presencial_${seccion}_decision`);
         localStorage.removeItem(`revision_presencial_${seccion}_comentario`);
+    });
+    
+    // Limpiar datos de archivos individuales
+    const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
+    archivosEstados.forEach(estadoEl => {
+        const archivoId = estadoEl.id.replace('estado_archivo_', '');
+        localStorage.removeItem(`archivo_${archivoId}_decision`);
+        localStorage.removeItem(`archivo_${archivoId}_comentario`);
     });
 }
 
@@ -503,6 +645,58 @@ function sePuedeAprobar() {
     return estado.rechazados === 0 && estado.pendientes === 0;
 }
 
+async function evaluarArchivo(archivoId, decision) {
+    const estadoEl = document.getElementById(`estado_archivo_${archivoId}`);
+    const textarea = document.getElementById(`textarea_archivo_${archivoId}`);
+    const comentario = textarea ? textarea.value.trim() : '';
+    
+    if (estadoEl) {
+        // Actualizar el estado visual inmediatamente
+        estadoEl.textContent = decision;
+        estadoEl.className = `inline-flex items-center px-2 xs:px-3 py-1 rounded-full text-xs xs:text-sm font-medium ${
+            decision === 'Aprobado' ? 'bg-green-100 text-green-800' :
+            decision === 'Rechazado' ? 'bg-red-100 text-red-800' :
+            'bg-gray-100 text-gray-800'
+        }`;
+        
+        // Enviar al backend y mostrar solo el mensaje del backend
+        try {
+            const response = await fetch(`/archivos/${archivoId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({ status: decision, comentario_revision: comentario })
+            });
+            
+            if (!response.ok) throw new Error('Error en la petición');
+            
+            const result = await response.json();
+            
+            // Mostrar solo el mensaje del backend cuando sea exitoso
+            if (result.success && result.message) {
+                mostrarNotificacion(result.message, 'success');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarNotificacion('Error al evaluar el archivo', 'error');
+        }
+        
+        // Guardar en localStorage
+        localStorage.setItem(`archivo_${archivoId}_decision`, decision);
+        if (comentario) {
+            localStorage.setItem(`archivo_${archivoId}_comentario`, comentario);
+        }
+        
+        // Actualizar estado de la sección automáticamente
+        setTimeout(() => {
+            actualizarEstadoSeccionAutomaticamente();
+        }, 100);
+    }
+}
+
 function actualizarEstadoSeccionAutomaticamente() {
     const archivosEstados = document.querySelectorAll('[id^="estado_archivo_"]');
     let tieneRechazados = false;
@@ -520,23 +714,28 @@ function actualizarEstadoSeccionAutomaticamente() {
         }
     });
     
+    // Solo actualizar visualmente la sección, sin mostrar notificaciones adicionales
+    const sectionElement = document.querySelector('[data-section="archivos"]');
+    if (sectionElement) {
+        sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
+    
     if (tieneRechazados) {
-        evaluarSeccion('archivos', 'Rechazado');
+            sectionElement.classList.add('seccion-rechazada');
+            localStorage.setItem('revision_presencial_archivos_decision', 'Rechazado');
     }
     else if (todosAprobados && archivosEstados.length > 0) {
-        evaluarSeccion('archivos', 'Aprobado');
+            sectionElement.classList.add('seccion-aprobada');
+            localStorage.setItem('revision_presencial_archivos_decision', 'Aprobado');
     }
     else if (tienePendientes) {
-        const sectionElement = document.querySelector('[data-section="archivos"]');
-        if (sectionElement) {
-            sectionElement.classList.remove('seccion-aprobada', 'seccion-rechazada', 'seccion-pendiente');
-        }
         localStorage.removeItem('revision_presencial_archivos_decision');
+        }
     }
 }
 
 window.scrollToTop = scrollToTop;
 window.evaluarSeccion = evaluarSeccion;
+window.evaluarArchivo = evaluarArchivo;
 window.evaluarDocumentosPresencial = evaluarDocumentosPresencial;
 window.aprobarTramite = aprobarTramite;
 window.rechazarTramite = rechazarTramite;
