@@ -103,16 +103,7 @@
                 </a>
                 @endcan
 
-                <!-- Reportes Dinámicos -->
-                @can('proveedores.ver')
-                <a href="{{ route('reportes.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
-                    {{ request()->routeIs('reportes.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
-                    <svg class="{{ request()->routeIs('reportes.*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }} flex-shrink-0 w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                    </svg>
-                    <span class="font-medium tracking-wide">📊 Reportes Dinámicos</span>
-                </a>
-                @endcan
+
 
                 <!-- Notificaciones -->
                 <div class="relative" x-data="{ 

@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="min-h-screen py-8">
-    <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         @php
             // Verificar si hay trámite pendiente
@@ -86,8 +86,8 @@
 
             <div class="p-8">
                 <div class="text-center mb-12">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Seleccione un Tipo de Trámite</h2>
-                    <p class="text-gray-600 text-xl max-w-3xl mx-auto">Elija una de las siguientes opciones para proceder con su solicitud.</p>
+                    <h2 class="text-lg font-medium text-gray-700 mb-3">Seleccione un Tipo de Trámite</h2>
+                    <p class="text-gray-500 text-base max-w-3xl mx-auto">Elija una de las siguientes opciones para proceder con su solicitud.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">

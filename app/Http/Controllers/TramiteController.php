@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProcesarConstanciaRequest;
 use App\Http\Requests\TramiteFormRequest;
+use App\Http\Requests\TramiteCorreccionRequest;
 use App\Services\Tramites\TramiteService;
 use App\Services\Tramites\ConstanciaService;
 use App\Services\Tramites\CorreccionService;
@@ -771,7 +772,7 @@ class TramiteController extends Controller
     /**
      * Update the specified trámite in storage.
      */
-    public function update(Request $request, $tramiteId)
+    public function update(TramiteCorreccionRequest $request, $tramiteId)
     {
         try {
             $tramite = \App\Models\Tramite::findOrFail($tramiteId);

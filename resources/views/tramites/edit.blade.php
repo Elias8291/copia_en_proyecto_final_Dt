@@ -434,12 +434,90 @@ function validateFileUploadCorreccion(input) {
             alert('Solo los archivos marcados como "Rechazado" permiten subir un nuevo documento en la sección de corrección.');
             return false;
         }
+        
+        // Validar el archivo seleccionado
+        const file = input.files[0];
+        if (file) {
+            // Validar tipo de archivo
+            const allowedTypes = ['pdf', 'png', 'jpg', 'jpeg'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            
+            if (!allowedTypes.includes(fileExtension)) {
+                input.value = '';
+                alert('El archivo debe ser de tipo: PDF, PNG, JPG, JPEG');
+                return false;
+            }
+            
+            // Validar tamaño (10MB máximo)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                input.value = '';
+                alert('El archivo no puede ser mayor a 10MB');
+                return false;
+            }
+            
+            // Mostrar nombre del archivo
+            updateFileName(input, `nombre_archivo_${archivoId}`);
+        }
     }
     return true;
 }
 
 function getEstadoArchivo(archivoId) {
-    return 'Rechazado';
+    // Buscar el estado del archivo en el DOM
+    const estadoElement = document.querySelector(`[data-archivo-id="${archivoId}"] .bg-red-100, [data-archivo-id="${archivoId}"] .text-red-600`);
+    if (estadoElement) {
+        return 'Rechazado';
+    }
+    return 'Pendiente';
+}
+
+function validateFormBeforeSubmit() {
+    console.log('Validando formulario antes del envío...');
+    
+    // Solo mostrar advertencias, no bloquear envío
+    const seccionesRechazadas = document.querySelectorAll('[data-section]');
+    let seccionesValid = true;
+    
+    seccionesRechazadas.forEach(section => {
+        const requiredFields = section.querySelectorAll('[required], .required');
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                seccionesValid = false;
+                field.classList.add('border-red-500');
+                console.log(`Campo requerido vacío: ${field.name || field.id}`);
+            } else {
+                field.classList.remove('border-red-500');
+            }
+        });
+    });
+    
+    // Validar archivos de corrección (solo advertencias)
+    const archivosRechazados = document.querySelectorAll('.archivo-item .bg-red-100, .archivo-item .text-red-600');
+    let archivosValid = true;
+    
+    archivosRechazados.forEach(archivoRechazado => {
+        const container = archivoRechazado.closest('.archivo-item');
+        const fileInput = container?.querySelector('input[type="file"]');
+        
+        if (fileInput && (!fileInput.files || fileInput.files.length === 0)) {
+            archivosValid = false;
+            fileInput.classList.add('border-yellow-500');
+            console.log(`Archivo rechazado sin corrección: ${fileInput.name}`);
+        } else if (fileInput) {
+            fileInput.classList.remove('border-yellow-500');
+        }
+    });
+    
+    console.log(`Validación completa - Secciones: ${seccionesValid}, Archivos: ${archivosValid}`);
+    
+    // Solo mostrar advertencia, no bloquear
+    if (!seccionesValid || !archivosValid) {
+        console.log('Mostrando advertencia pero permitiendo envío');
+    }
+    
+    console.log('Formulario permitiendo envío (con o sin errores)');
+    return true; // Siempre permitir envío
 }
 </script>
 
@@ -448,6 +526,7 @@ function getEstadoArchivo(archivoId) {
 
 <script type="module" src="{{ asset('js/validations/edit-form-validator.js') }}"></script>
 <script src="{{ asset('js/validations/edit-form-conditional.js') }}"></script>
+<script src="{{ asset('js/validations/correccion-form-validator.js') }}"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -491,6 +570,56 @@ document.addEventListener('DOMContentLoaded', function() {
             validateFileUploadCorreccion(this);
         });
     });
+
+    // Configurar modo corrección
+    @if(isset($modoCorreccion) && $modoCorreccion)
+        window.modoCorreccion = true;
+    @endif
+    
+    // Configurar validación en tiempo real para campos requeridos (solo visual)
+    const requiredFields = document.querySelectorAll('[required], .required');
+    requiredFields.forEach(field => {
+        field.addEventListener('input', function() {
+            if (this.value.trim()) {
+                this.classList.remove('border-red-500', 'border-yellow-500');
+            } else {
+                this.classList.add('border-red-500');
+            }
+        });
+        
+        field.addEventListener('blur', function() {
+            if (this.value.trim()) {
+                this.classList.remove('border-red-500', 'border-yellow-500');
+            } else {
+                this.classList.add('border-red-500');
+            }
+        });
+    });
+    
+    // Configurar validación en tiempo real para archivos de corrección (solo visual)
+    const archivosCorreccion = document.querySelectorAll('input[name^="documentos_correccion"]');
+    archivosCorreccion.forEach(input => {
+        input.addEventListener('change', function() {
+            if (this.files && this.files.length > 0) {
+                this.classList.remove('border-red-500', 'border-yellow-500');
+                const container = this.closest('.border-dashed');
+                if (container) {
+                    container.classList.remove('border-red-500', 'border-yellow-500');
+                    container.classList.add('border-green-500');
+                }
+            } else {
+                this.classList.remove('border-green-500');
+                this.classList.add('border-yellow-500');
+                const container = this.closest('.border-dashed');
+                if (container) {
+                    container.classList.remove('border-green-500');
+                    container.classList.add('border-yellow-500');
+                }
+            }
+        });
+    });
+    
+    console.log('EditForm: Validación en tiempo real configurada');
 });
 </script>
 @endsection 

@@ -62,7 +62,12 @@ class AllPermissionsSeeder extends Seeder
             'proveedores.eliminar' => 'Eliminar proveedores',
             'proveedores.reportes.trimestrales' => 'Ver reportes trimestrales de proveedores',
 
+            'logs.ver' => 'Ver logs',
+            'logs.exportar' => 'Exportar logs',
+            'logs.eliminar' => 'Eliminar logs',
+
             'dashboard.ver' => 'Ver dashboard',
+            'mi-estado.ver' => 'Ver mi estado',
         ];
 
         // Crear los nuevos permisos

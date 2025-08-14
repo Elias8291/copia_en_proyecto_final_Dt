@@ -195,7 +195,7 @@ class FormDataViewModel
         $fechaPoder = '';
         if (!empty($apoderado['fecha_poder'])) {
             $fechaPoder = is_string($apoderado['fecha_poder']) 
-                ? $apoderado['fecha_poder'] 
+                ? (strpos($apoderado['fecha_poder'], ' ') !== false ? date('Y-m-d', strtotime($apoderado['fecha_poder'])) : $apoderado['fecha_poder'])
                 : \Carbon\Carbon::parse($apoderado['fecha_poder'])->format('Y-m-d');
         }
         

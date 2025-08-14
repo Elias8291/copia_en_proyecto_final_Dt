@@ -124,6 +124,7 @@
                     @endcan
 
                     <!-- Mi Estado -->
+                    @can('mi-estado.ver')
                     <a href="{{ route('mi-estado') }}" class="group/item flex items-center min-w-[250px] px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                         {{ request()->routeIs('mi-estado') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                         <svg class="{{ request()->routeIs('mi-estado') ? 'text-primary' : 'text-gray-400 group-hover/item:text-primary' }} flex-shrink-0 w-6 h-6 transition-transform duration-200 group-hover/item:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,6 +132,7 @@
                         </svg>
                         <span class="ml-3 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">Mi Estado</span>
                     </a>
+                    @endcan
 
                     <!-- Separador final -->
                     <div class="px-3 py-2">

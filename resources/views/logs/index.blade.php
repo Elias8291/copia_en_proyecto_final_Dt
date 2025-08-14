@@ -1,0 +1,595 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
+    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
+        <div class="p-6 border-b border-gray-200/70">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Registro de Logs</h1>
+                        <p class="text-base text-gray-500 mt-1">Monitorea y revisa la actividad del sistema</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    @can('logs.exportar')
+                    <a href="{{ route('logs.exportar') }}?{{ http_build_query(request()->all()) }}" 
+                       class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Exportar
+                    </a>
+                    @endcan
+                    @can('logs.eliminar')
+                    <button type="button" 
+                            onclick="confirmarLimpiarLogs()"
+                            class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Limpiar Logs
+                    </button>
+                    @endcan
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-100 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
+            <form method="GET" action="{{ route('logs.index') }}" class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8" id="searchForm">
+                <input type="hidden" name="per_page" value="{{ request('per_page', 15) }}">
+                <div class="flex flex-col lg:flex-row gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-3 sm:mb-4 md:mb-5 lg:mb-6">
+                    <div class="flex-1">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-2 sm:pl-3 md:pl-4 flex items-center pointer-events-none">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   name="search" 
+                                   value="{{ request('search') }}"
+                                   placeholder="Buscar logs por mensaje, nivel, canal, IP..." 
+                                   class="block w-full pl-7 sm:pl-10 md:pl-12 pr-3 sm:pr-4 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                        </div>
+                    </div>
+                    <div class="flex gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+                        <button type="submit" 
+                                class="flex-1 lg:flex-none px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 bg-[#9d2449] text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <span class="hidden sm:inline">Buscar</span>
+                        </button>
+                        <a href="{{ route('logs.index') }}" 
+                           class="flex-1 lg:flex-none px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-50 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200 border border-gray-200 flex items-center justify-center gap-1 sm:gap-2">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span class="hidden sm:inline">Limpiar</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-3 sm:pt-4 md:pt-5 lg:pt-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5">
+                        <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+                            </svg>
+                            <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros avanzados</span>
+                        </div>
+                        <button type="button" 
+                                id="toggleFilters" 
+                                class="text-xs sm:text-sm md:text-base text-[#9d2449] hover:text-[#8a1f40] font-medium flex items-center gap-1 transition-colors self-start sm:self-auto">
+                            <span id="filterText">Mostrar filtros</span>
+                            <span id="filterIcon" class="text-xs sm:text-sm md:text-base transform transition-transform duration-200">▼</span>
+                        </button>
+                    </div>
+                        
+                    <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+                            <div>
+                                <label for="level" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Nivel</label>
+                                <select name="level" 
+                                        id="level" 
+                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                    <option value="">Todos los niveles</option>
+                                    @foreach($levels as $level)
+                                        <option value="{{ $level }}" {{ request('level') == $level ? 'selected' : '' }}>
+                                            {{ ucfirst($level) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="channel" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Canal</label>
+                                <select name="channel" 
+                                        id="channel" 
+                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                    <option value="">Todos los canales</option>
+                                    @foreach($channels as $channel)
+                                        <option value="{{ $channel }}" {{ request('channel') == $channel ? 'selected' : '' }}>
+                                            {{ ucfirst($channel) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="user_id" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Usuario</label>
+                                <select name="user_id" 
+                                        id="user_id" 
+                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                    <option value="">Todos los usuarios</option>
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}" {{ request('user_id') == $user->id ? 'selected' : '' }}>
+                                            {{ $user->name }} ({{ $user->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="fecha_inicio" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Fecha inicio</label>
+                                <input type="date" 
+                                       name="fecha_inicio" 
+                                       id="fecha_inicio" 
+                                       value="{{ request('fecha_inicio') }}"
+                                       class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                            </div>
+
+                            <div>
+                                <label for="fecha_fin" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Fecha fin</label>
+                                <input type="date" 
+                                       name="fecha_fin" 
+                                       id="fecha_fin" 
+                                       value="{{ request('fecha_fin') }}"
+                                       class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-3 sm:mt-4 md:mt-5 pt-3 sm:pt-4 border-t border-gray-100">
+                            <button type="submit" 
+                                    class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-[#9d2449] text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                                </svg>
+                                Aplicar filtros
+                            </button>
+                            <a href="{{ route('logs.index') }}" 
+                               class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-50 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200 border border-gray-200 text-center flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Limpiar filtros
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        </div>
+
+        <div class="border-t border-gray-100 p-2 sm:p-3 md:p-4 lg:p-5 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 md:gap-5">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <p class="text-xs sm:text-sm md:text-base lg:text-lg text-gray-700">
+                        <span class="font-medium text-[#9d2449]">{{ $logs->total() }}</span> 
+                        {{ $logs->total() == 1 ? 'log encontrado' : 'logs encontrados' }}
+                        @if($logs->hasPages())
+                            <span class="text-gray-500 ml-1 sm:ml-2 md:ml-3">
+                                ({{ $logs->firstItem() }}-{{ $logs->lastItem() }})
+                            </span>
+                        @endif
+                    </p>
+                </div>  
+                <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 md:gap-4">
+                    <div class="flex items-center gap-2">
+                        <label for="per_page" class="text-xs sm:text-sm md:text-base font-medium text-gray-700 whitespace-nowrap">
+                            Mostrar:
+                        </label>
+                        <select name="per_page" 
+                                id="per_page" 
+                                class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white">
+                            <option value="10" {{ request('per_page', 15) == 10 ? 'selected' : '' }}>10</option>
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="25" {{ request('per_page', 15) == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                        <span class="text-xs sm:text-sm md:text-base text-gray-600 whitespace-nowrap">por página</span>
+                    </div>
+
+                    @if(request()->hasAny(['search', 'level', 'channel', 'user_id', 'fecha_inicio', 'fecha_fin']))
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
+                        <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
+                        
+                        @if(request('search'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449] text-white">
+                            Búsqueda: "{{ request('search') }}"
+                            <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 sm:ml-1.5 text-white hover:text-gray-200">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
+                        @if(request('level'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
+                            Nivel: {{ ucfirst(request('level')) }}
+                            <a href="{{ request()->fullUrlWithQuery(['level' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
+                        @if(request('channel'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                            Canal: {{ ucfirst(request('channel')) }}
+                            <a href="{{ request()->fullUrlWithQuery(['channel' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
+                        @if(request('user_id'))
+                        @php
+                            $selectedUser = $users->firstWhere('id', request('user_id'));
+                        @endphp
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                            Usuario: {{ $selectedUser ? $selectedUser->name : 'N/A' }}
+                            <a href="{{ request()->fullUrlWithQuery(['user_id' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
+                        @if(request('fecha_inicio') || request('fecha_fin'))
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                            Fecha: {{ request('fecha_inicio', 'Inicio') }} - {{ request('fecha_fin', 'Fin') }}
+                            <a href="{{ request()->fullUrlWithQuery(['fecha_inicio' => null, 'fecha_fin' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla para pantallas grandes -->
+        <div class="border-t border-gray-100 overflow-hidden hidden xl:block">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Nivel</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Mensaje</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Canal</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Usuario</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">IP</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Fecha</th>
+                            <th class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-2 sm:py-3 md:py-4 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse($logs as $log)
+                        <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-sm font-medium {{ $log->level_color }}">
+                                    <svg class="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $log->level_icon }}"/>
+                                    </svg>
+                                    {{ ucfirst($log->level) }}
+                                </span>
+                            </td>
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                <div class="max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+                                    <div class="text-gray-900 text-xs sm:text-sm md:text-base truncate" title="{{ $log->message }}">
+                                        {{ Str::limit($log->message, 80) }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                <span class="text-gray-900 text-xs sm:text-sm md:text-base">{{ $log->channel ?? 'N/A' }}</span>
+                            </td>
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                <div class="flex items-center space-x-2 sm:space-x-3">
+                                    @if($log->user)
+                                    <div class="w-6 h-6 sm:w-8 sm:h-8 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <span class="text-white font-semibold text-xs sm:text-sm">{{ strtoupper(substr($log->user->name, 0, 1)) }}</span>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-sm font-medium text-gray-900 truncate">{{ $log->user->name }}</div>
+                                        <div class="text-xs text-gray-500">{{ $log->user->email }}</div>
+                                    </div>
+                                    @else
+                                    <span class="text-gray-500 text-xs sm:text-sm md:text-base">Sistema</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                <span class="text-gray-900 text-xs sm:text-sm md:text-base font-mono">{{ $log->ip_address ?? 'N/A' }}</span>
+                            </td>
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                <div class="text-sm text-gray-900">
+                                    <div>{{ $log->created_at->format('d/m/Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ $log->created_at->format('H:i:s') }}</div>
+                                </div>
+                            </td>
+                            <td class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-3 sm:py-4 md:py-5">
+                                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                                    @can('logs.ver')
+                                    <a href="{{ route('logs.show', $log->id) }}" 
+                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-[#9d2449] hover:text-white hover:bg-[#9d2449] rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                       title="Ver detalles">
+                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.639 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.639 0-8.573-3.007-9.963-7.178z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                    </a>
+                                    @endcan
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="7" class="px-3 sm:px-4 md:px-5 lg:px-6 xl:px-8 py-8 sm:py-10 md:py-12 lg:py-16 text-center">
+                                <div class="text-gray-500">
+                                    <svg class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-4 sm:mb-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <p class="text-xs sm:text-sm md:text-base lg:text-lg">No hay logs registrados</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tarjetas para pantallas pequeñas -->
+        <div class="border-t border-gray-100 pt-4 sm:pt-5 md:pt-6 lg:pt-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+            @forelse($logs as $log)
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-2 sm:p-3 md:p-4 lg:p-5">
+                <div class="flex items-start justify-between mb-2 sm:mb-3 md:mb-4">
+                    <div class="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 lg:space-x-4 min-w-0 flex-1">
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 lg:px-3 py-0.5 sm:py-1 md:py-1.5 lg:py-2 rounded-full text-xs sm:text-sm md:text-base font-medium {{ $log->level_color }}">
+                            <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $log->level_icon }}"/>
+                            </svg>
+                            {{ ucfirst($log->level) }}
+                        </span>
+                    </div>
+                    <div class="flex-shrink-0 ml-1 sm:ml-2 md:ml-3">
+                        <span class="text-xs sm:text-sm md:text-base text-gray-500">
+                            {{ $log->created_at->format('d/m/Y H:i') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="space-y-1 sm:space-y-1.5 md:space-y-2 lg:space-y-3">
+                    <div class="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-800 truncate" title="{{ $log->message }}">
+                        {{ Str::limit($log->message, 60) }}
+                    </div>
+                    <div class="text-xs sm:text-sm md:text-base text-gray-600">
+                        Canal: {{ $log->channel ?? 'N/A' }}
+                    </div>
+                    <div class="text-xs sm:text-sm md:text-base text-gray-600">
+                        IP: {{ $log->ip_address ?? 'N/A' }}
+                    </div>
+                    <div class="text-xs sm:text-sm md:text-base text-gray-600">
+                        Usuario: {{ $log->user ? $log->user->name : 'Sistema' }}
+                    </div>
+                </div>
+                <div class="flex space-x-2 sm:space-x-3 md:space-x-4 pt-3 sm:pt-4 md:pt-5 mt-3 sm:mt-4 md:mt-5 border-t border-gray-100">
+                    @can('logs.ver')
+                    <a href="{{ route('logs.show', $log->id) }}" 
+                       class="flex-1 text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-[#9d2449] bg-[#9d2449]/5 border border-[#9d2449]/20 rounded-lg hover:bg-[#9d2449] hover:text-white transition-all duration-200 truncate shadow-sm">
+                        <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.639 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.639 0-8.573-3.007-9.963-7.178z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Ver
+                        </span>
+                    </a>
+                    @endcan
+                </div>
+            </div>
+            @empty
+            <div class="col-span-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 md:p-8 lg:p-10 text-center">
+                <div class="text-gray-500">
+                    <svg class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 mx-auto mb-4 sm:mb-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-sm sm:text-base md:text-lg lg:text-xl">No hay logs</p>
+                </div>
+            </div>
+            @endforelse
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        @if($logs->hasPages())
+        <div class="mt-4 sm:mt-5 md:mt-6 lg:mt-8 xl:mt-10">
+            <div class="flex justify-center">
+                <div class="text-xs sm:text-sm md:text-base">
+                    {{ $logs->links() }}
+                </div>
+            </div>
+        </div>
+        @endif
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación para limpiar logs -->
+<div id="limpiarLogsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+                </svg>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Limpiar Logs</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500">
+                    ¿Estás seguro de que quieres eliminar los logs antiguos? Esta acción no se puede deshacer.
+                </p>
+                <div class="mt-4">
+                    <label for="dias" class="block text-sm font-medium text-gray-700">Eliminar logs anteriores a:</label>
+                    <select id="dias" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#9d2449] focus:border-[#9d2449] sm:text-sm rounded-md">
+                        <option value="7">7 días</option>
+                        <option value="15">15 días</option>
+                        <option value="30" selected>30 días</option>
+                        <option value="60">60 días</option>
+                        <option value="90">90 días</option>
+                    </select>
+                </div>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="confirmarLimpiar" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Confirmar
+                </button>
+                <button id="cancelarLimpiar" class="mt-2 px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<x-ui.modals.error-modal 
+    id="error-modal"
+    title="Error"
+    message="Ha ocurrido un error. Por favor, inténtalo de nuevo."
+    buttonText="OK"
+/>
+
+<x-ui.modals.modal-exito 
+    id="success-modal"
+    title="¡Éxito!"
+    message="La operación se realizó correctamente."
+    acceptText="Aceptar"
+    :redirectUrl="route('logs.index')"
+/>
+
+@if(session('error'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showErrorModal('error-modal', 'Error', '{{ session('error') }}');
+});
+</script>
+@endif
+
+@if(session('success'))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    showSuccessModal('success-modal', '¡Éxito!', '{{ session('success') }}');
+});
+</script>
+@endif
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        const toggle = document.getElementById('toggleFilters');
+        const container = document.getElementById('filtersContainer');
+        const text = document.getElementById('filterText');
+        const icon = document.getElementById('filterIcon');
+        const perPageSelect = document.getElementById('per_page');
+        const searchForm = document.getElementById('searchForm');
+        
+        if (toggle && container) {
+            toggle.addEventListener('click', function() {
+                const hidden = container.classList.contains('hidden');
+                if (hidden) {
+                    container.classList.remove('hidden');
+                    container.classList.remove('max-h-0');
+                    container.classList.add('max-h-screen');
+                    if (text) text.textContent = 'Ocultar filtros';
+                    if (icon) icon.classList.add('rotate-180');
+                } else {
+                    container.classList.add('max-h-0');
+                    setTimeout(() => {
+                        container.classList.add('hidden');
+                    }, 300);
+                    if (text) text.textContent = 'Mostrar filtros';
+                    if (icon) icon.classList.remove('rotate-180');
+                }
+            });
+        }
+
+        if (perPageSelect && searchForm) {
+            perPageSelect.addEventListener('change', function() {
+                const hiddenPerPage = searchForm.querySelector('input[name="per_page"]');
+                if (hiddenPerPage) {
+                    hiddenPerPage.value = this.value;
+                }
+                searchForm.submit();
+            });
+        }
+
+        // Funcionalidad para limpiar logs
+        window.confirmarLimpiarLogs = function() {
+            document.getElementById('limpiarLogsModal').classList.remove('hidden');
+        };
+
+        document.getElementById('cancelarLimpiar').addEventListener('click', function() {
+            document.getElementById('limpiarLogsModal').classList.add('hidden');
+        });
+
+        document.getElementById('confirmarLimpiar').addEventListener('click', function() {
+            const dias = document.getElementById('dias').value;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("logs.limpiar") }}';
+            
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            
+            const diasInput = document.createElement('input');
+            diasInput.type = 'hidden';
+            diasInput.name = 'dias';
+            diasInput.value = dias;
+            
+            form.appendChild(csrfToken);
+            form.appendChild(diasInput);
+            document.body.appendChild(form);
+            form.submit();
+        });
+
+    } catch (error) {
+        console.warn('Error initializing logs page JavaScript:', error);
+    }
+});
+</script>
+@endpush
+@endsection

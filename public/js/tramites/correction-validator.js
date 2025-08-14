@@ -68,13 +68,6 @@ class CorrectionValidator {
 
         const allCorrectionsComplete = sectionsValid && filesValid;
 
-        console.log('CorrectionValidator: Estado de validación', {
-            sectionsValid,
-            filesValid,
-            termsAccepted,
-            allCorrectionsComplete
-        });
-
         // Actualizar estado del botón
         this.updateSubmitButton(allCorrectionsComplete && termsAccepted);
 
@@ -88,7 +81,6 @@ class CorrectionValidator {
         for (const section of requiredSections) {
             if (!this.isSectionValid(section)) {
                 allSectionsValid = false;
-                console.log(`CorrectionValidator: Sección ${section} incompleta`);
                 break;
             }
         }
@@ -199,7 +191,6 @@ class CorrectionValidator {
         for (const fileConfig of requiredFiles) {
             if (!this.isFileValid(fileConfig)) {
                 allFilesValid = false;
-                console.log(`CorrectionValidator: Archivo ${fileConfig.name} faltante o inválido`);
                 break;
             }
         }
@@ -256,13 +247,11 @@ class CorrectionValidator {
         
         // Verificar si hay archivo nuevo subido
         if (fileInput.files && fileInput.files.length > 0) {
-            console.log(`CorrectionValidator: Archivo ${fileConfig.name} - nuevo archivo subido`);
             return true;
         }
 
         // En modo corrección, si es un archivo rechazado, DEBE tener nuevo archivo
         if (this.isCorrectionMode() && fileConfig.isRejected) {
-            console.log(`CorrectionValidator: Archivo ${fileConfig.name} - rechazado, requiere nuevo archivo`);
             return false;
         }
 
@@ -273,16 +262,8 @@ class CorrectionValidator {
         
         // Si hay archivo existente y no está rechazado
         if (existingFileIndicator && !rejectedIndicator) {
-            console.log(`CorrectionValidator: Archivo ${fileConfig.name} - archivo existente válido`);
             return true;
         }
-
-        console.log(`CorrectionValidator: Archivo ${fileConfig.name} - no válido`, {
-            hasNewFile: fileInput.files && fileInput.files.length > 0,
-            hasExistingFile: !!existingFileIndicator,
-            isRejected: rejectedIndicator,
-            isCorrectionMode: this.isCorrectionMode()
-        });
         
         return false;
     }
@@ -350,7 +331,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (correctionMode) {
         window.modoCorreccion = true;
-        console.log('CorrectionValidator: Modo corrección detectado');
     }
 });
 

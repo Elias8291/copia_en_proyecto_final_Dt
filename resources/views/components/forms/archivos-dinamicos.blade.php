@@ -225,11 +225,11 @@
                         <!-- Botón de carga -->
                         <label class="cursor-pointer group archivo-container">
                             <input type="file"
-                                name="{{ $modoCorreccion ? 'archivos' : 'documentos' }}[{{ $archivo->id }}]"
+                                name="documentos[{{ Str::slug($archivo->nombre) }}]"
                                 data-archivo-id="{{ $archivo->id }}"
                                 data-catalogo-id="{{ $archivo->id }}"
                                 accept=".{{ $archivo->tipo_archivo }}"
-                                class="hidden {{ $errors->has(($modoCorreccion ? 'archivos' : 'documentos') . '.' . $archivo->id) ? 'border-red-500' : '' }}"
+                                class="hidden {{ $errors->has('documentos.' . Str::slug($archivo->nombre)) ? 'border-red-500' : '' }}"
                                 onchange="updateFileName(this, '{{ Str::slug($archivo->nombre) }}-name')"
                                 required>
                             <span class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-gray-300 to-gray-400 hover:from-gray-400 hover:to-gray-500 text-gray-800 text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">

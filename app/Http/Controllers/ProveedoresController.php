@@ -7,13 +7,7 @@ use App\Models\Actividad;
 use App\Models\Sector;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Exports\ProveedoresPorVencerExport;
-use App\Exports\DashboardEjecutivoExport;
-use App\Exports\ProveedoresGeograficoExport;
-use App\Exports\ProveedoresGiroEconomicoExport;
-use App\Exports\ProveedoresEstadoPadronExport;
-use App\Exports\ListaContactosExport;
-use App\Exports\ReporteFiltradoExport;
+use App\Exports\ProveedoresSimpleExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 
@@ -21,7 +15,7 @@ class ProveedoresController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['publico', 'publicoPorToken']);
+        $this->middleware('auth');
         $this->middleware(PermissionMiddleware::class . ':proveedores.ver')->only(['index', 'show']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.crear')->only(['create', 'store']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.editar')->only(['edit', 'update']);
@@ -84,7 +78,6 @@ class ProveedoresController extends Controller
             if (!is_array($sectorIds)) {
                 $sectorIds = [$sectorIds];
             }
-            // Filtrar valores vacíos
             $sectorIds = array_filter($sectorIds, function($id) {
                 return !empty($id);
             });
@@ -102,7 +95,6 @@ class ProveedoresController extends Controller
             if (!is_array($actividadIds)) {
                 $actividadIds = [$actividadIds];
             }
-            // Filtrar valores vacíos
             $actividadIds = array_filter($actividadIds, function($id) {
                 return !empty($id);
             });
@@ -112,6 +104,14 @@ class ProveedoresController extends Controller
                     $q->whereIn('actividad_id', $actividadIds);
                 });
             }
+        }
+
+        // Filtro por estado geográfico
+        if ($request->filled('estado_geografico')) {
+            $estadoId = $request->estado_geografico;
+            $query->whereHas('tramites.direcciones.estado', function($q) use ($estadoId) {
+                $q->where('id', $estadoId);
+            });
         }
 
         // Ordenar por ID descendente
@@ -128,6 +128,21 @@ class ProveedoresController extends Controller
 
         // Obtener estados geográficos de México para el filtro
         $estados = \App\Models\Estado::orderBy('nombre')->get();
+
+        // Manejar exportación simple
+        if ($request->get('export') == 'excel') {
+            $filtros = $request->only(['search', 'estado', 'tipo_persona', 'vencimiento', 'año', 'sector', 'actividad_economica', 'estado_geografico']);
+            $filtros = array_filter($filtros, function($valor) {
+                if (is_array($valor)) {
+                    return !empty($valor);
+                }
+                return !is_null($valor) && $valor !== '';
+            });
+            
+            $nombreArchivo = 'proveedores_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+            
+            return Excel::download(new ProveedoresSimpleExport($filtros), $nombreArchivo);
+        }
 
         return view('proveedores.index', compact('todosProveedores', 'sectores', 'estados'));
     }
@@ -335,202 +350,5 @@ class ProveedoresController extends Controller
             'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
             'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
         ];
-    }
-
-    /**
-     * Exportar reporte de proveedores por vencer en Excel
-     */
-    public function exportarProveedoresPorVencer(Request $request)
-    {
-        $diasVencer = (int) $request->get('dias', 30); // Por defecto 30 días
-        
-        $filename = 'proveedores_activos_por_vencer_' . $diasVencer . '_dias_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
-        return Excel::download(new ProveedoresPorVencerExport($diasVencer), $filename);
-    }
-
-    /**
-     * Exportar Dashboard Ejecutivo
-     */
-    public function exportarDashboardEjecutivo()
-    {
-        $filename = 'dashboard_ejecutivo_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
-        return Excel::download(new DashboardEjecutivoExport(), $filename);
-    }
-
-    /**
-     * Exportar Reporte Geográfico
-     */
-    public function exportarReporteGeografico()
-    {
-        $filename = 'proveedores_distribucion_geografica_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
-        return Excel::download(new ProveedoresGeograficoExport(), $filename);
-    }
-
-    /**
-     * Exportar Reporte por Giros Económicos
-     */
-    public function exportarReporteGiroEconomico()
-    {
-        $filename = 'proveedores_por_giro_economico_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
-        return Excel::download(new ProveedoresGiroEconomicoExport(), $filename);
-    }
-
-    /**
-     * Exportar Reporte por Estado del Padrón
-     */
-    public function exportarReporteEstadoPadron(Request $request)
-    {
-        $estadoFiltro = $request->get('estado'); // 'Activo', 'Vencido', 'Pendiente', 'Inactivo'
-        
-        $filename = 'proveedores_estado_padron';
-        if ($estadoFiltro) {
-            $filename .= '_' . strtolower($estadoFiltro);
-        }
-        $filename .= '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
-        return Excel::download(new ProveedoresEstadoPadronExport($estadoFiltro), $filename);
-    }
-
-    /**
-     * Exportar Lista de Contactos
-     */
-    public function exportarListaContactos(Request $request)
-    {
-        $tipoLista = $request->get('tipo', 'todos'); // 'todos', 'por_vencer', 'activos', 'vencidos'
-        
-        $filename = 'lista_contactos_' . $tipoLista . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
-        return Excel::download(new ListaContactosExport($tipoLista), $filename);
-    }
-
-    /**
-     * Exportar Reporte Filtrado de Proveedores
-     */
-    public function exportarReporteFiltrado(Request $request)
-    {
-        // Obtener todos los filtros aplicados en la vista
-        $filtros = [
-            'search' => $request->get('search'),
-            'estado_padron' => $request->get('estado'), // Mapear 'estado' a 'estado_padron'
-            'tipo_persona' => $request->get('tipo_persona'),
-            'vencimiento' => $request->get('vencimiento'),
-            'año' => $request->get('año'),
-            'sector' => $request->get('sector'),
-            'actividad_economica' => $request->get('actividad_economica', []),
-            'estado_geografico' => $request->get('estado_geografico'),
-            'municipio' => $request->get('municipio'),
-            'fecha_alta_desde' => $request->get('fecha_alta_desde'),
-            'fecha_alta_hasta' => $request->get('fecha_alta_hasta'),
-            'fecha_vencimiento_desde' => $request->get('fecha_vencimiento_desde'),
-            'fecha_vencimiento_hasta' => $request->get('fecha_vencimiento_hasta'),
-            'dias_vencer' => $request->get('dias_vencer')
-        ];
-
-        // Obtener columnas seleccionadas
-        $columnasSeleccionadas = $request->get('columnas');
-        if ($columnasSeleccionadas) {
-            $columnasSeleccionadas = explode(',', $columnasSeleccionadas);
-        } else {
-            // Columnas por defecto si no se especifican
-            $columnasSeleccionadas = ['id', 'pv_numero', 'razon_social', 'rfc', 'tipo_persona', 'estado_padron', 'fecha_alta', 'fecha_vencimiento'];
-        }
-
-        // Filtrar solo los filtros que tienen valor
-        $filtros = array_filter($filtros, function($valor) {
-            if (is_array($valor)) {
-                return !empty($valor);
-            }
-            return !is_null($valor) && $valor !== '';
-        });
-
-        // Generar nombre del archivo dinámico
-        $nombreArchivo = 'proveedores_filtrado';
-        
-        if (!empty($filtros['estado_padron'])) {
-            $nombreArchivo .= '_' . strtolower($filtros['estado_padron']);
-        }
-        
-        if (!empty($filtros['tipo_persona'])) {
-            $nombreArchivo .= '_' . strtolower(str_replace(' ', '_', $filtros['tipo_persona']));
-        }
-        
-        if (!empty($filtros['vencimiento'])) {
-            $nombreArchivo .= '_' . $filtros['vencimiento'];
-        }
-        
-        if (!empty($filtros['sector'])) {
-            $sectorCount = is_array($filtros['sector']) ? count($filtros['sector']) : 1;
-            $nombreArchivo .= '_sectores_' . $sectorCount;
-        }
-        
-        if (!empty($filtros['actividad_economica'])) {
-            $nombreArchivo .= '_actividades_' . count($filtros['actividad_economica']);
-        }
-
-        $nombreArchivo .= '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-
-        return Excel::download(new ReporteFiltradoExport($filtros, 'personalizado', $columnasSeleccionadas), $nombreArchivo);
-    }
-
-    /**
-     * Mostrar información pública del proveedor (sin autenticación)
-     * Esta ruta es utilizada por el QR code en los oficios
-     * Muestra los datos del último trámite procesado
-     */
-    public function publico(Proveedor $proveedor)
-    {
-        // Cargar relaciones necesarias
-        $proveedor->load(['direcciones.estado']);
-        
-        // Obtener el último trámite del proveedor para mostrar información actualizada
-        $ultimoTramite = $proveedor->tramites()
-            ->with(['datosGenerales', 'actividades.actividad', 'direcciones'])
-            ->orderBy('created_at', 'desc')
-            ->first();
-        
-        // Obtener direcciones del proveedor
-        $direcciones = $proveedor->direcciones;
-        
-        return view('proveedores.publico', compact('proveedor', 'direcciones', 'ultimoTramite'));
-    }
-
-    /**
-     * Mostrar información pública del proveedor usando token seguro
-     * Esta ruta es más segura ya que no expone el ID del proveedor
-     */
-    public function publicoPorToken(string $token)
-    {
-        // Buscar proveedor por token
-        $proveedor = Proveedor::buscarPorToken($token);
-        
-        if (!$proveedor) {
-            abort(404, 'Proveedor no encontrado o token inválido');
-        }
-        
-        // Log de acceso para auditoría
-        \Log::info('Acceso a información pública por token', [
-            'token' => substr($token, 0, 8) . '...', // Solo primeros 8 caracteres por seguridad
-            'proveedor_id' => $proveedor->id,
-            'ip' => request()->ip(),
-            'user_agent' => request()->userAgent()
-        ]);
-        
-        // Cargar relaciones necesarias
-        $proveedor->load(['direcciones.estado']);
-        
-        // Obtener el último trámite del proveedor para mostrar información actualizada
-        $ultimoTramite = $proveedor->tramites()
-            ->with(['datosGenerales', 'actividades.actividad', 'direcciones'])
-            ->orderBy('created_at', 'desc')
-            ->first();
-        
-        // Obtener direcciones del proveedor
-        $direcciones = $proveedor->direcciones;
-        
-        return view('proveedores.publico', compact('proveedor', 'direcciones', 'ultimoTramite'));
     }
 }

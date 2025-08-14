@@ -4,16 +4,21 @@ namespace App\Services\Revisiones;
 
 use App\Services\RevisionService;
 use App\Services\Tramites\DataRetrievalService;
+use App\Services\AsignacionPvService;
 use App\Models\Tramite;
+use App\Models\Proveedor;
 use App\ViewModels\FormDataViewModel;
+use Carbon\Carbon;
 
 class RevisionDigitalService extends RevisionService
 {
     private DataRetrievalService $dataRetrievalService;
+    private AsignacionPvService $asignacionPvService;
 
-    public function __construct(DataRetrievalService $dataRetrievalService = null)
+    public function __construct(DataRetrievalService $dataRetrievalService = null, AsignacionPvService $asignacionPvService = null)
     {
         $this->dataRetrievalService = $dataRetrievalService ?? app(DataRetrievalService::class);
+        $this->asignacionPvService = $asignacionPvService ?? app(AsignacionPvService::class);
     }
 
     // Obtiene todos los datos necesarios para la revisión digital
@@ -73,5 +78,80 @@ class RevisionDigitalService extends RevisionService
             'rechazados' => $tramitesProveedor->where('status', 'Rechazado')->count(),
             'pendientes' => $tramitesProveedor->whereNotIn('status', ['Aprobado', 'Rechazado'])->count(),
         ];
+    }
+
+    /**
+     * Procesa la asignación de PV y fechas de vigencia para un trámite de inscripción
+     * 
+     * @param int $tramiteId
+     * @param int $numeroProveedor
+     * @param string|null $ultimoPvSistema
+     * @param string $fechaRevision
+     * @return array
+     */
+    public function procesarAsignacionPv(int $tramiteId, int $numeroProveedor, ?string $ultimoPvSistema, string $fechaRevision): array
+    {
+        $tramite = Tramite::findOrFail($tramiteId);
+        
+        // Verificar que sea un trámite de inscripción
+        if ($tramite->tipo_tramite !== 'Inscripcion') {
+            return [
+                'success' => false,
+                'message' => 'La asignación de PV solo es válida para trámites de inscripción',
+                'datos' => null
+            ];
+        }
+        
+        // Obtener el último PV del sistema si no se proporciona
+        if (!$ultimoPvSistema) {
+            $ultimoPvSistema = $this->obtenerUltimoPvSistema();
+        }
+        
+        // Procesar asignación
+        $datosAsignacion = $this->asignacionPvService->asignarPvYVigencia(
+            $numeroProveedor,
+            $ultimoPvSistema,
+            $fechaRevision
+        );
+        
+        // Verificar si hubo errores
+        if (!$datosAsignacion['pv']) {
+            return [
+                'success' => false,
+                'message' => $datosAsignacion['notas_validacion'],
+                'datos' => $datosAsignacion
+            ];
+        }
+        
+        // Aplicar la asignación al proveedor
+        $proveedor = $tramite->proveedor;
+        $aplicacionExitosa = $this->asignacionPvService->aplicarAsignacion($proveedor, $datosAsignacion);
+        
+        if (!$aplicacionExitosa) {
+            return [
+                'success' => false,
+                'message' => 'Error al aplicar la asignación al proveedor',
+                'datos' => $datosAsignacion
+            ];
+        }
+        
+        return [
+            'success' => true,
+            'message' => 'Asignación de PV procesada exitosamente',
+            'datos' => $datosAsignacion
+        ];
+    }
+    
+    /**
+     * Obtiene el último PV del sistema
+     */
+    private function obtenerUltimoPvSistema(): ?string
+    {
+        $ultimoProveedor = Proveedor::whereNotNull('pv_numero')
+            ->where('pv_numero', 'like', 'PV%')
+            ->orderByRaw('CAST(SUBSTRING(pv_numero, 3) AS UNSIGNED) DESC')
+            ->first();
+            
+        return $ultimoProveedor ? $ultimoProveedor->pv_numero : null;
     }
 } 

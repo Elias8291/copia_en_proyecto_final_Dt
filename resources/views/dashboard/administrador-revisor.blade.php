@@ -1,10 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Vista de Dashboard para Administradores y Revisores -->
 <div class="min-h-screen bg-gradient-to-br">
     <div class="w-full px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header Principal -->
         <div class="mb-8">
             <div class="bg-white rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
                 <div class="p-6 border-b border-gray-100">
@@ -20,26 +18,19 @@
                                 <p class="text-xs md:text-sm text-gray-500 mt-1">Sistema de Gestión de Proveedores</p>
                             </div>
                         </div>
-
-                        <!-- Información de tiempo y usuario -->
                         <div class="flex flex-col lg:flex-row items-center space-y-3 lg:space-y-0 lg:space-x-3">
-                            <!-- Reloj -->
                             <div class="bg-gradient-to-r from-[#9d2449] to-[#be185d] px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <span id="currentTime" class="font-mono"></span>
                             </div>
-
-                            <!-- Fecha -->
                             <div class="text-sm text-gray-600 font-medium flex items-center">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                                 <span id="currentDate"></span>
                             </div>
-
-                            <!-- Badge de Rol -->
                             @if (auth()->user()->hasRole(['Administrador', 'Super Administrador']))
                                 <div class="bg-gradient-to-r from-red-400 to-red-500 px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center shadow-lg">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,8 +49,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Saludo personalizado -->
                 <div class="p-6 bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200/70">
                     <div class="mb-6">
                         <div>
@@ -79,10 +68,7 @@
                             @endif
                         </div>
                     </div>
-
-                    <!-- Acciones principales según rol -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        
                         @if (auth()->user()->hasRole(['Administrador', 'Super Administrador']))
                             <!-- Card para gestionar usuarios -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('users.index') }}'">
@@ -101,8 +87,6 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            <!-- Card para gestionar roles -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('roles.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-3 rounded-lg">
@@ -119,8 +103,6 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            <!-- Card para ver trámites -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('tramites.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-amber-500 to-amber-600 p-3 rounded-lg">
@@ -137,8 +119,6 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            <!-- Card para gestionar citas -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('citas.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-lg">
@@ -155,8 +135,6 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            <!-- Card para archivos -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('archivos.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-lg">
@@ -173,8 +151,6 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            <!-- Card para revisiones -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('revisiones.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-lg">
@@ -192,7 +168,6 @@
                                 </div>
                             </div>
 
-                            <!-- Card para notificaciones -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('notificaciones.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-cyan-500 to-cyan-600 p-3 rounded-lg">
@@ -210,9 +185,7 @@
                                 </div>
                             </div>
                         @endif
-
                         @if (auth()->user()->hasRole(['Revisor Digital', 'Revisor Presencial', 'Revisor Domiciliario']))
-                            <!-- Card para revisar trámites -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('revisiones.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-lg">
@@ -229,8 +202,6 @@
                                     </svg>
                                 </div>
                             </div>
-
-                            <!-- Card para ver archivos -->
                             <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 cursor-pointer" onclick="window.location.href='{{ route('archivos.index') }}'">
                                 <div class="flex items-center space-x-4">
                                     <div class="bg-gradient-to-br from-indigo-500 to-indigo-600 p-3 rounded-lg">
@@ -265,13 +236,11 @@
             const formattedHours = hours % 12 || 12;
             const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
 
-            // Actualizar tiempo
             const timeElement = document.getElementById('currentTime');
             if (timeElement) {
                 timeElement.textContent = `${formattedHours}:${formattedMinutes} ${ampm}`;
             }
-
-            // Actualizar fecha
+                    
             const dateElement = document.getElementById('currentDate');
             if (dateElement) {
                 const options = {

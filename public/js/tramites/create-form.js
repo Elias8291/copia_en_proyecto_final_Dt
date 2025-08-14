@@ -212,7 +212,7 @@ class TramiteCreateForm {
                     const mapContainer = document.getElementById('mapa');
                     if (mapContainer) {
                         const map = mapContainer._leaflet_map;
-                        if (map) {
+                        if (map && typeof map.invalidateSize === 'function') {
                             map.invalidateSize();
                         }
                     }

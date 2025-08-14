@@ -1,12 +1,7 @@
-¡hecho! aquí tienes la vista Blade completa **sin** las tarjetas de “Usuarios / Trámites / Proveedores / Citas”. Mantiene el resto del diseño: hora, chip “Sesión Activa”, saludo, botón “Iniciar trámite”, “Acciones Rápidas” y la ilustración a la derecha.
-
-> Ajusta la ruta de la imagen si la tienes en otro lugar.
-
-```blade
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 p-6"
+<div class="min-h-screen "
      style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23f3f4f6&quot; fill-opacity=&quot;0.3&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
   <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
 
@@ -15,7 +10,7 @@
       <div class="bg-white rounded-3xl shadow-xl border border-gray-200/60 overflow-hidden">
 
         <!-- Header -->
-        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-200/70">
+        <div class="px-8 py-6 border-b border-gray-200/70">
           <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-3">
               <div id="currentTime" class="text-2xl font-semibold text-gray-800">12:25 am</div>
@@ -114,13 +109,6 @@
 
         </div>
       </div>
-    </div>
-
-    <!-- Imagen lateral (opcional en ≥ lg) -->
-    <div class="hidden lg:flex flex-shrink-0 justify-end items-start">
-      <img src="{{ asset('images/mujer_bienvenida.png') }}"
-           alt="Asistente virtual"
-           class="w-80 h-auto object-contain drop-shadow-lg">
     </div>
 
   </div>

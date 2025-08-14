@@ -155,10 +155,10 @@ class FormController {
                 }
                 
                 // Validación específica para términos de servicio (solo en el último paso)
-                const ultimoPaso = isPersonaMoral ? 6 : 3;
+                const ultimoPaso = isPersonaMoral ? 7 : 4;
                 
                 if (currentStep === ultimoPaso) {
-                    const terminosCheckbox = document.querySelector('[name="aceptar_terminos"]');
+                    const terminosCheckbox = document.querySelector('[name="acepto_terminos"]');
                     if (terminosCheckbox && !terminosCheckbox.checked) {
                         this.showCurrentStepErrors();
                         return false;

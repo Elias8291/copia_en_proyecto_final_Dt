@@ -13,8 +13,7 @@ use App\Http\Controllers\{
     NotificacionController,
     CitasController,
     ArchivoController,
-    ProveedoresController,
-    ReportesController
+    ProveedoresController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -145,7 +144,10 @@ Route::middleware(['auth'])->group(function () {
         
         // Ruta para procesar revisión digital
         Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
-    Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
+        Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
+        
+        // Ruta para procesar asignación de PV y fechas de vigencia
+        Route::post('/{tramite}/procesar-asignacion-pv', [RevisionController::class, 'procesarAsignacionPv'])->name('procesar-asignacion-pv');
         
         // Rutas para gestión de citas
         Route::post('/{tramite}/agendar-cita', [RevisionController::class, 'agendarCita'])->name('agendar-cita');
@@ -251,62 +253,5 @@ Route::post('/extract-qr-url-web', [QRExtractorController::class, 'extractQrFrom
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
     ->name('extract.qr.web');
 
-// Ruta para exportar reporte de proveedores por vencer
-Route::get('/proveedores/reporte/por-vencer', [ProveedoresController::class, 'exportarProveedoresPorVencer'])
-    ->middleware('auth')
-    ->name('proveedores.reporte.por-vencer');
 
-Route::get('/proveedores/reporte/dashboard-ejecutivo', [ProveedoresController::class, 'exportarDashboardEjecutivo'])
-    ->middleware('auth')
-    ->name('proveedores.reporte.dashboard-ejecutivo');
-
-Route::get('/proveedores/reporte/geografico', [ProveedoresController::class, 'exportarReporteGeografico'])
-    ->middleware('auth')
-    ->name('proveedores.reporte.geografico');
-
-Route::get('/proveedores/reporte/giro-economico', [ProveedoresController::class, 'exportarReporteGiroEconomico'])
-    ->middleware('auth')
-    ->name('proveedores.reporte.giro-economico');
-
-Route::get('/proveedores/reporte/estado-padron', [ProveedoresController::class, 'exportarReporteEstadoPadron'])
-    ->middleware('auth')
-    ->name('proveedores.reporte.estado-padron');
-
-Route::get('/proveedores/reporte/lista-contactos', [ProveedoresController::class, 'exportarListaContactos'])
-    ->middleware('auth')
-    ->name('proveedores.reporte.lista-contactos');
-
-Route::get('/proveedores/reporte/filtrado', [ProveedoresController::class, 'exportarReporteFiltrado'])
-    ->middleware('auth')
-    ->name('proveedores.reporte.filtrado');
-
-// Rutas para reportes dinámicos
-Route::get('/reportes', [ReportesController::class, 'index'])
-    ->middleware('auth')
-    ->name('reportes.index');
-
-Route::get('/reportes/exportar-filtrado', [ReportesController::class, 'exportarFiltrado'])
-    ->middleware('auth')
-    ->name('reportes.exportar-filtrado');
-
-Route::get('/reportes/analisis', [ReportesController::class, 'analisisEstadistico'])
-    ->middleware('auth')
-    ->name('reportes.analisis');
-
-Route::get('/api/municipios-por-estado', [ReportesController::class, 'getMunicipiosPorEstado'])
-    ->middleware('auth')
-    ->name('api.municipios-por-estado');
-
-// Rutas para reportes trimestrales
-Route::get('/reportes/trimestrales', [ReportesController::class, 'reportesTrimestrales'])
-    ->middleware('auth')
-    ->name('reportes.trimestrales');
-
-Route::get('/reportes/exportar-trimestral', [ReportesController::class, 'exportarReporteTrimestral'])
-    ->middleware('auth')
-    ->name('reportes.exportar-trimestral');
-
-Route::get('/reportes/comparativo-trimestral', [ReportesController::class, 'comparativoTrimestral'])
-    ->middleware('auth')
-    ->name('reportes.comparativo-trimestral');
 

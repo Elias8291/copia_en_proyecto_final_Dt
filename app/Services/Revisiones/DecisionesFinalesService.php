@@ -78,6 +78,23 @@ class DecisionesFinalesService
             // Guardar comentario general
             $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Rechazado');
 
+            // Notificar al usuario sobre las correcciones requeridas
+            try {
+                $notificacionService = app(\App\Services\NotificacionService::class);
+                $notificacionService->notificarCorrecciones($tramite, $comentarioGeneral);
+                
+                Log::info('Notificación de correcciones enviada al usuario', [
+                    'tramite_id' => $tramite->id,
+                    'usuario_id' => $tramite->proveedor->usuario->id ?? null,
+                    'comentario_general' => $comentarioGeneral
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Error al enviar notificación de correcciones', [
+                    'tramite_id' => $tramite->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             return [
                 'success' => true,
                 'message' => 'Trámite enviado para corrección exitosamente'
@@ -100,6 +117,23 @@ class DecisionesFinalesService
 
             // Guardar comentario general
             $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Rechazado');
+
+            // Notificar al usuario sobre el rechazo del trámite
+            try {
+                $notificacionService = app(\App\Services\NotificacionService::class);
+                $notificacionService->notificarTramiteRechazado($tramite, $comentarioGeneral);
+                
+                Log::info('Notificación de trámite rechazado enviada al usuario', [
+                    'tramite_id' => $tramite->id,
+                    'usuario_id' => $tramite->proveedor->usuario->id ?? null,
+                    'comentario_general' => $comentarioGeneral
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Error al enviar notificación de trámite rechazado', [
+                    'tramite_id' => $tramite->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
 
             return [
                 'success' => true,

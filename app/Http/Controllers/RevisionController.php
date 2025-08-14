@@ -521,6 +521,41 @@ class RevisionController extends Controller
     }
 
     /**
+     * Procesar asignación de PV y fechas de vigencia
+     */
+    public function procesarAsignacionPv(Request $request, int $tramiteId)
+    {
+        try {
+            $request->validate([
+                'numero_proveedor' => 'required|integer|min:1',
+                'ultimo_pv_sistema' => 'nullable|string|regex:/^PV\d+$/',
+                'fecha_revision' => 'required|date_format:Y-m-d'
+            ]);
+
+            $resultado = $this->revisionDigitalService->procesarAsignacionPv(
+                $tramiteId,
+                $request->numero_proveedor,
+                $request->ultimo_pv_sistema,
+                $request->fecha_revision
+            );
+
+            return response()->json($resultado);
+
+        } catch (\Exception $e) {
+            \Log::error("Error al procesar asignación de PV", [
+                'tramite_id' => $tramiteId,
+                'error' => $e->getMessage(),
+                'request_data' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la asignación de PV: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Obtener estados de revisión para carga AJAX
      */
     public function obtenerEstadosRevision(int $tramiteId)

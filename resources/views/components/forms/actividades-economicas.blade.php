@@ -1,22 +1,18 @@
 @props(['datos' => [], 'editable' => false, 'actividadesSeleccionadas' => null])
 
 @php
-    // Obtener actividades del old() si hay errores de validación
     $actividadesOld = old('actividades_seleccionadas');
     $actividadesArray = [];
     
     if ($actividadesOld) {
-        // Si viene como JSON string, decodificarlo
         if (is_string($actividadesOld)) {
             $actividadesArray = json_decode($actividadesOld, true) ?: [];
         } elseif (is_array($actividadesOld)) {
             $actividadesArray = $actividadesOld;
         }
     } elseif ($actividadesSeleccionadas instanceof \App\ViewModels\FormDataViewModel) {
-        // Para FormDataViewModel (datos de revisión)
         $actividadesArray = $actividadesSeleccionadas->getActividadesForm();
     } elseif (!empty($datos)) {
-        // Si no hay old() pero hay datos, usar los datos
         $actividadesArray = $datos;
     }
     
@@ -34,7 +30,7 @@
                 'nombre' => $actividad->nombre ?? $actividad->descripcion ?? $actividad->actividad->nombre ?? 'Actividad',
             ];
         } else {
-            // Si es solo un string
+         
             $actividadesNormalizadas[] = [
                 'id' => null,
                 'nombre' => (string) $actividad,
@@ -62,7 +58,6 @@
             <h4 class="text-sm font-semibold text-gray-800 mb-3">{{ $editable ? 'Seleccionar Actividades' : 'Actividades Seleccionadas' }}</h4>
             
             @if($editable)
-            <!-- Búsqueda en tiempo real -->
             <div class="mb-4">
                 <label for="buscar-actividad" class="block text-sm font-medium text-gray-700 mb-2">
                     Buscar actividad económica
@@ -77,26 +72,20 @@
                     </div>
                 </div>
                 
-                <!-- Resultados de búsqueda -->
                 <div id="resultados-busqueda" class="mt-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg hidden">
-                    <!-- Los resultados se cargarán aquí dinámicamente -->
                 </div>
             </div>
             @endif
             
-            <!-- Actividades seleccionadas -->
             <div id="actividades-seleccionadas" class="space-y-2">
-                <!-- Las actividades seleccionadas se mostrarán aquí -->
             </div>
             
             @if($editable)
-            <!-- Input oculto para enviar datos -->
             <input type="hidden" name="actividades_seleccionadas" id="actividades-json" value="{{ old('actividades_seleccionadas', '[]') }}">
             @error('actividades_seleccionadas')
                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
             @enderror
             
-            <!-- Mensaje de error para actividades vacías -->
             <div id="error-actividades-vacias" class="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg hidden">
                 <p class="text-sm text-red-600">
                     <i class="fas fa-exclamation-triangle mr-1"></i>
@@ -115,14 +104,12 @@
             const actividadesJson = document.getElementById('actividades-json');
             const errorActividadesVacias = document.getElementById('error-actividades-vacias');
             
-            // Check if required elements exist
             const esEditable = @json($editable);
             if (!actividadesSeleccionadas) {
                 console.warn('Required elements for actividades-economicas not found');
                 return;
             }
             
-            // En modo no editable, algunos elementos pueden no existir
             if (esEditable && (!buscarInput || !resultadosDiv || !actividadesJson)) {
                 console.warn('Required elements for editable mode not found');
                 return;
@@ -131,13 +118,11 @@
             let timeoutId;
             let actividadesSeleccionadasArray = [];
             
-            // Cargar actividades existentes desde old() o datos
             @if(!empty($actividadesNormalizadas))
                 actividadesSeleccionadasArray = @json($actividadesNormalizadas);
                 actualizarActividadesSeleccionadas();
             @endif
             
-            // Búsqueda en tiempo real (solo en modo editable)
             if (esEditable && buscarInput) {
                 buscarInput.addEventListener('input', function() {
                 clearTimeout(timeoutId);
@@ -175,7 +160,6 @@
                     resultadosDiv.classList.remove('hidden');
                 }
                 
-                // Seleccionar actividad
                 resultadosDiv.addEventListener('click', function(e) {
                     if (e.target.closest('.actividad-item')) {
                         const item = e.target.closest('.actividad-item');
@@ -192,7 +176,6 @@
                     }
                 });
                 
-                // Ocultar resultados al hacer clic fuera
                 document.addEventListener('click', function(e) {
                     if (buscarInput && resultadosDiv && !buscarInput.contains(e.target) && !resultadosDiv.contains(e.target)) {
                         resultadosDiv.classList.add('hidden');
@@ -211,7 +194,6 @@
                     `;
                 } else {
                     actividadesSeleccionadas.innerHTML = actividadesSeleccionadasArray.map((actividad, index) => {
-                        // Las actividades ya vienen normalizadas
                         const nombre = actividad.nombre || 'Actividad sin nombre';
                         const id = actividad.id || index;
                         
@@ -232,11 +214,9 @@
                 
                 if (actividadesJson) {
                     actividadesJson.value = JSON.stringify(actividadesSeleccionadasArray);
-                    // Disparar evento de cambio para activar validación
                     actividadesJson.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 
-                // Verificar actividades seleccionadas solo si es editable y existe el elemento de error
                 if (esEditable && errorActividadesVacias) {
                     if (actividadesSeleccionadasArray.length === 0) {
                         errorActividadesVacias.classList.remove('hidden');
@@ -246,7 +226,6 @@
                 }
             }
             
-            // Función global para remover actividad (solo en modo editable)
             if (esEditable) {
                 window.removerActividad = function(id) {
                     actividadesSeleccionadasArray = actividadesSeleccionadasArray.filter((a, index) => {

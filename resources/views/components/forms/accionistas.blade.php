@@ -160,7 +160,6 @@
             </button>
         </div>
         
-        <!-- Indicador del total de porcentajes -->
         <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium text-blue-800">Total de Participación:</span>
@@ -394,7 +393,6 @@ function actualizarTotalPorcentaje() {
     }
 }
 
-// Configurar eventos para actualizar el total cuando cambien los porcentajes
 document.addEventListener('DOMContentLoaded', function() {
     const porcentajeFields = document.querySelectorAll('[name$="[porcentaje_participacion]"]');
     porcentajeFields.forEach(field => {
@@ -402,10 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
         field.addEventListener('blur', actualizarTotalPorcentaje);
     });
     
-    // Actualizar total inicial
     actualizarTotalPorcentaje();
-    
-    // Observar cambios en el contenedor de accionistas para nuevos campos
     const container = document.getElementById('accionistas-container');
     if (container) {
         const observer = new MutationObserver(function(mutations) {

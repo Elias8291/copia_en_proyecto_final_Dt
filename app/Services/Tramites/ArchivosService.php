@@ -161,7 +161,8 @@ class ArchivosService extends BaseService
      */
     public function actualizar(Tramite $tramite, Request $request): void
     {
-        $archivos = $request->file('archivos');
+        // Verificar si hay archivos en el campo 'archivos' o 'documentos'
+        $archivos = $request->file('archivos') ?: $request->file('documentos');
         
         if (!$archivos) {
             Log::info('ArchivosService: No hay archivos para actualizar', [

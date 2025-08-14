@@ -71,10 +71,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let map = null;
     let marker = null;
+    let mapInitialized = false;
 
     function initMap() {
         const mapContainer = document.getElementById('mapa');
         if (!mapContainer) return;
+
+        // Evitar inicialización múltiple
+        if (mapInitialized || mapContainer._leaflet_map) {
+            return;
+        }
 
         if (mapContainer.offsetHeight === 0) {
             setTimeout(initMap, 100);
@@ -82,6 +88,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         try {
+            // Marcar como inicializado
+            mapInitialized = true;
+            mapContainer._leaflet_map = true;
+
             // Asegurar que el contenedor tenga las propiedades correctas
             mapContainer.style.position = 'relative';
             mapContainer.style.overflow = 'hidden';
@@ -131,6 +141,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         } catch (error) {
             console.error('Error inicializando mapa:', error);
+            // Resetear el estado si hay error
+            mapInitialized = false;
+            if (mapContainer) {
+                mapContainer._leaflet_map = false;
+            }
             setTimeout(initMap, 200);
         }
     }

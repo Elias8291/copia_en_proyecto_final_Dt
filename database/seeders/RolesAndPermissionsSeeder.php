@@ -161,14 +161,15 @@ class RolesAndPermissionsSeeder extends Seeder
                 'tramites.crear',
                 'tramites.ver',
                 'tramites.editar',
-                'tramites.ver_mi_estado', // ¡Este es el permiso clave!
+                'tramites.ver_mi_estado', 
                 'tramites.ver_historial',
-                'proveedores.ver_detalle', // Solo su propia información
+                'proveedores.ver_detalle', 
                 'citas.ver',
                 'citas.crear',
                 'notificaciones.ver',
                 'notificaciones.marcar_leida',
                 'oficios.ver',
+                'mi-estado.ver',
             ]);
             $this->command->info("✅ Proveedor: permisos asignados");
         }
@@ -181,9 +182,10 @@ class RolesAndPermissionsSeeder extends Seeder
                 'usuarios.cambiar_password',
                 'tramites.crear',
                 'tramites.ver',
-                'tramites.ver_mi_estado', // También importante para solicitantes
+                'tramites.ver_mi_estado', 
                 'notificaciones.ver',
                 'notificaciones.marcar_leida',
+                'mi-estado.ver',
             ]);
             $this->command->info("✅ Solicitante: permisos asignados");
         }

@@ -88,6 +88,7 @@ class PermissionSeeder extends Seeder
             'sistema.administrar' => 'Administrar sistema completo',
             'reportes.ver' => 'Ver reportes',
             'configuracion.editar' => 'Editar configuración del sistema',
+            'mi-estado.ver' => 'Ver mi estado',
         ];
 
         $allPermissions = array_merge(

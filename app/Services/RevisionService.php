@@ -305,6 +305,13 @@ class RevisionService
             ->with('catalogoArchivo')
             ->get();
 
+        // Log para verificar que se están cargando los archivos correctos
+        \Log::info("Cargando archivos para trámite {$tramiteId}", [
+            'total_archivos' => $archivos->count(),
+            'archivos_ids' => $archivos->pluck('id')->toArray(),
+            'archivos_nombres' => $archivos->pluck('nombre_original')->toArray()
+        ]);
+
         return [
             'tramite' => $tramite,
             'revision' => $revision,
@@ -315,9 +322,7 @@ class RevisionService
     // Preparar archivos para cotejo
     protected function prepararArchivosParaCotejo($archivos): array
     {
-        $archivosPreparados = $archivos->filter(function($archivo) {
-            return Storage::exists($archivo->ruta);
-        })->map(function($archivo) {
+        $archivosPreparados = $archivos->map(function($archivo) {
             return [
                 'id' => $archivo->id,
                 'nombre_original' => $archivo->nombre_original,
@@ -328,7 +333,9 @@ class RevisionService
                 'comentario_revision' => $archivo->comentario_revision,
                 'fecha_revision' => $archivo->fecha_revision,
                 'revisor' => $archivo->revisor ? $archivo->revisor->name : null,
-                'catalogo_archivo_id' => $archivo->catalogo_archivo_id
+                'catalogo_archivo_id' => $archivo->catalogo_archivo_id,
+                'existe_en_storage' => Storage::exists($archivo->ruta),
+                'ruta' => $archivo->ruta
             ];
         })->values()->toArray();
         

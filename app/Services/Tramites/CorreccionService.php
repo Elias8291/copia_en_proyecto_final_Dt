@@ -61,7 +61,7 @@ class CorreccionService
             $this->actualizarEstadosCorreccion($tramite, $seccionesCorregidas);
 
             $tramite->update([
-                'status' => 'Pendiente',
+                'status' => 'Revision_Digital',
                 'observaciones' => null,
                 'correcciones_count' => $tramite->correcciones_count + 1
             ]);
@@ -153,16 +153,23 @@ class CorreccionService
     /** Actualizar archivos de corrección */
     private function actualizarArchivosCorreccion(Tramite $tramite, Request $request, array $seccionesCorregidas): void
     {
-        if ($request->hasFile('archivos')) {
+        // Verificar si hay archivos en el campo 'archivos' o 'documentos'
+        $archivos = $request->file('archivos') ?: $request->file('documentos');
+        
+        if ($archivos) {
             Log::info('CorreccionService: Actualizando archivos', [
                 'tramite_id' => $tramite->id,
-                'archivos_subidos' => array_keys($request->file('archivos'))
+                'archivos_subidos' => array_keys($archivos)
             ]);
 
             // Los archivos nuevos se crearán con status 'Pendiente' automáticamente
             $this->archivosService->actualizar($tramite, $request);
             
             Log::info('CorreccionService: Archivos corregidos procesados', [
+                'tramite_id' => $tramite->id
+            ]);
+        } else {
+            Log::info('CorreccionService: No hay archivos para actualizar', [
                 'tramite_id' => $tramite->id
             ]);
         }

@@ -91,12 +91,20 @@ class ArchivosEvaluacion {
     }
 
     async evaluarArchivo(archivoId, decision) {
+        // Prevenir cualquier comportamiento por defecto
+        event?.preventDefault();
+        
+        console.log('Evaluando archivo:', archivoId, 'con decisión:', decision);
+        
         const textarea = document.getElementById(`textarea_archivo_${archivoId}`);
         const comentario = textarea ? textarea.value.trim() : '';
+        
+        console.log('Comentario:', comentario);
         
         this.actualizarEstadoArchivo(archivoId, decision, comentario);
         
         try {
+            console.log('Enviando petición al servidor...');
             const response = await fetch(`/archivos/${archivoId}/status`, {
                 method: 'PATCH',
                 headers: {
@@ -109,19 +117,15 @@ class ArchivosEvaluacion {
             if (!response.ok) throw new Error('Error en la petición');
             
             const result = await response.json();
+            console.log('Respuesta del servidor:', result);
             
             // Solo actualizar el estado visual de la sección, sin enviar peticiones adicionales
             this.actualizarEstadoSeccionVisual();
             
-            // Mostrar mensaje y redirigir después de un breve delay
+            // Mostrar mensaje de éxito sin redirigir
             if (result.success && result.message) {
-                if (typeof mostrarNotificacionYRedirigir === 'function') {
-                    mostrarNotificacionYRedirigir(result.message, 'success');
-                } else if (typeof mostrarNotificacion === 'function') {
+                if (typeof mostrarNotificacion === 'function') {
                     mostrarNotificacion(result.message, 'success');
-                    setTimeout(() => {
-                        window.location.href = '/revisiones';
-                    }, 1500);
                 }
             }
             
@@ -131,6 +135,9 @@ class ArchivosEvaluacion {
                 mostrarNotificacion('Error al evaluar el archivo', 'error');
             }
         }
+        
+        // Prevenir cualquier redirección
+        return false;
     }
 
     actualizarEstadoSeccionVisual() {
@@ -177,22 +184,13 @@ class ArchivosEvaluacion {
             comentarioField.value = comentarioSeccion;
         }
         
-        setTimeout(() => {
-            if (typeof evaluarSeccion === 'function') {
-                // La función evaluarSeccion ya maneja la redirección
-                evaluarSeccion('archivos', decisionSeccion);
-            } else {
-                this.actualizarEstadoSeccionManual('archivos', decisionSeccion);
-                // Redirigir después de actualizar el estado manual
-                if (typeof mostrarNotificacionYRedirigir === 'function') {
-                    mostrarNotificacionYRedirigir(`Sección de archivos marcada como ${decisionSeccion}`, 'success');
-                } else {
-                    setTimeout(() => {
-                        window.location.href = '/revisiones';
-                    }, 1500);
-                }
-            }
-        }, 100);
+        // Solo actualizar el estado visual, sin redirigir
+        this.actualizarEstadoSeccionManual('archivos', decisionSeccion);
+        
+        // Mostrar notificación sin redirigir
+        if (typeof mostrarNotificacion === 'function') {
+            mostrarNotificacion(`Sección de archivos marcada como ${decisionSeccion}`, 'success');
+        }
     }
 
     actualizarEstadoSeccionManual(seccion, estado) {

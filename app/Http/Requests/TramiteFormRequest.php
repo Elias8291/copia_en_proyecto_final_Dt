@@ -123,7 +123,12 @@ class TramiteFormRequest extends FormRequest
                 // Obtener tipos MIME permitidos según el tipo de archivo del catálogo
                 $tiposMime = $this->obtenerTiposMimePorTipoArchivo($archivo->tipo_archivo);
                 
-                $rules[$nombreCampo] = 'nullable|file|mimes:' . $tiposMime . '|max:102400'; // 100MB max
+                // En modo corrección, los archivos no son obligatorios inicialmente
+                // En modo normal, son obligatorios
+                $esModoCorreccion = $this->esModoCorreccion();
+                $regla = $esModoCorreccion ? 'nullable' : 'required';
+                
+                $rules[$nombreCampo] = $regla . '|file|mimes:' . $tiposMime . '|max:102400'; // 100MB max
             }
         } catch (\Exception $e) {
             \Log::error('Error al obtener reglas de archivos dinámicas', [
@@ -152,6 +157,7 @@ class TramiteFormRequest extends FormRequest
                 $nombreCampo = 'documentos.' . \Str::slug($archivo->nombre);
                 $tiposPermitidos = $this->obtenerTiposPermitidosPorTipoArchivo($archivo->tipo_archivo);
                 
+                $messages[$nombreCampo . '.required'] = "El archivo '{$archivo->nombre}' es obligatorio.";
                 $messages[$nombreCampo . '.file'] = "El archivo '{$archivo->nombre}' debe ser un archivo válido.";
                 $messages[$nombreCampo . '.mimes'] = "El archivo '{$archivo->nombre}' debe ser de tipo: {$tiposPermitidos}.";
                 $messages[$nombreCampo . '.max'] = "El archivo '{$archivo->nombre}' no puede ser mayor a 100MB.";
@@ -191,6 +197,12 @@ class TramiteFormRequest extends FormRequest
     private function validarArchivosRequeridos($validator)
     {
         try {
+            // En modo corrección, no validar archivos requeridos automáticamente
+            // La validación específica se maneja en el controlador
+            if ($this->esModoCorreccion()) {
+                return;
+            }
+            
             $tipoPersona = $this->esPersonaMoral() ? 'Moral' : 'Física';
             $archivosRequeridos = CatalogoArchivo::where('es_visible', true)
                 ->where(function($query) use ($tipoPersona) {
@@ -204,6 +216,8 @@ class TramiteFormRequest extends FormRequest
 
             foreach ($archivosRequeridos as $archivo) {
                 $nombreCampo = \Str::slug($archivo->nombre);
+                
+                // En modo normal, validar todos los archivos requeridos
                 if (!isset($documentos[$nombreCampo]) || !$documentos[$nombreCampo]) {
                     $archivosFaltantes[] = $archivo->nombre;
                 }
@@ -219,6 +233,16 @@ class TramiteFormRequest extends FormRequest
             ]);
             $validator->errors()->add('archivos_error', 'Error al validar archivos: ' . $e->getMessage());
         }
+    }
+
+    private function esModoCorreccion(): bool
+    {
+        // Verificar si estamos en modo corrección basado en la URL o parámetros
+        $path = $this->path();
+        $method = $this->method();
+        
+        // Si la URL contiene 'edit' o el método es PUT, estamos en modo corrección
+        return str_contains($path, 'edit') || $method === 'PUT';
     }
 
     private function esPersonaMoral(): bool

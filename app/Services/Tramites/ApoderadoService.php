@@ -113,10 +113,10 @@ class ApoderadoService
         return InstrumentoNotarial::create([
             'numero_escritura' => $request->numero_escritura_constitutiva_poder,
             'numero_escritura_constitutiva' => $request->numero_escritura_constitutiva_poder,
-            'fecha_constitucion' => $request->fecha_inscripcion_poder,
-            'nombre_notario' => $request->nombre_notario ?? 'No especificado',
+            'fecha_constitucion' => $request->fecha_poder,
+            'nombre_notario' => $request->nombre_notario_poder ?? 'No especificado',
             'estado_id' => $request->estado_id ?? 1,
-            'numero_notario' => $request->numero_notario ?? 'No especificado',
+            'numero_notario' => $request->numero_notario_poder ?? 'No especificado',
             'numero_registro_publico' => $request->numero_registro_publico_poder,
             'fecha_inscripcion' => $request->fecha_inscripcion_poder,
         ]);

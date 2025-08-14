@@ -180,7 +180,7 @@ class ProveedoresCompleteSeeder extends Seeder
                     }
                     
                     $proveedor = Proveedor::create([
-                        'usuario_id' => $usuario->id,
+                        'usuario_id' => null,
                         'pv_numero' => 'PV' . str_pad($faker->unique()->numberBetween(1000, 999999), 6, '0', STR_PAD_LEFT),
                         'rfc' => $this->generateRFC($tipoPersona),
                         'razon_social' => $razonSocial,
