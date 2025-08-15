@@ -5,7 +5,8 @@
     'textoAprobar' => 'Aprobar y Agendar Cita',
     'textoCorrecciones' => 'Rechazar y Para Corrección',
     'textoRechazar' => 'Rechazar Trámite',
-    'layout' => 'grid' // grid, flex
+    'layout' => 'grid',
+    'esRevisionPresencial' => false
 ])
 
 @php
@@ -13,17 +14,20 @@
         'flex' => 'flex flex-col sm:flex-row gap-2 justify-center',
         default => 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 justify-items-center'
     };
-    $tramiteId = request()->route('tramite');
+    $tramiteId = isset($tramiteId) ? $tramiteId : request()->route('tramite');
+    $esRevisionPresencial = $esRevisionPresencial || 
+                           str_contains(request()->url(), 'revision-presencial') || 
+                           str_contains(request()->path(), 'revision-presencial');
 @endphp
 
 <div class="{{ $containerClasses }}">
     @if($showAprobar)
-        <form action="{{ route('revisiones.aprobar-y-agendar', $tramiteId) }}" method="POST" class="inline-block">
+        <form action="{{ $esRevisionPresencial ? route('revisiones.aprobar', $tramiteId) : route('revisiones.aprobar-y-agendar', $tramiteId) }}" method="POST" class="inline-block">
             @csrf
             <input type="hidden" name="comentario_general" id="form_comentario_general_aprobar">
         <button 
             type="button" 
-                onclick="confirmarDecisionFinal(this, '{{ $textoAprobar }}', '¿Está seguro que desea aprobar este trámite y agendar una cita presencial? Esta acción no se puede deshacer.')"
+            onclick="confirmarDecisionFinal(this, '{{ $textoAprobar }}', '{{ $esRevisionPresencial ? '¿Está seguro que desea aprobar este trámite? El proveedor será activado y se le asignará un PV. Esta acción no se puede deshacer.' : '¿Está seguro que desea aprobar este trámite y agendar una cita presencial? Esta acción no se puede deshacer.' }}')"
             class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-3 rounded-md transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md min-w-[120px] text-sm"
         >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,7 +44,7 @@
             <input type="hidden" name="comentario_general" id="form_comentario_general_correccion">
         <button 
             type="button" 
-                onclick="confirmarDecisionFinal(this, '{{ $textoCorrecciones }}', '¿Está seguro que desea rechazar este trámite y enviarlo para corrección? El solicitante deberá realizar los cambios solicitados.')"
+            onclick="confirmarDecisionFinal(this, '{{ $textoCorrecciones }}', '¿Está seguro que desea rechazar este trámite y enviarlo para corrección? El solicitante deberá realizar los cambios solicitados.')"
             class="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-3 rounded-md transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md min-w-[120px] text-sm"
         >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,12 +56,12 @@
     @endif
     
     @if($showRechazar)
-        <form action="{{ route('revisiones.rechazar-completo', $tramiteId) }}" method="POST" class="inline-block">
+        <form action="{{ $esRevisionPresencial ? route('revisiones.rechazar', $tramiteId) : route('revisiones.rechazar-completo', $tramiteId) }}" method="POST" class="inline-block">
             @csrf
             <input type="hidden" name="comentario_general" id="form_comentario_general_rechazar">
         <button 
             type="button" 
-                onclick="confirmarDecisionFinal(this, '{{ $textoRechazar }}', '¿Está seguro que desea rechazar este trámite? Esta acción no se puede deshacer y el trámite será cancelado.')"
+            onclick="confirmarDecisionFinal(this, '{{ $textoRechazar }}', '¿Está seguro que desea rechazar este trámite? Esta acción no se puede deshacer y el trámite será cancelado.')"
             class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-3 rounded-md transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-sm hover:shadow-md min-w-[120px] text-sm"
         >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -71,17 +75,14 @@
 
 <script>
 function confirmarDecisionFinal(button, titulo, mensaje) {
-   
     const form = button.closest('form');
     if (!form) return;
     
-   
     if (typeof showConfirmModal === 'function') {
         showConfirmModal(titulo, mensaje, null, function() {
             enviarFormulario(form);
         });
     } else {
-       
         if (confirm(`${titulo}\n\n${mensaje}`)) {
             enviarFormulario(form);
         }
@@ -89,13 +90,11 @@ function confirmarDecisionFinal(button, titulo, mensaje) {
 }
 
 function enviarFormulario(form) {
-
     const comentarioGeneral = document.getElementById('comentario_general')?.value || '';
     const hiddenInput = form.querySelector('input[name="comentario_general"]');
     if (hiddenInput) {
         hiddenInput.value = comentarioGeneral;
     }
-
     form.submit();
 }
 </script> 

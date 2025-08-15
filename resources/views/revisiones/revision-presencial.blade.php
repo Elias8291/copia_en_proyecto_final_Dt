@@ -190,6 +190,7 @@
                         textoAprobar="Aprobar Trámite"
                         textoRechazar="Rechazar Trámite"
                         layout="flex"
+                        esRevisionPresencial="true"
                     />
                 </div>
             </div>
@@ -262,5 +263,4 @@ document.addEventListener('DOMContentLoaded', function() {
     confirmClass="bg-blue-600 hover:bg-blue-700 focus:ring-blue-500"
     cancelClass="bg-white border-gray-300 text-gray-700 hover:text-gray-500 focus:ring-blue-500"
 />
-
 @endsection

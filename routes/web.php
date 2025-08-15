@@ -240,12 +240,14 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
     // Rutas para proveedores
     Route::prefix('proveedores')->name('proveedores.')->group(function () {
         Route::get('/', [ProveedoresController::class, 'index'])->name('index');
+        Route::get('/exportar', [ProveedoresController::class, 'export'])->name('export');
         Route::get('/crear', [ProveedoresController::class, 'create'])->name('create');
         Route::post('/', [ProveedoresController::class, 'store'])->name('store');
         Route::get('/{proveedor}', [ProveedoresController::class, 'show'])->name('show');
         Route::get('/{proveedor}/editar', [ProveedoresController::class, 'edit'])->name('edit');
         Route::put('/{proveedor}', [ProveedoresController::class, 'update'])->name('update');
         Route::delete('/{proveedor}', [ProveedoresController::class, 'destroy'])->name('destroy');
+        Route::get('/tramite/{tramite}/detalles', [ProveedoresController::class, 'verTramiteDetalles'])->name('tramite-detalles');
     });
 
 });

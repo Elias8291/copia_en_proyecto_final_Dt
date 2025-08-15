@@ -37,7 +37,6 @@ class MiEstadoController extends Controller
                     'apoderadosLegales.instrumentoNotarial.estado',
                     'datosConstitutivos.instrumentoNotarial.estado',
                     'archivos.catalogoArchivo',
-                    'oficios'
                 ]);
 
                 $direccion = $ultimoTramite->direcciones->first();

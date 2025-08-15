@@ -476,10 +476,18 @@ class RfcProveedorService
                 $actualizacion['pv_numero'] = $this->generarNumeroPV();
             }
             
-            // Calcular vigencia (1 año para inscripción y renovación)
-            if (in_array($tipoTramiteLower, ['inscripcion', 'renovacion'])) {
+            // Calcular vigencia según tipo de trámite
+            if ($tipoTramiteLower === 'inscripcion') {
+                // Inscripción: 1 año desde la fecha actual
                 $actualizacion['fecha_vencimiento_padron'] = $this->calcularFechaVencimiento($fechaActual, 1);
+            } elseif ($tipoTramiteLower === 'renovacion') {
+                // Renovación: 1 año desde la fecha de vencimiento actual del proveedor
+                $fechaVencimientoActual = $proveedor->fecha_vencimiento_padron ? 
+                    Carbon::parse($proveedor->fecha_vencimiento_padron) : 
+                    $fechaActual;
+                $actualizacion['fecha_vencimiento_padron'] = $this->calcularFechaVencimiento($fechaVencimientoActual, 1);
             } else {
+                // Actualización: mantener la fecha de vencimiento existente o calcular nueva si no existe
                 $actualizacion['fecha_vencimiento_padron'] = $proveedor->fecha_vencimiento_padron ?: $this->calcularFechaVencimiento($fechaActual, 1);
             }
             

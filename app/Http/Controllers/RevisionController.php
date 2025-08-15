@@ -107,7 +107,7 @@ class RevisionController extends Controller
     public function verTramiteHistorico(int $tramiteId)
     {
         $datos = $this->revisionService->obtenerDatosRevision($tramiteId, 'Historico');
-        return view('revisiones.historico', $datos);
+        return view('revisiones.tramite-historico', $datos);
     }
 
     /** Mostrar archivo */
@@ -420,38 +420,18 @@ class RevisionController extends Controller
                 'status' => $tramite->status
             ]);
             
-            // Usar el DecisionesFinalesService para manejar la aprobación según el tipo de trámite
+            // Usar el DecisionesFinalesService específico para revisión presencial
             $decisionesService = app(\App\Services\Revisiones\DecisionesFinalesService::class);
             
-            // Determinar la acción según el tipo de trámite
-            $tipoTramite = strtolower($tramite->tipo_tramite);
-            
-            switch ($tipoTramite) {
-                case 'inscripcion':
-                    // Para inscripción: aprobar y asignar proveedor
-                    $resultado = $decisionesService->aprobarYAsignarProveedor($tramiteId, $comentarioGeneral);
-                    break;
-                    
-                case 'renovacion':
-                    // Para renovación: aprobar y renovar proveedor
-                    $resultado = $decisionesService->aprobarYRenovarProveedor($tramiteId, $comentarioGeneral);
-                    break;
-                    
-                case 'actualizacion':
-                    // Para actualización: aprobar y actualizar proveedor
-                    $resultado = $decisionesService->aprobarYActualizarProveedor($tramiteId, $comentarioGeneral);
-                    break;
-                    
-                default:
-                    throw new \Exception("Tipo de trámite no válido: {$tramite->tipo_tramite}");
-            }
+            // Para revisión presencial: activar proveedor, asignar PV y agendar cita domiciliaria
+            $resultado = $decisionesService->aprobarRevisionPresencial($tramiteId, $comentarioGeneral);
             
             if ($resultado['success']) {
-                \Log::info("Trámite {$tramiteId} aprobado exitosamente según tipo: {$tipoTramite}", $resultado);
+                \Log::info("Trámite {$tramiteId} aprobado exitosamente en revisión presencial", $resultado);
                 return response()->json($resultado);
             }
             
-            \Log::warning("Trámite {$tramiteId} no pudo ser aprobado", $resultado);
+            \Log::warning("Trámite {$tramiteId} no pudo ser aprobado en revisión presencial", $resultado);
             return response()->json($resultado);
             
         } catch (\Exception $e) {

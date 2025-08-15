@@ -31,27 +31,21 @@ class ProveedoresCompleteSeeder extends Seeder
     {
         $this->command->info("Generando {$this->count} proveedores completos con sus trámites...");
 
-        // Obtener datos necesarios de la base de datos - incrementar límites para soportar más proveedores
-        $usuarios = User::limit(max(50, $this->count * 2))->get();
+        // Obtener datos necesarios de la base de datos - NO obtener usuarios (quedarán con usuario_id = null)
         $actividades = DB::table('actividad')->get(); // Obtener todas las actividades
         $estados = DB::table('estados')->get(); // Obtener todos los estados
         $municipios = DB::table('municipios')->get(); // Obtener todos los municipios
         $asentamientos = DB::table('asentamientos')->get(); // Obtener todos los asentamientos
-
-        if ($usuarios->isEmpty()) {
-            $this->command->error('No hay usuarios en la base de datos. Ejecuta primero UserSeeder.');
-            return;
-        }
 
         // Mostrar progreso para cantidades grandes
         if ($this->count > 100) {
             $this->command->info("Procesando en lotes para optimizar el rendimiento...");
         }
 
-        $this->createProveedores($usuarios, $actividades, $estados, $municipios, $asentamientos);
+        $this->createProveedores($actividades, $estados, $municipios, $asentamientos);
     }
 
-    private function createProveedores($usuarios, $actividades, $estados, $municipios, $asentamientos)
+    private function createProveedores($actividades, $estados, $municipios, $asentamientos)
     {
         $faker = Faker::create('es_MX');
         
@@ -91,7 +85,6 @@ class ProveedoresCompleteSeeder extends Seeder
                 try {
                     // Alternar tipo de persona: 40% Física, 60% Moral
                     $tipoPersona = $faker->randomElement(['Física', 'Física', 'Moral', 'Moral', 'Moral']);
-                    $usuario = $usuarios->random();
                     
                     // Generar nombre/razón social más realista para Latinoamérica
                     if ($tipoPersona === 'Física') {

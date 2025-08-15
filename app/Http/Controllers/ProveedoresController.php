@@ -5,16 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Proveedor;
 use App\Models\Actividad;
 use App\Models\Sector;
+use App\Models\Tramite;
+use App\Services\Tramites\DataRetrievalService;
+use App\ViewModels\FormDataViewModel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use App\Exports\ProveedoresSimpleExport;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProveedoresExcelCompleto;
 use Spatie\Permission\Middleware\PermissionMiddleware;
+use Carbon\Carbon;
 
 class ProveedoresController extends Controller
 {
-    public function __construct()
+    private DataRetrievalService $dataRetrievalService;
+
+    public function __construct(DataRetrievalService $dataRetrievalService)
     {
+        $this->dataRetrievalService = $dataRetrievalService;
         $this->middleware('auth');
         $this->middleware(PermissionMiddleware::class . ':proveedores.ver')->only(['index', 'show']);
         $this->middleware(PermissionMiddleware::class . ':proveedores.crear')->only(['create', 'store']);
@@ -22,14 +28,10 @@ class ProveedoresController extends Controller
         $this->middleware(PermissionMiddleware::class . ':proveedores.eliminar')->only(['destroy']);
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = Proveedor::query();
 
-        // Búsqueda por texto
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -39,22 +41,12 @@ class ProveedoresController extends Controller
             });
         }
 
-        // Filtro por estado del padrón
-        if ($request->filled('estado')) {
-            $query->where('estado_padron', $request->estado);
-        }
+        if ($request->filled('estado')) $query->where('estado_padron', $request->estado);
+        if ($request->filled('tipo_persona')) $query->where('tipo_persona', $request->tipo_persona);
 
-        // Filtro por tipo de persona
-        if ($request->filled('tipo_persona')) {
-            $query->where('tipo_persona', $request->tipo_persona);
-        }
-
-        // Filtro por vencimiento
         if ($request->filled('vencimiento')) {
-            $vencimiento = $request->vencimiento;
             $hoy = now();
-            
-            switch ($vencimiento) {
+            switch ($request->vencimiento) {
                 case 'vencido':
                     $query->where('fecha_vencimiento_padron', '<', $hoy);
                     break;
@@ -67,12 +59,11 @@ class ProveedoresController extends Controller
             }
         }
 
-        // Filtro por año
         if ($request->filled('año')) {
-            $query->whereYear('created_at', $request->año);
+            $query->whereYear('fecha_alta_padron', $request->año);
         }
 
-        // Filtro por sector económico
+        // Filtros basados en el último trámite del proveedor
         if ($request->filled('sector')) {
             $sectorIds = $request->sector;
             if (!is_array($sectorIds)) {
@@ -83,13 +74,15 @@ class ProveedoresController extends Controller
             });
             
             if (!empty($sectorIds)) {
-                $query->whereHas('tramites.actividades.actividad', function($q) use ($sectorIds) {
-                    $q->whereIn('sector_id', $sectorIds);
+                $query->whereHas('tramites', function($tramiteQuery) use ($sectorIds) {
+                    $tramiteQuery->whereRaw('id = (SELECT MAX(id) FROM tramites t WHERE t.proveedor_id = tramites.proveedor_id)')
+                        ->whereHas('actividades.actividad', function($q) use ($sectorIds) {
+                            $q->whereIn('sector_id', $sectorIds);
+                        });
                 });
             }
         }
 
-        // Filtro por actividad económica
         if ($request->filled('actividad_economica')) {
             $actividadIds = $request->actividad_economica;
             if (!is_array($actividadIds)) {
@@ -100,76 +93,154 @@ class ProveedoresController extends Controller
             });
             
             if (!empty($actividadIds)) {
-                $query->whereHas('tramites.actividades', function($q) use ($actividadIds) {
-                    $q->whereIn('actividad_id', $actividadIds);
+                $query->whereHas('tramites', function($tramiteQuery) use ($actividadIds) {
+                    $tramiteQuery->whereRaw('id = (SELECT MAX(id) FROM tramites t WHERE t.proveedor_id = tramites.proveedor_id)')
+                        ->whereHas('actividades', function($q) use ($actividadIds) {
+                            $q->whereIn('actividad_id', $actividadIds);
+                        });
                 });
             }
         }
 
-        // Filtro por estado geográfico
         if ($request->filled('estado_geografico')) {
-            $estadoId = $request->estado_geografico;
-            $query->whereHas('tramites.direcciones.estado', function($q) use ($estadoId) {
-                $q->where('id', $estadoId);
+            $query->whereHas('tramites', function($tramiteQuery) use ($request) {
+                $tramiteQuery->whereRaw('id = (SELECT MAX(id) FROM tramites t WHERE t.proveedor_id = tramites.proveedor_id)')
+                    ->whereHas('direcciones.estado', function($q) use ($request) {
+                        $q->where('id', $request->estado_geografico);
+                    });
             });
         }
 
-        // Ordenar por ID descendente
-        $query->orderBy('id', 'desc');
+        // Filtro para proveedores con historial (múltiples trámites)
+        if ($request->filled('con_historial')) {
+            switch ($request->con_historial) {
+                case 'si':
+                    // Proveedores con 2 o más trámites
+                    $query->has('tramites', '>=', 2);
+                    break;
+                case 'no':
+                    // Proveedores con solo 1 trámite o ninguno
+                    $query->has('tramites', '<=', 1);
+                    break;
+                case 'sin_tramites':
+                    // Proveedores sin trámites
+                    $query->doesntHave('tramites');
+                    break;
+                case 'renovadores':
+                    // Proveedores que renuevan constantemente (patrón de renovación)
+                    $query->whereHas('tramites', function($q) {
+                        $q->where('tipo_tramite', 'Renovacion');
+                    }, '>=', 2) // Al menos 2 renovaciones
+                    ->whereHas('tramites', function($q) {
+                        $q->where('tipo_tramite', 'Inscripcion');
+                    }); // Y al menos 1 inscripción inicial
+                    break;
+            }
+        }
 
-        // Paginación
+
+
+        // Filtro por trámites específicos (tipo y/o año)
+        if ($request->filled('tipo_tramite_año') || $request->filled('año_especifico')) {
+            $query->whereHas('tramites', function($q) use ($request) {
+                if ($request->filled('tipo_tramite_año')) {
+                    $q->where('tipo_tramite', $request->tipo_tramite_año);
+                }
+                if ($request->filled('año_especifico')) {
+                    $q->whereRaw('YEAR(COALESCE(fecha_finalizacion, fecha_inicio, created_at)) = ?', [$request->año_especifico]);
+                }
+            });
+        }
+
+        // Filtro trimestral - Proveedores activos en el período seleccionado
+        if ($request->filled('año_trimestre') && $request->filled('trimestre')) {
+            $año = (int) $request->año_trimestre;
+            $trimestre = (int) $request->trimestre;
+            
+            // Definir rangos de meses por trimestre
+            $rangosTrimestrales = [
+                1 => ['inicio' => 1, 'fin' => 3],   // Q1: Enero-Marzo
+                2 => ['inicio' => 4, 'fin' => 6],   // Q2: Abril-Junio  
+                3 => ['inicio' => 7, 'fin' => 9],   // Q3: Julio-Septiembre
+                4 => ['inicio' => 10, 'fin' => 12]  // Q4: Octubre-Diciembre
+            ];
+            
+            if (isset($rangosTrimestrales[$trimestre])) {
+                $mesInicio = $rangosTrimestrales[$trimestre]['inicio'];
+                $mesFin = $rangosTrimestrales[$trimestre]['fin'];
+                
+                // Fechas del trimestre
+                $inicioTrimestre = Carbon::create($año, $mesInicio, 1)->startOfMonth();
+                $finTrimestre = Carbon::create($año, $mesFin, 1)->endOfMonth();
+                
+                // Filtrar proveedores que estuvieron activos durante este período
+                // Un proveedor está activo si su fecha de vencimiento es posterior al inicio del trimestre
+                $query->where(function($q) use ($inicioTrimestre, $finTrimestre) {
+                    $q->where('fecha_vencimiento_padron', '>=', $inicioTrimestre)
+                      ->where('fecha_alta_padron', '<=', $finTrimestre);
+                });
+            }
+        }
+
+        // Ordenamiento
+        $ordenPor = $request->get('orden_por', 'id');
+        $direccion = $request->get('direccion', 'desc');
+        
+        switch ($ordenPor) {
+            case 'fecha_alta_padron':
+                $query->orderBy('fecha_alta_padron', $direccion);
+                break;
+            case 'razon_social':
+                $query->orderBy('razon_social', $direccion);
+                break;
+            case 'rfc':
+                $query->orderBy('rfc', $direccion);
+                break;
+            case 'estado_padron':
+                $query->orderBy('estado_padron', $direccion);
+                break;
+            case 'fecha_vencimiento_padron':
+                $query->orderBy('fecha_vencimiento_padron', $direccion);
+                break;
+            default:
+                $query->orderBy('id', $direccion);
+        }
         $perPage = $request->get('per_page', 15);
         $todosProveedores = $query->paginate($perPage)->withQueryString();
 
-        $sectores = Sector::with(['actividades' => function($query) {
-            $query->orderBy('nombre');
-        }])->orderBy('nombre')->get(['id','nombre']);
-
-        // Obtener estados geográficos de México para el filtro
+        $sectores = Sector::with(['actividades' => fn($q) => $q->orderBy('nombre')])
+            ->orderBy('nombre')->get(['id','nombre']);
         $estados = \App\Models\Estado::orderBy('nombre')->get();
 
         if ($request->wantsJson() || $request->get('format') === 'json') {
             return response()->json([
-                'sectores' => $sectores->map(fn($s) => [
-                    'id' => $s->id,
-                    'nombre' => $s->nombre
-                ])->values(),
-                'actividades' => Actividad::orderBy('nombre')->get(['id','nombre'])->map(fn($a) => [
-                    'id' => $a->id,
-                    'nombre' => $a->nombre
-                ])->values(),
+                'sectores' => $sectores->map(fn($s) => ['id' => $s->id, 'nombre' => $s->nombre])->values(),
+                'actividades' => Actividad::orderBy('nombre')->get(['id','nombre'])
+                    ->map(fn($a) => ['id' => $a->id, 'nombre' => $a->nombre])->values(),
             ]);
         }
 
-        // Manejar exportación simple
         if ($request->get('export') == 'excel') {
-            $filtros = $request->only(['search', 'estado', 'tipo_persona', 'vencimiento', 'año', 'sector', 'actividad_economica', 'estado_geografico']);
-            $filtros = array_filter($filtros, function($valor) {
-                if (is_array($valor)) {
-                    return !empty($valor);
-                }
-                return !is_null($valor) && $valor !== '';
-            });
-            
+            $filtros = array_filter($request->only(['search', 'estado', 'tipo_persona', 'vencimiento', 'año', 'sector', 'actividad_economica', 'estado_geografico']), fn($v) => is_array($v) ? !empty($v) : $v !== null && $v !== '');
             $nombreArchivo = 'proveedores_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-            
-            return Excel::download(new ProveedoresSimpleExport($filtros), $nombreArchivo);
+            return Excel::download(new ProveedoresExcelCompleto($filtros), $nombreArchivo);
         }
 
-        return view('proveedores.index', compact('todosProveedores', 'sectores', 'estados'));
+        // Obtener años disponibles de fechas de alta de padrón
+        $añosDisponibles = \App\Models\Proveedor::whereNotNull('fecha_alta_padron')
+            ->selectRaw('DISTINCT YEAR(fecha_alta_padron) as año')
+            ->orderBy('año', 'desc')
+            ->pluck('año')
+            ->filter(); // Eliminar valores nulos
+
+        return view('proveedores.index', compact('todosProveedores', 'sectores', 'estados', 'añosDisponibles'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('proveedores.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -181,110 +252,47 @@ class ProveedoresController extends Controller
             'fecha_vencimiento_padron' => 'nullable|date|after:fecha_alta_padron',
             'pv_numero' => 'nullable|string|max:20'
         ]);
-
         $validated['usuario_id'] = auth()->id();
-
-        $proveedor = Proveedor::create($validated);
-
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor creado exitosamente.');
+        Proveedor::create($validated);
+        return redirect()->route('proveedores.index')->with('success', 'Proveedor creado exitosamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Proveedor $proveedor)
+    public function show(Request $request, Proveedor $proveedor)
     {
-        // Cargar relaciones básicas del proveedor
-        $proveedor->load(['usuario', 'tramites' => function($query) {
-            $query->orderBy('created_at', 'desc');
-        }]);
-
-        // Obtener el último trámite del proveedor
+        // Determinar el orden del historial
+        $ordenHistorial = $request->get('orden_historial', 'reciente'); // 'reciente' o 'pasados'
+        
+        // Cargar trámites con el orden solicitado
+        if ($ordenHistorial === 'pasados') {
+            // Ordenar por fecha más antigua primero
+            $proveedor->load(['usuario', 'tramites' => function($q) {
+                $q->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) ASC');
+            }]);
+        } else {
+            // Ordenar por fecha más reciente primero (default)
+            $proveedor->load(['usuario', 'tramites' => function($q) {
+                $q->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC');
+            }]);
+        }
+        
         $ultimoTramite = $proveedor->tramites->first();
-        
         $datosCompletos = null;
-        
-        if ($ultimoTramite) {
-            // Cargar todas las relaciones del último trámite
-            $ultimoTramite->load([
-                'datosGenerales',
-                'direcciones.estado',
-                'direcciones.coordenada',
-                'contactos',
-                'actividades.actividad',
-                'accionistas',
-                'apoderadosLegales.instrumentoNotarial.estado',
-                'datosConstitutivos.instrumentoNotarial.estado',
-                'archivos.catalogoArchivo'
-            ]);
 
-            // Estructurar los datos para la vista - compatibles con los componentes existentes
-            $direccion = $ultimoTramite->direcciones->first();
-            $datosGenerales = $ultimoTramite->datosGenerales->first();
-            $contacto = $ultimoTramite->contactos->first();
-            
-            $datosCompletos = [
-                'datos_generales' => $datosGenerales ? array_merge($datosGenerales->toArray(), [
-                    // Agregar datos de contacto a datos generales para que aparezcan en la misma sección
-                    'nombre_contacto' => $contacto->nombre_contacto ?? '',
-                    'cargo' => $contacto->cargo ?? '',
-                    'telefono_contacto' => $contacto->telefono ?? '',
-                    'correo_contacto' => $contacto->correo ?? '',
-                ]) : [],
-                'direccion' => $direccion ? [
-                    'codigo_postal' => $direccion->codigo_postal,
-                    'estado' => $direccion->estado->nombre ?? '',
-                    'estado_id' => $direccion->estado_id,
-                    'municipio' => $direccion->municipio,
-                    'localidad' => $direccion->localidad,
-                    'asentamiento' => $direccion->asentamiento,
-                    'colonia' => $direccion->asentamiento, // alias para compatibilidad
-                    'calle' => $direccion->calle,
-                    'numero_exterior' => $direccion->numero_exterior,
-                    'numero_interior' => $direccion->numero_interior,
-                    'entre_calle' => $direccion->entre_calle,
-                    'y_calle' => $direccion->y_calle,
-                    'latitud' => $direccion->coordenada->latitud ?? null,
-                    'longitud' => $direccion->coordenada->longitud ?? null
-                ] : [],
-                'actividades_economicas' => $ultimoTramite->actividades->map(function($actividad) {
-                    return [
-                        'id' => $actividad->actividad_id,
-                        'nombre' => $actividad->actividad->nombre ?? 'Actividad no encontrada',
-                        'descripcion' => $actividad->actividad->descripcion ?? '',
-                        'sector_id' => $actividad->actividad->sector_id ?? null
-                    ];
-                })->toArray(),
-                'accionistas' => $ultimoTramite->accionistas->toArray(),
-                'apoderado_legal' => $this->formatApoderadoData($ultimoTramite->apoderadosLegales->first()),
-                'constitucion' => $this->formatConstitucionData($ultimoTramite->datosConstitutivos->first()),
-                'documentos' => $ultimoTramite->archivos->map(function($archivo) {
-                    return [
-                        'id' => $archivo->id,
-                        'nombre' => $archivo->catalogoArchivo->nombre ?? 'Documento',
-                        'ruta' => $archivo->ruta_archivo,
-                        'tipo' => $archivo->catalogoArchivo->tipo ?? 'general',
-                        'status' => $archivo->status
-                    ];
-                })->toArray()
-            ];
+        if ($ultimoTramite) {
+            $datosServicio = $this->dataRetrievalService->obtenerDatosTramite($ultimoTramite);
+            $datosServicio['datos_generales']['tipo_persona'] = $ultimoTramite->proveedor->tipo_persona;
+            $viewModel = new FormDataViewModel($datosServicio);
+            $datosCompletos = $viewModel->getAllFormData();
         }
 
-        return view('proveedores.show', compact('proveedor', 'ultimoTramite', 'datosCompletos'));
+        return view('proveedores.show', compact('proveedor', 'ultimoTramite', 'datosCompletos', 'ordenHistorial'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Proveedor $proveedor)
     {
         return view('proveedores.edit', compact('proveedor'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Proveedor $proveedor)
     {
         $validated = $request->validate([
@@ -296,71 +304,71 @@ class ProveedoresController extends Controller
             'fecha_vencimiento_padron' => 'nullable|date|after:fecha_alta_padron',
             'pv_numero' => 'nullable|string|max:20'
         ]);
-
         $proveedor->update($validated);
-
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor actualizado exitosamente.');
+        return redirect()->route('proveedores.index')->with('success', 'Proveedor actualizado exitosamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Proveedor $proveedor)
     {
         $proveedor->delete();
-
-        return redirect()->route('proveedores.index')
-            ->with('success', 'Proveedor eliminado exitosamente.');
+        return redirect()->route('proveedores.index')->with('success', 'Proveedor eliminado exitosamente.');
     }
 
-    /**
-     * Formatear datos del apoderado legal para el componente
-     */
-    private function formatApoderadoData($apoderado)
+
+
+    public function verTramiteDetalles($tramiteId)
     {
-        if (!$apoderado) {
-            return [];
-        }
+        $tramite = Tramite::with('proveedor.usuario')->findOrFail($tramiteId);
+        $datosServicio = $this->dataRetrievalService->obtenerDatosTramiteHistorico($tramiteId);
+        $datosServicio['datos_generales']['tipo_persona'] = $tramite->proveedor->tipo_persona;
+        $viewModel = new FormDataViewModel($datosServicio);
+        $datosCompletos = $viewModel->getAllFormData();
 
-        $instrumentoNotarial = $apoderado->instrumentoNotarial;
-        
-        return [
-            'nombre_apoderado' => $apoderado->nombre_apoderado,
-            'rfc' => $apoderado->rfc,
-            'numero_escritura_poder' => $instrumentoNotarial->numero_escritura ?? '',
-            'fecha_poder' => $instrumentoNotarial->fecha_constitucion ?? '',
-            'nombre_notario_poder' => $instrumentoNotarial->nombre_notario ?? '',
-            'numero_notario_poder' => $instrumentoNotarial->numero_notario ?? '',
-            'numero_escritura_constitutiva_poder' => $apoderado->numero_escritura_constitutiva_poder ?? '',
-            'numero_registro_publico_poder' => $apoderado->numero_registro_publico_poder ?? '',
-            'fecha_inscripcion_poder' => $apoderado->fecha_inscripcion_poder ?? '',
-            'estado_id' => $instrumentoNotarial->estado_id ?? '',
-            'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
-        ];
+        return view('proveedores.tramite-detalles', compact('tramite', 'datosCompletos'));
     }
 
-    /**
-     * Formatear datos constitutivos para el componente
-     */
-    private function formatConstitucionData($constitutivo)
+    public function export(Request $request)
     {
-        if (!$constitutivo) {
-            return [];
-        }
+        // Obtener todos los filtros de la request, incluyendo los nuevos parámetros
+        $filtros = array_filter($request->only([
+            'search', 
+            'estado', 
+            'tipo_persona', 
+            'vencimiento', 
+            'año', 
+            'sector', 
+            'actividad_economica', 
+            'estado_geografico',
+            'con_historial',
+            'tipo_tramite_año',
+            'año_especifico',
+            'proximidad_vencimiento',
+            'dias_personalizados',
+            'solo_activos',
+            'año_trimestre',
+            'trimestre'
+        ]), fn($v) => is_array($v) ? !empty($v) : $v !== null && $v !== '');
 
-        $instrumentoNotarial = $constitutivo->instrumentoNotarial;
+        // Obtener columnas seleccionadas, por defecto todas las básicas
+        $columnasSeleccionadas = $request->get('columns', [
+            'id', 'rfc', 'razon_social', 'tipo_persona', 'estado_padron', 'telefono', 'domicilio', 'dias_restantes'
+        ]);
+
+        // Agregar configuración de exportación a los filtros
+        $filtros['columns'] = $columnasSeleccionadas;
         
-        return [
-            'estado_id' => $instrumentoNotarial->estado_id ?? '',
-            'estado_nombre' => $instrumentoNotarial->estado->nombre ?? '',
-            'numero_escritura' => $instrumentoNotarial->numero_escritura ?? '',
-            'numero_escritura_constitutiva' => $instrumentoNotarial->numero_escritura_constitutiva ?? '',
-            'fecha_constitucion' => $instrumentoNotarial->fecha_constitucion ?? '',
-            'nombre_notario' => $instrumentoNotarial->nombre_notario ?? '',
-            'numero_notario' => $instrumentoNotarial->numero_notario ?? '',
-            'numero_registro_publico' => $instrumentoNotarial->numero_registro_publico ?? '',
-            'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
-        ];
+        // Generar nombre de archivo más descriptivo
+        $sufijo = '';
+        if ($request->get('solo_activos')) {
+            $sufijo .= '_activos';
+        }
+        if ($request->get('año_trimestre') && $request->get('trimestre')) {
+            $sufijo .= '_' . $request->get('año_trimestre') . 'Q' . $request->get('trimestre');
+        }
+        
+        $nombreArchivo = 'proveedores' . $sufijo . '_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download(new ProveedoresExcelCompleto($filtros), $nombreArchivo);
     }
+
 }

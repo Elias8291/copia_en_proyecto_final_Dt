@@ -84,6 +84,24 @@
 </div>
 
 <script>
+// Variable global para almacenar el formulario a enviar
+let formToSubmit = null;
+
+function showDeleteModal(title, message, formId) {
+    // Almacenar el ID del formulario a enviar
+    formToSubmit = formId;
+    
+    // Actualizar el contenido del modal
+    const modal = document.getElementById('deleteModal');
+    const modalTitle = modal.querySelector('h3');
+    const modalMessage = modal.querySelector('.text-sm.text-gray-700');
+    
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalMessage) modalMessage.textContent = message;
+    
+    openDeleteModal('deleteModal');
+}
+
 function openDeleteModal(modalId, itemName = '', itemType = 'elemento') {
     const modal = document.getElementById(modalId);
     const content = document.getElementById(modalId + 'Content');
@@ -117,27 +135,23 @@ function closeDeleteModal(modalId) {
         setTimeout(() => {
             modal.classList.add('hidden');
             document.body.style.overflow = '';
+            formToSubmit = null; // Limpiar la referencia del formulario
         }, 200);
     }
 }
 
 function confirmDelete(modalId) {
-    const modal = document.getElementById(modalId);
-    const itemId = modalId.replace('deleteModal', '');
-    
-    // Buscar el formulario correspondiente
-    const form = document.getElementById('delete-form-' + itemId);
-    const mobileForm = document.getElementById('delete-form-mobile-' + itemId);
-    
-    if (form) {
-        // Enviar formulario tradicional de Laravel
-        form.submit();
-    } else if (mobileForm) {
-        // Enviar formulario móvil tradicional de Laravel
-        mobileForm.submit();
-    } else {
-        // Si no hay formulario, cerrar el modal
-        closeDeleteModal(modalId);
+    if (formToSubmit) {
+        // Buscar el formulario por su ID
+        const form = document.getElementById(formToSubmit);
+        if (form) {
+            // Cerrar el modal primero
+            closeDeleteModal(modalId);
+            // Enviar el formulario
+            setTimeout(() => {
+                form.submit();
+            }, 300);
+        }
     }
 }
 
@@ -151,6 +165,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 closeDeleteModal(modalId);
             }
         });
+    });
+    
+    // Cerrar modal con la tecla Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal('deleteModal');
+        }
     });
 });
 </script> 

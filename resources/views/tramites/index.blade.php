@@ -1,10 +1,38 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+.page-loading {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+.page-loaded {
+    opacity: 1;
+}
+
+.tramite-card {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+}
+
+.content-container {
+    min-height: 400px;
+}
+</style>
+@endpush
+
 @section('title', 'Trámites Disponibles')
 
 @section('content')
-<div class="min-h-screen py-8">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+<script>
+// Script inline para prevenir FOUC - se ejecuta inmediatamente
+document.documentElement.style.visibility = 'hidden';
+window.addEventListener('load', function() {
+    document.documentElement.style.visibility = 'visible';
+});
+</script>
+<div class="p-2 sm:p-3 md:p-4 lg:p-5 page-loading" id="mainContainer">
+    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">
         
         @php
             // Verificar si hay trámite pendiente
@@ -22,77 +50,75 @@
                 }
             }
         @endphp
-
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            @if(session('success'))
-                <div class="bg-green-50 border-b border-green-200 p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-green-700">{{ session('success') }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="bg-red-50 border-b border-red-200 p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-red-700">{{ session('error') }}</p>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            <div class="bg-gradient-to-r from-white to-gray-50 border-b border-gray-200">
-                <div class="px-8 py-6 flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                            </svg>
-                        </div>
-                        
-                        <div>
-                            <h1 class="text-3xl font-bold text-gray-900">Trámites Disponibles</h1>
-                            <p class="text-gray-600 text-base mt-1">
-                                @if($tieneTramitePendiente)
-                                    Tiene un trámite de {{ ucfirst($tipoTramitePendiente) }} en proceso
-                                @else
-                                    Seleccione el tipo de trámite que desea realizar
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <button onclick="openHistorialModal()" class="inline-flex items-center px-6 py-3 text-sm font-medium text-[#9d2449] bg-white border-2 border-[#9d2449] rounded-xl hover:bg-[#9d2449] hover:text-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        @if(session('success'))
+            <div class="bg-green-50 border-b border-green-200 p-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Historial
-                    </button>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-green-700">{{ session('success') }}</p>
+                    </div>
                 </div>
             </div>
+        @endif
 
-            <div class="p-8">
-                <div class="text-center mb-12">
+        @if(session('error'))
+            <div class="bg-red-50 border-b border-red-200 p-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">{{ session('error') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <div class="p-4 sm:p-5 border-b border-gray-200/70">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Trámites Disponibles</h1>
+                        <p class="text-base text-gray-500 mt-1">
+                            @if($tieneTramitePendiente)
+                                Tiene un trámite de {{ ucfirst($tipoTramitePendiente) }} en proceso
+                            @else
+                                Seleccione el tipo de trámite que desea realizar
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                
+                <button onclick="openHistorialModal()" class="inline-flex items-center px-6 py-3 text-sm font-medium text-[#9d2449] bg-white border-2 border-[#9d2449] rounded-xl hover:bg-[#9d2449] hover:text-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Historial
+                </button>
+            </div>
+        </div>
+
+        <div class="border-t border-gray-100 mb-3 sm:mb-4">
+            <div class="p-4 sm:p-6 content-container">
+                <div class="text-center mb-8">
                     <h2 class="text-lg font-medium text-gray-700 mb-3">Seleccione un Tipo de Trámite</h2>
                     <p class="text-gray-500 text-base max-w-3xl mx-auto">Elija una de las siguientes opciones para proceder con su solicitud.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     
-                    <div class="bg-white rounded-2xl shadow-lg border-2 border-orange-200 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 tramite-card">
                         @if($tieneTramitePendiente)
                             <div class="h-2 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
                         @else
@@ -151,7 +177,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-300 overflow-hidden opacity-75 scale-95">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden opacity-75 tramite-card">
                         <div class="h-2 bg-gradient-to-r from-gray-300 to-gray-400"></div>
                         
                         <div class="p-6">
@@ -184,7 +210,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl shadow-lg border-2 border-gray-300 overflow-hidden opacity-75 scale-95">
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden opacity-75 tramite-card">
                         <div class="h-2 bg-gradient-to-r from-gray-300 to-gray-400"></div>
                         
                         <div class="p-6">
@@ -402,10 +428,18 @@ document.getElementById('historialModal').addEventListener('click', function(e) 
     }
 });
 
-                
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeHistorialModal();
+    }
+});
+
+// Script para manejar la carga de la página y animaciones
+document.addEventListener('DOMContentLoaded', function() {
+    const mainContainer = document.getElementById('mainContainer');
+    if (mainContainer) {
+        mainContainer.classList.remove('page-loading');
+        mainContainer.classList.add('page-loaded');
     }
 });
 </script>

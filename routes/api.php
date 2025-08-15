@@ -23,6 +23,10 @@ Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf'
 // Catálogo de actividades
 Route::get('/catalogo/actividades', [CatalogoActividadController::class, 'buscar']);
 
+// API para filtros de proveedores
+Route::get('/sectores', [\App\Http\Controllers\Api\ProveedorController::class, 'getSectores']);
+Route::get('/actividades', [\App\Http\Controllers\Api\ProveedorController::class, 'getActividades']);
+
 // Ubicación API routes
 Route::prefix('ubicacion')->group(function () {
     Route::post('/buscar-codigo-postal', [UbicacionController::class, 'buscarPorCodigoPostal']);

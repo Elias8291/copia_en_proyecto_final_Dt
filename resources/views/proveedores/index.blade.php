@@ -1,7 +1,35 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+.page-loading {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+.page-loaded {
+    opacity: 1;
+}
+
+#filtersContainer {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+}
+
+.table-container {
+    min-height: 400px;
+}
+</style>
+@endpush
+
 @section('content')
-<div class="p-2 sm:p-3 md:p-4 lg:p-5">
+<script>
+// Script inline para prevenir FOUC - se ejecuta inmediatamente
+document.documentElement.style.visibility = 'hidden';
+window.addEventListener('load', function() {
+    document.documentElement.style.visibility = 'visible';
+});
+</script>
+<div class="p-2 sm:p-3 md:p-4 lg:p-5 page-loading" id="mainContainer">
     <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
         <div class="p-4 sm:p-5 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -22,6 +50,7 @@
         <div class="border-t border-gray-100 mb-3 sm:mb-4">
             <form method="GET" action="{{ route('proveedores.index') }}" class="p-3 sm:p-4 md:p-5" id="searchForm">
                 <input type="hidden" name="per_page" value="{{ request('per_page', 15) }}">
+                
                 <div class="flex flex-col lg:flex-row gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
                     <div class="flex-1">
                         <div class="relative">
@@ -45,10 +74,17 @@
                             </svg>
                             <span class="hidden sm:inline">Buscar</span>
                         </button>
-                        <a href="{{ route('proveedores.index') }}" 
-                           class="flex-1 lg:flex-none px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-50 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200 border border-gray-200 flex items-center justify-center gap-1 sm:gap-2">
+                        <button type="submit" 
+                                class="flex-1 lg:flex-none px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 bg-blue-600 text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600/50 transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2">
                             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                            </svg>
+                            <span class="hidden sm:inline">Filtrar</span>
+                        </button>
+                        <a href="{{ route('proveedores.index') }}" 
+                           class="flex-1 lg:flex-none px-2 sm:px-3 md:px-4 lg:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-100 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-1 sm:gap-2 border border-gray-300">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                             <span class="hidden sm:inline">Limpiar</span>
                         </a>
@@ -64,157 +100,265 @@
                             </svg>
                             </div>
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900">Filtros de Búsqueda</h3>
-                                <p class="text-sm text-gray-500">Refina tus resultados con criterios específicos</p>
+                                <h3 class="text-lg font-semibold text-gray-900">Filtros Avanzados</h3>
+                                <p class="text-sm text-gray-500">Personaliza tu búsqueda con filtros específicos</p>
                             </div>
                         </div>
-                        <button type="button" id="toggleFilters" class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#9d2449] text-[#9d2449] hover:bg-[#9d2449] hover:text-white font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md">
+                        <div>
+                            <button type="button" id="toggleFilters" class="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-[#9d2449] text-[#9d2449] hover:bg-[#9d2449] hover:text-white font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+                                </svg>
                             <span id="filterText">Mostrar filtros</span>
                             <span id="filterIcon" class="transform transition-transform duration-300">▼</span>
                         </button>
-                        <button type="button" onclick="openSectorActividadModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-[#9d2449] text-white font-medium rounded-lg hover:bg-[#8a1f40] transition-all duration-300 shadow-sm">Filtrar sectores/actividades</button>
+                        </div>
                     </div>
                         
                     <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
-                        <div class="space-y-6">
-                            <!-- Filtros Básicos -->
-                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100 shadow-sm">
-                                <div class="flex items-center gap-2 mb-4">
-                                    <div class="p-1.5 bg-blue-500 rounded-lg">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">         
+                            <div class="space-y-5">
+                                <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="p-2 bg-gray-600 rounded-lg">
                                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
                                     </div>
-                                    <h4 class="text-md font-semibold text-gray-900">Filtros Básicos</h4>
+                                        <h4 class="text-lg font-semibold text-gray-900">Información Básica</h4>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                         <label for="estado" class="block text-sm font-medium text-gray-700 mb-2">Estado del Padrón</label>
-                                <select name="estado" 
-                                        id="estado" 
-                                                class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm hover:shadow-md"
-                                                onchange="console.log('Estado cambiado a:', this.value)">
+                                            <select name="estado" id="estado" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
                                     <option value="">Todos los estados</option>
-                                            <option value="Activo" {{ request('estado') == 'Activo' ? 'selected' : '' }}>✅ Activo</option>
-                                            <option value="Inactivo" {{ request('estado') == 'Inactivo' ? 'selected' : '' }}>⏸️ Inactivo</option>
-                                            <option value="Vencido" {{ request('estado') == 'Vencido' ? 'selected' : '' }}>❌ Vencido</option>
-                                            <option value="Pendiente" {{ request('estado') == 'Pendiente' ? 'selected' : '' }}>⏳ Pendiente</option>
-                                            <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>🚫 Cancelado</option>
+                                                <option value="Activo" {{ request('estado') == 'Activo' ? 'selected' : '' }}>Activo</option>
+                                                <option value="Inactivo" {{ request('estado') == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
+                                                <option value="Vencido" {{ request('estado') == 'Vencido' ? 'selected' : '' }}>Vencido</option>
+                                                <option value="Pendiente" {{ request('estado') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                                <option value="Cancelado" {{ request('estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
                                 </select>
                             </div>
 
                             <div>
-                                        <label for="tipo_persona" class="block text-sm font-medium text-gray-700 mb-2">Tipo de persona</label>
-                                <select name="tipo_persona" 
-                                        id="tipo_persona" 
-                                                class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm hover:shadow-md">
-                                    <option value="">Todos los tipos</option>
-                                            <option value="Física" {{ request('tipo_persona') == 'Física' ? 'selected' : '' }}>👤 Persona Física</option>
-                                            <option value="Moral" {{ request('tipo_persona') == 'Moral' ? 'selected' : '' }}>🏢 Persona Moral</option>
-                                </select>
-                            </div>
-
-                            
-
-                            <div>
-                                <label for="año" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Año de registro</label>
-                                <select name="año" 
-                                        id="año" 
-                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                            <label for="tipo_persona" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Persona</label>
+                                            <select name="tipo_persona" id="tipo_persona" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                                <option value="">Todos los tipos</option>
+                                                <option value="Física" {{ request('tipo_persona') == 'Física' ? 'selected' : '' }}>Persona Física</option>
+                                                <option value="Moral" {{ request('tipo_persona') == 'Moral' ? 'selected' : '' }}>Persona Moral</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-white rounded-lg p-5 border border-gray-200">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="p-2 bg-[#9d2449] rounded-lg">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">Fechas y Ubicación</h4>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                                                <div>
+                                            <label for="año" class="block text-sm font-medium text-gray-700 mb-2">Año de Alta en Padrón</label>
+                                            <select name="año" id="año" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
                                     <option value="">Todos los años</option>
-                                    @for($year = 2020; $year <= date('Y') + 5; $year++)
-                                        <option value="{{ $year }}" {{ request('año') == $year ? 'selected' : '' }}>{{ $year }}</option>
-                                    @endfor
+                                                @foreach($añosDisponibles as $año)
+                                                    <option value="{{ $año }}" {{ request('año') == $año ? 'selected' : '' }}>{{ $año }}</option>
+                                                @endforeach
                                 </select>
                             </div>
 
                             <div>
-                                <label for="estado_geografico" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estado geográfico</label>
-                                <select name="estado_geografico" 
-                                        id="estado_geografico" 
-                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200">
+                                        <label for="estado_geografico" class="block text-sm font-medium text-gray-700 mb-2">Estado Geográfico</label>
+                                            <select name="estado_geografico" id="estado_geografico" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
                                     <option value="">Todos los estados</option>
-                                    @foreach($estados as $estado)
+                                            @foreach($estados ?? [] as $estado)
                                         <option value="{{ $estado->id }}" {{ request('estado_geografico') == $estado->id ? 'selected' : '' }}>
                                             {{ $estado->nombre }}
                                         </option>
                                         @endforeach
                                 </select>
+                                    </div>
+                                </div>
+
+                                        <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <h5 class="text-sm font-semibold text-gray-900 mb-3">Filtro de Vencimiento</h5>
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="proximidad_vencimiento" class="block text-sm font-medium text-gray-700 mb-2">Próximos a Vencer</label>
+                                                <select name="proximidad_vencimiento" id="proximidad_vencimiento" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                                    <option value="">Sin filtro de vencimiento</option>
+                                                    <option value="7" {{ request('proximidad_vencimiento') == '7' ? 'selected' : '' }}>Próximos 7 días</option>
+                                                    <option value="15" {{ request('proximidad_vencimiento') == '15' ? 'selected' : '' }}>Próximos 15 días</option>
+                                                    <option value="30" {{ request('proximidad_vencimiento') == '30' ? 'selected' : '' }}>Próximos 30 días</option>
+                                                    <option value="60" {{ request('proximidad_vencimiento') == '60' ? 'selected' : '' }}>Próximos 2 meses</option>
+                                                    <option value="90" {{ request('proximidad_vencimiento') == '90' ? 'selected' : '' }}>Próximos 3 meses</option>
+                                                    <option value="180" {{ request('proximidad_vencimiento') == '180' ? 'selected' : '' }}>Próximos 6 meses</option>
+                                                    <option value="custom" {{ request('proximidad_vencimiento') == 'custom' ? 'selected' : '' }}>Personalizado</option>
+                                                </select>
                             </div>
 
-                            <div>
-                                <label for="sector" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Sector económico</label>
-                                <div class="relative">
-                                    <button type="button" 
-                                            id="btnAbrirModalSectores"
-                                            class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white text-left flex items-center justify-between hover:bg-gray-50">
-                                        <span id="sectoresSeleccionadosTexto" class="truncate">
-                                            @if(request('sector') && !empty(array_filter((array)request('sector'))))
-                                                {{ count(array_filter((array)request('sector'))) }} sector(es) seleccionado(s)
-                                            @else
-                                                Seleccionar sectores...
-                                            @endif
-                                        </span>
-                                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                            <div id="custom-days-container" class="hidden">
+                                                <label for="dias_personalizados" class="block text-sm font-medium text-gray-700 mb-2">Días Personalizados</label>
+                                                <input type="number" 
+                                                       name="dias_personalizados" 
+                                                       id="dias_personalizados"
+                                                       value="{{ request('dias_personalizados') }}"
+                                                       min="1" 
+                                                       max="365"
+                                                       placeholder="Ej: 45"
+                                                       class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                                <p class="text-xs text-gray-500 mt-1">Ingresa el número de días (1-365)</p>
+                                            </div>
+                                        </div>
+                                        <div class="bg-gray-100 p-3 rounded-lg mt-3">
+                                            <p class="text-sm text-gray-600">Filtra proveedores cuyo padrón vence en el período especificado</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Sectores y Actividades -->
+                                <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="p-2 bg-gray-600 rounded-lg">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                            </svg>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">Sectores y Actividades</h4>
+                                    </div>
+                                    <div>
+                                        <button type="button" onclick="openSectorActividadModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 border border-gray-300 transition-all duration-200">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+                                            </svg>
+                                            Seleccionar Sectores/Actividades
+                                        </button>
+                                        <p class="text-sm text-gray-600 mt-2">Filtra por sectores económicos y actividades específicas</p>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- COLUMNA DERECHA -->
+                            <div class="space-y-5">
+
+                                <!-- 1. Historial de Trámites -->
+                                <div class="bg-white rounded-lg p-5 border border-gray-200">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="p-2 bg-[#9d2449] rounded-lg">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v0z"/>
                                         </svg>
-                                    </button>
-                                    <!-- Input oculto para mantener los sectores seleccionados -->
-                                    @if(request('sector') && !empty(array_filter((array)request('sector'))))
-                                        @foreach((array)request('sector') as $sectorId)
-                                            @if(!empty($sectorId))
-                                                <input type="hidden" name="sector[]" value="{{ $sectorId }}">
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                    <input type="hidden" id="sectoresSeleccionados" value="{{ implode(',', array_filter((array)request('sector', []))) }}">
+                                    </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">Historial de Trámites</h4>
+                                </div>
+                                    <div>
+                                        <label for="con_historial" class="block text-sm font-medium text-gray-700 mb-2">Experiencia del Proveedor</label>
+                                        <select name="con_historial" id="con_historial" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                            <option value="">Todos los proveedores</option>
+                                            <option value="si" {{ request('con_historial') == 'si' ? 'selected' : '' }}>Con historial (2+ trámites)</option>
+                                            <option value="renovadores" {{ request('con_historial') == 'renovadores' ? 'selected' : '' }}>Renovadores constantes</option>
+                                            <option value="no" {{ request('con_historial') == 'no' ? 'selected' : '' }}>Nuevos (1 trámite o menos)</option>
+                                            <option value="sin_tramites" {{ request('con_historial') == 'sin_tramites' ? 'selected' : '' }}>Sin trámites</option>
+                                        </select>
+                                    </div>
+                                    </div>
+
+                                <!-- 2. Filtros Específicos -->
+                                <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="p-2 bg-gray-600 rounded-lg">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v0z"/>
+                                            </svg>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">Filtros Específicos</h4>
+                                    </div>
+                                    <div class="space-y-4">
+                                            <div>
+                                            <label for="tipo_tramite_año" class="block text-sm font-medium text-gray-700 mb-2">Tipo de Trámite</label>
+                                            <select name="tipo_tramite_año" id="tipo_tramite_año" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                                    <option value="">Cualquier tipo</option>
+                                                <option value="Inscripcion" {{ request('tipo_tramite_año') == 'Inscripcion' ? 'selected' : '' }}>Inscripciones</option>
+                                                <option value="Renovacion" {{ request('tipo_tramite_año') == 'Renovacion' ? 'selected' : '' }}>Renovaciones</option>
+                                                <option value="Actualizacion" {{ request('tipo_tramite_año') == 'Actualizacion' ? 'selected' : '' }}>Actualizaciones</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                            <label for="año_especifico" class="block text-sm font-medium text-gray-700 mb-2">Año del Trámite</label>
+                                            <select name="año_especifico" id="año_especifico" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                                    <option value="">Cualquier año</option>
+                                                <option value="2025" {{ request('año_especifico') == '2025' ? 'selected' : '' }}>2025</option>
+                                                <option value="2024" {{ request('año_especifico') == '2024' ? 'selected' : '' }}>2024</option>
+                                                <option value="2023" {{ request('año_especifico') == '2023' ? 'selected' : '' }}>2023</option>
+                                                <option value="2022" {{ request('año_especifico') == '2022' ? 'selected' : '' }}>2022</option>
+                                                <option value="2021" {{ request('año_especifico') == '2021' ? 'selected' : '' }}>2021</option>
+                                                </select>
+                                            </div>
+                                        <div class="bg-gray-100 p-3 rounded-lg">
+                                            <p class="text-sm text-gray-600">Busca proveedores que realizaron un tipo específico de trámite en un año determinado</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label for="actividad_economica" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Actividad económica</label>
-                                <div class="relative">
-                                    <button type="button" 
-                                            id="btnAbrirModalActividades"
-                                            class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white text-left flex items-center justify-between hover:bg-gray-50">
-                                        <span id="actividadesSeleccionadasTexto" class="truncate">
-                                            @if(request('actividad_economica') && !empty(array_filter((array)request('actividad_economica'))))
-                                                {{ count(array_filter((array)request('actividad_economica'))) }} actividad(es) seleccionada(s)
-                                            @else
-                                                Seleccionar actividades...
-                                            @endif
-                                        </span>
-                                        <svg class="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                <!-- 3. Filtros Trimestrales -->
+                                <div class="bg-white rounded-lg p-5 border border-gray-200">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="p-2 bg-[#9d2449] rounded-lg">
+                                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                         </svg>
-                                    </button>
-                                    <!-- Input oculto para mantener las actividades seleccionadas -->
-                                    @if(request('actividad_economica') && !empty(array_filter((array)request('actividad_economica'))))
-                                        @foreach((array)request('actividad_economica') as $actividadId)
-                                            @if(!empty($actividadId))
-                                                <input type="hidden" name="actividad_economica[]" value="{{ $actividadId }}">
-                                            @endif
-                                        @endforeach
-                                    @endif
-                                    <input type="hidden" id="actividadesSeleccionadas" value="{{ implode(',', array_filter((array)request('actividad_economica', []))) }}">
+                                    </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">Filtros Trimestrales</h4>
                                 </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                            <label for="año_trimestre" class="block text-sm font-medium text-gray-700 mb-2">Año</label>
+                                            <select name="año_trimestre" id="año_trimestre" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                                <option value="">Todos los años</option>
+                                                @foreach($añosDisponibles as $año)
+                                                    <option value="{{ $año }}" {{ request('año_trimestre') == $año ? 'selected' : '' }}>{{ $año }}</option>
+                                                @endforeach
+                                        </select>
+                                    </div>
+                                        
+                                        <div>
+                                            <label for="trimestre" class="block text-sm font-medium text-gray-700 mb-2">Trimestre</label>
+                                            <select name="trimestre" id="trimestre" class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#9d2449] focus:border-[#9d2449] transition-all duration-200 bg-white">
+                                                <option value="">Todos los trimestres</option>
+                                                <option value="1" {{ request('trimestre') == '1' ? 'selected' : '' }}>Q1 - Enero a Marzo</option>
+                                                <option value="2" {{ request('trimestre') == '2' ? 'selected' : '' }}>Q2 - Abril a Junio</option>
+                                                <option value="3" {{ request('trimestre') == '3' ? 'selected' : '' }}>Q3 - Julio a Septiembre</option>
+                                                <option value="4" {{ request('trimestre') == '4' ? 'selected' : '' }}>Q4 - Octubre a Diciembre</option>
+                                            </select>
+                                </div>
+                            </div>
+                                    <div class="bg-gray-100 p-3 rounded-lg mt-4">
+                                        <p class="text-sm text-gray-600">Filtra proveedores cuyo último trámite fue realizado en el período seleccionado</p>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
-                        
-                        <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-                            <button type="submit" 
-                                    class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-[#9d2449] text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 flex items-center justify-center gap-2">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </div>
+                    
+                    <!-- Botones de Filtros - Fuera del contenedor pero dentro del formulario -->
+                    <div class="pt-4 mt-4">
+                        <div class="flex justify-center gap-2">
+                            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500/30 transition-all duration-200 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                Aplicar filtros
+                                <span class="text-sm">Filtrar</span>
                             </button>
-                            <a href="{{ route('proveedores.index') }}" 
-                               class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-gray-50 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all duration-200 border border-gray-200 text-center flex items-center justify-center gap-2">
-                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                            <a href="{{ route('proveedores.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 border border-gray-300 transition-all duration-200">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
-                                Limpiar filtros
+                                <span class="text-sm">Limpiar</span>
                             </a>
                         </div>
                     </div>
@@ -222,11 +366,12 @@
             </form>
         </div>
 
-        <div class="border-t border-gray-100 p-2 sm:p-3 md:p-4 mb-3 sm:mb-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+        <!-- Sección de Resultados -->
+        <div class="p-3 sm:p-4 md:p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div class="flex items-center gap-2 sm:gap-3">
-                    <svg class="w-4 h-4 sm:w-5 sm:h-5 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#9d2449] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                     </svg>
                     <p class="text-xs sm:text-sm md:text-base lg:text-lg text-gray-700">
                         <span class="font-medium text-[#9d2449]">{{ $todosProveedores->total() }}</span> 
@@ -238,187 +383,240 @@
                         @endif
                     </p>
                 </div>
-
-                                    <!-- Controles de visualización -->
-                <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
-                    <!-- Exportar -->
-                    <a href="{{ request()->fullUrlWithQuery(['export' => 'excel']) }}" 
-                       class="inline-flex items-center px-3 py-2 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-center gap-1 sm:gap-2 md:gap-3">
+                    <!-- Botón Exportar Excel -->
+                    <button type="button" onclick="openExportModal()" 
+                            class="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 bg-green-600 text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
+                            title="Configurar y Exportar a Excel">
+                        <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
-                        Exportar Excel
-                    </a>
+                        <span class="hidden sm:inline">Excel</span>
+                    </button>
                     
-                    <!-- Selector de elementos por página -->
-                    <div class="flex items-center gap-2">
-                        <label for="per_page" class="text-xs sm:text-sm md:text-base font-medium text-gray-700 whitespace-nowrap">
-                            Mostrar:
-                        </label>
-                        <select name="per_page" 
-                                id="per_page" 
-                                class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-white">
-                            <option value="10" {{ request('per_page', 15) == 10 ? 'selected' : '' }}>10</option>
-                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
-                            <option value="25" {{ request('per_page', 15) == 25 ? 'selected' : '' }}>25</option>
-                            <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
-                        </select>
-                        <span class="text-xs sm:text-sm md:text-base text-gray-600 whitespace-nowrap">por página</span>
-                    </div>
-
-                    <!-- Filtros activos -->
-                    @if(request()->hasAny(['search', 'estado', 'tipo_persona', 'vencimiento', 'año', 'estado_geografico', 'sector', 'actividad_economica']))
-                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
-                        <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
-                        
-                        @if(request('search'))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449] text-white">
-                            Búsqueda: "{{ request('search') }}"
-                            <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 sm:ml-1.5 text-white hover:text-gray-200">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
-
-                        @if(request('estado'))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
-                            Estado: {{ request('estado') }}
-                            <a href="{{ request()->fullUrlWithQuery(['estado' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
-
-                        @if(request('tipo_persona'))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
-                            Tipo: {{ request('tipo_persona') }}
-                            <a href="{{ request()->fullUrlWithQuery(['tipo_persona' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
-
-                        
-
-                        @if(request('año'))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
-                            Año: {{ request('año') }}
-                            <a href="{{ request()->fullUrlWithQuery(['año' => null]) }}" class="ml-1 sm:ml-1.5 text-gray-700 hover:text-gray-900">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
-
-                        @if(request('estado_geografico') && !empty(array_filter((array)request('estado_geografico'))))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-700 border border-green-200">
-                            Estados: {{ count(array_filter((array)request('estado_geografico'))) }} seleccionado(s)
-                            <a href="{{ request()->fullUrlWithQuery(['estado_geografico' => null]) }}" class="ml-1 sm:ml-1.5 text-green-700 hover:text-green-900">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
-
-                        @if(request('sector') && !empty(array_filter((array)request('sector'))))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-700 border border-blue-200">
-                            Sectores: {{ count(array_filter((array)request('sector'))) }} seleccionado(s)
-                            <a href="{{ request()->fullUrlWithQuery(['sector' => null]) }}" class="ml-1 sm:ml-1.5 text-blue-700 hover:text-blue-900">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
-
-                        @if(request('actividad_economica') && !empty(array_filter((array)request('actividad_economica'))))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
-                            Actividades: {{ count(array_filter((array)request('actividad_economica'))) }} seleccionada(s)
-                            <a href="{{ request()->fullUrlWithQuery(['actividad_economica' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
-                    </div>
+                    @if(request()->hasAny(['search', 'estado', 'año', 'estado_geografico', 'sector', 'actividad_economica', 'tipo_persona', 'con_historial', 'tipo_tramite_año', 'año_especifico', 'proximidad_vencimiento', 'dias_personalizados', 'año_trimestre', 'trimestre']))
+                        <a href="{{ route('proveedores.index') }}" 
+                           class="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 bg-gray-100 text-gray-700 text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-gray-200 transition-all duration-200 border border-gray-300">
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                            <span class="hidden sm:inline">Limpiar</span>
+                        </a>
                     @endif
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <label for="per_page" class="text-xs sm:text-sm md:text-base text-gray-600 whitespace-nowrap">Por página:</label>
+                        <select id="per_page" 
+                                class="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] bg-white">
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
+                            <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Tabla de Proveedores -->
         <div class="border-t border-gray-100 overflow-hidden hidden xl:block">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto table-container">
                 <table class="w-full">
                     <thead>
                         <tr class="bg-gray-50 border-b border-gray-200">
-                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Razón Social</th>
-                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">RFC</th>
-                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Estado</th>
-                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Tipo</th>
-                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Inicio Vigencia</th>
-                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Vencimiento</th>
-                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Acciones</th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <a href="{{ request()->fullUrlWithQuery(['orden_por' => 'razon_social', 'direccion' => request('orden_por') == 'razon_social' && request('direccion') == 'asc' ? 'desc' : 'asc']) }}" 
+                                   class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
+                                    <span>Razón Social</span>
+                                    @if(request('orden_por') == 'razon_social')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            @if(request('direccion') == 'asc')
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                            @else
+                                                <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                            @endif
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <a href="{{ request()->fullUrlWithQuery(['orden_por' => 'rfc', 'direccion' => request('orden_por') == 'rfc' && request('direccion') == 'asc' ? 'desc' : 'asc']) }}" 
+                                   class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
+                                    <span>RFC</span>
+                                    @if(request('orden_por') == 'rfc')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            @if(request('direccion') == 'asc')
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                            @else
+                                                <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                            @endif
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <a href="{{ request()->fullUrlWithQuery(['orden_por' => 'estado_padron', 'direccion' => request('orden_por') == 'estado_padron' && request('direccion') == 'asc' ? 'desc' : 'asc']) }}" 
+                                   class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
+                                    <span>Estado</span>
+                                    @if(request('orden_por') == 'estado_padron')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            @if(request('direccion') == 'asc')
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                            @else
+                                                <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                            @endif
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <a href="{{ request()->fullUrlWithQuery(['orden_por' => 'fecha_alta_padron', 'direccion' => request('orden_por') == 'fecha_alta_padron' && request('direccion') == 'asc' ? 'desc' : 'asc']) }}" 
+                                   class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
+                                    <span>Fecha Alta Padrón</span>
+                                    @if(request('orden_por') == 'fecha_alta_padron')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            @if(request('direccion') == 'asc')
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                            @else
+                                                <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                            @endif
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <a href="{{ request()->fullUrlWithQuery(['orden_por' => 'fecha_vencimiento_padron', 'direccion' => request('orden_por') == 'fecha_vencimiento_padron' && request('direccion') == 'asc' ? 'desc' : 'asc']) }}" 
+                                   class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
+                                    <span>Vencimiento</span>
+                                    @if(request('orden_por') == 'fecha_vencimiento_padron')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            @if(request('direccion') == 'asc')
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                            @else
+                                                <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                            @endif
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <span class="text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">Fecha Inicio</span>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <a href="{{ request()->fullUrlWithQuery(['orden_por' => 'tipo_persona', 'direccion' => request('orden_por') == 'tipo_persona' && request('direccion') == 'asc' ? 'desc' : 'asc']) }}" 
+                                   class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
+                                    <span>Tipo Persona</span>
+                                    @if(request('orden_por') == 'tipo_persona')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            @if(request('direccion') == 'asc')
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                            @else
+                                                <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                            @endif
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-center text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider">
+                                Acciones
+                            </th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($todosProveedores as $proveedor)
                         <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <!-- Razón Social -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
-                                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
-                                    <div class="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <span class="text-white font-semibold text-xs sm:text-sm md:text-base">{{ substr($proveedor->razon_social_ultimo_tramite ?? $proveedor->razon_social ?? 'P', 0, 1) }}</span>
+                                <div class="flex flex-col space-y-1">
+                                    <div class="flex items-start space-x-2">
+                                        <div class="flex-shrink-0 mt-0.5">
+                                            @if($proveedor->tipo_persona == 'Moral')
+                                                <div class="w-5 h-5 sm:w-6 sm:h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                                                    <svg class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                    </svg>
+                                                </div>
+                                            @else
+                                                <div class="w-5 h-5 sm:w-6 sm:h-6 bg-green-100 rounded-full flex items-center justify-center">
+                                                    <svg class="w-3 h-3 sm:w-4 sm:h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                    </svg>
+                                                </div>
+                                            @endif
                                     </div>
-                                    <div class="min-w-0 flex-1">
-                                        <div class="font-semibold text-gray-900 truncate max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl text-xs sm:text-sm md:text-base" title="{{ $proveedor->razon_social_ultimo_tramite ?? $proveedor->razon_social ?? 'N/A' }}">
-                                            {{ $proveedor->razon_social_ultimo_tramite ?? $proveedor->razon_social ?? 'N/A' }}
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs sm:text-sm md:text-base font-medium text-gray-900 truncate">
+                                                {{ $proveedor->razon_social }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-0.5">
+                                                ID: {{ $proveedor->id }}
+                                            </p>
                                         </div>
-                                        <div class="text-xs sm:text-sm text-gray-500">ID: {{ $proveedor->id }}</div>
                                     </div>
+                                    @if($proveedor->tramites_count > 0)
+                                        <div class="flex items-center space-x-2 ml-7 sm:ml-8">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-[#9d2449]/10 text-[#9d2449] font-medium">
+                                                📋 {{ $proveedor->tramites_count }} {{ $proveedor->tramites_count == 1 ? 'trámite' : 'trámites' }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
+
+                            <!-- RFC -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
-                                <span class="text-gray-900 font-mono text-xs sm:text-sm md:text-base">{{ $proveedor->rfc ?? 'N/A' }}</span>
+                                <div class="flex items-center space-x-1.5">
+                                    <svg class="w-3 h-3 sm:w-4 sm:h-4 text-[#9d2449] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    <span class="text-gray-700 font-mono text-xs sm:text-sm md:text-base">{{ $proveedor->rfc }}</span>
+                                </div>
                             </td>
+
+                            <!-- Estado -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
-                                @php
-                                    $statusClass = match($proveedor->estado_padron ?? 'Pendiente') {
-                                        'Activo' => 'bg-green-100 text-green-800',
-                                        'Inactivo' => 'bg-red-100 text-red-800',
-                                        'Vencido' => 'bg-yellow-100 text-yellow-800',
-                                        'Pendiente' => 'bg-blue-100 text-blue-800',
-                                        default => 'bg-gray-100 text-gray-800'
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 rounded-full text-xs sm:text-sm font-medium {{ $statusClass }}">
-                                    {{ $proveedor->estado_padron ?? 'Pendiente' }}
+                                @switch($proveedor->estado_padron)
+                                    @case('Activo')
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Activo
+                                        </span>
+                                        @break
+                                    @case('Inactivo')
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Inactivo
+                                        </span>
+                                        @break
+                                    @case('Vencido')
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                            </svg>
+                                            Vencido
                                 </span>
-                            </td>
-                            <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
-                                <span class="inline-flex items-center px-2 sm:px-2.5 md:px-3 py-1 sm:py-1.5 md:py-2 bg-[#9d2449]/10 text-[#9d2449] rounded-full text-xs sm:text-sm font-medium">
-                                    {{ $proveedor->tipo_persona ?? 'N/A' }}
+                                        @break
+                                    @default
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+                                            </svg>
+                                            {{ $proveedor->estado_padron }}
                                 </span>
+                                @endswitch
                             </td>
-                            <!-- Columna Inicio Vigencia -->
+
+                                                        <!-- Fecha Alta Padrón -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
-                                @if($proveedor->fecha_vencimiento_padron)
-                                    @php
-                                        $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
-                                        $fechaInicio = $fechaVencimiento->copy()->subYear();
-                                    @endphp
+                                @if($proveedor->fecha_alta_padron)
                                     <div class="flex items-center space-x-1.5">
                                         <svg class="w-3 h-3 sm:w-4 sm:h-4 text-[#9d2449] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                         </svg>
-                                        <span class="text-gray-700 font-medium text-xs sm:text-sm md:text-base">{{ $fechaInicio->format('d/m/Y') }}</span>
+                                        <span class="text-gray-700 font-medium text-xs sm:text-sm md:text-base">{{ \Carbon\Carbon::parse($proveedor->fecha_alta_padron)->format('d/m/Y') }}</span>
                                     </div>
                                 @else
                                     <div class="flex items-center space-x-1.5">
@@ -430,49 +628,24 @@
                                 @endif
                             </td>
                             
-                            <!-- Columna Vencimiento -->
+                            <!-- Vencimiento -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
                                 @if($proveedor->fecha_vencimiento_padron)
                                     @php
                                         $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
-                                        $hoy = \Carbon\Carbon::now();
-                                        $diasRestantes = $hoy->diffInDays($fechaVencimiento, false);
-                                        
-                                        if ($diasRestantes < 0) {
-                                            $estadoVigencia = 'vencido';
-                                            $colorIcono = 'text-red-500';
-                                            $colorTexto = 'text-red-600';
-                                            $bgColor = 'bg-red-50';
-                                            $borderColor = 'border-red-200';
-                                            $estadoLabel = 'Vencido';
-                                        } elseif ($diasRestantes <= 30) {
-                                            $estadoVigencia = 'por_vencer';
-                                            $colorIcono = 'text-amber-500';
-                                            $colorTexto = 'text-amber-600';
-                                            $bgColor = 'bg-amber-50';
-                                            $borderColor = 'border-amber-200';
-                                            $estadoLabel = 'Por vencer';
-                                        } else {
-                                            $estadoVigencia = 'vigente';
-                                            $colorIcono = 'text-emerald-500';
-                                            $colorTexto = 'text-emerald-600';
-                                            $bgColor = 'bg-emerald-50';
-                                            $borderColor = 'border-emerald-200';
-                                            $estadoLabel = 'Vigente';
-                                        }
+                                        $esVencido = $fechaVencimiento->isPast();
                                     @endphp
-                                    <div class="space-y-2">
                                         <div class="flex items-center space-x-1.5">
-                                            <svg class="w-3 h-3 sm:w-4 sm:h-4 {{ $colorIcono }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        @if($esVencido)
+                                            <svg class="w-3 h-3 sm:w-4 sm:h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span class="{{ $colorTexto }} font-medium text-xs sm:text-sm md:text-base">{{ $fechaVencimiento->format('d/m/Y') }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $bgColor }} {{ $colorTexto }} {{ $borderColor }}">
-                                                {{ $estadoLabel }}
-                                            </span>
-                                        </div>
+                                        @else
+                                            <svg class="w-3 h-3 sm:w-4 sm:h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                        @endif
+                                        <span class="text-gray-700 font-medium text-xs sm:text-sm md:text-base">{{ $fechaVencimiento->format('d/m/Y') }}</span>
                                     </div>
                                 @else
                                     <div class="flex items-center space-x-1.5">
@@ -483,29 +656,82 @@
                                     </div>
                                 @endif
                             </td>
+
+                            <!-- Fecha Inicio (calculada) -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
-                                <div class="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
-                                    <a href="{{ route('proveedores.show', $proveedor->id) }}" 
-                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-[#9d2449] hover:text-white hover:bg-[#9d2449] rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                                       title="Ver detalles">
-                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.639 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.639 0-8.573-3.007-9.963-7.178z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                @if($proveedor->fecha_vencimiento_padron)
+                                    @php
+                                        // Calcular fecha de inicio (1 año antes de vencimiento)
+                                        $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
+                                        $fechaInicio = $fechaVencimiento->copy()->subYear();
+                                    @endphp
+                                    <div class="flex items-center space-x-1.5">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                         </svg>
-                                    </a>
-                                    <a href="{{ route('proveedores.edit', $proveedor->id) }}" 
-                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-gray-600 hover:text-white hover:bg-gray-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-                                       title="Editar">
-                                        <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+                                        <span class="text-gray-700 text-xs sm:text-sm md:text-base font-medium">
+                                            {{ $fechaInicio->format('d/m/Y') }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <div class="flex items-center space-x-1.5">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        <span class="text-gray-500 text-xs sm:text-sm md:text-base">No definido</span>
+                                    </div>
+                                @endif
+                            </td>
+
+                            <!-- Tipo de Persona -->
+                            <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
+                                @if($proveedor->tipo_persona)
+                                    <div class="flex items-center space-x-2">
+                                        @if($proveedor->tipo_persona == 'Moral')
+                                            <div class="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-gray-700 text-xs sm:text-sm md:text-base font-medium">Moral</span>
+                                        @else
+                                            <div class="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                                                <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-gray-700 text-xs sm:text-sm md:text-base font-medium">Física</span>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                                            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </div>
+                                        <span class="text-gray-500 text-xs sm:text-sm md:text-base">No definido</span>
+                                    </div>
+                                @endif
+                            </td>
+
+                            <!-- Acciones -->
+                            <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
+                                <div class="flex items-center justify-center space-x-1 sm:space-x-2">
+                                    <a href="{{ route('proveedores.show', $proveedor->id) }}" 
+                                       class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md" 
+                                       title="Ver detalles">
+                                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
                                     </a>
                                     <form id="form-delete-proveedor-{{ $proveedor->id }}" action="{{ route('proveedores.destroy', $proveedor->id) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" onclick="showDeleteModal('Eliminar proveedor', '¿Está seguro que desea eliminar este proveedor? Esta acción no se puede deshacer.', 'form-delete-proveedor-{{ $proveedor->id }}')" class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md" title="Eliminar">
-                                            <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m1-3H8a1 1 0 00-1 1v2h10V5a1 1 0 00-1-1z"/>
+                                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                             </svg>
                                         </button>
                                     </form>
@@ -514,12 +740,22 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="px-2 sm:px-3 md:px-4 py-6 sm:py-8 text-center">
-                                <div class="text-gray-500">
-                                    <svg class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            <td colspan="8" class="px-4 py-12 text-center">
+                                <div class="flex flex-col items-center justify-center space-y-3">
+                                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                                     </svg>
-                                    <p class="text-sm">No hay proveedores registrados</p>
+                                    <div class="text-center">
+                                        <h3 class="text-lg font-medium text-gray-900 mb-1">No se encontraron proveedores</h3>
+                                        <p class="text-gray-500 text-sm">
+                                            @if(request()->hasAny(['search', 'estado', 'año', 'estado_geografico', 'sector', 'actividad_economica', 'tipo_persona', 'con_historial', 'tipo_tramite_año', 'año_especifico']))
+                                                Intenta ajustar los filtros de búsqueda o 
+                                                <a href="{{ route('proveedores.index') }}" class="text-[#9d2449] hover:text-[#8a1f40] font-medium">limpiar todos los filtros</a>
+                                            @else
+                                                No hay proveedores registrados en el sistema
+                                            @endif
+                                        </p>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -529,193 +765,251 @@
             </div>
         </div>
 
-        <div id="sectorActividadModal" class="fixed inset-0 z-50 hidden">
-            <div class="absolute inset-0 bg-black/50" onclick="closeSectorActividadModal()"></div>
-            <div class="relative max-w-3xl mx-auto mt-16 bg-white rounded-xl shadow-2xl overflow-hidden">
-                <div class="flex items-center justify-between px-4 sm:px-6 py-3 bg-[#9d2449] text-white">
-                    <h3 class="font-semibold">Filtrar por sectores y actividades</h3>
-                    <button onclick="closeSectorActividadModal()" class="hover:text-gray-200">✕</button>
+        @if($todosProveedores->hasPages())
+        <div class="border-t border-gray-100 px-3 sm:px-4 md:px-5 py-3 sm:py-4">
+            {{ $todosProveedores->withQueryString()->links('vendor.pagination.tailwind') }}
                 </div>
-                <div class="p-4 sm:p-6 space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Sectores</label>
-                            <div id="sectoresContainer" class="max-h-64 overflow-y-auto border rounded-md p-2 text-sm"></div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Actividades</label>
-                            <div id="actividadesContainer" class="max-h-64 overflow-y-auto border rounded-md p-2 text-sm"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-center justify-end gap-2 px-4 sm:px-6 py-3 bg-gray-50">
-                    <button onclick="closeSectorActividadModal()" class="px-4 py-2 rounded-md border">Cancelar</button>
-                    <button onclick="applySectorActividadFilters()" class="px-4 py-2 rounded-md bg-[#9d2449] text-white">Aplicar</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="border-t border-gray-100 pt-3 sm:pt-4">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-3 sm:gap-4">
-            @forelse($todosProveedores as $proveedor)
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
-                <div class="flex items-start justify-between mb-2 sm:mb-3">
-                    <div class="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 lg:space-x-4 min-w-0 flex-1">
-                        <div class="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span class="text-white font-semibold text-xs sm:text-sm md:text-base lg:text-lg">{{ substr($proveedor->razon_social_ultimo_tramite ?? $proveedor->razon_social ?? 'P', 0, 1) }}</span>
-                        </div>
-                        <div class="min-w-0 flex-1">
-                            <span class="text-gray-700 font-medium text-xs sm:text-sm md:text-base lg:text-lg block">ID: {{ $proveedor->id }}</span>
-                            <p class="text-xs sm:text-sm md:text-base text-gray-500 truncate">{{ $proveedor->tipo_persona ?? 'N/A' }}</p>
-                        </div>
-                    </div>
-                    <div class="flex-shrink-0 ml-1 sm:ml-2 md:ml-3">
-                        @php
-                            $statusClass = match($proveedor->estado_padron ?? 'Pendiente') {
-                                'Activo' => 'text-green-800 bg-green-100',
-                                'Inactivo' => 'text-red-800 bg-red-100',
-                                'Vencido' => 'text-yellow-800 bg-yellow-100',
-                                'Pendiente' => 'text-blue-800 bg-blue-100',
-                                default => 'text-gray-800 bg-gray-100'
-                            };
-                        @endphp
-                        <span class="px-1 sm:px-1.5 md:px-2 lg:px-2.5 py-0.5 sm:py-1 md:py-1.5 text-xs sm:text-sm md:text-base font-medium rounded-full {{ $statusClass }} whitespace-nowrap">
-                            {{ $proveedor->estado_padron ?? 'Pendiente' }}
-                        </span>
-                    </div>
-                </div>
-                <div class="space-y-1 sm:space-y-1.5 md:space-y-2 lg:space-y-3">
-                    <div class="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-gray-800 truncate" title="{{ $proveedor->razon_social_ultimo_tramite ?? $proveedor->razon_social ?? 'N/A' }}">
-                        {{ $proveedor->razon_social_ultimo_tramite ?? $proveedor->razon_social ?? 'N/A' }}
-                    </div>
-                    <div class="text-xs sm:text-sm md:text-base text-gray-600 font-mono truncate">
-                        RFC: {{ $proveedor->rfc ?? 'N/A' }}
-                    </div>
-                    @if($proveedor->fecha_vencimiento_padron)
-                        @php
-                            $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
-                            $fechaInicio = $fechaVencimiento->copy()->subYear();
-                            $hoy = \Carbon\Carbon::now();
-                            $diasRestantes = $hoy->diffInDays($fechaVencimiento, false);
-                            
-                            if ($diasRestantes < 0) {
-                                $estadoVigencia = 'vencido';
-                                $colorIcono = 'text-red-500';
-                                $colorTexto = 'text-red-600';
-                            } elseif ($diasRestantes <= 30) {
-                                $estadoVigencia = 'por_vencer';
-                                $colorIcono = 'text-amber-500';
-                                $colorTexto = 'text-amber-600';
-                            } else {
-                                $estadoVigencia = 'vigente';
-                                $colorIcono = 'text-emerald-500';
-                                $colorTexto = 'text-emerald-600';
-                            }
-                        @endphp
-                        <div class="text-xs sm:text-sm md:text-base space-y-1 sm:space-y-1.5 md:space-y-2">
-                            <div class="flex items-center space-x-1.5">
-                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-[#9d2449] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <span class="truncate text-gray-600 font-medium">Inicio: {{ $fechaInicio->format('d/m/Y') }}</span>
-                            </div>
-                            <div class="flex items-center space-x-1.5">
-                                <svg class="w-3 h-3 sm:w-4 sm:h-4 {{ $colorIcono }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                <span class="truncate {{ $colorTexto }} font-medium">Vence: {{ $fechaVencimiento->format('d/m/Y') }}</span>
-                            </div>
-                            @if($estadoVigencia === 'vencido')
-                                <div class="mt-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
-                                        Vencido
-                                    </span>
-                                </div>
-                            @elseif($estadoVigencia === 'por_vencer')
-                                <div class="mt-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                                        Por vencer
-                                    </span>
-                                </div>
-                            @else
-                                <div class="mt-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        Vigente
-                                    </span>
-                                </div>
-                            @endif
-                        </div>
-                    @else
-                        <div class="text-xs sm:text-sm md:text-base text-gray-500">
-                            <div class="flex items-center space-x-1.5">
-                                <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                                <span class="truncate">Sin fecha de vigencia</span>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-                <div class="flex space-x-2 sm:space-x-3 pt-3 sm:pt-4 mt-3 sm:mt-4 border-t border-gray-100">
-                    <a href="{{ route('proveedores.show', $proveedor->id) }}" 
-                       class="flex-1 text-center px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-[#9d2449] bg-[#9d2449]/5 border border-[#9d2449]/20 rounded-lg hover:bg-[#9d2449] hover:text-white transition-all duration-200 truncate shadow-sm">
-                        <span class="flex items-center justify-center gap-1.5 sm:gap-2">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.639 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.639 0-8.573-3.007-9.963-7.178z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            </svg>
-                            Ver
-                        </span>
-                    </a>
-                    <a href="{{ route('proveedores.edit', $proveedor->id) }}" 
-                       class="flex-1 text-center px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 truncate shadow-sm">
-                        <span class="flex items-center justify-center gap-1.5 sm:gap-2">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
-                            </svg>
-                            Editar
-                        </span>
-                    </a>
-                </div>
-            </div>
-            @empty
-            <div class="col-span-full bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 text-center">
-                <div class="text-gray-500">
-                    <svg class="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                    </svg>
-                    <p class="text-sm">No hay proveedores</p>
-                </div>
-            </div>
-            @endforelse
-            </div>
-        </div>
-                @if($todosProveedores->hasPages())
-        <div class="mt-4 sm:mt-5">
-            <div class="flex justify-center">
-                <div class="text-xs sm:text-sm">
-                    {{ $todosProveedores->links() }}
-                </div>
-            </div>
-        </div>
         @endif
+                        </div>
+                    </div>
 
+@include('components.ui.modals.delete-confirmation-modal')
+
+<!-- Modal para Sectores y Actividades -->
+<div id="sectorActividadModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Filtrar por Sectores y Actividades</h3>
+            <button type="button" onclick="closeSectorActividadModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Sectores -->
+            <div>
+                <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                    Sectores Económicos
+                </h4>
+                <div class="text-xs text-gray-500 mb-2">Formato: ID - Nombre del Sector</div>
+                <div id="sectoresContainer" class="space-y-1 max-h-64 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                    <div class="text-center py-4 text-gray-500">Cargando sectores...</div>
+                </div>
+            </div>
+            
+            <!-- Actividades -->
+            <div>
+                <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0 0h2m0 0h2a2 2 0 002-2V7a2 2 0 00-2-2h-2m0 0V5a2 2 0 00-2-2h-2a2 2 0 00-2 2v0z"/>
+                    </svg>
+                    Actividades Económicas
+                </h4>
+                <div class="text-xs text-gray-500 mb-2">Formato: ID - Nombre de la Actividad</div>
+                <div id="actividadesContainer" class="space-y-1 max-h-64 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                    <div class="text-center py-4 text-gray-500">Cargando actividades...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-end space-x-3 mt-6">
+            <button type="button" onclick="closeSectorActividadModal()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+                Cancelar
+            </button>
+            <button type="button" onclick="applySectorActividadFilters()" class="px-4 py-2 bg-[#9d2449] text-white rounded-lg hover:bg-[#8a1f40]">
+                Aplicar Filtros
+            </button>
         </div>
     </div>
 </div>
 
+<!-- Modal para Configuración de Exportación Excel -->
+<div id="exportModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Seleccionar Columnas para Exportar</h3>
+            <button type="button" onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form id="exportForm" method="GET" action="{{ route('proveedores.export') }}">
+            <!-- Incluir filtros actuales -->
+            @foreach(request()->except(['page']) as $key => $value)
+                @if(is_array($value))
+                    @foreach($value as $item)
+                        <input type="hidden" name="{{ $key }}[]" value="{{ $item }}">
+                    @endforeach
+                @else
+                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                @endif
+            @endforeach
+
+            <!-- Selección de Columnas -->
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h4 class="font-medium text-gray-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z"/>
+                        </svg>
+                        Columnas Disponibles
+                    </h4>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="selectAllColumns" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <span class="text-sm text-gray-600">Seleccionar todas</span>
+                    </label>
+                </div>
+                <div class="text-xs text-gray-500 mb-2">Selecciona las columnas que deseas incluir en la exportación</div>
+                
+                <div class="space-y-1 max-h-64 overflow-y-auto border rounded-lg p-2 bg-gray-50">
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="id" checked class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">ID</span>
+                            <span class="text-gray-700">Identificador único</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="rfc" checked class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">RFC</span>
+                            <span class="text-gray-700">Registro Federal de Contribuyentes</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="razon_social" checked class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">RAZÓN</span>
+                            <span class="text-gray-700">Razón Social</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="tipo_persona" checked class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">TIPO</span>
+                            <span class="text-gray-700">Tipo de Persona</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="estado_padron" checked class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">ESTADO</span>
+                            <span class="text-gray-700">Estado del Padrón</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="telefono" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">TEL</span>
+                            <span class="text-gray-700">Teléfono</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="domicilio" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">DOM</span>
+                            <span class="text-gray-700">Domicilio</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="fecha_alta_padron" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">F.ALTA</span>
+                            <span class="text-gray-700">Fecha de Alta</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="fecha_vencimiento_padron" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">F.VENC</span>
+                            <span class="text-gray-700">Fecha de Vencimiento</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="dias_restantes" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">DÍAS</span>
+                            <span class="text-gray-700">Días Restantes</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="fecha_inicio" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">F.INICIO</span>
+                            <span class="text-gray-700">Fecha Inicio</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="tramites_count" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">TRAM</span>
+                            <span class="text-gray-700">Número de Trámites</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="actividades" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">ACT</span>
+                            <span class="text-gray-700">Actividades Económicas</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="estado_geografico" class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">ESTADO</span>
+                            <span class="text-gray-700">Estado Geográfico</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="flex justify-end space-x-3 mt-6">
+                <button type="button" onclick="closeExportModal()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    Cancelar
+                </button>
+                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Exportar Excel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @endsection
-
-<x-ui.modals.modal-eliminar id="modal-eliminar-proveedor"
-    title="Eliminar proveedor"
-    message="¿Está seguro que desea eliminar este proveedor? Esta acción no se puede deshacer."
-    confirmText="Eliminar"
-    cancelText="Cancelar" />
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Remover el efecto de loading una vez que el DOM esté cargado
+    const mainContainer = document.getElementById('mainContainer');
+    if (mainContainer) {
+        mainContainer.classList.remove('page-loading');
+        mainContainer.classList.add('page-loaded');
+    }
+    
     const toggle = document.getElementById('toggleFilters');
     const container = document.getElementById('filtersContainer');
     const text = document.getElementById('filterText');
@@ -748,33 +1042,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         searchForm.submit();
     });
+    
     window.openSectorActividadModal = function() {
-        document.getElementById('sectorActividadModal')?.classList.remove('hidden');
+        console.log('🔍 Abriendo modal de sectores/actividades...');
+        const modal = document.getElementById('sectorActividadModal');
+        if (modal) {
+            modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+            console.log('✅ Modal abierto, cargando datos...');
         lazyLoadSectorActividad();
-    }
-    window.closeSectorActividadModal = function() {
-        document.getElementById('sectorActividadModal')?.classList.add('hidden');
-        document.body.style.overflow = '';
+        } else {
+            console.error('❌ No se encontró el modal sectorActividadModal');
+        }
     }
 
-    function lazyLoadSectorActividad() {
-        const sectoresEl = document.getElementById('sectoresContainer');
-        const actividadesEl = document.getElementById('actividadesContainer');
-        if (!sectoresEl || !actividadesEl) return;
-        if (!sectoresEl.dataset.loaded) {
-            sectoresEl.innerHTML = '<div class="py-6 text-center text-gray-500">Cargando sectores...</div>';
-            actividadesEl.innerHTML = '<div class="py-6 text-center text-gray-500">Cargando actividades...</div>';
-            fetch('{{ route('proveedores.index') }}?format=json&catalogs=sectores,actividades', { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
-                .then(r => r.ok ? r.json() : Promise.reject())
-                .then(data => {
-                    renderList(sectoresEl, data.sectores || [], 'sector');
-                    renderList(actividadesEl, data.actividades || [], 'actividad_economica');
-                    sectoresEl.dataset.loaded = '1';
+    window.closeSectorActividadModal = function() {
+        document.getElementById('sectorActividadModal')?.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    let sectoresData = null;
+    let actividadesData = null;
+
+    window.lazyLoadSectorActividad = function() {
+        console.log('📡 Cargando datos de sectores y actividades...');
+        
+        if (!sectoresData) {
+            console.log('🔍 Cargando sectores desde /api/sectores...');
+            fetch('/api/sectores')
+                .then(response => {
+                    console.log('📡 Respuesta sectores:', response.status);
+                    return response.json();
                 })
-                .catch(() => {
-                    sectoresEl.innerHTML = '<div class="py-6 text-center text-red-500">Error al cargar</div>';
-                    actividadesEl.innerHTML = '<div class="py-6 text-center text-red-500">Error al cargar</div>';
+                .then(data => {
+                    console.log('✅ Sectores cargados:', data.length, 'elementos');
+                    sectoresData = data;
+                    renderList(document.getElementById('sectoresContainer'), data, 'sector');
+                })
+                .catch(error => {
+                    console.error('❌ Error al cargar sectores:', error);
+                    document.getElementById('sectoresContainer').innerHTML = '<div class="text-center py-4 text-red-500">Error al cargar sectores</div>';
+                });
+        }
+
+        if (!actividadesData) {
+            console.log('🔍 Cargando actividades desde /api/actividades...');
+            fetch('/api/actividades')
+                .then(response => {
+                    console.log('📡 Respuesta actividades:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Actividades cargadas:', data.length, 'elementos');
+                    actividadesData = data;
+                    renderList(document.getElementById('actividadesContainer'), data, 'actividad_economica');
+                })
+                .catch(error => {
+                    console.error('❌ Error al cargar actividades:', error);
+                    document.getElementById('actividadesContainer').innerHTML = '<div class="text-center py-4 text-red-500">Error al cargar actividades</div>';
                 });
         }
     }
@@ -785,7 +1110,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const id = item.id ?? item.value ?? item;
             const label = item.nombre ?? item.label ?? item;
             const checked = selected.has(String(id)) ? 'checked' : '';
-            return `<label class="flex items-center gap-2 py-1"><input type="checkbox" name="${name}[]" form="searchForm" value="${id}" ${checked} class="rounded"> <span>${label}</span></label>`;
+            return `<label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="${name}[]" form="searchForm" value="${id}" ${checked} class="rounded border-gray-300 text-[#9d2449] focus:ring-[#9d2449]"> 
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">${id}</span>
+                            <span class="text-gray-700">${label}</span>
+                        </span>
+                    </label>`;
         }).join('') || '<div class="py-6 text-center text-gray-400">Sin datos</div>';
     }
 
@@ -793,6 +1124,62 @@ document.addEventListener('DOMContentLoaded', function() {
         closeSectorActividadModal();
         searchForm.submit();
     }
+
+    // Manejar filtro de vencimiento personalizado
+    const proximidadSelect = document.getElementById('proximidad_vencimiento');
+    const customContainer = document.getElementById('custom-days-container');
+
+    if (proximidadSelect && customContainer) {
+        function toggleCustomDays() {
+            if (proximidadSelect.value === 'custom') {
+                customContainer.classList.remove('hidden');
+            } else {
+                customContainer.classList.add('hidden');
+            }
+        }
+
+        // Ejecutar al cargar la página
+        toggleCustomDays();
+
+        // Ejecutar cuando cambie la selección
+        proximidadSelect.addEventListener('change', toggleCustomDays);
+    }
+
+    // Funciones para el modal de exportación
+    window.openExportModal = function() {
+        document.getElementById('exportModal')?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    window.closeExportModal = function() {
+        document.getElementById('exportModal')?.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Manejar selección de todas las columnas
+    const selectAllColumns = document.getElementById('selectAllColumns');
+    const exportColumns = document.querySelectorAll('.export-column');
+
+    if (selectAllColumns && exportColumns.length > 0) {
+        selectAllColumns.addEventListener('change', function() {
+            exportColumns.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        // Actualizar el estado del "Seleccionar todas" cuando se cambien las columnas individuales
+        exportColumns.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = Array.from(exportColumns).every(cb => cb.checked);
+                const someChecked = Array.from(exportColumns).some(cb => cb.checked);
+                
+                selectAllColumns.checked = allChecked;
+                selectAllColumns.indeterminate = someChecked && !allChecked;
+            });
+        });
+    }
+
+
 });
 </script>
 @endpush
