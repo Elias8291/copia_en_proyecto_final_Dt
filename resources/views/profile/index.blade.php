@@ -17,8 +17,9 @@
                         <div class="text-center sm:text-left">
                             <h1 class="text-2xl font-bold text-gray-900">{{ $user->nombre }}</h1>
                             <p class="text-gray-600">{{ $user->email }}</p>
+                            <p class="text-sm font-medium text-primary">{{ $user->roles->first()->name ?? 'Sin rol asignado' }}</p>
                             <div class="flex items-center justify-center sm:justify-start gap-4 mt-2 text-sm text-gray-500">
-                                <span>Miembro desde {{ $user->created_at->format('M Y') }}</span>
+                                <span>Miembro desde {{ $user->created_at->locale('es')->isoFormat('MMMM YYYY') }}</span>
                                 <span class="flex items-center">
                                     <div class="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
                                     Activo
@@ -66,6 +67,16 @@
                         </div>
 
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Rol del Usuario</label>
+                            <div class="mt-1 flex items-center">
+                                <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                <p class="text-sm font-semibold text-primary">{{ $user->roles->first()->name ?? 'Sin rol asignado' }}</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">ID de Usuario</label>
                             <p class="text-sm font-semibold text-gray-900 mt-1">#{{ $user->id }}</p>
                         </div>
@@ -82,12 +93,12 @@
 
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Miembro desde</label>
-                            <p class="text-sm font-semibold text-gray-900 mt-1">{{ $user->created_at->format('d/m/Y') }}</p>
+                            <p class="text-sm font-semibold text-gray-900 mt-1">{{ $user->created_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}</p>
                         </div>
 
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Última actualización</label>
-                            <p class="text-sm font-semibold text-gray-900 mt-1">{{ $user->updated_at->format('d/m/Y H:i') }}</p>
+                            <p class="text-sm font-semibold text-gray-900 mt-1">{{ $user->updated_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY [a las] HH:mm') }}</p>
                         </div>
                     </div>
                 </div>

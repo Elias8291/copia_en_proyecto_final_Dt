@@ -293,7 +293,6 @@
                 </div>
 
                 <!-- Mi Perfil -->
-                @can('perfil.ver')
                 <a href="{{ route('profile.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('profile.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                     <svg class="{{ request()->routeIs('profile.*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }} flex-shrink-0 w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -301,7 +300,6 @@
                     </svg>
                     <span class="font-medium tracking-wide">Mi Perfil</span>
                 </a>
-                @endcan
 
                 <!-- Separador -->
                 <div class="px-3 py-2">

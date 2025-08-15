@@ -12,6 +12,18 @@ class Authenticate extends Middleware
      */
     protected function redirectTo(Request $request): ?string
     {
-        return $request->expectsJson() ? null : route('login');
+        // Si es una petición AJAX o de API, no redirigir
+        if ($request->expectsJson()) {
+            return null;
+        }
+
+        // Si es una ruta de API, no guardar como intended
+        if ($request->is('*/api/*') || $request->is('api/*')) {
+            // Limpiar cualquier URL intended que pueda ser una API
+            session()->forget('url.intended');
+            return route('login');
+        }
+
+        return route('login');
     }
 }

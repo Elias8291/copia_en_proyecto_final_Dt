@@ -32,6 +32,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Configurar Carbon para español
+        \Carbon\Carbon::setLocale('es');
+        setlocale(LC_TIME, 'es_MX.UTF-8', 'es_MX', 'es_ES.UTF-8', 'es_ES', 'Spanish_Mexico', 'Spanish');
     }
 }

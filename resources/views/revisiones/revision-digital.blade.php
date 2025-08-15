@@ -29,7 +29,26 @@
                     </div>
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">{{ $tipoRevisionLabel }} - Trámite #{{ $tramite->id }}</h1>
-                        <p class="text-base text-gray-500 mt-1">{{ strtolower($tipoRevisionLabel) }} de documentos y datos del trámite</p>
+                        <div class="flex items-center gap-4 mt-1">
+                            <p class="text-base text-gray-500">{{ strtolower($tipoRevisionLabel) }} de documentos y datos del trámite</p>
+                            @if($tramite->correcciones_count > 0)
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    <span class="text-sm font-medium text-amber-600">
+                                        {{ $tramite->correcciones_count }} revisión{{ $tramite->correcciones_count !== 1 ? 'es' : '' }}
+                                    </span>
+                                </div>
+                            @else
+                                <div class="flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <span class="text-sm font-medium text-green-600">Primera revisión</span>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">

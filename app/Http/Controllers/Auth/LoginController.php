@@ -76,7 +76,19 @@ class LoginController extends Controller
         session(['last_activity' => now()]);
         SystemLogService::userLogin($user->correo);
 
-        return redirect()->intended(route('dashboard'));
+        // Obtener la URL intended
+        $intended = session()->pull('url.intended');
+        
+        // Si la URL intended es una ruta de API o notificaciones, ignorarla y ir al dashboard
+        if ($intended && (
+            str_contains($intended, '/api/') || 
+            str_contains($intended, '/notificaciones/api/') ||
+            str_contains($intended, 'conteo-no-leidas')
+        )) {
+            $intended = null;
+        }
+
+        return redirect($intended ?: route('dashboard'));
     }
 
     private function loginError(Request $request, string $message)

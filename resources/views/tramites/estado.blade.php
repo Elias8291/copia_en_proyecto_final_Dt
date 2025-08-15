@@ -149,65 +149,126 @@
                             @endif
                         </div>
                     @elseif($tramitePendiente->status === 'Revision_Presencial')
-                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
-                            <div class="flex items-center space-x-2 mb-3">
-                                <div class="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                                <p class="text-sm text-purple-700 font-medium">
-                                    <strong>Revisión presencial:</strong> Se requiere una cita en oficina
-                                </p>
+                        <div class="bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200 rounded-xl p-4 mb-4 shadow-sm">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                                <h4 class="text-sm font-bold text-blue-800">🏢 Revisión Presencial</h4>
                             </div>
                             
-                            @if($citaAsignada && $citaAsignada->asignadoA)
-                                <div class="bg-white border border-purple-200 rounded-lg p-3 mt-3">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm font-semibold text-purple-800">Le atenderá en oficina:</p>
-                                            <p class="text-sm text-purple-700">{{ $citaAsignada->asignadoA->nombre }}</p>
-                                            <p class="text-xs text-purple-600">Revisor Presencial Asignado</p>
+                            @if($citaAsignada)
+                                @if($citaVencida ?? false)
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                                        <div class="text-center">
+                                            <h4 class="text-lg font-bold text-red-600">❌ Cita Vencida</h4>
+                                            <p class="text-base text-red-700">{{ $citaAsignada->fecha_cita->format('d/m/Y H:i') }}</p>
+                                            <p class="text-sm text-red-600 mt-2">No asistió a la cita. Se reagendará automáticamente.</p>
                                         </div>
                                     </div>
-                                </div>
+                                @else
+                                    <!-- Información de la cita -->
+                                    <div class="bg-white/80 rounded-lg p-3 mb-3">
+                                        <div class="text-center">
+                                            <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
+                                                ✅ Cita Confirmada
+                                            </div>
+                                            <p class="text-lg font-bold text-gray-800">{{ $citaAsignada->fecha_cita->format('d/m/Y H:i') }}</p>
+                                            @if($citaAsignada->asignadoA)
+                                                <p class="text-sm text-gray-600">Le atenderá: <strong>{{ $citaAsignada->asignadoA->nombre }}</strong></p>
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    <!-- Ubicación simple -->
+                                    <div class="bg-white/80 rounded-lg p-3 mb-3">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="text-sm">📍</span>
+                                            <span class="text-sm font-semibold text-gray-800">Ubicación:</span>
+                                        </div>
+                                        <div class="text-xs text-gray-700 ml-6">
+                                            <p><strong>Módulo 1 de Proveedores</strong></p>
+                                            <p>Ciudad Administrativa, Edificio José Vasconcelos, Piso 1</p>
+                                            <p class="text-gray-500 mt-1">💡 Llegue 15 minutos antes</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Quién debe asistir -->
+                                    <div class="bg-white/80 rounded-lg p-3">
+                                        <div class="flex items-center space-x-2 mb-2">
+                                            <span class="text-sm">👤</span>
+                                            <span class="text-sm font-semibold text-gray-800">Debe asistir:</span>
+                                        </div>
+                                        <div class="text-xs text-gray-700 ml-6 space-y-1">
+                                            @if($tramitePendiente->proveedor && $tramitePendiente->proveedor->tipo_persona === 'Moral')
+                                                <p>• <strong>Representante Legal</strong> con credencial vigente</p>
+                                            @else
+                                                <p>• <strong>Titular</strong> con credencial vigente</p>
+                                            @endif
+                                            <p>• Todos los documentos originales para cotejo</p>
+                                        </div>
+                                    </div>
+                                @endif
                             @else
-                                <div class="bg-white border border-purple-200 rounded-lg p-3 mt-3">
-                                    <p class="text-sm text-purple-700">
-                                        <strong>Nota:</strong> Se programará una cita presencial próximamente
+                                <div class="bg-white/80 rounded-lg p-3">
+                                    <p class="text-sm text-blue-700">
+                                        ⏳ <strong>Su cita será programada pronto</strong>
                                     </p>
                                 </div>
                             @endif
                         </div>
                     @elseif($tramitePendiente->status === 'Revision_Domiciliaria')
-                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
-                            <div class="flex items-center space-x-2 mb-3">
-                                <div class="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
-                                <p class="text-sm text-indigo-700 font-medium">
-                                    <strong>Revisión domiciliaria:</strong> Se realizará una visita a su domicilio
-                                </p>
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 mb-4 shadow-sm">
+                            <div class="flex items-center mb-4">
+                                <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-green-800">Revisión Domiciliaria</h3>
+                                    <p class="text-sm text-green-600">Se realizará una visita a su domicilio</p>
+                                </div>
                             </div>
                             
-                            @if($citaAsignada && $citaAsignada->asignadoA)
-                                <div class="bg-white border border-indigo-200 rounded-lg p-3 mt-3">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                            </svg>
+                            @if($citaAsignada)
+                                @if($citaVencida ?? false)
+                                    <div class="text-center">
+                                        <div class="text-red-600 mb-3">
+                                            <h4 class="text-xl font-bold">Visita Vencida</h4>
+                                            <p class="text-lg">{{ $citaAsignada->fecha_cita->format('d/m/Y H:i') }}</p>
                                         </div>
-                                        <div>
-                                            <p class="text-sm font-semibold text-indigo-800">Le visitará en su domicilio:</p>
-                                            <p class="text-sm text-indigo-700">{{ $citaAsignada->asignadoA->nombre }}</p>
-                                            <p class="text-xs text-indigo-600">Revisor Domiciliario Asignado</p>
+                                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                            <p class="text-sm text-red-700">
+                                                <strong>No se realizó la visita.</strong> Se reprogramará automáticamente.
+                                            </p>
                                         </div>
                                     </div>
-                                </div>
+                                @else
+                                    <div class="text-center mb-4">
+                                        <h4 class="text-xl font-bold text-green-700 mb-2">Visita Programada</h4>
+                                        <p class="text-2xl font-bold text-green-800 mb-4">{{ $citaAsignada->fecha_cita->format('d/m/Y H:i') }}</p>
+                                        
+                                        @if($citaAsignada->asignadoA)
+                                            <div class="bg-white rounded-lg p-4 mb-4 border border-green-200">
+                                                <p class="text-sm text-green-700 mb-1">Le visitará:</p>
+                                                <p class="text-lg font-semibold text-green-800">{{ $citaAsignada->asignadoA->nombre }}</p>
+                                                <p class="text-xs text-green-600">Revisor Domiciliario</p>
+                                            </div>
+                                        @endif
+                                        
+                                        <div class="bg-green-100 rounded-lg p-4 text-left">
+                                            <h5 class="font-semibold text-green-800 mb-2">📋 Importante:</h5>
+                                            <ul class="text-sm text-green-700 space-y-1">
+                                                <li>• Esté disponible en su domicilio registrado</li>
+                                                <li>• Tenga lista toda su documentación</li>
+                                                <li>• El revisor verificará los documentos en persona</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                @endif
                             @else
-                                <div class="bg-white border border-indigo-200 rounded-lg p-3 mt-3">
-                                    <p class="text-sm text-indigo-700">
-                                        <strong>Nota:</strong> Se programará una visita domiciliaria próximamente
+                                <div class="text-center bg-green-100 rounded-lg p-4">
+                                    <p class="text-sm text-green-700">
+                                        <strong>En proceso:</strong> Se programará una visita domiciliaria próximamente
                                     </p>
                                 </div>
                             @endif
@@ -226,115 +287,7 @@
             </div>
 
 
-            @if($citaAsignada)
-            <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6">
-                <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                    <div class="flex items-center space-x-2">
-                        @if($citaAsignada->tipo_cita === 'Presencial')
-                            <div class="w-6 h-6 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">Cita Presencial</h3>
-                        @elseif($citaAsignada->tipo_cita === 'Domiciliaria')
-                            <div class="w-6 h-6 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">Cita Domiciliaria</h3>
-                        @else
-                            <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                            </div>
-                            <h3 class="text-lg font-bold text-gray-800">Información de Cita</h3>
-                        @endif
-                    </div>
-                </div>
-                <div class="p-6">
-                    <div class="text-center">
-                        @if($citaVencida)
-                            <div class="text-red-600 mb-4">
-                                <h4 class="text-xl font-bold">Cita Vencida</h4>
-                                <p class="text-lg">{{ $citaAsignada->fecha_cita->format('d/m/Y H:i') }}</p>
-                            </div>
-                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-                                <p class="text-sm text-red-700">
-                                    <strong>No asistió a la cita.</strong> Se reagendará automáticamente.
-                                </p>
-                            </div>
-                        @else
-                            <div class="text-green-600 mb-4">
-                                <h4 class="text-xl font-bold">
-                                    @if($citaAsignada->tipo_cita === 'Presencial')
-                                        Cita Presencial Confirmada
-                                    @elseif($citaAsignada->tipo_cita === 'Domiciliaria')
-                                        Visita Domiciliaria Programada
-                                    @else
-                                        Cita Confirmada
-                                    @endif
-                                </h4>
-                                <p class="text-lg font-semibold">{{ $citaAsignada->fecha_cita->format('d/m/Y H:i') }}</p>
-                            </div>
-                            
-                            @if($citaAsignada->asignadoA)
-                                <div class="bg-white border border-green-200 rounded-lg p-4 mb-4">
-                                    <div class="flex items-center space-x-3 justify-center">
-                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                                            </svg>
-                                        </div>
-                                        <div class="text-center">
-                                            <p class="text-sm font-semibold text-green-800">
-                                                @if($citaAsignada->tipo_cita === 'Presencial')
-                                                    Le atenderá:
-                                                @elseif($citaAsignada->tipo_cita === 'Domiciliaria')
-                                                    Le visitará:
-                                                @else
-                                                    Asignado a:
-                                                @endif
-                                            </p>
-                                            <p class="text-sm text-green-700 font-medium">{{ $citaAsignada->asignadoA->nombre }}</p>
-                                            <p class="text-xs text-green-600">
-                                                @if($citaAsignada->tipo_cita === 'Presencial')
-                                                    Revisor Presencial
-                                                @elseif($citaAsignada->tipo_cita === 'Domiciliaria')
-                                                    Revisor Domiciliario
-                                                @else
-                                                    Revisor Asignado
-                                                @endif
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                            
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <p class="text-sm text-green-700">
-                                    <strong>Importante:</strong> 
-                                    @if($citaAsignada->tipo_cita === 'Presencial')
-                                        Debe asistir a la oficina con su documentación completa.
-                                    @elseif($citaAsignada->tipo_cita === 'Domiciliaria')
-                                        El revisor visitará su domicilio. Tenga lista su documentación.
-                                    @else
-                                        Debe llevar su documentación completa.
-                                    @endif
-                                </p>
-                                @if($citaAsignada->tipo_cita === 'Domiciliaria')
-                                    <p class="text-xs text-green-600 mt-2">
-                                        <strong>Nota:</strong> Asegúrese de estar disponible en el domicilio registrado en la fecha y hora programada.
-                                    </p>
-                                @endif
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            @endif
+
 
         @else
             <div class="bg-white rounded-xl shadow-lg border border-gray-200">

@@ -19,7 +19,12 @@ class OptimizeResponse
 
         // Optimizar headers para mejor rendimiento
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        
+        // No aplicar X-Frame-Options para rutas de archivos (permite visualización en iframes/popups)
+        if (!$request->is('revisiones/archivo/*') && !$request->is('tramites/archivo/*') && !$request->is('archivos/*')) {
+            $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
+        }
+        
         $response->headers->set('X-XSS-Protection', '1; mode=block');
         
         // Optimizar cache para archivos estáticos

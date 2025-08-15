@@ -497,10 +497,44 @@ class RfcProveedorService
             }
             
             $proveedor->update($actualizacion);
+            
+            // Asignar rol de proveedor al usuario asociado
+            $this->asignarRolProveedor($proveedor);
+            
             return true;
         } catch (\Exception $e) {
             \Log::error("Error al activar proveedor: " . $e->getMessage());
             return false;
+        }
+    }
+    
+    /**
+     * Asigna el rol de proveedor al usuario asociado
+     */
+    private function asignarRolProveedor(Proveedor $proveedor): void
+    {
+        try {
+            // Buscar el usuario asociado al proveedor
+            $usuario = $proveedor->usuario;
+            
+            if (!$usuario) {
+                \Log::warning("No se encontró usuario asociado al proveedor {$proveedor->id}");
+                return;
+            }
+            
+            // Verificar si ya tiene el rol de proveedor
+            if (!$usuario->hasRole('Proveedor')) {
+                $usuario->assignRole('Proveedor');
+                \Log::info("Rol 'Proveedor' asignado al usuario {$usuario->id} - {$usuario->name}");
+            } else {
+                \Log::info("Usuario {$usuario->id} ya tiene el rol 'Proveedor'");
+            }
+            
+        } catch (\Exception $e) {
+            \Log::error("Error al asignar rol de proveedor: " . $e->getMessage(), [
+                'proveedor_id' => $proveedor->id,
+                'error' => $e->getMessage()
+            ]);
         }
     }
     

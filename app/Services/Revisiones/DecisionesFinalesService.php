@@ -8,6 +8,7 @@ use App\Models\Proveedor;
 use App\Services\CitasService;
 use App\Services\RevisionService;
 use App\Services\RfcProveedorService;
+use App\Services\NotificacionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -54,6 +55,11 @@ class DecisionesFinalesService
                 'correcciones_count' => $tramite->correcciones_count + 1
             ]);
             $this->guardarComentarioGeneral($tramiteId, $comentarioGeneral, 'Rechazado');
+            
+            // Notificar al usuario del trámite sobre las correcciones requeridas
+            $notificacionService = app(NotificacionService::class);
+            $notificacionService->notificarCorrecciones($tramite, $comentarioGeneral);
+            
             return ['success' => true, 'message' => 'Trámite enviado para corrección exitosamente'];
         });
     }
@@ -110,6 +116,17 @@ class DecisionesFinalesService
             
             $rfcProveedorService = app(RfcProveedorService::class);
             $rfcProveedorService->activarProveedor($tramite->proveedor, strtolower($tramite->tipo_tramite));
+            $tramite->proveedor->refresh();
+            
+            // Generar oficio oficial
+            $oficioService = app(\App\Services\OficioService::class);
+            $oficio = $oficioService->generarOficioParaTramite($tramite);
+            
+            // Notificar al usuario sobre la activación del proveedor
+            if ($tramite->proveedor->pv_numero) {
+                $notificacionService = app(NotificacionService::class);
+                $notificacionService->notificarProveedorAsignado($tramite, $tramite->proveedor->pv_numero);
+            }
             
             $tramite->update([
                 'status' => 'Aprobado',
@@ -117,7 +134,16 @@ class DecisionesFinalesService
                 'fecha_finalizacion' => now()
             ]);
             
-            return ['success' => true, 'message' => 'Trámite aprobado y proveedor activado exitosamente'];
+            return [
+                'success' => true, 
+                'message' => "Trámite aprobado y proveedor activado exitosamente. Oficio generado: {$oficio->numero_oficio}",
+                'pv_numero' => $tramite->proveedor->pv_numero,
+                'oficio_generado' => [
+                    'oficio_id' => $oficio->id,
+                    'numero_oficio' => $oficio->numero_oficio,
+                    'url' => $oficio->url
+                ]
+            ];
         });
     }
 
@@ -158,6 +184,12 @@ class DecisionesFinalesService
             
             $rfcProveedorService->activarProveedor($tramite->proveedor, $tipoTramite);
             $tramite->proveedor->refresh();
+            
+            // Notificar al usuario sobre la asignación del número PV
+            if ($tramite->proveedor->pv_numero) {
+                $notificacionService = app(NotificacionService::class);
+                $notificacionService->notificarProveedorAsignado($tramite, $tramite->proveedor->pv_numero);
+            }
             
             $oficioService = app(\App\Services\OficioService::class);
             $oficio = $oficioService->generarOficioParaTramite($tramite);

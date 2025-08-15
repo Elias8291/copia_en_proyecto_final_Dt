@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oficio de Inscripción - Padrón de Proveedores</title>
+    <title>Oficio de {{ ucfirst(strtolower($tramite->tipo_tramite ?? 'Inscripción')) }} - Padrón de Proveedores</title>
     <style>
-       tyle>
         @page {
             size: 8.5in 11in;
-            margin: 1cm 2.54cm 2.54cm 2.54cm; /* top right bottom left */
+            margin: 1cm 2.54cm 2.54cm 2.54cm; 
         }
         
         body {
@@ -35,8 +34,8 @@
 
         .logo-lateral {
             position: absolute;
-            top: -12mm;
-            right: 0mm;
+            top: -20mm;
+            right: -24mm;
             width: 36mm;
             height: 100%;
             z-index: 1;
@@ -80,27 +79,19 @@
             line-height: 1.2;
         }
 
-        .destinatario-persona-moral {
-            line-height: 1.2;
-        }
-
         .destinatario-persona-fisica {
             line-height: 1.2;
         }
         
         .contenido-principal {
             position: absolute;
-            top: 85mm;
+            top: 78mm;
             left: 0mm;
             width: 160mm;
             font-size: 8pt;
             text-align: justify;
             line-height: 1.4;
             z-index: 5;
-        }
-
-        .contenido-principal-fisica {
-            top: 83mm;
         }
 
         .firma {
@@ -185,7 +176,12 @@
 
     <div class="destinatario">
         <div class="destinatario-persona-moral">
-            @if(isset($datosConstitutivos) && $datosConstitutivos && isset($datosConstitutivos->representanteLegal) && $datosConstitutivos->representanteLegal && $datosConstitutivos->representanteLegal->nombre_completo)
+            @if(isset($apoderadoLegal) && $apoderadoLegal && $apoderadoLegal->nombre_apoderado)
+                {{ strtoupper($apoderadoLegal->nombre_apoderado) }}<br>
+                @if($apoderadoLegal->rfc)
+                    RFC: {{ $apoderadoLegal->rfc }}<br>
+                @endif
+            @elseif(isset($datosConstitutivos) && $datosConstitutivos && isset($datosConstitutivos->representanteLegal) && $datosConstitutivos->representanteLegal && $datosConstitutivos->representanteLegal->nombre_completo)
                 {{ strtoupper($datosConstitutivos->representanteLegal->nombre_completo) }}<br>
             @endif
             
@@ -209,7 +205,7 @@
                 {{ strtoupper($domicilioString) }}<br>
             @endif
             
-            @if(isset($proveedor) && $proveedor && $proveedor->rfc)
+            @if(isset($proveedor) && $proveedor && $proveedor->rfc && (!isset($apoderadoLegal) || !$apoderadoLegal || !$apoderadoLegal->rfc))
                 RFC: {{ $proveedor->rfc }}<br>
             @endif
             P R E S E N T E
@@ -217,10 +213,34 @@
     </div>
 
     <div class="contenido-principal">
-        Se hace referencia a su solicitud de registro ante el Padrón de Proveedores de la Administración Pública Estatal y anexos que acompaña fechada el {{ $fechaInicioTramiteEspanol }}, recibida en esta Dirección de Recursos Materiales el {{ $fechaGeneracionDocumentoEspanol }}.
+        @php
+            $tipoTramiteTexto = strtolower($tramite->tipo_tramite ?? 'inscripcion');
+            $accionTexto = match($tipoTramiteTexto) {
+                'inscripcion' => 'registro',
+                'renovacion' => 'renovación',
+                'actualizacion' => 'actualización',
+                default => 'registro'
+            };
+            $procesoTexto = match($tipoTramiteTexto) {
+                'inscripcion' => 'se procedió al registro',
+                'renovacion' => 'se procedió a la renovación del registro',
+                'actualizacion' => 'se procedió a la actualización del registro',
+                default => 'se procedió al registro'
+            };
+        @endphp
+        
+        Se hace referencia a su solicitud de {{ $accionTexto }} ante el Padrón de Proveedores de la Administración Pública Estatal y anexos que acompaña fechada el {{ $fechaInicioTramiteEspanol }}, recibida en esta Dirección de Recursos Materiales el {{ $fechaGeneracionDocumentoEspanol }}.
         <br><br>
-        Sobre el particular, y en atención a la misma, una vez revisada y analizada, así como cotejados los documentos presentados en original, se informa que se procedió al registro ante el Padrón de Proveedores de la Administración Pública Estatal, de la persona moral "{{ isset($datosGenerales) && $datosGenerales && $datosGenerales->razon_social ? strtoupper($datosGenerales->razon_social) : '' }}", cuyas actividades económicas son las que se describen en su constancia de situación fiscal, con cédula de inscripción {{ isset($proveedor) && $proveedor && $proveedor->pv ? $proveedor->pv : '' }} asignada, que lo acredita como Proveedor Estatal, cuya vigencia será anual a partir del {{ strtoupper($fechaVigenciaInicioEspanol) }} hasta el {{ strtoupper($fechaVigenciaFinEspanol) }}, dejando constancia de ello, en el expediente respectivo.
+        Sobre el particular, y en atención a la misma, una vez revisada y analizada, así como cotejados los documentos presentados en original, se informa que {{ $procesoTexto }} ante el Padrón de Proveedores de la Administración Pública Estatal, de la persona moral "{{ isset($datosGenerales) && $datosGenerales && $datosGenerales->razon_social ? strtoupper($datosGenerales->razon_social) : '' }}", cuyas actividades económicas son las que se describen en su constancia de situación fiscal, con cédula de {{ $tipoTramiteTexto === 'inscripcion' ? 'inscripción' : 'proveedor' }} {{ isset($proveedor) && $proveedor && $proveedor->pv_numero ? $proveedor->pv_numero : '' }} asignada, que lo acredita como Proveedor Estatal, cuya vigencia será anual a partir del {{ strtoupper($fechaVigenciaInicioEspanol) }} hasta el {{ strtoupper($fechaVigenciaFinEspanol) }}, dejando constancia de ello, en el expediente respectivo.
         <br><br>
+        @if(isset($apoderadoLegal) && $apoderadoLegal)
+        El presente oficio se dirige al representante legal {{ $apoderadoLegal->nombre_apoderado ? strtoupper($apoderadoLegal->nombre_apoderado) : '' }}
+        @if($apoderadoLegal->rfc), con RFC {{ $apoderadoLegal->rfc }}@endif
+        @if($apoderadoLegal->numero_escritura_constitutiva_poder), conforme a la escritura constitutiva/poder número {{ $apoderadoLegal->numero_escritura_constitutiva_poder }}@endif
+        @if($apoderadoLegal->numero_registro_publico_poder), registrada bajo el número {{ $apoderadoLegal->numero_registro_publico_poder }}@endif
+        @if($apoderadoLegal->fecha_inscripcion_poder), con fecha de inscripción {{ \Carbon\Carbon::parse($apoderadoLegal->fecha_inscripcion_poder)->format('d/m/Y') }}@endif.
+        <br><br>
+        @endif
         Así mismo, se informa que, para renovar este registro, deberá presentar su solicitud dentro de los siete días hábiles previos a su vencimiento, en caso de que omita presentar dicha solicitud en el plazo indicado, se cancelará el registro a su vencimiento, sin perjuicio de lo anterior, podrá formular una nueva solicitud de inscripción, es importante puntualizar que en cualquier tiempo siempre que se encuentre vigente su registro, deberá comunicar a esta Secretaría a través de esta Dirección, las modificaciones legales, de capacidad técnica, económica o productiva y aquellas que puedan implicar un cambio en su giro y/o clasificación.
         <br><br>
         Por último, se exhorta a que en todos los trámites, procedimientos y contratos que celebre con las Dependencias o Entidades de la Administración Pública Estatal, se abstenga de adoptar conductas que vayan en contravención de la normatividad aplicable.

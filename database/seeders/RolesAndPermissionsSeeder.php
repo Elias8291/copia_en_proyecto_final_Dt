@@ -20,7 +20,7 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $superAdmin = Role::where('name', 'Super Administrador')->first();
         if ($superAdmin) {
-            // Limpiar permisos existentes y asignar todos los permisos
+            
             $superAdmin->syncPermissions($allPermissions);
             $this->command->info("✅ Super Administrador: {$allPermissions->count()} permisos asignados");
         } else {
@@ -58,10 +58,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'notificaciones.crear',
                 'oficios.ver',
                 'oficios.crear',
-                'oficios.editar',
-                'logs.ver',
-                'logs.exportar',
-                'logs.eliminar',
+              
                 'reportes.ver',
                 'configuracion.editar',
             ]);
@@ -71,28 +68,23 @@ class RolesAndPermissionsSeeder extends Seeder
         $revisorDigital = Role::where('name', 'Revisor Digital')->first();
         if ($revisorDigital) {
             $revisorDigital->syncPermissions([
-                'usuarios.ver_propio',
                 'usuarios.editar_propio',
                 'usuarios.cambiar_password',
-                'roles.ver',
-                'tramites.ver',
+                'usuarios.ver_propio',
                 'tramites.revisar',
                 'tramites.aprobar',
                 'tramites.rechazar',
-                'tramites.editar',
-                'tramites.ver_estado',
                 'tramites.ver_historial',
                 'proveedores.ver',
                 'proveedores.ver_detalle',
                 'revisiones.ver',
                 'revisiones.crear',
                 'revisiones.editar',
-                'revisiones.digital',
-                'citas.ver',
+                'revisiones.presencial',
                 'notificaciones.ver',
                 'notificaciones.marcar_leida',
                 'oficios.ver',
-                'oficios.crear',
+                'archivos.editar',
             ]);
             $this->command->info("✅ Revisor Digital: permisos asignados");
         }
@@ -100,11 +92,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $revisorPresencial = Role::where('name', 'Revisor Presencial')->first();
         if ($revisorPresencial) {
             $revisorPresencial->syncPermissions([
-                'usuarios.ver_propio',
                 'usuarios.editar_propio',
                 'usuarios.cambiar_password',
-                'roles.ver',
-                'tramites.ver',
+                'usuarios.ver_propio',
                 'tramites.revisar',
                 'tramites.aprobar',
                 'tramites.rechazar',
@@ -116,12 +106,14 @@ class RolesAndPermissionsSeeder extends Seeder
                 'revisiones.crear',
                 'revisiones.editar',
                 'revisiones.presencial',
-                'citas.ver',
                 'citas.crear',
                 'citas.editar',
+                'citas.ver',
                 'notificaciones.ver',
                 'notificaciones.marcar_leida',
                 'oficios.ver',
+                'archivos.editar',
+                'archivos.ver',
             ]);
             $this->command->info("✅ Revisor Presencial: permisos asignados");
         }
@@ -129,11 +121,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $revisorDomiciliario = Role::where('name', 'Revisor Domiciliario')->first();
         if ($revisorDomiciliario) {
             $revisorDomiciliario->syncPermissions([
-                'usuarios.ver_propio',
                 'usuarios.editar_propio',
                 'usuarios.cambiar_password',
-                'roles.ver',
-                'tramites.ver',
+                'usuarios.ver_propio',
                 'tramites.revisar',
                 'tramites.aprobar',
                 'tramites.rechazar',
@@ -144,13 +134,15 @@ class RolesAndPermissionsSeeder extends Seeder
                 'revisiones.ver',
                 'revisiones.crear',
                 'revisiones.editar',
-                'revisiones.domiciliaria',
-                'citas.ver',
+                'revisiones.presencial',
                 'citas.crear',
                 'citas.editar',
+                'citas.ver',
                 'notificaciones.ver',
                 'notificaciones.marcar_leida',
                 'oficios.ver',
+                'archivos.editar',
+                'archivos.ver',
             ]);
             $this->command->info("✅ Revisor Domiciliario: permisos asignados");
         }

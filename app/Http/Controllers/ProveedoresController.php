@@ -382,4 +382,57 @@ class ProveedoresController extends Controller
         return Excel::download(new ProveedoresExcelCompleto($filtros), $nombreArchivo);
     }
 
+    /**
+     * Vista pública de proveedor (sin autenticación)
+     */
+    public function publico(Proveedor $proveedor)
+    {
+        // Cargar relaciones necesarias
+        $proveedor->load(['usuario']);
+        
+        // Obtener el último trámite del proveedor
+        $ultimoTramite = $proveedor->tramites()
+            ->with(['actividades.actividad', 'direcciones.estado'])
+            ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
+            ->first();
+        
+        // Obtener direcciones del último trámite si existe
+        $direcciones = collect();
+        if ($ultimoTramite && $ultimoTramite->direcciones->count() > 0) {
+            $direcciones = $ultimoTramite->direcciones;
+        }
+
+        return view('proveedores.publico', compact('proveedor', 'ultimoTramite', 'direcciones'));
+    }
+
+    /**
+     * Vista pública de proveedor por token (sin autenticación)
+     */
+    public function publicoPorToken(string $token)
+    {
+        // Buscar proveedor por token
+        $proveedor = Proveedor::buscarPorToken($token);
+        
+        if (!$proveedor) {
+            abort(404, 'Token no válido o proveedor no encontrado');
+        }
+
+        // Cargar relaciones necesarias
+        $proveedor->load(['usuario']);
+        
+        // Obtener el último trámite del proveedor
+        $ultimoTramite = $proveedor->tramites()
+            ->with(['actividades.actividad', 'direcciones.estado'])
+            ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
+            ->first();
+        
+        // Obtener direcciones del último trámite si existe
+        $direcciones = collect();
+        if ($ultimoTramite && $ultimoTramite->direcciones->count() > 0) {
+            $direcciones = $ultimoTramite->direcciones;
+        }
+
+        return view('proveedores.publico', compact('proveedor', 'ultimoTramite', 'direcciones'));
+    }
+
 }

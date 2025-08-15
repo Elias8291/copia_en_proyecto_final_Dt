@@ -9,6 +9,7 @@ use App\Services\RevisionService;
 use App\Services\Revisiones\RevisionDigitalService;
 use App\Services\Revisiones\RevisionPresencialService;
 use App\Services\Revisiones\DecisionesFinalesService;
+use App\Services\NotificacionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Middleware\PermissionMiddleware;
@@ -188,8 +189,8 @@ class RevisionController extends Controller
             return response($plaintext, 200, [
                 'Content-Type' => $mimeType,
                 'Content-Disposition' => 'inline; filename="' . addslashes($archivo->nombre_original) . '"',
-                'X-Content-Type-Options' => 'nosniff',
-                'X-Frame-Options' => 'DENY'
+                'X-Content-Type-Options' => 'nosniff'
+                // X-Frame-Options removido para permitir visualización en iframes
             ]);
                 
         } catch (\Exception $e) {
@@ -297,10 +298,28 @@ class RevisionController extends Controller
                 // Determinar estado final del trámite solo si hay cambios en secciones
                 $estadoGeneral = $this->revisionService->obtenerEstadoGeneral($tramite->id);
                 
+                $estadoAnterior = $tramite->status;
+                
                 // Actualizar estado del trámite
                 $tramite->update([
                     'status' => $estadoGeneral['estado']
                 ]);
+
+                // Si el trámite cambió a Para_Correccion, notificar al usuario
+                if ($estadoGeneral['estado'] === 'Para_Correccion' && $estadoAnterior !== 'Para_Correccion') {
+                    $notificacionService = app(NotificacionService::class);
+                    
+                    // Obtener comentarios de las secciones rechazadas para incluir en la notificación
+                    $comentariosRechazo = collect($estadoGeneral['secciones'])
+                        ->where('estado', 'Rechazado')
+                        ->pluck('comentario')
+                        ->filter()
+                        ->implode('. ');
+                    
+                    $observaciones = $comentariosRechazo ?: 'Se requieren correcciones en algunas secciones del trámite.';
+                    
+                    $notificacionService->notificarCorrecciones($tramite, $observaciones);
+                }
 
                 \Log::info("Estado final del trámite: " . $estadoGeneral['estado']);
                 \Log::info("=== FIN PROCESAMIENTO DE REVISIÓN DIGITAL ===");
@@ -429,11 +448,11 @@ class RevisionController extends Controller
             
             if ($resultado['success']) {
                 \Log::info("Trámite {$tramiteId} aprobado exitosamente en revisión presencial", $resultado);
-                return response()->json($resultado);
+                return redirect()->route('revisiones.index')->with('success', $resultado['message']);
             }
             
             \Log::warning("Trámite {$tramiteId} no pudo ser aprobado en revisión presencial", $resultado);
-            return response()->json($resultado);
+            return redirect()->back()->with('error', $resultado['message']);
             
         } catch (\Exception $e) {
             \Log::error("Error al aprobar y asignar proveedor para trámite {$tramiteId}", [
@@ -442,15 +461,7 @@ class RevisionController extends Controller
                 'request_data' => $request->all()
             ]);
             
-            return response()->json([
-                'success' => false, 
-                'message' => 'Error al aprobar y asignar proveedor: ' . $e->getMessage(),
-                'debug_info' => config('app.debug') ? [
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
-                ] : null
-            ]);
+            return redirect()->back()->with('error', 'Error al aprobar y asignar proveedor: ' . $e->getMessage());
         }
     }
 

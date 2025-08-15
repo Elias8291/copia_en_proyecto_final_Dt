@@ -84,24 +84,16 @@ class ArchivosPermissionsSeeder extends Seeder
             ]);
         }
 
-        // Proveedor - ver, crear y editar sus propios archivos
+        // Proveedor - sin permisos de archivos
         $proveedor = Role::where('name', 'Proveedor')->first();
         if ($proveedor) {
-            $proveedor->givePermissionTo([
-                'archivos.ver',
-                'archivos.crear',
-                'archivos.editar'
-            ]);
+            // No se asignan permisos de archivos al proveedor
         }
 
-        // Solicitante - ver, crear y editar sus propios archivos
+        // Solicitante - sin permisos de archivos
         $solicitante = Role::where('name', 'Solicitante')->first();
         if ($solicitante) {
-            $solicitante->givePermissionTo([
-                'archivos.ver',
-                'archivos.crear',
-                'archivos.editar'
-            ]);
+            // No se asignan permisos de archivos al solicitante
         }
 
         if ($this->command) {

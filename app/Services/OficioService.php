@@ -24,7 +24,7 @@ class OficioService
     // Generar PDF usando plantilla apropiada
     private function generarPdfOficio(Tramite $tramite): string
     {
-        $tramite->load(['proveedor', 'datosGenerales', 'direcciones.estado']);
+        $tramite->load(['proveedor', 'datosGenerales', 'direcciones.estado', 'apoderadosLegales']);
         
             $datos = [
             'oficio' => (object)['numero_oficio' => Oficio::generarNumeroOficio()],
@@ -32,6 +32,7 @@ class OficioService
             'proveedor' => $tramite->proveedor,
             'datosGenerales' => $tramite->datosGenerales()->latest()->first(),
             'direcciones' => $tramite->direcciones()->with('estado')->get(),
+            'apoderadoLegal' => $tramite->apoderadosLegales()->latest()->first(),
             'fechaTexto' => $this->formatearFechaEspanol(Carbon::now()),
             'fechaInicioTramiteEspanol' => $this->formatearFechaEspanol($tramite->fecha_inicio ?: Carbon::now()->subDay()),
             'fechaGeneracionDocumentoEspanol' => $this->formatearFechaEspanol(Carbon::now()),
@@ -114,9 +115,18 @@ class OficioService
         $datosGenerales = $tramite->datosGenerales()->latest()->first();
         $razonSocial = $datosGenerales ? $datosGenerales->razon_social : $tramite->proveedor->razon_social;
         
-        return "OFICIO DE ASIGNACIÓN DE PROVEEDOR\n\n" .
+        $tipoTramite = strtolower($tramite->tipo_tramite ?? 'inscripcion');
+        $tituloOficio = match($tipoTramite) {
+            'inscripcion' => 'OFICIO DE INSCRIPCIÓN AL PADRÓN DE PROVEEDORES',
+            'renovacion' => 'OFICIO DE RENOVACIÓN DEL PADRÓN DE PROVEEDORES',
+            'actualizacion' => 'OFICIO DE ACTUALIZACIÓN DEL PADRÓN DE PROVEEDORES',
+            default => 'OFICIO DE INSCRIPCIÓN AL PADRÓN DE PROVEEDORES'
+        };
+        
+        return "{$tituloOficio}\n\n" .
                "Fecha: " . $this->formatearFechaEspanol(Carbon::now()) . "\n" .
-               "Número de Oficio: " . Oficio::generarNumeroOficio() . "\n\n" .
+               "Número de Oficio: " . Oficio::generarNumeroOficio() . "\n" .
+               "Tipo de Trámite: " . ucfirst($tipoTramite) . "\n\n" .
                "RAZÓN SOCIAL: {$razonSocial}\n" .
                "RFC: {$tramite->proveedor->rfc}\n" .
                "NÚMERO DE PROVEEDOR: {$tramite->proveedor->pv_numero}";

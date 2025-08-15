@@ -116,9 +116,38 @@ class RevisionService
             $this->aplicarFiltroAsignacion($query, $request->asignado_a);
         }
 
-        // Filtros específicos para revisores
-        if ($request->filled('filtro_revisor')) {
-            switch ($request->filtro_revisor) {
+        // Filtro por rol del usuario - Por defecto según el rol del usuario
+        $filtroRol = $request->get('filtro_rol');
+        
+        // Si no se especifica filtro de rol, usar el rol del usuario como predeterminado
+        if (!$filtroRol && !$user->hasAnyRole(['Super Admin', 'Admin'])) {
+            $userRole = $user->getRoleNames()->first();
+            if ($userRole) {
+                $filtroRol = strtolower(str_replace(' ', '_', $userRole));
+            }
+        }
+        
+        // Aplicar filtro por rol si no es 'todos'
+        if ($filtroRol && $filtroRol !== 'todos') {
+            switch ($filtroRol) {
+                case 'revisor_digital':
+                    $query->where('status', 'Revision_Digital');
+                    break;
+                    
+                case 'revisor_presencial':
+                    $query->where('status', 'Revision_Presencial');
+                    break;
+                    
+                case 'revisor_domiciliario':
+                    $query->where('status', 'Revision_Domiciliaria');
+                    break;
+            }
+        }
+
+        // Filtros específicos para revisores - Por defecto 'mis_pendientes'
+        $filtroRevisor = $request->get('filtro_revisor', 'mis_pendientes');
+        if ($filtroRevisor && $filtroRevisor !== 'todos') {
+            switch ($filtroRevisor) {
                 case 'mis_pendientes':
                     // Trámites asignados a mí que están pendientes de revisión
                     $query->where(function ($q) use ($user) {
@@ -178,6 +207,43 @@ class RevisionService
                             $subQ->whereIn('status', [TramiteStatus::REVISION_PRESENCIAL->value, TramiteStatus::REVISION_DOMICILIARIA->value])
                                  ->whereDoesntHave('citas', function ($citaQ) {
                                      $citaQ->where('estado', 'Asignada');
+                                 });
+                        });
+                    });
+                    break;
+                    
+                case 'todos_sin_asignar':
+                    // Todos los trámites que NO están asignados al usuario actual (incluyendo los asignados a otros)
+                    $query->where(function ($q) use ($user) {
+                        $q->where(function ($subQ) use ($user) {
+                            // Revisión digital NO asignada a mí (sin asignar o asignada a otro)
+                            $subQ->where('status', TramiteStatus::REVISION_DIGITAL->value)
+                                 ->where(function ($revQ) use ($user) {
+                                     $revQ->whereNull('revisor_digital_id')
+                                          ->orWhere('revisor_digital_id', '!=', $user->id);
+                                 });
+                        })->orWhere(function ($subQ) use ($user) {
+                            // Presencial/domiciliaria NO asignada a mí
+                            $subQ->whereIn('status', [TramiteStatus::REVISION_PRESENCIAL->value, TramiteStatus::REVISION_DOMICILIARIA->value])
+                                 ->where(function ($citaQ) use ($user) {
+                                     $citaQ->whereDoesntHave('citas', function ($cQ) {
+                                         $cQ->where('estado', 'Asignada');
+                                     })->orWhereHas('citas', function ($cQ) use ($user) {
+                                         $cQ->where('estado', 'Asignada')
+                                            ->where('asignado_a', '!=', $user->id);
+                                     });
+                                 });
+                        })->orWhere(function ($subQ) use ($user) {
+                            // Trámites pendientes (todos están disponibles)
+                            $subQ->where('status', TramiteStatus::PENDIENTE->value);
+                        })->orWhere(function ($subQ) use ($user) {
+                            // Otros estados NO asignados a mí
+                            $subQ->whereIn('status', [TramiteStatus::PARA_CORRECCION->value, TramiteStatus::APROBADO->value, TramiteStatus::RECHAZADO->value])
+                                 ->where(function ($revQ) use ($user) {
+                                     $revQ->whereDoesntHave('revisiones', function ($rQ) use ($user) {
+                                         $rQ->where('revisor_id', $user->id);
+                                     })->orWhere('revisor_digital_id', '!=', $user->id)
+                                       ->orWhereNull('revisor_digital_id');
                                  });
                         });
                     });

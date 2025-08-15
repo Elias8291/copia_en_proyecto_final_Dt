@@ -100,8 +100,32 @@
                     </div>
                         
                     <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-                            <!-- Filtro de Asignación - NUEVO -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+                            <!-- Filtro de Roles - NUEVO -->
+                            <div>
+                                <label for="filtro_rol" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                                    </svg>
+                                    Por Rol
+                                </label>
+                                @php
+                                    $userRole = auth()->user()->getRoleNames()->first() ?? '';
+                                    $defaultRole = in_array($userRole, ['Super Admin', 'Admin']) ? 'todos' : strtolower(str_replace(' ', '_', $userRole));
+                                @endphp
+                                <select name="filtro_rol" 
+                                        id="filtro_rol" 
+                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-gradient-to-r from-[#9d2449]/5 to-transparent">
+                                    @if(auth()->user()->hasAnyRole(['Super Admin', 'Admin']))
+                                        <option value="todos" {{ request('filtro_rol', $defaultRole) == 'todos' ? 'selected' : '' }}>👑 Todos los roles</option>
+                                    @endif
+                                    <option value="revisor_digital" {{ request('filtro_rol', $defaultRole) == 'revisor_digital' ? 'selected' : '' }}>💻 Revisor Digital</option>
+                                    <option value="revisor_presencial" {{ request('filtro_rol', $defaultRole) == 'revisor_presencial' ? 'selected' : '' }}>🏢 Revisor Presencial</option>
+                                    <option value="revisor_domiciliario" {{ request('filtro_rol', $defaultRole) == 'revisor_domiciliario' ? 'selected' : '' }}>🏠 Revisor Domiciliario</option>
+                                </select>
+                            </div>
+
+                            <!-- Filtro de Asignación -->
                             <div>
                                 <label for="filtro_revisor" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,10 +136,11 @@
                                 <select name="filtro_revisor" 
                                         id="filtro_revisor" 
                                         class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-gradient-to-r from-[#9d2449]/5 to-transparent">
-                                    <option value="todos" {{ request('filtro_revisor', 'todos') == 'todos' ? 'selected' : '' }}>Todos los trámites</option>
-                                    <option value="mis_pendientes" {{ request('filtro_revisor') == 'mis_pendientes' ? 'selected' : '' }}>🔄 Mis pendientes</option>
+                                    <option value="todos" {{ request('filtro_revisor', 'mis_pendientes') == 'todos' ? 'selected' : '' }}>Todos los trámites</option>
+                                    <option value="mis_pendientes" {{ request('filtro_revisor', 'mis_pendientes') == 'mis_pendientes' ? 'selected' : '' }}>🔄 Asignados a mí</option>
                                     <option value="mis_completadas" {{ request('filtro_revisor') == 'mis_completadas' ? 'selected' : '' }}>✅ Mis completadas</option>
                                     <option value="sin_asignar" {{ request('filtro_revisor') == 'sin_asignar' ? 'selected' : '' }}>❌ Sin asignar</option>
+                                    <option value="todos_sin_asignar" {{ request('filtro_revisor') == 'todos_sin_asignar' ? 'selected' : '' }}>📋 Todos sin asignar</option>
                                 </select>
                             </div>
 
@@ -217,7 +242,7 @@
                     </div>
 
                     <!-- Filtros activos -->
-                    @if(request()->hasAny(['search', 'estado', 'tipo_tramite', 'ordenar_por', 'filtro_revisor']))
+                    @if(request()->hasAny(['search', 'estado', 'tipo_tramite', 'ordenar_por', 'filtro_revisor', 'filtro_rol']))
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
                         <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
                         
@@ -232,12 +257,32 @@
                         </span>
                         @endif
 
+                        @if(request('filtro_rol') && request('filtro_rol') != 'todos')
+                        @php
+                            $filtroRolLabels = [
+                                'revisor_digital' => '💻 Revisor Digital',
+                                'revisor_presencial' => '🏢 Revisor Presencial',
+                                'revisor_domiciliario' => '🏠 Revisor Domiciliario',
+                            ];
+                            $filtroRolLabel = $filtroRolLabels[request('filtro_rol')] ?? request('filtro_rol');
+                        @endphp
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-purple-100 text-purple-800">
+                            {{ $filtroRolLabel }}
+                            <a href="{{ request()->fullUrlWithQuery(['filtro_rol' => null]) }}" class="ml-1 sm:ml-1.5 text-purple-800 hover:text-purple-600">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
                         @if(request('filtro_revisor') && request('filtro_revisor') != 'todos')
                         @php
                             $filtroRevisorLabels = [
-                                'mis_pendientes' => '🔄 Mis pendientes',
+                                'mis_pendientes' => '🔄 Asignados a mí',
                                 'mis_completadas' => '✅ Mis completadas',
                                 'sin_asignar' => '❌ Sin asignar',
+                                'todos_sin_asignar' => '📋 Todos sin asignar',
                             ];
                             $filtroRevisorLabel = $filtroRevisorLabels[request('filtro_revisor')] ?? request('filtro_revisor');
                         @endphp
