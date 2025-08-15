@@ -23,8 +23,8 @@ class UserStoreRequest extends FormRequest
     {
         return [
             'nombre' => 'required|string|max:255',
-            'correo' => 'required|email|unique:users,correo',
-            'rfc' => 'nullable|string|max:13|unique:users,rfc',
+            'correo' => 'required|email|unique:users,correo,NULL,id,deleted_at,NULL',
+            'rfc' => 'nullable|string|max:13|unique:users,rfc,NULL,id,deleted_at,NULL',
             'password' => 'required|min:8|confirmed',
             'roles' => 'nullable|array',
             'roles.*' => 'exists:roles,name'
@@ -68,8 +68,8 @@ class UserStoreRequest extends FormRequest
                     $validator->errors()->add('rfc', 'El RFC debe tener un formato válido.');
                 }
 
-                // Verificar duplicados
-                if (User::where('rfc', $rfc)->exists()) {
+                // Verificar duplicados excluyendo usuarios soft-deleted
+                if (User::where('rfc', $rfc)->whereNull('deleted_at')->exists()) {
                     $validator->errors()->add('rfc', 'Ya existe un usuario registrado con este RFC.');
                 }
             }

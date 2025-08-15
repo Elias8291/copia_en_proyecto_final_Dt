@@ -159,11 +159,8 @@
                             </span>
                         @endif
                     </p>
-                </div>
-
-                <!-- Controles de visualización -->
+                </div>  
                 <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 md:gap-4">
-                    <!-- Selector de elementos por página -->
                     <div class="flex items-center gap-2">
                         <label for="per_page" class="text-xs sm:text-sm md:text-base font-medium text-gray-700 whitespace-nowrap">
                             Mostrar:
@@ -180,7 +177,6 @@
                         <span class="text-xs sm:text-sm md:text-base text-gray-600 whitespace-nowrap">por página</span>
                     </div>
 
-                    <!-- Filtros activos -->
                     @if(request()->hasAny(['search', 'rol', 'estado', 'año']))
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
                         <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
@@ -233,8 +229,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Tabla de usuarios para desktop -->
         <div class="border-t border-gray-100 overflow-hidden hidden xl:block">
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -323,6 +317,33 @@
                                         </svg>
                                     </a>
                                     @endcan
+                                    @can('usuarios.eliminar')
+                                    @if(!$user->deleted_at && $user->id !== auth()->id())
+                                    <form id="form-delete-user-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" 
+                                                onclick="showDeleteModal('Eliminar Usuario', '¿Está seguro que desea eliminar al usuario {{ $user->name ?? 'N/A' }}? Esta acción se puede revertir posteriormente.', 'form-delete-user-{{ $user->id }}')"
+                                                class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                                title="Eliminar">
+                                            <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    @elseif($user->deleted_at)
+                                    <form action="{{ route('users.restore', $user->id) }}" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit"
+                                                class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-green-600 hover:text-white hover:bg-green-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                                title="Restaurar">
+                                            <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    @endif
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -341,9 +362,7 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <!-- Vista móvil de usuarios -->
+        </div>      
         <div class="border-t border-gray-100 pt-4 sm:pt-5 md:pt-6 lg:pt-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             @forelse($users as $user)
@@ -392,6 +411,7 @@
                     </div>
                 </div>
                 <div class="flex space-x-2 sm:space-x-3 md:space-x-4 pt-3 sm:pt-4 md:pt-5 mt-3 sm:mt-4 md:mt-5 border-t border-gray-100">
+                    @can('usuarios.ver')
                     <a href="{{ route('users.show', $user->id) }}" 
                        class="flex-1 text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-[#9d2449] bg-[#9d2449]/5 border border-[#9d2449]/20 rounded-lg hover:bg-[#9d2449] hover:text-white transition-all duration-200 truncate shadow-sm">
                         <span class="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -402,6 +422,8 @@
                             Ver
                         </span>
                     </a>
+                    @endcan
+                    @can('usuarios.editar')
                     <a href="{{ route('users.edit', $user->id) }}" 
                        class="flex-1 text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 truncate shadow-sm">
                         <span class="flex items-center justify-center gap-1.5 sm:gap-2">
@@ -411,6 +433,38 @@
                             Editar
                         </span>
                     </a>
+                    @endcan
+                    @can('usuarios.eliminar')
+                    @if(!$user->deleted_at && $user->id !== auth()->id())
+                    <form id="form-delete-user-mobile-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="flex-1">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" 
+                                onclick="showDeleteModal('Eliminar Usuario', '¿Está seguro que desea eliminar al usuario {{ $user->name ?? 'N/A' }}? Esta acción se puede revertir posteriormente.', 'form-delete-user-mobile-{{ $user->id }}')"
+                                class="w-full text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-600 hover:text-white transition-all duration-200 truncate shadow-sm">
+                            <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Eliminar
+                            </span>
+                        </button>
+                    </form>
+                    @elseif($user->deleted_at)
+                    <form action="{{ route('users.restore', $user->id) }}" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit"
+                                class="w-full text-center px-2 sm:px-3 md:px-4 lg:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm md:text-base font-medium text-green-600 bg-green-50 border border-green-200 rounded-lg hover:bg-green-600 hover:text-white transition-all duration-200 truncate shadow-sm">
+                            <span class="flex items-center justify-center gap-1.5 sm:gap-2">
+                                <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Restaurar
+                            </span>
+                        </button>
+                    </form>
+                    @endif
+                    @endcan
                 </div>
             </div>
             @empty
@@ -440,8 +494,14 @@
         </div>
     </div>
 </div>
+<x-ui.modals.delete-confirmation-modal 
+    id="deleteModal"
+    title="Confirmar Eliminación"
+    message="¿Está seguro de que desea eliminar este usuario?"
+    confirmText="Eliminar"
+    cancelText="Cancelar"
+/>
 
-<!-- Modal de error -->
 <x-ui.modals.error-modal 
     id="error-modal"
     title="Error"
@@ -449,7 +509,6 @@
     buttonText="OK"
 />
 
-<!-- Modal de éxito -->
 <x-ui.modals.modal-exito 
     id="success-modal"
     title="¡Éxito!"
@@ -458,7 +517,6 @@
     :redirectUrl="route('users.index')"
 />
 
-<!-- Mostrar modal de error si hay error de sesión -->
 @if(session('error'))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -477,8 +535,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const icon = document.getElementById('filterIcon');
         const perPageSelect = document.getElementById('per_page');
         const searchForm = document.getElementById('searchForm');
-        
-        // Los filtros siempre empiezan ocultos, sin importar si hay búsqueda
         
         if (toggle && container) {
             toggle.addEventListener('click', function() {

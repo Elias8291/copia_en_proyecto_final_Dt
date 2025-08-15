@@ -101,6 +101,24 @@
                         
                     <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
+                            <!-- Filtro de Asignación - NUEVO -->
+                            <div>
+                                <label for="filtro_revisor" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    Mis Revisiones
+                                </label>
+                                <select name="filtro_revisor" 
+                                        id="filtro_revisor" 
+                                        class="w-full px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 text-xs sm:text-sm md:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 focus:border-[#9d2449] transition-all duration-200 bg-gradient-to-r from-[#9d2449]/5 to-transparent">
+                                    <option value="todos" {{ request('filtro_revisor', 'todos') == 'todos' ? 'selected' : '' }}>Todos los trámites</option>
+                                    <option value="mis_pendientes" {{ request('filtro_revisor') == 'mis_pendientes' ? 'selected' : '' }}>🔄 Mis pendientes</option>
+                                    <option value="mis_completadas" {{ request('filtro_revisor') == 'mis_completadas' ? 'selected' : '' }}>✅ Mis completadas</option>
+                                    <option value="sin_asignar" {{ request('filtro_revisor') == 'sin_asignar' ? 'selected' : '' }}>❌ Sin asignar</option>
+                                </select>
+                            </div>
+
                             <div>
                                 <label for="estado" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Estado</label>
                                 <select name="estado" 
@@ -111,6 +129,9 @@
                                     <option value="Revision_Digital" {{ request('estado') == 'Revision_Digital' ? 'selected' : '' }}>Revisión Digital</option>
                                     <option value="Revision_Presencial" {{ request('estado') == 'Revision_Presencial' ? 'selected' : '' }}>Revisión Presencial</option>
                                     <option value="Revision_Domiciliaria" {{ request('estado') == 'Revision_Domiciliaria' ? 'selected' : '' }}>Revisión Domiciliaria</option>
+                                    <option value="Para_Correccion" {{ request('estado') == 'Para_Correccion' ? 'selected' : '' }}>Para Corrección</option>
+                                    <option value="Aprobado" {{ request('estado') == 'Aprobado' ? 'selected' : '' }}>Aprobado</option>
+                                    <option value="Rechazado" {{ request('estado') == 'Rechazado' ? 'selected' : '' }}>Rechazado</option>
                                 </select>
                             </div>
 
@@ -196,7 +217,7 @@
                     </div>
 
                     <!-- Filtros activos -->
-                    @if(request()->hasAny(['search', 'estado', 'tipo_tramite', 'ordenar_por']))
+                    @if(request()->hasAny(['search', 'estado', 'tipo_tramite', 'ordenar_por', 'filtro_revisor']))
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
                         <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
                         
@@ -204,6 +225,25 @@
                         <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449] text-white">
                             Búsqueda: "{{ request('search') }}"
                             <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 sm:ml-1.5 text-white hover:text-gray-200">
+                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                        @endif
+
+                        @if(request('filtro_revisor') && request('filtro_revisor') != 'todos')
+                        @php
+                            $filtroRevisorLabels = [
+                                'mis_pendientes' => '🔄 Mis pendientes',
+                                'mis_completadas' => '✅ Mis completadas',
+                                'sin_asignar' => '❌ Sin asignar',
+                            ];
+                            $filtroRevisorLabel = $filtroRevisorLabels[request('filtro_revisor')] ?? request('filtro_revisor');
+                        @endphp
+                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449] text-white">
+                            {{ $filtroRevisorLabel }}
+                            <a href="{{ request()->fullUrlWithQuery(['filtro_revisor' => null]) }}" class="ml-1 sm:ml-1.5 text-white hover:text-gray-200">
                                 <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                                 </svg>

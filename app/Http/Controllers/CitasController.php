@@ -81,6 +81,11 @@ class CitasController extends Controller
         $validated = $request->validated();
 
         DB::transaction(function() use ($validated) {
+            // Asignar revisor automáticamente si no se especifica
+            if (!isset($validated['asignado_a']) || empty($validated['asignado_a'])) {
+                $validated['asignado_a'] = $this->asignarRevisorAutomatico($validated['tipo_cita']);
+            }
+            
             $cita = Cita::create($validated);
             
             $tramite = Tramite::find($validated['tramite_id']);
@@ -100,6 +105,48 @@ class CitasController extends Controller
 
         return redirect()->route('citas.index')
             ->with('success', 'Cita creada exitosamente');
+    }
+
+    /**
+     * Asigna automáticamente un revisor según el tipo de cita
+     * Prioriza a los revisores con menos citas asignadas
+     */
+    private function asignarRevisorAutomatico(string $tipoCita): ?int
+    {
+        $rolRequerido = match($tipoCita) {
+            'Digital' => 'Revisor Digital',
+            'Presencial' => 'Revisor Presencial', 
+            'Domiciliaria' => 'Revisor Domiciliario',
+            default => 'Revisor Digital'
+        };
+
+        try {
+            // Buscar revisor con menos citas activas asignadas
+            $revisor = User::role($rolRequerido)
+                ->withCount(['citasAsignadas' => function($query) {
+                    $query->whereIn('estado', ['Asignada']);
+                }])
+                ->orderBy('citas_asignadas_count', 'asc')
+                ->first();
+            
+            \Log::info('CitasController: Revisor asignado automáticamente', [
+                'tipo_cita' => $tipoCita,
+                'rol_requerido' => $rolRequerido,
+                'revisor_id' => $revisor ? $revisor->id : null,
+                'revisor_nombre' => $revisor ? $revisor->nombre : 'No disponible',
+                'citas_asignadas' => $revisor ? $revisor->citas_asignadas_count : 0
+            ]);
+            
+            return $revisor ? $revisor->id : null;
+            
+        } catch (\Exception $e) {
+            \Log::error('CitasController: Error al asignar revisor automático', [
+                'tipo_cita' => $tipoCita,
+                'error' => $e->getMessage()
+            ]);
+            
+            return null;
+        }
     }
 
     public function show(Cita $cita)

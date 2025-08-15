@@ -262,30 +262,41 @@ class ProveedoresController extends Controller
         // Determinar el orden del historial
         $ordenHistorial = $request->get('orden_historial', 'reciente'); // 'reciente' o 'pasados'
         
-        // Cargar trámites con el orden solicitado
+        // Obtener el RFC del proveedor
+        $rfc = $proveedor->rfc;
+        
+        // Obtener TODOS los trámites con este RFC (no solo del proveedor específico)
+        $historialTramitesQuery = Tramite::whereHas('proveedor', function($query) use ($rfc) {
+            $query->where('rfc', $rfc);
+        })->with(['proveedor', 'datosGenerales', 'oficios']);
+        
         if ($ordenHistorial === 'pasados') {
             // Ordenar por fecha más antigua primero
-            $proveedor->load(['usuario', 'tramites' => function($q) {
-                $q->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) ASC');
-            }]);
+            $historialTramites = $historialTramitesQuery
+                ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) ASC')
+                ->get();
         } else {
             // Ordenar por fecha más reciente primero (default)
-            $proveedor->load(['usuario', 'tramites' => function($q) {
-                $q->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC');
-            }]);
+            $historialTramites = $historialTramitesQuery
+                ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
+                ->get();
         }
         
-        $ultimoTramite = $proveedor->tramites->first();
+        // Cargar las relaciones del proveedor actual
+        $proveedor->load(['usuario']);
+        
+        // Obtener el último trámite para mostrar datos completos
+        $ultimoTramite = $historialTramites->first();
         $datosCompletos = null;
 
         if ($ultimoTramite) {
-            $datosServicio = $this->dataRetrievalService->obtenerDatosTramite($ultimoTramite);
+            $datosServicio = $this->dataRetrievalService->obtenerDatosTramiteHistorico($ultimoTramite->id);
             $datosServicio['datos_generales']['tipo_persona'] = $ultimoTramite->proveedor->tipo_persona;
             $viewModel = new FormDataViewModel($datosServicio);
             $datosCompletos = $viewModel->getAllFormData();
         }
 
-        return view('proveedores.show', compact('proveedor', 'ultimoTramite', 'datosCompletos', 'ordenHistorial'));
+        return view('proveedores.show', compact('proveedor', 'ultimoTramite', 'datosCompletos', 'ordenHistorial', 'historialTramites', 'rfc'));
     }
 
     public function edit(Proveedor $proveedor)

@@ -8,40 +8,33 @@
         <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             
             <!-- Profile Header -->
-            <div class="bg-gradient-to-r from-primary to-primary-dark h-20 relative">
-                <div class="absolute inset-0 bg-black/5"></div>
-            </div>
-            
-            <div class="px-6 py-6 flex flex-col sm:flex-row items-center sm:justify-between -mt-10">
-                <div class="flex flex-col sm:flex-row items-center text-center sm:text-left sm:space-x-4">
-                    <div class="w-20 h-20 bg-gradient-to-br from-primary to-primary-dark rounded-full flex items-center justify-center ring-4 ring-white shadow-lg flex-shrink-0">
-                        <span class="text-3xl font-bold text-white">{{ strtoupper(substr($user->nombre, 0, 1)) }}</span>
-                    </div>
-                    <div class="mt-4 sm:mt-0 sm:ml-4">
-                        <h1 class="text-2xl font-bold text-gray-900">{{ $user->nombre }}</h1>
-                        <p class="text-base text-gray-600">{{ $user->email }}</p>
-                        <div class="flex items-center justify-center sm:justify-start mt-2 space-x-4 text-sm text-gray-500">
-                            <span class="flex items-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                Miembro desde {{ $user->created_at->format('M Y') }}
-                            </span>
-                            <span class="flex items-center">
-                                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                                Activo
-                            </span>
+            <div class="px-6 py-8">
+                <div class="flex flex-col sm:flex-row items-center sm:justify-between gap-6">
+                    <div class="flex flex-col sm:flex-row items-center gap-4">
+                        <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-md">
+                            <span class="text-2xl font-bold text-white">{{ strtoupper(substr($user->nombre, 0, 1)) }}</span>
+                        </div>
+                        <div class="text-center sm:text-left">
+                            <h1 class="text-2xl font-bold text-gray-900">{{ $user->nombre }}</h1>
+                            <p class="text-gray-600">{{ $user->email }}</p>
+                            <div class="flex items-center justify-center sm:justify-start gap-4 mt-2 text-sm text-gray-500">
+                                <span>Miembro desde {{ $user->created_at->format('M Y') }}</span>
+                                <span class="flex items-center">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+                                    Activo
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="mt-4 sm:mt-0">
-                    <a href="{{ route('profile.edit') }}"
-                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark focus:ring-4 focus:outline-none focus:ring-primary/30 transition-colors shadow-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        Editar Perfil
-                    </a>
+                    <div>
+                        <a href="{{ route('profile.edit') }}"
+                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Editar Perfil
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -60,6 +53,16 @@
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Correo Electrónico</label>
                             <p class="text-sm font-semibold text-gray-900 mt-1">{{ $user->correo }}</p>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                            <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">RFC</label>
+                            <div class="mt-1 flex items-center">
+                                <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="text-sm font-semibold text-gray-900 font-mono">{{ $user->rfc ?? 'No especificado' }}</p>
+                            </div>
                         </div>
 
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">

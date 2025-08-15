@@ -5,86 +5,142 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Proveedor;
+use App\Models\Tramite;
+use App\Services\RfcProveedorService;
+use App\Services\Tramites\DataRetrievalService;
+use App\Services\HistorialTramitesService;
+use App\ViewModels\FormDataViewModel;
+use App\Enums\TramiteStatus;
 
 class MiEstadoController extends Controller
 {
-    public function index()
+    private RfcProveedorService $rfcProveedorService;
+    private DataRetrievalService $dataRetrievalService;
+    private HistorialTramitesService $historialTramitesService;
+
+    public function __construct(
+        RfcProveedorService $rfcProveedorService,
+        DataRetrievalService $dataRetrievalService,
+        HistorialTramitesService $historialTramitesService
+    ) {
+        $this->rfcProveedorService = $rfcProveedorService;
+        $this->dataRetrievalService = $dataRetrievalService;
+        $this->historialTramitesService = $historialTramitesService;
+    }
+
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $proveedor = Proveedor::where('usuario_id', $user->id)->first();
+        $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
+        
+        $proveedor = $this->obtenerProveedorPorRfc($rfc);
 
         $ultimoTramite = null;
         $datosCompletos = null;
         $archivosCargados = null;
+        $historialTramites = collect();
+        
+        $ordenHistorial = $request->get('orden_historial', 'reciente');
 
-        if ($proveedor) {
-            // Cargar trámites y seleccionar el más reciente
-            $proveedor->load(['tramites' => function ($query) {
-                $query->orderBy('created_at', 'desc');
-            }]);
-
-            $ultimoTramite = $proveedor->tramites->first();
-
+        if ($rfc) {
+            $historialTramites = $this->obtenerHistorialTramitesOrdenado($rfc, $ordenHistorial);
+            $ultimoTramiteActivo = $this->obtenerUltimoTramiteActivo($rfc);
+            $ultimoTramite = $ultimoTramiteActivo ?: $historialTramites->first();
+            
             if ($ultimoTramite) {
-                // Cargar relaciones necesarias del último trámite
-                $ultimoTramite->load([
-                    'datosGenerales',
-                    'direcciones.estado',
-                    'direcciones.coordenada',
-                    'contactos',
-                    'actividades.actividad',
-                    'accionistas',
-                    'apoderadosLegales.instrumentoNotarial.estado',
-                    'datosConstitutivos.instrumentoNotarial.estado',
-                    'archivos.catalogoArchivo',
-                ]);
-
-                $direccion = $ultimoTramite->direcciones->first();
-                $datosGenerales = $ultimoTramite->datosGenerales->first();
-                $contacto = $ultimoTramite->contactos->first();
-
-                $datosCompletos = [
-                    'datos_generales' => $datosGenerales ? array_merge($datosGenerales->toArray(), [
-                        'nombre_contacto' => $contacto->nombre_contacto ?? '',
-                        'cargo' => $contacto->cargo ?? '',
-                        'telefono_contacto' => $contacto->telefono ?? '',
-                        'correo_contacto' => $contacto->correo ?? '',
-                    ]) : [],
-                    'direccion' => $direccion ? [
-                        'codigo_postal' => $direccion->codigo_postal,
-                        'estado' => $direccion->estado->nombre ?? '',
-                        'estado_id' => $direccion->estado_id,
-                        'municipio' => $direccion->municipio,
-                        'localidad' => $direccion->localidad,
-                        'asentamiento' => $direccion->asentamiento,
-                        'colonia' => $direccion->asentamiento,
-                        'calle' => $direccion->calle,
-                        'numero_exterior' => $direccion->numero_exterior,
-                        'numero_interior' => $direccion->numero_interior,
-                        'entre_calle' => $direccion->entre_calle,
-                        'y_calle' => $direccion->y_calle,
-                        'latitud' => $direccion->coordenada->latitud ?? null,
-                        'longitud' => $direccion->coordenada->longitud ?? null,
-                    ] : [],
-                    'actividades_economicas' => $ultimoTramite->actividades->map(function ($actividad) {
-                        return [
-                            'id' => $actividad->actividad_id,
-                            'nombre' => $actividad->actividad->nombre ?? 'Actividad no encontrada',
-                            'descripcion' => $actividad->actividad->descripcion ?? '',
-                            'sector_id' => $actividad->actividad->sector_id ?? null,
-                        ];
-                    })->toArray(),
-                    'accionistas' => $ultimoTramite->accionistas->toArray(),
-                    'apoderado_legal' => $this->formatApoderadoData($ultimoTramite->apoderadosLegales->first()),
-                    'constitucion' => $this->formatConstitucionData($ultimoTramite->datosConstitutivos->first()),
-                ];
-
-                // Pasar los modelos de archivos directamente para que el componente conserve estilos y nombres
+                $datosCompletos = $this->obtenerDatosCompletosTramite($ultimoTramite);
                 $archivosCargados = $ultimoTramite->archivos;
             }
         }
 
-        return view('mi_estado', compact('proveedor', 'ultimoTramite', 'datosCompletos', 'archivosCargados'));
+        return view('mi_estado', compact('proveedor', 'ultimoTramite', 'datosCompletos', 'archivosCargados', 'ordenHistorial', 'historialTramites', 'rfc'));
+    }
+
+    private function obtenerProveedorPorRfc(?string $rfc): ?Proveedor
+    {
+        if (!$rfc) {
+            return null;
+        }
+
+        $proveedor = $this->rfcProveedorService->buscarProveedorActivo($rfc);
+        
+        if (!$proveedor) {
+            $proveedor = Proveedor::where('rfc', $rfc)
+                ->orderBy('created_at', 'desc')
+                ->first();
+        }
+
+        return $proveedor;
+    }
+
+    private function obtenerHistorialTramitesOrdenado(string $rfc, string $orden): \Illuminate\Support\Collection
+    {
+        $query = Tramite::whereHas('proveedor', function($query) use ($rfc) {
+            $query->where('rfc', $rfc);
+        })->with(['proveedor', 'datosGenerales', 'direcciones', 'contactos', 'actividades', 'archivos']);
+
+        if ($orden === 'pasados') {
+            $query->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) ASC');
+        } else {
+            $query->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC');
+        }
+
+        return $query->get();
+    }
+
+    private function obtenerUltimoTramiteActivo(string $rfc): ?Tramite
+    {
+        return Tramite::whereHas('proveedor', function($query) use ($rfc) {
+            $query->where('rfc', $rfc);
+        })
+        ->where('status', TramiteStatus::APROBADO->value)
+        ->with(['proveedor', 'datosGenerales', 'direcciones', 'contactos', 'actividades', 'archivos'])
+        ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
+        ->first();
+    }
+
+    private function obtenerUltimoTramiteActivoFlexible(string $rfc, bool $incluirEnRevision = false): ?Tramite
+    {
+        $estadosActivos = [TramiteStatus::APROBADO->value];
+        
+        if ($incluirEnRevision) {
+            $estadosActivos = array_merge($estadosActivos, [
+                TramiteStatus::REVISION_DIGITAL->value,
+                TramiteStatus::REVISION_PRESENCIAL->value,
+                TramiteStatus::REVISION_DOMICILIARIA->value
+            ]);
+        }
+
+        return Tramite::whereHas('proveedor', function($query) use ($rfc) {
+            $query->where('rfc', $rfc);
+        })
+        ->whereIn('status', $estadosActivos)
+        ->with(['proveedor', 'datosGenerales', 'direcciones', 'contactos', 'actividades', 'archivos'])
+        ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
+        ->first();
+    }
+
+    private function obtenerDatosCompletosTramite(Tramite $tramite): array
+    {
+        $datosServicio = $this->dataRetrievalService->obtenerDatosTramiteHistorico($tramite->id);
+        
+        if (isset($datosServicio['datos_generales'])) {
+            $datosServicio['datos_generales']['tipo_persona'] = $tramite->proveedor->tipo_persona;
+        }
+        
+        $viewModel = new FormDataViewModel($datosServicio);
+        
+        return $viewModel->getAllFormData();
+    }
+
+    private function obtenerDatosProveedorVigenteConServicio(string $rfc): array
+    {
+        return $this->dataRetrievalService->obtenerDatosProveedorVigente($rfc);
+    }
+
+    private function obtenerEstadisticasHistorial(string $rfc): array
+    {
+        return $this->historialTramitesService->obtenerEstadisticasHistorial($rfc);
     }
 
     private function formatApoderadoData($apoderado)
@@ -130,4 +186,4 @@ class MiEstadoController extends Controller
             'fecha_inscripcion' => $instrumentoNotarial->fecha_inscripcion ?? '',
         ];
     }
-} 
+}

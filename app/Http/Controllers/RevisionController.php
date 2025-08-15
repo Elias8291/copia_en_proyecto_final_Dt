@@ -62,7 +62,8 @@ class RevisionController extends Controller
         $request->session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
         
         if ($tipoRevision === 'Digital') {
-            $datos = $this->revisionDigitalService->obtenerDatosRevisionDigital($tramiteId);
+            $ordenHistorial = $request->get('orden_historial', 'reciente');
+            $datos = $this->revisionDigitalService->obtenerDatosRevisionDigital($tramiteId, $ordenHistorial);
         } elseif ($tipoRevision === 'Presencial') {
             $datos = $this->revisionPresencialService->obtenerDatosRevisionPresencial($tramiteId);
         } else {

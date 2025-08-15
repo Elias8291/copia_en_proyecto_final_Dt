@@ -51,6 +51,16 @@ class User extends Authenticatable
         return $this->hasMany(Tramite::class, 'revisor_digital_id');
     }
 
+    public function citasAsignadas()
+    {
+        return $this->hasMany(Cita::class, 'asignado_a');
+    }
+
+    public function revisiones()
+    {
+        return $this->hasMany(RevisionTramite::class, 'revisor_id');
+    }
+
     /**
      * Get the email address where password reset links are sent.
      *

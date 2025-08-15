@@ -22,37 +22,40 @@ class RevisionDigitalService extends RevisionService
     }
 
     // Obtiene todos los datos necesarios para la revisión digital
-    public function obtenerDatosRevisionDigital(int $tramiteId): array
+    public function obtenerDatosRevisionDigital(int $tramiteId, string $ordenHistorial = 'reciente'): array
     {
         $datos = $this->obtenerDatosRevisionBase($tramiteId);
+        $tramite = Tramite::findOrFail($tramiteId);
         
         $datos['tipoRevision'] = 'Digital';
         $datos['vistaRevision'] = 'revisiones.revision-digital';
         $datos['archivosSubidos'] = $this->prepararArchivosParaCotejo($datos['archivos']);
-        $datos['historialTramites'] = $this->obtenerHistorialTramites($tramiteId);
+        $datos['historialTramites'] = $this->obtenerHistorialTramites($tramiteId, $ordenHistorial);
         $datos['viewModel'] = $this->obtenerViewModel($tramiteId);
         $datos['estadisticasHistorial'] = $this->obtenerEstadisticasHistorial($tramiteId);
+        $datos['rfc'] = $tramite->proveedor->rfc; // Agregar RFC
+        $datos['ordenHistorial'] = $ordenHistorial;
         
         return $datos;
     }
 
-    // Obtiene el historial de trámites del mismo proveedor
-    private function obtenerHistorialTramites(int $tramiteId): \Illuminate\Support\Collection
+    // Obtiene el historial de trámites por RFC (todos los proveedores con el mismo RFC)
+    private function obtenerHistorialTramites(int $tramiteId, string $ordenHistorial = 'reciente'): \Illuminate\Support\Collection
     {
         $tramite = Tramite::findOrFail($tramiteId);
+        $rfc = $tramite->proveedor->rfc;
         
-        return Tramite::where('proveedor_id', $tramite->proveedor->id)
-            ->with(['proveedor', 'revisiones.revisor'])
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function($tramite) {
-                return [
-                    'id' => $tramite->id,
-                    'status' => $tramite->status,
-                    'created_at' => $tramite->created_at,
-                    'razon_social' => $tramite->proveedor->razon_social ?? $tramite->proveedor->nombre,
-                ];
-            });
+        $query = Tramite::whereHas('proveedor', function($query) use ($rfc) {
+            $query->where('rfc', $rfc);
+        })->with(['proveedor', 'datosGenerales', 'oficios']);
+        
+        if ($ordenHistorial === 'pasados') {
+            $query->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) ASC');
+        } else {
+            $query->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC');
+        }
+        
+        return $query->get();
     }
 
     // Crea el ViewModel con todos los datos del trámite usando DataRetrievalService
@@ -66,17 +69,21 @@ class RevisionDigitalService extends RevisionService
         return new FormDataViewModel($datosCompletos);
     }
 
-    // Calcula estadísticas del historial de trámites del proveedor
+    // Calcula estadísticas del historial de trámites por RFC
     private function obtenerEstadisticasHistorial(int $tramiteId): array
     {
         $tramite = Tramite::findOrFail($tramiteId);
-        $tramitesProveedor = Tramite::where('proveedor_id', $tramite->proveedor->id)->get();
+        $rfc = $tramite->proveedor->rfc;
+        
+        $tramitesRfc = Tramite::whereHas('proveedor', function($query) use ($rfc) {
+            $query->where('rfc', $rfc);
+        })->get();
         
         return [
-            'total' => $tramitesProveedor->count(),
-            'aprobados' => $tramitesProveedor->where('status', 'Aprobado')->count(),
-            'rechazados' => $tramitesProveedor->where('status', 'Rechazado')->count(),
-            'pendientes' => $tramitesProveedor->whereNotIn('status', ['Aprobado', 'Rechazado'])->count(),
+            'total' => $tramitesRfc->count(),
+            'aprobados' => $tramitesRfc->where('status', 'Aprobado')->count(),
+            'rechazados' => $tramitesRfc->where('status', 'Rechazado')->count(),
+            'pendientes' => $tramitesRfc->whereNotIn('status', ['Aprobado', 'Rechazado'])->count(),
         ];
     }
 

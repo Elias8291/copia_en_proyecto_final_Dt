@@ -93,25 +93,7 @@
                 </div>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                    <div class="w-10 h-10 bg-[#9d2449] rounded-full flex items-center justify-center flex-shrink-0">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
-                        </svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h3 class="text-lg font-bold text-gray-800">Historial ({{ $estadisticasHistorial['total'] }})</h3>
-                        <p class="text-sm text-gray-600">RFC: {{ $tramite->proveedor->rfc }}</p>
-                        <div class="flex flex-wrap gap-2 sm:gap-4 mt-2">
-                            <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">{{ $estadisticasHistorial['aprobados'] }} aprobados</span>
-                            <span class="text-xs text-red-600 bg-red-50 px-2 py-1 rounded-full">{{ $estadisticasHistorial['rechazados'] }} rechazados</span>
-                            <span class="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded-full">{{ $estadisticasHistorial['pendientes'] }} pendientes</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 sm:p-6 mb-6">
                 <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-3 sm:gap-6 text-sm">
@@ -131,6 +113,141 @@
                 </div>
             </div>
 
+            @if($historialTramites && $historialTramites->count() > 0)
+            <div class="mb-8">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                        <button type="button" onclick="toggleSection('historial')" 
+                                class="flex items-center text-left hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2">
+                            <div class="w-8 h-8 bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <span class="font-medium text-gray-900">Historial de Trámites - RFC: {{ $rfc }} ({{ $historialTramites->count() }})</span>
+                            <svg id="historial-icon" class="w-5 h-5 text-gray-400 transform transition-transform duration-200 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm text-gray-600">Ordenar:</label>
+                            <select onchange="cambiarOrdenHistorial(this.value)" 
+                                    class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="reciente" {{ ($ordenHistorial ?? 'reciente') === 'reciente' ? 'selected' : '' }}>
+                                    📅 Más recientes
+                                </option>
+                                <option value="pasados" {{ ($ordenHistorial ?? 'reciente') === 'pasados' ? 'selected' : '' }}>
+                                    📜 Más antiguos
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="historial-content" class="hidden border-t border-gray-200 p-6 bg-gray-50">
+                        @php            
+                            $tramitesPorProveedor = $historialTramites->groupBy('proveedor_id');
+                        @endphp
+                        
+                        <div class="space-y-6">
+                            @foreach($tramitesPorProveedor as $proveedorId => $tramitesDelProveedor)
+                            @php
+                                $proveedorActual = $tramitesDelProveedor->first()->proveedor;
+                                $esProveedorPrincipal = $proveedorActual->id === $tramite->proveedor->id;
+                            @endphp
+                                    
+                            <div class="bg-white rounded-lg border-l-4 {{ $esProveedorPrincipal ? 'border-l-[#9d2449] bg-red-50' : 'border-l-gray-400 bg-gray-50' }} shadow-sm">
+                                <div class="px-4 py-3 border-b border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">
+                                                {{ $proveedorActual->razon_social }}
+                                                @if($esProveedorPrincipal)
+                                                    <span class="ml-2 text-xs bg-[#9d2449] text-white px-2 py-1 rounded">ACTUAL</span>
+                                                @endif
+                                            </h4>
+                                            <p class="text-sm text-gray-600">
+                                                PV: {{ $proveedorActual->pv_numero ?? 'No asignado' }} | RFC: {{ $proveedorActual->rfc }}
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm text-gray-600">
+                                            <div>{{ $tramitesDelProveedor->count() }} trámite{{ $tramitesDelProveedor->count() !== 1 ? 's' : '' }}</div>
+                                            <div class="text-xs">{{ $proveedorActual->estado_padron }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6 space-y-3">
+                                    @foreach($tramitesDelProveedor as $tramiteHistorial)
+                                    @php
+                                        $status = $tramiteHistorial->status ?? 'Pendiente';
+                                        $statusColor = [
+                                            'Aprobado' => 'bg-green-100 text-green-800 border-green-200',
+                                            'Rechazado' => 'bg-red-100 text-red-800 border-red-200',
+                                            'Para_Correccion' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                            'En_Revision' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                            'Revision_Digital' => 'bg-purple-100 text-purple-800 border-purple-200',
+                                            'Revision_Presencial' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                                            'Revision_Domiciliaria' => 'bg-cyan-100 text-cyan-800 border-cyan-200',
+                                            'Pendiente' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                        ][$status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                                    @endphp
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200">
+                                        <div class="flex-grow">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-grow">
+                                                    <div class="font-semibold text-gray-900 mb-1">{{ $tramiteHistorial->tipo_tramite ?? 'Trámite' }}</div>
+                                                    <div class="text-sm text-gray-600 space-y-1">
+                                                        @php
+                                                            $fechaTramite = $tramiteHistorial->fecha_finalizacion ?? $tramiteHistorial->fecha_inicio;
+                                                        @endphp
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                            <span>
+                                                                @if($fechaTramite)
+                                                                    {{ \Carbon\Carbon::parse($fechaTramite)->format('d/m/Y H:i') }}
+                                                                @else
+                                                                    {{ $tramiteHistorial->created_at ? $tramiteHistorial->created_at->format('d/m/Y H:i') : 'Fecha no disponible' }}
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                            </svg>
+                                                            <span>ID: #{{ $tramiteHistorial->id }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center space-x-3 ml-4">
+                                                    <span class="px-3 py-1 rounded-full text-sm font-medium border {{ $statusColor }}">
+                                                        {{ str_replace('_', ' ', $status) }}
+                                                    </span>
+                                                    @if($tramiteHistorial->id)
+                                                    <a href="{{ route('proveedores.tramite-detalles', $tramiteHistorial->id) }}" 
+                                                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#9d2449] to-[#7a1a37] rounded-lg hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                        Ver →
+                                                    </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <x-ui.separador-simple margin="my-8" color="border-indigo-300" />
 
             <div class="mb-8" data-section="datos_generales">
@@ -142,7 +259,7 @@
                     <button type="button" onclick="toggleCotejo('datos_generales')" 
                             class="inline-flex items-center justify-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                         <span id="toggle_text_datos_generales">Mostrar Cotejo</span>
@@ -195,7 +312,7 @@
                     <button type="button" onclick="toggleCotejo('actividades')" 
                             class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                         <span id="toggle_text_actividades">Mostrar Cotejo</span>
@@ -250,7 +367,7 @@
                     <button type="button" onclick="toggleCotejo('domicilio')" 
                             class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                         <span id="toggle_text_domicilio">Mostrar Cotejo</span>
@@ -305,7 +422,7 @@
                         <button type="button" onclick="toggleCotejo('constitucion')" 
                                 class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                             <span id="toggle_text_constitucion">Mostrar Cotejo</span>
@@ -359,7 +476,7 @@
                         <button type="button" onclick="toggleCotejo('accionistas')" 
                                 class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                             <span id="toggle_text_accionistas">Mostrar Cotejo</span>
@@ -413,7 +530,7 @@
                         <button type="button" onclick="toggleCotejo('apoderado')" 
                                 class="inline-flex items-center px-4 py-2 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200 shadow-sm">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                             </svg>
                             <span id="toggle_text_apoderado">Mostrar Cotejo</span>
@@ -508,7 +625,7 @@
                                    rel="noopener noreferrer"
                                    class="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 6 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 1 1 6 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                     Ver
@@ -600,6 +717,141 @@
                     />
                 </div>
             </div>
+
+            @if($historialTramites && $historialTramites->count() > 0)
+            <div class="mt-8">
+                <div class="bg-white rounded-lg shadow-md border border-gray-200">
+                    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                        <button type="button" onclick="toggleSection('historial')" 
+                                class="flex items-center text-left hover:bg-gray-50 transition-colors rounded-lg p-2 -m-2">
+                            <div class="w-8 h-8 bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-lg flex items-center justify-center mr-3">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <span class="font-medium text-gray-900">Historial de Trámites - RFC: {{ $rfc }} ({{ $historialTramites->count() }})</span>
+                            <svg id="historial-icon" class="w-5 h-5 text-gray-400 transform transition-transform duration-200 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm text-gray-600">Ordenar:</label>
+                            <select onchange="cambiarOrdenHistorial(this.value)" 
+                                    class="text-sm border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="reciente" {{ ($ordenHistorial ?? 'reciente') === 'reciente' ? 'selected' : '' }}>
+                                    📅 Más recientes
+                                </option>
+                                <option value="pasados" {{ ($ordenHistorial ?? 'reciente') === 'pasados' ? 'selected' : '' }}>
+                                    📜 Más antiguos
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="historial-content" class="hidden border-t border-gray-200 p-6 bg-gray-50">
+                        @php            
+                            $tramitesPorProveedor = $historialTramites->groupBy('proveedor_id');
+                        @endphp
+                        
+                        <div class="space-y-6">
+                            @foreach($tramitesPorProveedor as $proveedorId => $tramitesDelProveedor)
+                            @php
+                                $proveedorActual = $tramitesDelProveedor->first()->proveedor;
+                                $esProveedorPrincipal = $proveedorActual->id === $tramite->proveedor->id;
+                            @endphp
+                                    
+                            <div class="bg-white rounded-lg border-l-4 {{ $esProveedorPrincipal ? 'border-l-[#9d2449] bg-red-50' : 'border-l-gray-400 bg-gray-50' }} shadow-sm">
+                                <div class="px-4 py-3 border-b border-gray-200">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold text-gray-900">
+                                                {{ $proveedorActual->razon_social }}
+                                                @if($esProveedorPrincipal)
+                                                    <span class="ml-2 text-xs bg-[#9d2449] text-white px-2 py-1 rounded">ACTUAL</span>
+                                                @endif
+                                            </h4>
+                                            <p class="text-sm text-gray-600">
+                                                PV: {{ $proveedorActual->pv_numero ?? 'No asignado' }} | RFC: {{ $proveedorActual->rfc }}
+                                            </p>
+                                        </div>
+                                        <div class="text-right text-sm text-gray-600">
+                                            <div>{{ $tramitesDelProveedor->count() }} trámite{{ $tramitesDelProveedor->count() !== 1 ? 's' : '' }}</div>
+                                            <div class="text-xs">{{ $proveedorActual->estado_padron }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-6 space-y-3">
+                                    @foreach($tramitesDelProveedor as $tramiteHistorial)
+                                    @php
+                                        $status = $tramiteHistorial->status ?? 'Pendiente';
+                                        $statusColor = [
+                                            'Aprobado' => 'bg-green-100 text-green-800 border-green-200',
+                                            'Rechazado' => 'bg-red-100 text-red-800 border-red-200',
+                                            'Para_Correccion' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                            'En_Revision' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                            'Revision_Digital' => 'bg-purple-100 text-purple-800 border-purple-200',
+                                            'Revision_Presencial' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                                            'Revision_Domiciliaria' => 'bg-cyan-100 text-cyan-800 border-cyan-200',
+                                            'Pendiente' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                        ][$status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                                    @endphp
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200">
+                                        <div class="flex-grow">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-grow">
+                                                    <div class="font-semibold text-gray-900 mb-1">{{ $tramiteHistorial->tipo_tramite ?? 'Trámite' }}</div>
+                                                    <div class="text-sm text-gray-600 space-y-1">
+                                                        @php
+                                                            $fechaTramite = $tramiteHistorial->fecha_finalizacion ?? $tramiteHistorial->fecha_inicio;
+                                                        @endphp
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                            <span>
+                                                                @if($fechaTramite)
+                                                                    {{ \Carbon\Carbon::parse($fechaTramite)->format('d/m/Y H:i') }}
+                                                                @else
+                                                                    {{ $tramiteHistorial->created_at ? $tramiteHistorial->created_at->format('d/m/Y H:i') : 'Fecha no disponible' }}
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                            </svg>
+                                                            <span>ID: #{{ $tramiteHistorial->id }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center space-x-3 ml-4">
+                                                    <span class="px-3 py-1 rounded-full text-sm font-medium border {{ $statusColor }}">
+                                                        {{ str_replace('_', ' ', $status) }}
+                                                    </span>
+                                                    @if($tramiteHistorial->id)
+                                                    <a href="{{ route('proveedores.tramite-detalles', $tramiteHistorial->id) }}" 
+                                                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#9d2449] to-[#7a1a37] rounded-lg hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                        Ver →
+                                                    </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
         </div>
         </div>
     </div>
@@ -672,13 +924,31 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
 
 window.mostrarNotificacion = mostrarNotificacion;
 
+function toggleSection(sectionName) {
+    const content = document.getElementById(sectionName + '-content');
+    const icon = document.getElementById(sectionName + '-icon');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+function cambiarOrdenHistorial(orden) {
+    const url = new URL(window.location);
+    url.searchParams.set('orden_historial', orden);
+    window.location.href = url.toString();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const tramiteId = document.querySelector('meta[name="tramite-id"]')?.getAttribute('content');
     if (tramiteId) {
         window.revisionDigitalEstados = new RevisionDigitalEstados(tramiteId);
     }
     
-    // Agregar event listeners para los botones de evaluación de archivos
     document.addEventListener('click', function(e) {
         if (e.target.closest('.evaluar-archivo-btn')) {
             e.preventDefault();

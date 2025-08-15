@@ -27,13 +27,13 @@ class UserRequest extends FormRequest
             'correo' => [
                 'required',
                 'email',
-                Rule::unique('users', 'correo')->ignore($userId)
+                Rule::unique('users', 'correo')->ignore($userId)->whereNull('deleted_at')
             ],
             'rfc' => [
                 'required',
                 'string',
                 'max:13',
-                Rule::unique('users', 'rfc')->ignore($userId)
+                Rule::unique('users', 'rfc')->ignore($userId)->whereNull('deleted_at')
             ],
             'role_id' => 'nullable|exists:roles,id'
         ];

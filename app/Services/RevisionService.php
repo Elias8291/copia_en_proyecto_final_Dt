@@ -32,12 +32,17 @@ class RevisionService
     // Obtener trámites pendientes con filtros
     public function obtenerTramitesPendientes(Request $request)
     {
-        $query = Tramite::with(['proveedor', 'revisiones', 'datosGenerales', 'contactos'])
+        $user = auth()->user();
+        
+        $query = Tramite::with(['proveedor', 'revisiones', 'datosGenerales', 'contactos', 'revisorDigital', 'citas.asignadoA'])
             ->whereIn('status', [
                 TramiteStatus::PENDIENTE->value,
                 TramiteStatus::REVISION_DIGITAL->value,
                 TramiteStatus::REVISION_PRESENCIAL->value,
-                TramiteStatus::REVISION_DOMICILIARIA->value
+                TramiteStatus::REVISION_DOMICILIARIA->value,
+                TramiteStatus::PARA_CORRECCION->value,
+                TramiteStatus::APROBADO->value,
+                TramiteStatus::RECHAZADO->value
             ]);
 
         // Búsqueda general por RFC, razón social o CURP
@@ -106,15 +111,95 @@ class RevisionService
             }
         }
 
-        // Filtro por asignación
+        // Filtro por asignación - MEJORADO
         if ($request->filled('asignado_a')) {
             $this->aplicarFiltroAsignacion($query, $request->asignado_a);
         }
 
-        // Solo mis trámites asignados
+        // Filtros específicos para revisores
+        if ($request->filled('filtro_revisor')) {
+            switch ($request->filtro_revisor) {
+                case 'mis_pendientes':
+                    // Trámites asignados a mí que están pendientes de revisión
+                    $query->where(function ($q) use ($user) {
+                        $q->where(function ($subQ) use ($user) {
+                            // Revisión digital asignada a mí
+                            $subQ->where('status', TramiteStatus::REVISION_DIGITAL->value)
+                                 ->where('revisor_digital_id', $user->id);
+                        })->orWhere(function ($subQ) use ($user) {
+                            // Revisiones presencial/domiciliaria asignadas a mí a través de citas
+                            $subQ->whereIn('status', [TramiteStatus::REVISION_PRESENCIAL->value, TramiteStatus::REVISION_DOMICILIARIA->value])
+                                 ->whereHas('citas', function ($citaQ) use ($user) {
+                                     $citaQ->where('asignado_a', $user->id)
+                                           ->where('estado', 'Asignada');
+                                 });
+                        })->orWhere(function ($subQ) use ($user) {
+                            // Revisiones con registro en tabla revisiones
+                            $subQ->whereHas('revisiones', function ($revQ) use ($user) {
+                                $revQ->where('revisor_id', $user->id)
+                                     ->where('estado', 'En_Proceso');
+                            });
+                        });
+                    });
+                    break;
+                    
+                case 'mis_completadas':
+                    // Trámites que ya revisé completamente
+                    $query->where(function ($q) use ($user) {
+                        $q->where(function ($subQ) use ($user) {
+                            // Aprobados/rechazados por mí como revisor digital
+                            $subQ->whereIn('status', [TramiteStatus::APROBADO->value, TramiteStatus::RECHAZADO->value])
+                                 ->where('revisor_digital_id', $user->id);
+                        })->orWhere(function ($subQ) use ($user) {
+                            // Revisiones completadas en tabla revisiones
+                            $subQ->whereHas('revisiones', function ($revQ) use ($user) {
+                                $revQ->where('revisor_id', $user->id)
+                                     ->where('estado', 'Finalizada');
+                            });
+                        })->orWhere(function ($subQ) use ($user) {
+                            // Citas completadas por mí
+                            $subQ->whereHas('citas', function ($citaQ) use ($user) {
+                                $citaQ->where('asignado_a', $user->id)
+                                       ->where('estado', 'Asistida');
+                            });
+                        });
+                    });
+                    break;
+                    
+                case 'sin_asignar':
+                    // Trámites sin revisor asignado
+                    $query->where(function ($q) {
+                        $q->where(function ($subQ) {
+                            // Revisión digital sin revisor
+                            $subQ->where('status', TramiteStatus::REVISION_DIGITAL->value)
+                                 ->whereNull('revisor_digital_id');
+                        })->orWhere(function ($subQ) {
+                            // Sin citas asignadas para presencial/domiciliaria
+                            $subQ->whereIn('status', [TramiteStatus::REVISION_PRESENCIAL->value, TramiteStatus::REVISION_DOMICILIARIA->value])
+                                 ->whereDoesntHave('citas', function ($citaQ) {
+                                     $citaQ->where('estado', 'Asignada');
+                                 });
+                        });
+                    });
+                    break;
+                    
+                case 'todos':
+                default:
+                    // No aplicar filtro adicional, mostrar todos
+                    break;
+            }
+        }
+
+        // Solo mis trámites asignados (filtro legacy mantenido para compatibilidad)
         if ($request->filled('mis_tramites') && $request->mis_tramites) {
-            $query->whereHas('revisiones', function ($q) {
-                $q->where('revisor_id', auth()->id());
+            $query->where(function ($q) use ($user) {
+                $q->where('revisor_digital_id', $user->id)
+                  ->orWhereHas('revisiones', function ($revQ) use ($user) {
+                      $revQ->where('revisor_id', $user->id);
+                  })
+                  ->orWhereHas('citas', function ($citaQ) use ($user) {
+                      $citaQ->where('asignado_a', $user->id);
+                  });
             });
         }
 

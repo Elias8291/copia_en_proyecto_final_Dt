@@ -439,6 +439,9 @@ class TramiteController extends Controller
         $intentosRestantes = 2;
         
         if ($tramitePendiente) {
+            // Cargar relaciones necesarias
+            $tramitePendiente->load(['citas.asignadoA', 'revisorDigital']);
+            
             $citaAsignada = $tramitePendiente->citas()
                 ->where('estado', 'Asignada')
                 ->orderBy('fecha_cita', 'desc')

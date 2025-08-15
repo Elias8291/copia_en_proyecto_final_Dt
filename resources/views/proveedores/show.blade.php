@@ -5,8 +5,6 @@
 @section('content')
 <div class="min-h-screen">
     <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        
-        <!-- Header del Proveedor -->
         <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-6">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -59,7 +57,6 @@
                 </div>
             </div>
             
-            <!-- Información Básica del Proveedor -->
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="bg-gray-50 rounded-lg p-4">
@@ -79,8 +76,9 @@
                         </p>
                     </div>
                     <div class="bg-gray-50 rounded-lg p-4">
-                        <h3 class="text-sm font-medium text-gray-500">Total de Trámites</h3>
-                        <p class="text-lg font-semibold text-gray-900">{{ $proveedor->tramites->count() }}</p>
+                        <h3 class="text-sm font-medium text-gray-500">Total de Trámites (RFC)</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ $historialTramites->count() }}</p>
+                        <p class="text-xs text-gray-400 mt-1">RFC: {{ $rfc }}</p>
                     </div>
                 </div>
             </div>
@@ -88,7 +86,6 @@
 
         @if($datosCompletos && $ultimoTramite)
             <div class="space-y-6">
-                <!-- Datos Generales -->
                 @if(!empty($datosCompletos['datos_generales']))
                 <div class="bg-white rounded-lg shadow-md border border-gray-200">
                     <button type="button" onclick="toggleSection('datos-generales')" 
@@ -111,7 +108,6 @@
                 </div>
                 @endif
 
-                <!-- Domicilio -->
                 @if(!empty($datosCompletos['domicilio']))
                 <div class="bg-white rounded-lg shadow-md border border-gray-200">
                     <button type="button" onclick="toggleSection('domicilio')" 
@@ -134,9 +130,6 @@
                 </div>
                 @endif
 
-
-
-                <!-- Actividades Económicas -->
                 @if(!empty($datosCompletos['actividades']))
                 <div class="bg-white rounded-lg shadow-md border border-gray-200">
                     <button type="button" onclick="toggleSection('actividades')" 
@@ -159,7 +152,6 @@
                 </div>
                 @endif
 
-                <!-- Constitución (solo para personas morales) -->
                 @if($proveedor->tipo_persona === 'Moral' && !empty($datosCompletos['constitucion']))
                 <div class="bg-white rounded-lg shadow-md border border-gray-200">
                     <button type="button" onclick="toggleSection('constitucion')" 
@@ -181,8 +173,6 @@
                     </div>
                 </div>
                 @endif
-
-                <!-- Apoderado Legal (solo para personas morales) -->
                 @if($proveedor->tipo_persona === 'Moral' && !empty($datosCompletos['apoderado']))
                 <div class="bg-white rounded-lg shadow-md border border-gray-200">
                     <button type="button" onclick="toggleSection('apoderado')" 
@@ -205,7 +195,6 @@
                 </div>
                 @endif
 
-                <!-- Accionistas (solo para personas morales) -->
                 @if($proveedor->tipo_persona === 'Moral' && !empty($datosCompletos['accionistas']))
                 <div class="bg-white rounded-lg shadow-md border border-gray-200">
                     <button type="button" onclick="toggleSection('accionistas')" 
@@ -228,7 +217,6 @@
                 </div>
                 @endif
 
-                <!-- Documentos -->
                 @if(!empty($datosCompletos['archivos']))
                 <div class="bg-white rounded-lg shadow-md border border-gray-200">
                     <button type="button" onclick="toggleSection('archivos')" 
@@ -250,7 +238,6 @@
                             @foreach($datosCompletos['archivos'] as $archivo)
                                 <div class="bg-white border border-gray-300 rounded-lg p-4 flex flex-col h-full">
                                     <div class="text-center flex-grow">
-                                        <!-- Icono según tipo de archivo -->
                                         <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                             @php
                                                 $extension = pathinfo($archivo['ruta'] ?? '', PATHINFO_EXTENSION);
@@ -279,20 +266,14 @@
                                                     </svg>
                                             @endswitch
                                         </div>
-                                        
-                                        <!-- Nombre del archivo -->
                                         <h5 class="font-medium text-gray-900 mb-2 text-sm">
                                             {{ $archivo['nombre_original'] ?? $archivo['nombre_catalogo'] ?? 'Archivo' }}
                                         </h5>
-                                        
-                                        <!-- Tipo de archivo -->
                                         <div class="mb-3">
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
                                                 {{ strtoupper($extension) }}
                                             </span>
                                         </div>
-                                        
-                                        <!-- Estado del archivo -->
                                         @if(isset($archivo['status']))
                                         <div class="mb-3">
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
@@ -304,8 +285,6 @@
                                             </span>
                                         </div>
                                         @endif
-                                        
-                                        <!-- Botón para ver/descargar -->
                                         <a href="{{ route('revisiones.mostrar-archivo', $archivo['id']) }}" 
                                            target="_blank"
                                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#9d2449] to-[#7a1a37] rounded-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
@@ -322,9 +301,7 @@
                     </div>
                 </div>
                 @endif
-
-                <!-- Historial de Trámites -->
-                @if($proveedor->tramites && $proveedor->tramites->count() > 0)
+                @if($historialTramites && $historialTramites->count() > 0)
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 mt-6">
                     <div class="flex items-center justify-between p-4 border-b border-gray-200">
                         <button type="button" onclick="toggleSection('historial')" 
@@ -334,13 +311,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
-                            <span class="font-medium text-gray-900">Historial de Trámites ({{ $proveedor->tramites->count() }})</span>
+                            <span class="font-medium text-gray-900">Historial de Trámites - RFC: {{ $rfc }} ({{ $historialTramites->count() }})</span>
                             <svg id="historial-icon" class="w-5 h-5 text-gray-400 transform transition-transform duration-200 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
                         
-                        <!-- Controles de ordenamiento -->
                         <div class="flex items-center space-x-2">
                             <label class="text-sm text-gray-600">Ordenar:</label>
                             <select onchange="cambiarOrdenHistorial(this.value)" 
@@ -355,56 +331,101 @@
                         </div>
                     </div>
                     <div id="historial-content" class="hidden border-t border-gray-200 p-6 bg-gray-50">
-                        <div class="space-y-4">
-                            @foreach($proveedor->tramites as $tramite)
+                        @php            
+                            $tramitesPorProveedor = $historialTramites->groupBy('proveedor_id');
+                        @endphp
+                        
+                        <div class="space-y-6">
+                            @foreach($tramitesPorProveedor as $proveedorId => $tramitesDelProveedor)
                             @php
-                                $status = $tramite->status ?? 'Pendiente';
-                                $statusColor = [
-                                    'Aprobado' => 'bg-green-100 text-green-800',
-                                    'Rechazado' => 'bg-red-100 text-red-800',
-                                    'Para_Correccion' => 'bg-yellow-100 text-yellow-800',
-                                    'En_Revision' => 'bg-blue-100 text-blue-800',
-                                    'Pendiente' => 'bg-gray-100 text-gray-800',
-                                ][$status] ?? 'bg-gray-100 text-gray-800';
+                                $proveedorActual = $tramitesDelProveedor->first()->proveedor;
+                                $esProveedorPrincipal = $proveedorActual->id === $proveedor->id;
                             @endphp
-                            <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                                <div class="flex-grow">
+                                    
+                            <div class="bg-white rounded-lg border-l-4 {{ $esProveedorPrincipal ? 'border-l-[#9d2449] bg-red-50' : 'border-l-gray-400 bg-gray-50' }} shadow-sm">
+                                <div class="px-4 py-3 border-b border-gray-200">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <div class="font-medium text-gray-900">{{ $tramite->tipo_tramite ?? 'Trámite' }}</div>
-                                            <div class="text-sm text-gray-500 mt-1">
-                                                @php
-                                                    $fechaTramite = $tramite->fecha_finalizacion ?? $tramite->fecha_inicio;
-                                                @endphp
-                                                <span class="inline-flex items-center mr-4">
-                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                                    </svg>
-                                                    Fecha: 
-                                                    @if($fechaTramite)
-                                                        {{ \Carbon\Carbon::parse($fechaTramite)->format('d/m/Y') }}
-                                                    @else
-                                                        {{ $tramite->created_at ? $tramite->created_at->format('d/m/Y') : 'N/D' }}
-                                                    @endif
-                                                </span>
-                                            </div>
+                                            <h4 class="font-semibold text-gray-900">
+                                                {{ $proveedorActual->razon_social }}
+                                                @if($esProveedorPrincipal)
+                                                    <span class="ml-2 text-xs bg-[#9d2449] text-white px-2 py-1 rounded">ACTUAL</span>
+                                                @endif
+                                            </h4>
+                                            <p class="text-sm text-gray-600">
+                                                PV: {{ $proveedorActual->pv_numero ?? 'No asignado' }} | RFC: {{ $proveedorActual->rfc }}
+                                            </p>
                                         </div>
-                                        <div class="flex items-center space-x-3">
-                                            <span class="px-3 py-1 rounded-full text-sm font-medium {{ $statusColor }}">
-                                                {{ str_replace('_', ' ', $status) }}
-                                            </span>
-                                            @if($tramite->id)
-                                            <a href="{{ route('proveedores.tramite-detalles', $tramite->id) }}" 
-                                               class="inline-flex items-center px-3 py-1 text-sm font-medium text-white bg-gradient-to-r from-[#9d2449] to-[#7a1a37] rounded-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 616 0z" />
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                                Ver Detalles
-                                            </a>
-                                            @endif
+                                        <div class="text-right text-sm text-gray-600">
+                                            <div>{{ $tramitesDelProveedor->count() }} trámite{{ $tramitesDelProveedor->count() !== 1 ? 's' : '' }}</div>
+                                            <div class="text-xs">{{ $proveedorActual->estado_padron }}</div>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="p-6 space-y-3">
+                                    @foreach($tramitesDelProveedor as $tramite)
+                                    @php
+                                        $status = $tramite->status ?? 'Pendiente';
+                                        $statusColor = [
+                                            'Aprobado' => 'bg-green-100 text-green-800 border-green-200',
+                                            'Rechazado' => 'bg-red-100 text-red-800 border-red-200',
+                                            'Para_Correccion' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                            'En_Revision' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                            'Revision_Digital' => 'bg-purple-100 text-purple-800 border-purple-200',
+                                            'Revision_Presencial' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                                            'Revision_Domiciliaria' => 'bg-cyan-100 text-cyan-800 border-cyan-200',
+                                            'Pendiente' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                        ][$status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                                    @endphp
+                                    
+                                    <div class="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200">
+                                        <div class="flex-grow">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-grow">
+                                                    <div class="font-semibold text-gray-900 mb-1">{{ $tramite->tipo_tramite ?? 'Trámite' }}</div>
+                                                    <div class="text-sm text-gray-600 space-y-1">
+                                                        @php
+                                                            $fechaTramite = $tramite->fecha_finalizacion ?? $tramite->fecha_inicio;
+                                                        @endphp
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                            </svg>
+                                                            <span>
+                                                                @if($fechaTramite)
+                                                                    {{ \Carbon\Carbon::parse($fechaTramite)->format('d/m/Y H:i') }}
+                                                                @else
+                                                                    {{ $tramite->created_at ? $tramite->created_at->format('d/m/Y H:i') : 'Fecha no disponible' }}
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex items-center">
+                                                            <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                                            </svg>
+                                                            <span>ID: #{{ $tramite->id }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center space-x-3 ml-4">
+                                                    <span class="px-3 py-1 rounded-full text-sm font-medium border {{ $statusColor }}">
+                                                        {{ str_replace('_', ' ', $status) }}
+                                                    </span>
+                                                    @if($tramite->id)
+                                                    <a href="{{ route('proveedores.tramite-detalles', $tramite->id) }}" 
+                                                       class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#9d2449] to-[#7a1a37] rounded-lg hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                        </svg>
+                                                        Ver Detalles
+                                                    </a>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
                                 </div>
                             </div>
                             @endforeach
@@ -414,7 +435,6 @@
                 @endif
             </div>
         @else
-            <!-- Estado sin trámites -->
             <div class="bg-white rounded-lg shadow-md border border-gray-200 p-12 text-center">
                 <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

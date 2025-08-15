@@ -25,8 +25,8 @@ class UserUpdateRequest extends FormRequest
         
         return [
             'nombre' => 'required|string|max:255',
-            'correo' => 'required|email|unique:users,correo,' . $userId,
-            'rfc' => 'nullable|string|max:13|unique:users,rfc,' . $userId,
+            'correo' => 'required|email|unique:users,correo,' . $userId . ',id,deleted_at,NULL',
+            'rfc' => 'nullable|string|max:13|unique:users,rfc,' . $userId . ',id,deleted_at,NULL',
             'password' => 'nullable|min:8|confirmed',
             'roles' => 'nullable|array',
             'roles.*' => 'exists:roles,name'
@@ -69,9 +69,12 @@ class UserUpdateRequest extends FormRequest
                     $validator->errors()->add('rfc', 'El RFC debe tener un formato válido.');
                 }
 
-                // Verificar duplicados excluyendo el usuario actual
+                // Verificar duplicados excluyendo el usuario actual y usuarios soft-deleted
                 $userId = $this->route('user')->id;
-                if (User::where('rfc', $rfc)->where('id', '!=', $userId)->exists()) {
+                if (User::where('rfc', $rfc)
+                        ->where('id', '!=', $userId)
+                        ->whereNull('deleted_at')
+                        ->exists()) {
                     $validator->errors()->add('rfc', 'Ya existe otro usuario registrado con este RFC.');
                 }
             }
