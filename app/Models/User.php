@@ -24,6 +24,17 @@ class User extends Authenticatable
         'ultimo_acceso',
     ];
 
+    // Exponer alias compatibles con vistas/consultas genericas
+    public function getNameAttribute(): ?string
+    {
+        return $this->attributes['nombre'] ?? null;
+    }
+
+    public function getEmailAttribute(): ?string
+    {
+        return $this->attributes['correo'] ?? null;
+    }
+
 
     public function proveedor()
     {

@@ -12,30 +12,12 @@
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Registro de Logs</h1>
-                        <p class="text-base text-gray-500 mt-1">Monitorea y revisa la actividad del sistema</p>
+                        <h1 class="text-2xl font-bold text-gray-800">Gestión de Logs</h1>
+                        <p class="text-base text-gray-500 mt-1">Administra y revisa los registros del sistema</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    @can('logs.exportar')
-                    <a href="{{ route('logs.exportar') }}?{{ http_build_query(request()->all()) }}" 
-                       class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Exportar
-                    </a>
-                    @endcan
-                    @can('logs.eliminar')
-                    <button type="button" 
-                            onclick="confirmarLimpiarLogs()"
-                            class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-200 shadow-sm">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                        </svg>
-                        Limpiar Logs
-                    </button>
-                    @endcan
+                    <!-- Botones removidos según solicitud -->
                 </div>
             </div>
         </div>
@@ -174,7 +156,6 @@
                     </div>
                 </div>
             </form>
-        </div>
         </div>
 
         <div class="border-t border-gray-100 p-2 sm:p-3 md:p-4 lg:p-5 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
@@ -442,46 +423,9 @@
         </div>
         @endif
 
-        </div>
     </div>
 </div>
 
-<!-- Modal de confirmación para limpiar logs -->
-<div id="limpiarLogsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3 text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-                </svg>
-            </div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Limpiar Logs</h3>
-            <div class="mt-2 px-7 py-3">
-                <p class="text-sm text-gray-500">
-                    ¿Estás seguro de que quieres eliminar los logs antiguos? Esta acción no se puede deshacer.
-                </p>
-                <div class="mt-4">
-                    <label for="dias" class="block text-sm font-medium text-gray-700">Eliminar logs anteriores a:</label>
-                    <select id="dias" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-[#9d2449] focus:border-[#9d2449] sm:text-sm rounded-md">
-                        <option value="7">7 días</option>
-                        <option value="15">15 días</option>
-                        <option value="30" selected>30 días</option>
-                        <option value="60">60 días</option>
-                        <option value="90">90 días</option>
-                    </select>
-                </div>
-            </div>
-            <div class="items-center px-4 py-3">
-                <button id="confirmarLimpiar" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300">
-                    Confirmar
-                </button>
-                <button id="cancelarLimpiar" class="mt-2 px-4 py-2 bg-gray-300 text-gray-700 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                    Cancelar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <x-ui.modals.error-modal 
     id="error-modal"
@@ -555,36 +499,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // Funcionalidad para limpiar logs
-        window.confirmarLimpiarLogs = function() {
-            document.getElementById('limpiarLogsModal').classList.remove('hidden');
-        };
-
-        document.getElementById('cancelarLimpiar').addEventListener('click', function() {
-            document.getElementById('limpiarLogsModal').classList.add('hidden');
-        });
-
-        document.getElementById('confirmarLimpiar').addEventListener('click', function() {
-            const dias = document.getElementById('dias').value;
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ route("logs.limpiar") }}';
-            
-            const csrfToken = document.createElement('input');
-            csrfToken.type = 'hidden';
-            csrfToken.name = '_token';
-            csrfToken.value = '{{ csrf_token() }}';
-            
-            const diasInput = document.createElement('input');
-            diasInput.type = 'hidden';
-            diasInput.name = 'dias';
-            diasInput.value = dias;
-            
-            form.appendChild(csrfToken);
-            form.appendChild(diasInput);
-            document.body.appendChild(form);
-            form.submit();
-        });
 
     } catch (error) {
         console.warn('Error initializing logs page JavaScript:', error);

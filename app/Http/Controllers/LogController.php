@@ -33,8 +33,8 @@ class LogController extends Controller
                   ->orWhere('ip_address', 'like', "%{$search}%")
                   ->orWhere('method', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', "%{$search}%")
-                               ->orWhere('email', 'like', "%{$search}%");
+                      $userQuery->where('nombre', 'like', "%{$search}%")
+                               ->orWhere('correo', 'like', "%{$search}%");
                   });
             });
         }
@@ -72,7 +72,7 @@ class LogController extends Controller
         // Obtener datos para filtros
         $levels = Log::distinct()->pluck('level')->sort();
         $channels = Log::distinct()->pluck('channel')->whereNotNull()->sort();
-        $users = User::orderBy('name')->get(['id', 'name', 'email']);
+        $users = User::orderBy('nombre')->get(['id', 'nombre as name', 'correo as email']);
 
         return view('logs.index', compact('logs', 'levels', 'channels', 'users'));
     }

@@ -8,8 +8,8 @@ use App\Models\Archivo;
 use App\Models\CatalogoArchivo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class ArchivosService extends BaseService
 {
@@ -18,54 +18,15 @@ class ArchivosService extends BaseService
         if (!$request->hasFile('documentos')) {
             return;
         }
-        
-        $documentos = $request->file('documentos');
-        $archivosParaGuardar = [];
-        $errores = [];
-        
-        Log::info('ArchivosService: Iniciando procesamiento ultra optimizado de archivos', [
-            'tramite_id' => $tramite->id,
-            'total_archivos' => count($documentos)
-        ]);
-        
-        // Procesar archivos en lote ultra optimizado
-        foreach ($documentos as $nombreArchivo => $archivo) {
-            try {
-                if ($this->validarArchivo($archivo)) {
-                    $resultado = $this->prepararArchivoUltraOptimizado($tramite, $proveedor, $nombreArchivo, $archivo);
-                    if ($resultado) {
-                        $archivosParaGuardar[] = $resultado;
-                    }
-                }
-            } catch (\Exception $e) {
-                $errores[] = [
-                    'archivo' => $nombreArchivo,
-                    'error' => $e->getMessage()
-                ];
-                Log::warning('ArchivosService: Error al procesar archivo', [
-                    'archivo' => $nombreArchivo,
-                    'error' => $e->getMessage()
-                ]);
+        foreach ($request->file('documentos') as $claveCatalogo => $archivo) {
+            if (!$archivo || !$archivo->isValid()) {
+                continue;
             }
-        }
-        
-        // Guardar archivos en lote si hay archivos válidos
-        if (!empty($archivosParaGuardar)) {
-            $this->guardarArchivosEnLoteUltraOptimizado($archivosParaGuardar);
-        }
-        
-        // Log de resultados
-        Log::info('ArchivosService: Procesamiento ultra optimizado completado', [
-            'tramite_id' => $tramite->id,
-            'archivos_procesados' => count($archivosParaGuardar),
-            'errores' => count($errores)
-        ]);
-        
-        if (!empty($errores)) {
-            Log::warning('ArchivosService: Errores durante el procesamiento', [
-                'tramite_id' => $tramite->id,
-                'errores' => $errores
-            ]);
+            $catalogoId = $this->resolverCatalogoIdDesdeClave($claveCatalogo);
+            if (!$catalogoId) {
+                continue;
+            }
+            $this->guardarArchivoCorreccion($tramite, $archivo, $catalogoId, 'Pendiente');
         }
     }
 
@@ -77,54 +38,9 @@ class ArchivosService extends BaseService
         return $tramite->archivos()->with('catalogoArchivo')->get();
     }
 
-    private function prepararArchivoUltraOptimizado(Tramite $tramite, Proveedor $proveedor, string $nombreArchivo, $archivo): ?array
-    {
-        $catalogoArchivo = $this->buscarCatalogoArchivo($nombreArchivo);
-        
-        if (!$catalogoArchivo) {
-            return null;
-        }
+    // Simplificado: sin preparación por lote; se delega al método guardarArchivoCorreccion
 
-        // Validar tipo de archivo según el catálogo
-        if (!$this->validarTipoArchivo($archivo, $catalogoArchivo->tipo_archivo)) {
-            return null;
-        }
-
-        $nombreUnico = $this->generarNombreUnico('doc', $tramite->id, $archivo->getClientOriginalName());
-        $ruta = $archivo->storeAs('tramites/' . $tramite->id, $nombreUnico, 'public');
-
-        return [
-            'tramite_id' => $tramite->id,
-            'proveedor_id' => $proveedor->id,
-            'catalogo_archivo_id' => $catalogoArchivo->id,
-            'nombre_original' => $archivo->getClientOriginalName(),
-            'nombre_archivo' => $nombreUnico,
-            'ruta' => $ruta,
-            'extension' => $archivo->getClientOriginalExtension(),
-            'tamaño' => $archivo->getSize(),
-            'status' => 'Pendiente',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ];
-    }
-
-    private function guardarArchivosEnLoteUltraOptimizado(array $archivos): void
-    {
-        try {
-            // Usar inserción en lote ultra optimizada
-            Archivo::insert($archivos);
-            
-            Log::info('ArchivosService: Archivos guardados en lote ultra optimizado', [
-                'total_archivos' => count($archivos)
-            ]);
-        } catch (\Exception $e) {
-            Log::error('ArchivosService: Error al guardar archivos en lote', [
-                'error' => $e->getMessage(),
-                'archivos' => count($archivos)
-            ]);
-            throw $e;
-        }
-    }
+    // Eliminado flujo de inserción en lote para claridad.
 
     private function buscarCatalogoArchivo(string $nombre): ?CatalogoArchivo
     {
@@ -136,105 +52,49 @@ class ArchivosService extends BaseService
         return ucwords(str_replace(['-', '_'], ' ', $nombre));
     }
 
-    private function validarTipoArchivo($archivo, string $tipoEsperado): bool
-    {
-        $extension = strtolower($archivo->getClientOriginalExtension());
-        
-        $tiposPermitidos = $this->obtenerExtensionesPorTipo($tipoEsperado);
-        
-        return in_array($extension, $tiposPermitidos);
-    }
-
-    private function obtenerExtensionesPorTipo(string $tipoArchivo): array
-    {
-        return match($tipoArchivo) {
-            'pdf' => ['pdf'],
-            'png' => ['png', 'jpg', 'jpeg', 'gif', 'webp'],
-            'mp3' => ['mp3', 'wav', 'ogg'],
-            'mp4' => ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'],
-            default => ['pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'mp3', 'wav', 'ogg', 'mp4', 'avi', 'mov', 'wmv', 'flv', 'webm']
-        };
-    }
+    // Validación de tipo/tamaño ya se hace en los FormRequest; no se duplica aquí.
 
     /**
      * Actualizar archivos de un trámite existente
      */
     public function actualizar(Tramite $tramite, Request $request): void
     {
-        // Verificar si hay archivos en el campo 'archivos' o 'documentos'
-        $archivos = $request->file('archivos') ?: $request->file('documentos');
-        
-        if (!$archivos) {
-            Log::info('ArchivosService: No hay archivos para actualizar', [
-                'tramite_id' => $tramite->id
-            ]);
-            return;
-        }
-        
-        Log::info('ArchivosService: Iniciando actualización de archivos', [
-            'tramite_id' => $tramite->id,
-            'archivos_recibidos' => array_keys($archivos)
-        ]);
-        
-        foreach ($archivos as $catalogoId => $archivo) {
+        $archivos = $request->file('documentos_correccion')
+            ?: $request->file('archivos')
+            ?: $request->file('documentos');
+        if (!$archivos) return;
+        foreach ($archivos as $claveCatalogo => $archivo) {
             if ($archivo && $archivo->isValid()) {
-                Log::info('ArchivosService: Procesando archivo', [
-                    'tramite_id' => $tramite->id,
-                    'catalogo_id' => $catalogoId,
-                    'nombre_archivo' => $archivo->getClientOriginalName()
-                ]);
-                
-                // Buscar archivo anterior
+                $catalogoId = $this->resolverCatalogoIdDesdeClave($claveCatalogo);
+                if (!$catalogoId) continue;
                 $archivoExistente = $tramite->archivos()
                     ->where('catalogo_archivo_id', $catalogoId)
                     ->first();
-                
                 if ($archivoExistente) {
-                    Log::info('ArchivosService: Eliminando archivo anterior', [
-                        'tramite_id' => $tramite->id,
-                        'archivo_id' => $archivoExistente->id,
-                        'status_anterior' => $archivoExistente->status
-                    ]);
-                    
-                    // Eliminar archivo físico
-                    if (file_exists(storage_path('app/public/' . $archivoExistente->ruta))) {
-                        unlink(storage_path('app/public/' . $archivoExistente->ruta));
-                    }
+                    $oldPath = ltrim($archivoExistente->ruta, '/');
+                    Storage::disk('local')->delete($oldPath);
+                    Storage::disk('public')->delete($oldPath);
                     $archivoExistente->delete();
                 }
-
-                // Guardar nuevo archivo con status Pendiente
                 $this->guardarArchivoCorreccion($tramite, $archivo, $catalogoId);
-            } else {
-                Log::warning('ArchivosService: Archivo inválido', [
-                    'tramite_id' => $tramite->id,
-                    'catalogo_id' => $catalogoId
-                ]);
             }
         }
-        
-        Log::info('ArchivosService: Actualización completada', [
-            'tramite_id' => $tramite->id
-        ]);
     }
 
     /**
      * Guardar un archivo específico para correcciones
      */
-    public function guardarArchivoCorreccion(Tramite $tramite, $archivo, $catalogoId): void
+    public function guardarArchivoCorreccion(Tramite $tramite, $archivo, $catalogoId, string $status = 'Pendiente')
     {
         $catalogoArchivo = CatalogoArchivo::find($catalogoId);
         
-        if (!$catalogoArchivo) {
-            Log::error('ArchivosService: Catálogo de archivo no encontrado', [
-                'tramite_id' => $tramite->id,
-                'catalogo_id' => $catalogoId
-            ]);
-            return;
-        }
+        if (!$catalogoArchivo) return null;
 
         $nombreUnico = $this->generarNombreUnico('doc', $tramite->id, $archivo->getClientOriginalName());
-        $ruta = $archivo->storeAs('tramites/' . $tramite->id, $nombreUnico, 'public');
+        $rutaRelativa = 'tramites/' . $tramite->id . '/' . $nombreUnico;
+        // Cifrar antes de guardar en almacenamiento privado
+        $ciphertext = encrypt($archivo->get());
+        Storage::disk('local')->put($rutaRelativa, $ciphertext);
 
         $nuevoArchivo = Archivo::create([
             'tramite_id' => $tramite->id,
@@ -242,48 +102,32 @@ class ArchivosService extends BaseService
             'catalogo_archivo_id' => $catalogoId,
             'nombre_original' => $archivo->getClientOriginalName(),
             'nombre_archivo' => $nombreUnico,
-            'ruta' => $ruta,
-            'extension' => $archivo->getClientOriginalExtension(),
+            'ruta' => $rutaRelativa,
+            'extension' => strtolower($archivo->getClientOriginalExtension()),
             'tamaño' => $archivo->getSize(),
-            'status' => 'Pendiente',
+            'status' => $status,
             'comentario_revision' => null,
             'revisado_por' => null,
             'fecha_revision' => null
         ]);
-
-        Log::info('ArchivosService: Archivo de corrección creado exitosamente', [
-            'tramite_id' => $tramite->id,
-            'archivo_id' => $nuevoArchivo->id,
-            'catalogo_id' => $catalogoId,
-            'status' => $nuevoArchivo->status,
-            'nombre_original' => $nuevoArchivo->nombre_original
-        ]);
+        return $nuevoArchivo;
     }
 
     /**
-     * Guardar un archivo específico
+     * Resolver el ID del catálogo a partir de una clave (ID numérico o slug de nombre)
      */
-    public function guardarArchivo(Tramite $tramite, $archivo, $catalogoId): void
+    private function resolverCatalogoIdDesdeClave($clave): ?int
     {
-        $catalogoArchivo = CatalogoArchivo::find($catalogoId);
-        
-        if (!$catalogoArchivo) {
-            return;
+        if (is_numeric($clave)) {
+            return (int) $clave;
         }
-
-        $nombreUnico = $this->generarNombreUnico('doc', $tramite->id, $archivo->getClientOriginalName());
-        $ruta = $archivo->storeAs('tramites/' . $tramite->id, $nombreUnico, 'public');
-
-        Archivo::create([
-            'tramite_id' => $tramite->id,
-            'proveedor_id' => $tramite->proveedor_id,
-            'catalogo_archivo_id' => $catalogoId,
-            'nombre_original' => $archivo->getClientOriginalName(),
-            'nombre_archivo' => $nombreUnico,
-            'ruta' => $ruta,
-            'extension' => $archivo->getClientOriginalExtension(),
-            'tamaño' => $archivo->getSize(),
-            'status' => 'Pendiente',
-        ]);
+        $claveStr = (string) $clave;
+        $slug = Str::slug($claveStr);
+        $catalogos = CatalogoArchivo::select('id', 'nombre')->get();
+        $match = $catalogos->first(function ($c) use ($slug) { return Str::slug($c->nombre) === $slug; });
+        if ($match) return (int) $match->id;
+        $like = CatalogoArchivo::where('nombre', 'LIKE', '%' . $claveStr . '%')->first();
+        return $like?->id;
     }
+    
 } 

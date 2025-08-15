@@ -68,12 +68,11 @@
                                 <p class="text-sm text-gray-500">Refina tus resultados con criterios específicos</p>
                             </div>
                         </div>
-                        <button type="button" 
-                                id="toggleFilters" 
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#9d2449] text-[#9d2449] hover:bg-[#9d2449] hover:text-white font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md">
+                        <button type="button" id="toggleFilters" class="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#9d2449] text-[#9d2449] hover:bg-[#9d2449] hover:text-white font-medium rounded-lg transition-all duration-300 shadow-sm hover:shadow-md">
                             <span id="filterText">Mostrar filtros</span>
                             <span id="filterIcon" class="transform transition-transform duration-300">▼</span>
                         </button>
+                        <button type="button" onclick="openSectorActividadModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-[#9d2449] text-white font-medium rounded-lg hover:bg-[#8a1f40] transition-all duration-300 shadow-sm">Filtrar sectores/actividades</button>
                     </div>
                         
                     <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-500 ease-in-out">
@@ -115,17 +114,7 @@
                                 </select>
                             </div>
 
-                            <div>
-                                        <label for="vencimiento" class="block text-sm font-medium text-gray-700 mb-2">Estado de vencimiento</label>
-                                <select name="vencimiento" 
-                                        id="vencimiento" 
-                                                class="w-full px-4 py-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm hover:shadow-md">
-                                    <option value="">Todos</option>
-                                            <option value="vencido" {{ request('vencimiento') == 'vencido' ? 'selected' : '' }}>🔴 Ya vencido</option>
-                                            <option value="por_vencer" {{ request('vencimiento') == 'por_vencer' ? 'selected' : '' }}>🟡 Por vencer</option>
-                                            <option value="sin_fecha" {{ request('vencimiento') == 'sin_fecha' ? 'selected' : '' }}>⚪ Sin fecha</option>
-                                </select>
-                            </div>
+                            
 
                             <div>
                                 <label for="año" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">Año de registro</label>
@@ -316,16 +305,7 @@
                         </span>
                         @endif
 
-                        @if(request('vencimiento'))
-                        <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-[#9d2449]/10 text-[#9d2449] border border-[#9d2449]/20">
-                            Vencimiento: {{ ucfirst(str_replace('_', ' ', request('vencimiento'))) }}
-                            <a href="{{ request()->fullUrlWithQuery(['vencimiento' => null]) }}" class="ml-1 sm:ml-1.5 text-[#9d2449] hover:text-[#8a1f40]">
-                                <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                                </svg>
-                            </a>
-                        </span>
-                        @endif
+                        
 
                         @if(request('año'))
                         <span class="inline-flex items-center px-1.5 sm:px-2 md:px-2.5 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
@@ -520,6 +500,15 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
                                         </svg>
                                     </a>
+                                    <form id="form-delete-proveedor-{{ $proveedor->id }}" action="{{ route('proveedores.destroy', $proveedor->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" onclick="showDeleteModal('Eliminar proveedor', '¿Está seguro que desea eliminar este proveedor? Esta acción no se puede deshacer.', 'form-delete-proveedor-{{ $proveedor->id }}')" class="group inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md" title="Eliminar">
+                                            <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m1-3H8a1 1 0 00-1 1v2h10V5a1 1 0 00-1-1z"/>
+                                            </svg>
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>
@@ -537,6 +526,32 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <div id="sectorActividadModal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black/50" onclick="closeSectorActividadModal()"></div>
+            <div class="relative max-w-3xl mx-auto mt-16 bg-white rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 sm:px-6 py-3 bg-[#9d2449] text-white">
+                    <h3 class="font-semibold">Filtrar por sectores y actividades</h3>
+                    <button onclick="closeSectorActividadModal()" class="hover:text-gray-200">✕</button>
+                </div>
+                <div class="p-4 sm:p-6 space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sectores</label>
+                            <div id="sectoresContainer" class="max-h-64 overflow-y-auto border rounded-md p-2 text-sm"></div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Actividades</label>
+                            <div id="actividadesContainer" class="max-h-64 overflow-y-auto border rounded-md p-2 text-sm"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 px-4 sm:px-6 py-3 bg-gray-50">
+                    <button onclick="closeSectorActividadModal()" class="px-4 py-2 rounded-md border">Cancelar</button>
+                    <button onclick="applySectorActividadFilters()" class="px-4 py-2 rounded-md bg-[#9d2449] text-white">Aplicar</button>
+                </div>
             </div>
         </div>
 
@@ -692,6 +707,12 @@
 
 @endsection
 
+<x-ui.modals.modal-eliminar id="modal-eliminar-proveedor"
+    title="Eliminar proveedor"
+    message="¿Está seguro que desea eliminar este proveedor? Esta acción no se puede deshacer."
+    confirmText="Eliminar"
+    cancelText="Cancelar" />
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -727,6 +748,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         searchForm.submit();
     });
+    window.openSectorActividadModal = function() {
+        document.getElementById('sectorActividadModal')?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        lazyLoadSectorActividad();
+    }
+    window.closeSectorActividadModal = function() {
+        document.getElementById('sectorActividadModal')?.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    function lazyLoadSectorActividad() {
+        const sectoresEl = document.getElementById('sectoresContainer');
+        const actividadesEl = document.getElementById('actividadesContainer');
+        if (!sectoresEl || !actividadesEl) return;
+        if (!sectoresEl.dataset.loaded) {
+            sectoresEl.innerHTML = '<div class="py-6 text-center text-gray-500">Cargando sectores...</div>';
+            actividadesEl.innerHTML = '<div class="py-6 text-center text-gray-500">Cargando actividades...</div>';
+            fetch('{{ route('proveedores.index') }}?format=json&catalogs=sectores,actividades', { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(data => {
+                    renderList(sectoresEl, data.sectores || [], 'sector');
+                    renderList(actividadesEl, data.actividades || [], 'actividad_economica');
+                    sectoresEl.dataset.loaded = '1';
+                })
+                .catch(() => {
+                    sectoresEl.innerHTML = '<div class="py-6 text-center text-red-500">Error al cargar</div>';
+                    actividadesEl.innerHTML = '<div class="py-6 text-center text-red-500">Error al cargar</div>';
+                });
+        }
+    }
+
+    function renderList(container, items, name) {
+        const selected = new Set((new URLSearchParams(window.location.search)).getAll(name + '[]'));
+        container.innerHTML = items.map(item => {
+            const id = item.id ?? item.value ?? item;
+            const label = item.nombre ?? item.label ?? item;
+            const checked = selected.has(String(id)) ? 'checked' : '';
+            return `<label class="flex items-center gap-2 py-1"><input type="checkbox" name="${name}[]" form="searchForm" value="${id}" ${checked} class="rounded"> <span>${label}</span></label>`;
+        }).join('') || '<div class="py-6 text-center text-gray-400">Sin datos</div>';
+    }
+
+    window.applySectorActividadFilters = function() {
+        closeSectorActividadModal();
+        searchForm.submit();
+    }
 });
 </script>
 @endpush

@@ -66,8 +66,8 @@
                                 <span class="text-sm font-medium text-gray-700">Usuario:</span>
                                 <div class="text-right">
                                     @if($log->user)
-                                        <div class="text-sm text-gray-900">{{ $log->user->name }}</div>
-                                        <div class="text-xs text-gray-500">{{ $log->user->email }}</div>
+                                        <div class="text-sm text-gray-900">{{ $log->user->nombre }}</div>
+                                        <div class="text-xs text-gray-500">{{ $log->user->correo }}</div>
                                     @else
                                         <span class="text-sm text-gray-500">Sistema</span>
                                     @endif

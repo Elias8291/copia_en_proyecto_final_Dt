@@ -4,11 +4,16 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Limpiar la caché de permisos antes de modificar
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        // Eliminar permisos existentes para recrearlos desde cero
         Permission::query()->delete();
 
         $userPermissions = [
@@ -84,6 +89,12 @@ class PermissionSeeder extends Seeder
             'oficios.eliminar' => 'Eliminar oficios',
         ];
 
+        $logsPermissions = [
+            'logs.ver' => 'Ver logs del sistema',
+            'logs.exportar' => 'Exportar logs del sistema',
+            'logs.eliminar' => 'Eliminar/limpiar logs del sistema',
+        ];
+
         $systemPermissions = [
             'sistema.administrar' => 'Administrar sistema completo',
             'reportes.ver' => 'Ver reportes',
@@ -100,6 +111,7 @@ class PermissionSeeder extends Seeder
             $citaPermissions,
             $notificacionPermissions,
             $oficioPermissions,
+            $logsPermissions,
             $systemPermissions
         );
 

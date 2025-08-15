@@ -121,13 +121,25 @@ class ProveedoresController extends Controller
         $perPage = $request->get('per_page', 15);
         $todosProveedores = $query->paginate($perPage)->withQueryString();
 
-        // Obtener actividades económicas agrupadas por sector para el modal
         $sectores = Sector::with(['actividades' => function($query) {
             $query->orderBy('nombre');
-        }])->orderBy('nombre')->get();
+        }])->orderBy('nombre')->get(['id','nombre']);
 
         // Obtener estados geográficos de México para el filtro
         $estados = \App\Models\Estado::orderBy('nombre')->get();
+
+        if ($request->wantsJson() || $request->get('format') === 'json') {
+            return response()->json([
+                'sectores' => $sectores->map(fn($s) => [
+                    'id' => $s->id,
+                    'nombre' => $s->nombre
+                ])->values(),
+                'actividades' => Actividad::orderBy('nombre')->get(['id','nombre'])->map(fn($a) => [
+                    'id' => $a->id,
+                    'nombre' => $a->nombre
+                ])->values(),
+            ]);
+        }
 
         // Manejar exportación simple
         if ($request->get('export') == 'excel') {

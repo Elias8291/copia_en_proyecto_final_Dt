@@ -59,6 +59,9 @@ class RolesAndPermissionsSeeder extends Seeder
                 'oficios.ver',
                 'oficios.crear',
                 'oficios.editar',
+                'logs.ver',
+                'logs.exportar',
+                'logs.eliminar',
                 'reportes.ver',
                 'configuracion.editar',
             ]);

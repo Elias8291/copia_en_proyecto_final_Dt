@@ -13,7 +13,8 @@ use App\Http\Controllers\{
     NotificacionController,
     CitasController,
     ArchivoController,
-    ProveedoresController
+    ProveedoresController,
+    LogController
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -211,6 +212,14 @@ Route::post('/limpiar-sesion-exito', [RevisionController::class, 'limpiarSesionE
         Route::get('/{notificacion}/editar', [NotificacionController::class, 'edit'])->name('edit');
         Route::put('/{notificacion}', [NotificacionController::class, 'update'])->name('update');
         Route::post('/limpiar-antiguas', [NotificacionController::class, 'limpiarAntiguas'])->name('limpiar-antiguas');
+    });
+
+    // Rutas para logs del sistema
+    Route::prefix('logs')->name('logs.')->group(function () {
+        Route::get('/', [LogController::class, 'index'])->name('index');
+        Route::get('/exportar', [LogController::class, 'exportar'])->name('exportar');
+        Route::post('/limpiar', [LogController::class, 'limpiar'])->name('limpiar');
+        Route::get('/{log}', [LogController::class, 'show'])->name('show');
     });
 
     // Rutas para archivos

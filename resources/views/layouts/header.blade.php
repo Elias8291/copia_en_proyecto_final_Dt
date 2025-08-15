@@ -25,14 +25,14 @@
                 notificaciones: [], 
                 count: 0,
                 loading: false,
+                
                 async loadNotifications() {
                     this.loading = true;
                     try {
-                        // Cargar todas las notificaciones recientes (leídas y no leídas)
                         const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
                         const data = await response.json();
                         this.notificaciones = data.notificaciones || [];
-                        this.count = data.conteo_no_leidas || 0; // Solo contar las no leídas
+                        this.count = data.conteo_no_leidas || 0;
                     } catch (error) {
                         console.error('Error loading notifications:', error);
                         this.notificaciones = [];
@@ -41,101 +41,144 @@
                         this.loading = false;
                     }
                 },
-                async markAsReadAndOpen() {
+                
+                async toggleNotifications() {
                     if (!this.open) {
-                        // Al abrir, cargar notificaciones
+                        // Al abrir, cargar notificaciones y marcar como leídas
                         await this.loadNotifications();
-                        // Marcar las no leídas como leídas
-                        const unreadNotifications = (this.notificaciones || []).filter(n => !n.leida);
-                        if (unreadNotifications.length > 0) {
-                            try {
-                                const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
-                                    method: 'POST',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-                                    }
-                                });
-                                const result = await response.json();
-                                // Actualizar contador
-                                this.count = result.conteo_restante || 0;
-                                // Actualizar el estado de las notificaciones localmente
-                                (this.notificaciones || []).forEach(notif => {
-                                    if (!notif.leida) notif.leida = true;
-                                });
-                            } catch (error) {
-                                console.error('Error marking notifications as read:', error);
-                            }
-                        }
+                        await this.markNotificationsAsRead();
                     }
                     this.open = !this.open;
+                },
+                
+                async markNotificationsAsRead() {
+                    const unread = (this.notificaciones || []).filter(n => !n.leida);
+                    if (unread.length > 0) {
+                        try {
+                            const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ notificaciones: unread.map(n => n.id) })
+                            });
+                            const result = await response.json();
+                            // Actualizar contador desde el backend
+                            this.count = result.conteo_restante ?? 0;
+                            // Marcar como leídas localmente solo las afectadas
+                            const idsMarcados = new Set((unread || []).map(n => n.id));
+                            (this.notificaciones || []).forEach(n => {
+                                if (idsMarcados.has(n.id)) n.leida = true;
+                            });
+                        } catch (error) {
+                            console.error('Error marking notifications as read:', error);
+                        }
+                    }
+                },
+                
+                formatTimeAgo(dateString) {
+                    if (!dateString) return 'Reciente';
+                    
+                    const now = new Date();
+                    const date = new Date(dateString);
+                    const diffInSeconds = Math.floor((now - date) / 1000);
+                    
+                    if (diffInSeconds < 60) {
+                        return 'Hace un momento';
+                    } else if (diffInSeconds < 3600) {
+                        const minutes = Math.floor(diffInSeconds / 60);
+                        return `Hace ${minutes} min`;
+                    } else if (diffInSeconds < 86400) {
+                        const hours = Math.floor(diffInSeconds / 3600);
+                        return `Hace ${hours} h`;
+                    } else if (diffInSeconds < 604800) {
+                        const days = Math.floor(diffInSeconds / 86400);
+                        return `Hace ${days} día${days > 1 ? 's' : ''}`;
+                    } else if (diffInSeconds < 2419200) {
+                        const weeks = Math.floor(diffInSeconds / 604800);
+                        return `Hace ${weeks} semana${weeks > 1 ? 's' : ''}`;
+                    } else {
+                        const months = Math.floor(diffInSeconds / 2419200);
+                        return `Hace ${months} mes${months > 1 ? 'es' : ''}`;
+                    }
                 }
             }" x-init="loadNotifications()">
-                <button @click="markAsReadAndOpen()" 
-                        class="relative p-2 text-primary hover:text-primary-dark hover:bg-primary/10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20">
+                
+                <button @click="toggleNotifications()" 
+                        class="relative p-2 text-gray-600 hover:text-[#9d2449] hover:bg-gray-50 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 group">
                     <span class="sr-only">Ver notificaciones</span>
-                    <!-- Ícono de campana (Heroicons Bell Outline) -->
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+                    <svg class="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z"/>
                     </svg>
-                    <!-- Badge de contador móvil -->
+                    <!-- Badge contador móvil -->
                     <span x-show="count > 0" 
                           x-text="count > 99 ? '99+' : count"
-                          class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold px-1 shadow-sm">
+                          class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full flex items-center justify-center font-semibold shadow-lg animate-pulse">
                     </span>
                 </button>
 
-                <!-- Dropdown móvil -->
+                <!-- Panel móvil elegante -->
                 <div x-show="open" 
                      @click.away="open = false"
-                     x-transition:enter="transition ease-out duration-200"
-                     x-transition:enter-start="opacity-0 scale-95"
-                     x-transition:enter-end="opacity-100 scale-100"
-                     x-transition:leave="transition ease-in duration-150"
-                     x-transition:leave-start="opacity-100 scale-100"
-                     x-transition:leave-end="opacity-0 scale-95"
-                     class="origin-top-right absolute right-4 mt-3 w-72 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 focus:outline-none z-50 overflow-hidden"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 transform scale-95 translate-y-2"
+                     x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 transform scale-95 translate-y-2"
+                     class="absolute right-4 mt-3 w-80 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 z-50 overflow-hidden"
                      style="display: none;">
                     
-                    <!-- Header móvil -->
-                    <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+                    <!-- Header elegante móvil -->
+                    <div class="bg-gradient-to-r from-[#9d2449] to-[#8a1f40] px-4 py-3">
                         <div class="flex items-center justify-between">
-                            <h3 class="text-sm font-semibold text-gray-900">Notificaciones</h3>
-                            <a href="/notificaciones" 
-                               class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                                Ver todas
-                            </a>
+                            <div class="flex items-center space-x-2">
+                                <div class="p-1.5 bg-white/20 rounded-lg">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-base font-semibold text-white">Notificaciones</h3>
+                            </div>
+                            <div class="text-xs text-white/80 font-medium">
+                                Al abrir se marcan como leídas
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Lista móvil -->
+                    <!-- Contenido móvil -->
                     <div class="max-h-80 overflow-y-auto">
+                        <!-- Estado de carga -->
                         <template x-if="loading">
-                            <div class="px-4 py-6 text-center">
-                                <div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                            <div class="flex flex-col items-center justify-center py-8">
+                                <div class="w-6 h-6 border-2 border-[#9d2449]/20 border-t-[#9d2449] rounded-full animate-spin"></div>
                                 <p class="text-xs text-gray-500 mt-2">Cargando...</p>
                             </div>
                         </template>
 
+                        <!-- Sin notificaciones -->
                         <template x-if="!loading && (!notificaciones || notificaciones.length === 0)">
-                            <div class="px-4 py-6 text-center">
-                                <!-- Ícono de campana (Heroicons Bell Outline) -->
-                                <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
-                                </svg>
-                                <p class="text-xs text-gray-500">Sin notificaciones</p>
+                            <div class="flex flex-col items-center justify-center py-8">
+                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z"/>
+                                    </svg>
+                                </div>
+                                <h4 class="text-xs font-medium text-gray-900 mb-1">Todo al día</h4>
+                                <p class="text-xs text-gray-500">Sin notificaciones pendientes</p>
                             </div>
                         </template>
 
+                        <!-- Lista de notificaciones -->
                         <div class="divide-y divide-gray-100">
-                                                         <template x-for="notificacion in (notificaciones || []).slice(0, 6)" :key="notificacion.id">
-                                 <div class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150"
-                                      :class="notificacion.leida ? 'bg-gray-50/30 opacity-75' : 'bg-blue-50/30'">
-                                    <div class="flex items-start space-x-3">
+                            <template x-for="notificacion in (notificaciones || []).slice(0, 5)" :key="notificacion.id">
+                                <div class="p-3 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                                     :class="!notificacion.leida ? 'bg-blue-50/50' : ''">
+                                    <div class="flex items-start space-x-2.5">
+                                        <!-- Icono de tipo -->
                                         <div class="flex-shrink-0 mt-0.5">
-                                            <div class="w-6 h-6 rounded-lg flex items-center justify-center"
+                                            <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm"
                                                  :class="{
                                                      'bg-emerald-100 text-emerald-600': notificacion.tipo === 'exito',
                                                      'bg-amber-100 text-amber-600': notificacion.tipo === 'advertencia',
@@ -144,23 +187,31 @@
                                                      'bg-purple-100 text-purple-600': notificacion.tipo === 'Cita',
                                                      'bg-gray-100 text-gray-600': notificacion.tipo === 'informativo'
                                                  }">
-                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                    <circle cx="10" cy="10" r="8"/>
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <circle cx="10" cy="10" r="6"/>
                                                 </svg>
                                             </div>
                                         </div>
+
+                                        <!-- Contenido de la notificación -->
                                         <div class="flex-1 min-w-0">
-                                            <div class="flex items-start justify-between">
-                                                <p class="text-xs font-medium text-gray-900 truncate" x-text="notificacion.titulo || 'Sin título'"></p>
-                                                <!-- Indicador de no leída -->
-                                                <div x-show="!notificacion.leida" class="flex-shrink-0 ml-2">
-                                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                            <div class="flex items-center justify-between mb-1">
+                                                <h4 class="text-xs font-semibold text-gray-900 truncate" x-text="notificacion.titulo || 'Notificación'"></h4>
+                                                <div x-show="!notificacion.leida" class="flex-shrink-0 ml-1">
+                                                    <div class="w-2 h-2 bg-[#9d2449] rounded-full"></div>
                                                 </div>
                                             </div>
-                                            <p class="text-xs text-gray-600 line-clamp-1 mt-0.5" x-text="notificacion.mensaje || 'Sin mensaje'"></p>
-                                            <div class="flex items-center mt-1 space-x-2">
-                                                <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada || 'Reciente'"></span>
-                                                <span x-show="notificacion.leida" class="text-xs text-gray-400">• Leída</span>
+                                            <p class="text-xs text-gray-600 line-clamp-2 mb-1" x-text="notificacion.mensaje || 'Sin mensaje'"></p>
+                                            <div class="flex items-center justify-between mt-1">
+                                                <div class="flex items-center text-xs text-gray-500">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                    <span x-text="formatTimeAgo(notificacion.created_at)" class="font-medium"></span>
+                                                </div>
+                                                <div x-show="!notificacion.leida" class="px-1.5 py-0.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-semibold rounded-full">
+                                                    Nueva
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -171,9 +222,9 @@
 
                     <!-- Footer móvil -->
                     <template x-if="notificaciones && notificaciones.length > 0">
-                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                        <div class="bg-gray-50 px-4 py-3 border-t border-gray-100">
                             <a href="{{ route('notificaciones.index') }}" 
-                               class="block text-center text-xs text-blue-600 hover:text-blue-800 font-medium">
+                               class="block w-full text-center py-2 px-3 bg-[#9d2449] hover:bg-[#8a1f40] text-white text-xs font-medium rounded-lg transition-colors duration-200">
                                 Ver todas las notificaciones
                             </a>
                         </div>
@@ -189,14 +240,14 @@
                     notificaciones: [], 
                     count: 0,
                     loading: false,
+                    
                     async loadNotifications() {
                         this.loading = true;
                         try {
-                            // Cargar todas las notificaciones recientes (leídas y no leídas)
                             const response = await fetch('{{ route('notificaciones.recientes-dropdown') }}');
                             const data = await response.json();
                             this.notificaciones = data.notificaciones || [];
-                            this.count = data.conteo_no_leidas || 0; // Solo contar las no leídas
+                            this.count = data.conteo_no_leidas || 0;
                         } catch (error) {
                             console.error('Error loading notifications:', error);
                             this.notificaciones = [];
@@ -205,102 +256,141 @@
                             this.loading = false;
                         }
                     },
-                    async markAsReadAndOpen() {
-                        if (!this.open) {
-                            // Al abrir, cargar notificaciones
-                            await this.loadNotifications();
-                            // Marcar las no leídas como leídas
-                            const unreadNotifications = (this.notificaciones || []).filter(n => !n.leida);
-                            if (unreadNotifications.length > 0) {
-                                try {
-                                    const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
-                                        }
-                                    });
-                                    const result = await response.json();
-                                    // Actualizar contador
-                                    this.count = result.conteo_restante || 0;
-                                    // Actualizar el estado de las notificaciones localmente
-                                    (this.notificaciones || []).forEach(notif => {
-                                        if (!notif.leida) notif.leida = true;
-                                    });
-                                } catch (error) {
-                                    console.error('Error marking notifications as read:', error);
-                                }
+                    
+                                    async toggleNotifications() {
+                    if (!this.open) {
+                        // Al abrir, cargar notificaciones y marcar como leídas
+                        await this.loadNotifications();
+                        await this.markNotificationsAsRead();
+                    }
+                    this.open = !this.open;
+                },
+                    
+                    async markNotificationsAsRead() {
+                        const unreadNotifications = (this.notificaciones || []).filter(n => !n.leida);
+                        if (unreadNotifications.length > 0) {
+                            try {
+                                const response = await fetch('{{ route('notificaciones.marcar-vistas-leidas') }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+                                    }
+                                });
+                                const result = await response.json();
+                                this.count = 0;
+                                // Actualizar estado local
+                                (this.notificaciones || []).forEach(notif => {
+                                    if (!notif.leida) notif.leida = true;
+                                });
+                            } catch (error) {
+                                console.error('Error marking notifications as read:', error);
                             }
                         }
-                        this.open = !this.open;
+                    },
+                    
+                    formatTimeAgo(dateString) {
+                        if (!dateString) return 'Reciente';
+                        
+                        const now = new Date();
+                        const date = new Date(dateString);
+                        const diffInSeconds = Math.floor((now - date) / 1000);
+                        
+                        if (diffInSeconds < 60) {
+                            return 'Hace un momento';
+                        } else if (diffInSeconds < 3600) {
+                            const minutes = Math.floor(diffInSeconds / 60);
+                            return `Hace ${minutes} min`;
+                        } else if (diffInSeconds < 86400) {
+                            const hours = Math.floor(diffInSeconds / 3600);
+                            return `Hace ${hours} h`;
+                        } else if (diffInSeconds < 604800) {
+                            const days = Math.floor(diffInSeconds / 86400);
+                            return `Hace ${days} día${days > 1 ? 's' : ''}`;
+                        } else if (diffInSeconds < 2419200) {
+                            const weeks = Math.floor(diffInSeconds / 604800);
+                            return `Hace ${weeks} semana${weeks > 1 ? 's' : ''}`;
+                        } else {
+                            const months = Math.floor(diffInSeconds / 2419200);
+                            return `Hace ${months} mes${months > 1 ? 'es' : ''}`;
+                        }
                     }
                 }" x-init="loadNotifications()">
-                    <button @click="markAsReadAndOpen()" 
-                            class="relative p-2 text-primary hover:text-primary-dark hover:bg-primary/10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    
+                    <button @click="toggleNotifications()" 
+                            class="relative p-3 text-gray-600 hover:text-[#9d2449] hover:bg-gray-50 rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#9d2449]/20 group">
                         <span class="sr-only">Ver notificaciones</span>
-                        <!-- Ícono de campana (Heroicons Bell Outline) -->
-                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
+                        <svg class="w-6 h-6 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z"/>
                         </svg>
-                        <!-- Badge de contador -->
+                        <!-- Badge contador elegante -->
                         <span x-show="count > 0" 
                               x-text="count > 99 ? '99+' : count"
-                              class="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold px-1 shadow-sm">
+                              class="absolute -top-1 -right-1 min-w-[20px] h-[20px] bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full flex items-center justify-center font-semibold shadow-lg animate-pulse">
                         </span>
                     </button>
 
-                    <!-- Dropdown de notificaciones -->
+                    <!-- Panel de notificaciones elegante -->
                     <div x-show="open" 
                          @click.away="open = false"
-                         x-transition:enter="transition ease-out duration-200"
-                         x-transition:enter-start="opacity-0 scale-95"
-                         x-transition:enter-end="opacity-100 scale-100"
-                         x-transition:leave="transition ease-in duration-150"
-                         x-transition:leave-start="opacity-100 scale-100"
-                         x-transition:leave-end="opacity-0 scale-95"
-                         class="origin-top-right absolute right-0 mt-3 w-80 rounded-xl shadow-xl bg-white ring-1 ring-gray-200 focus:outline-none z-50 overflow-hidden"
+                         x-transition:enter="transition ease-out duration-300"
+                         x-transition:enter-start="opacity-0 transform scale-95 translate-y-2"
+                         x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-200"
+                         x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 transform scale-95 translate-y-2"
+                         class="absolute right-0 mt-4 w-96 bg-white rounded-2xl shadow-2xl ring-1 ring-black/5 z-50 overflow-hidden"
                          style="display: none;">
                         
-                        <!-- Header -->
-                        <div class="px-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+                        <!-- Header elegante -->
+                        <div class="bg-gradient-to-r from-[#9d2449] to-[#8a1f40] px-6 py-4">
                             <div class="flex items-center justify-between">
-                                <h3 class="text-sm font-semibold text-gray-900">Notificaciones</h3>
-                                <a href="{{ route('notificaciones.index') }}" 
-                                   class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                                    Ver todas
-                                </a>
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-white/20 rounded-lg">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                        </svg>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-white">Notificaciones</h3>
+                                </div>
+                                <div class="text-xs text-white/80 font-medium">
+                                    Al abrir se marcan como leídas
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Lista de notificaciones -->
+                        <!-- Contenido -->
                         <div class="max-h-96 overflow-y-auto">
+                            <!-- Estado de carga -->
                             <template x-if="loading">
-                                <div class="px-4 py-8 text-center">
-                                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                                    <p class="text-sm text-gray-500 mt-2">Cargando notificaciones...</p>
+                                <div class="flex flex-col items-center justify-center py-12">
+                                    <div class="w-8 h-8 border-3 border-[#9d2449]/20 border-t-[#9d2449] rounded-full animate-spin"></div>
+                                    <p class="text-sm text-gray-500 mt-3">Cargando notificaciones...</p>
                                 </div>
                             </template>
 
+                            <!-- Sin notificaciones -->
                             <template x-if="!loading && (!notificaciones || notificaciones.length === 0)">
-                                <div class="px-4 py-8 text-center">
-                                    <!-- Ícono de campana (Heroicons Bell Outline) -->
-                                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                                              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
-                                    </svg>
-                                    <p class="text-sm text-gray-500">No tienes notificaciones</p>
+                                <div class="flex flex-col items-center justify-center py-12">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z"/>
+                                        </svg>
+                                    </div>
+                                    <h4 class="text-sm font-medium text-gray-900 mb-1">Todo al día</h4>
+                                    <p class="text-sm text-gray-500">No tienes notificaciones pendientes</p>
                                 </div>
                             </template>
 
+                            <!-- Lista de notificaciones -->
                             <div class="divide-y divide-gray-100">
-                                                                 <template x-for="notificacion in (notificaciones || []).slice(0, 7)" :key="notificacion.id">
-                                     <div class="px-4 py-3 hover:bg-gray-50 transition-colors duration-150"
-                                          :class="notificacion.leida ? 'bg-gray-50/30 opacity-75' : 'bg-blue-50/30'">
+                                <template x-for="notificacion in (notificaciones || []).slice(0, 6)" :key="notificacion.id">
+                                    <div class="p-4 hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                                         :class="!notificacion.leida ? 'bg-blue-50/50' : ''">
                                         <div class="flex items-start space-x-3">
-                                            <!-- Icono según tipo -->
-                                            <div class="flex-shrink-0 mt-0.5">
-                                                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                                            <!-- Icono de tipo -->
+                                            <div class="flex-shrink-0 mt-1">
+                                                <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm"
                                                      :class="{
                                                          'bg-emerald-100 text-emerald-600': notificacion.tipo === 'exito',
                                                          'bg-amber-100 text-amber-600': notificacion.tipo === 'advertencia',
@@ -309,49 +399,30 @@
                                                          'bg-purple-100 text-purple-600': notificacion.tipo === 'Cita',
                                                          'bg-gray-100 text-gray-600': notificacion.tipo === 'informativo'
                                                      }">
-                                                    <!-- Icono de éxito -->
-                                                    <svg x-show="notificacion.tipo === 'exito'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <!-- Icono de error -->
-                                                    <svg x-show="notificacion.tipo === 'error'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <!-- Icono de advertencia -->
-                                                    <svg x-show="notificacion.tipo === 'advertencia'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-.993.883L9 6v3a1 1 0 001.993.117L11 9V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <!-- Icono de trámite -->
-                                                    <svg x-show="notificacion.tipo === 'Tramite'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <!-- Icono de cita -->
-                                                    <svg x-show="notificacion.tipo === 'Cita'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                                                    </svg>
-                                                    <!-- Icono informativo -->
-                                                    <svg x-show="notificacion.tipo === 'informativo'" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <circle cx="10" cy="10" r="6"/>
                                                     </svg>
                                                 </div>
                                             </div>
 
-                                            <!-- Contenido -->
+                                            <!-- Contenido de la notificación -->
                                             <div class="flex-1 min-w-0">
-                                                <div class="flex items-start justify-between">
-                                                    <div class="flex-1">
-                                                        <div class="flex items-start justify-between">
-                                                            <p class="text-sm font-medium text-gray-900 truncate" x-text="notificacion.titulo || 'Sin título'"></p>
-                                                            <!-- Indicador de no leída -->
-                                                            <div x-show="!notificacion.leida" class="flex-shrink-0 ml-2">
-                                                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                                            </div>
-                                                        </div>
-                                                                                                                 <p class="text-xs text-gray-600 line-clamp-2 mt-1" x-text="notificacion.mensaje || 'Sin mensaje'"></p>
-                                                        <div class="flex items-center mt-2 space-x-2">
-                                                            <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada || 'Reciente'"></span>
-                                                            <span x-show="notificacion.leida" class="text-xs text-gray-400">• Leída</span>
-                                                        </div>
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h4 class="text-sm font-semibold text-gray-900 truncate" x-text="notificacion.titulo || 'Notificación'"></h4>
+                                                    <div x-show="!notificacion.leida" class="flex-shrink-0 ml-2">
+                                                        <div class="w-2.5 h-2.5 bg-[#9d2449] rounded-full"></div>
+                                                    </div>
+                                                </div>
+                                                <p class="text-sm text-gray-600 line-clamp-2 mb-2" x-text="notificacion.mensaje || 'Sin mensaje'"></p>
+                                                <div class="flex items-center justify-between mt-2">
+                                                    <div class="flex items-center text-xs text-gray-500">
+                                                        <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                        </svg>
+                                                        <span x-text="formatTimeAgo(notificacion.created_at)" class="font-medium"></span>
+                                                    </div>
+                                                    <div x-show="!notificacion.leida" class="px-2 py-0.5 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-semibold rounded-full">
+                                                        Nueva
                                                     </div>
                                                 </div>
                                             </div>
@@ -362,10 +433,10 @@
                         </div>
 
                         <!-- Footer -->
-                                                    <template x-if="notificaciones && notificaciones.length > 0">
-                            <div class="px-4 py-3 bg-gray-50 border-t border-gray-100">
+                        <template x-if="notificaciones && notificaciones.length > 0">
+                            <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
                                 <a href="{{ route('notificaciones.index') }}" 
-                                   class="block text-center text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                   class="block w-full text-center py-2 px-4 bg-[#9d2449] hover:bg-[#8a1f40] text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                     Ver todas las notificaciones
                                 </a>
                             </div>

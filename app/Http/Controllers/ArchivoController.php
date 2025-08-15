@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Archivo;
 use App\Models\CatalogoArchivo;
 use App\Models\Tramite;
+use App\Services\Tramites\ArchivosService;
 use App\Support\ArchivosValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -67,13 +68,9 @@ class ArchivoController extends Controller
                 ]);
             });
 
-            return redirect()
-                ->route('archivos.index')
-                ->with('success', 'Catálogo de archivo creado exitosamente.');
+            return redirect()->route('archivos.index')->with('success', 'Catálogo de archivo creado exitosamente.');
         } catch (\Throwable $e) {
-            return back()
-                ->with('error', 'Error al crear el catálogo de archivo: ' . $e->getMessage())
-                ->withInput();
+            return back()->with('error', 'Error al crear el catálogo de archivo: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -108,13 +105,9 @@ class ArchivoController extends Controller
                 ]);
             });
 
-            return redirect()
-                ->route('archivos.index')
-                ->with('success', 'Catálogo de archivo actualizado exitosamente.');
+            return redirect()->route('archivos.index')->with('success', 'Catálogo de archivo actualizado exitosamente.');
         } catch (\Throwable $e) {
-            return back()
-                ->with('error', 'Error al actualizar el catálogo de archivo: ' . $e->getMessage())
-                ->withInput();
+            return back()->with('error', 'Error al actualizar el catálogo de archivo: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -128,14 +121,9 @@ class ArchivoController extends Controller
                 $archivo->delete();
             });
 
-            return redirect()
-                ->route('archivos.index')
-                ->with('success', 'Catálogo de archivo eliminado exitosamente.');
+            return redirect()->route('archivos.index')->with('success', 'Catálogo de archivo eliminado exitosamente.');
         } catch (\Throwable $e) {
-            $message = $e->getCode() === 400
-                ? $e->getMessage()
-                : 'Error al eliminar el catálogo de archivo: ' . $e->getMessage();
-
+            $message = $e->getCode() === 400 ? $e->getMessage() : 'Error al eliminar el catálogo de archivo: ' . $e->getMessage();
             return back()->with('error', $message);
         }
     }
@@ -143,27 +131,27 @@ class ArchivoController extends Controller
     public function updateStatus(Request $request, int $archivoId)
     {
         $data = $request->validate([
-            'status'             => 'required|in:Pendiente,Aprobado,Rechazado',
-            'comentario_revision'=> 'nullable|string|max:500',
+            'status'              => 'required|in:Pendiente,Aprobado,Rechazado',
+            'comentario_revision' => 'nullable|string|max:500',
         ]);
 
         try {
             $archivo = Archivo::findOrFail($archivoId);
 
             $archivo->update([
-                'status'             => $data['status'],
-                'comentario_revision'=> $data['comentario_revision'] ?? null,
-                'revisado_por'       => auth()->id(),
-                'fecha_revision'     => now(),
+                'status'              => $data['status'],
+                'comentario_revision' => $data['comentario_revision'] ?? null,
+                'revisado_por'        => auth()->id(),
+                'fecha_revision'      => now(),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Status del archivo actualizado correctamente',
                 'data'    => [
-                    'status'             => $archivo->status,
-                    'comentario_revision'=> $archivo->comentario_revision,
-                    'fecha_revision'     => $archivo->fecha_revision,
+                    'status'              => $archivo->status,
+                    'comentario_revision' => $archivo->comentario_revision,
+                    'fecha_revision'      => $archivo->fecha_revision,
                 ],
             ]);
         } catch (\Throwable $e) {
@@ -202,9 +190,9 @@ class ArchivoController extends Controller
         $maxKb           = ArchivosValidation::maximoKbPorTipo($tipoCatalogo);
 
         $data = $request->validate([
-            'archivo'            => 'required|file|mimes:' . $mimes . '|max:' . $maxKb,
-            'catalogo_archivo_id'=> 'required|exists:catalogo_archivos,id',
-            'tramite_id'         => 'required|exists:tramites,id',
+            'archivo'             => 'required|file|mimes:' . $mimes . '|max:' . $maxKb,
+            'catalogo_archivo_id' => 'required|exists:catalogo_archivos,id',
+            'tramite_id'          => 'required|exists:tramites,id',
         ]);
 
         try {
@@ -224,25 +212,20 @@ class ArchivoController extends Controller
                     $archivoExistente->delete();
                 }
 
-                $extension    = strtolower($file->getClientOriginalExtension());
-                $nombreUnico  = 'doc_' . $tramiteId . '_' . $catalogoId . '_' . (string) Str::uuid() . '.' . $extension;
-                $rutaRelativa = 'tramites/' . $tramiteId . '/' . $nombreUnico;
+                $archivosService = app(ArchivosService::class);
+                $registro = $archivosService->guardarArchivoCorreccion(
+                    Tramite::findOrFail($tramiteId),
+                    $file,
+                    $catalogoId,
+                    'Aprobado'
+                );
 
-                Storage::disk('local')->putFileAs('tramites/' . $tramiteId, $file, $nombreUnico);
-
-                return Archivo::create([
-                    'tramite_id'          => $tramiteId,
-                    'proveedor_id'        => auth()->user()->proveedor_id ?? 1,
-                    'catalogo_archivo_id' => $catalogoId,
-                    'nombre_original'     => $file->getClientOriginalName(),
-                    'nombre_archivo'      => $nombreUnico,
-                    'ruta'                => $rutaRelativa,
-                    'extension'           => $extension,
-                    'tamaño'              => $file->getSize(),
-                    'status'              => 'Aprobado',
+                $registro->update([
                     'comentario_revision' => 'Archivo cargado y validado automáticamente',
                     'revisado_por'        => auth()->id(),
                 ]);
+
+                return $registro;
             });
 
             return response()->json([

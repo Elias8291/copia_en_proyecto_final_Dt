@@ -121,22 +121,15 @@ class RevisionController extends Controller
 
             // Autorización básica: dueño del trámite o roles de revisión/administración
             $user = auth()->user();
-            $isOwner = $user && $user->relationLoaded('proveedor')
-                ? optional($user->proveedor)->id === optional($archivo->tramite)->proveedor_id
-                : (method_exists($user, 'proveedor') && optional($user->proveedor)->id === optional($archivo->tramite)->proveedor_id);
+            $tramite = $archivo->tramite;
+            $userProveedorId = $user && method_exists($user, 'proveedor') && $user->proveedor ? $user->proveedor->id : null;
+            $tramiteProveedorId = $tramite ? $tramite->proveedor_id : null;
+            $isOwner = $userProveedorId !== null && $tramiteProveedorId !== null && $userProveedorId === $tramiteProveedorId;
+            $hasPrivilegedRole = $user && $user->hasAnyRole([
+                'Super Administrador','Administrador','Revisor Digital','Revisor Presencial','Revisor Domiciliario'
+            ]);
 
-            $isReviewer = $user && (
-                $user->hasRole('Revisor Digital') ||
-                $user->hasRole('Revisor Presencial') ||
-                $user->hasRole('Revisor Domiciliario')
-            );
-
-            $isAdmin = $user && (
-                $user->hasRole('Super Administrador') ||
-                $user->hasRole('Administrador')
-            );
-
-            if (!($isOwner || $isReviewer || $isAdmin)) {
+            if (!($isOwner || $hasPrivilegedRole)) {
                 return response('No autorizado para ver este archivo', 403);
             }
             
@@ -158,15 +151,40 @@ class RevisionController extends Controller
                 return response("Archivo NO encontrado en ninguna ubicación", 404);
             }
             
-            // Servir desde almacenamiento PRIVADO de forma segura
-            $mimeType = Storage::mimeType($rutaCorrecta) ?: 'application/octet-stream';
-            $stream = Storage::readStream($rutaCorrecta);
-            if (!$stream) {
-                return response('No se pudo abrir el archivo', 404);
+            // Servir desde almacenamiento PRIVADO de forma segura (descifrando)
+            $ciphertext = Storage::get($rutaCorrecta);
+            if ($ciphertext === false || $ciphertext === null) {
+                return response('No se pudo leer el archivo', 404);
             }
-            return response()->stream(function() use ($stream) {
-                fpassthru($stream);
-            }, 200, [
+
+            try {
+                $plaintext = decrypt($ciphertext);
+            } catch (\Throwable $e) {
+                return response('No se pudo descifrar el archivo', 500);
+            }
+
+            // Determinar MIME por extensión almacenada
+            $ext = strtolower(pathinfo($archivo->nombre_archivo, PATHINFO_EXTENSION));
+            $mimeMap = [
+                'pdf' => 'application/pdf',
+                'png' => 'image/png',
+                'jpg' => 'image/jpeg',
+                'jpeg'=> 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp'=> 'image/webp',
+                'mp3' => 'audio/mpeg',
+                'wav' => 'audio/wav',
+                'ogg' => 'audio/ogg',
+                'mp4' => 'video/mp4',
+                'mov' => 'video/quicktime',
+                'avi' => 'video/x-msvideo',
+                'wmv' => 'video/x-ms-wmv',
+                'flv' => 'video/x-flv',
+                'webm'=> 'video/webm',
+            ];
+            $mimeType = $mimeMap[$ext] ?? 'application/octet-stream';
+
+            return response($plaintext, 200, [
                 'Content-Type' => $mimeType,
                 'Content-Disposition' => 'inline; filename="' . addslashes($archivo->nombre_original) . '"',
                 'X-Content-Type-Options' => 'nosniff',
