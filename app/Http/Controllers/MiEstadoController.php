@@ -77,7 +77,7 @@ class MiEstadoController extends Controller
     {
         $query = Tramite::whereHas('proveedor', function($query) use ($rfc) {
             $query->where('rfc', $rfc);
-        })->with(['proveedor', 'datosGenerales', 'direcciones', 'contactos', 'actividades', 'archivos']);
+        })->with(['proveedor', 'datosGenerales', 'direcciones', 'contactos', 'actividades', 'archivos', 'oficios']);
 
         if ($orden === 'pasados') {
             $query->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) ASC');

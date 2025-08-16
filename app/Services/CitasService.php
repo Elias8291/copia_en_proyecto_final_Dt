@@ -6,6 +6,7 @@ use App\Models\Tramite;
 use App\Models\Cita;
 use App\Models\User;
 use App\Models\DiaInhabil;
+use App\Models\RevisionTramite;
 use App\Enums\UserRole;
 use App\Enums\TramiteStatus;
 use App\Services\NotificacionService;
@@ -149,6 +150,24 @@ class CitasService
 
             // Actualizar estado del trámite a revisión domiciliaria
             $tramite->update(['status' => TramiteStatus::REVISION_DOMICILIARIA->value]);
+
+            // Crear entrada en revisiones_tramite para la revisión domiciliaria
+            $revisionDomiciliaria = RevisionTramite::create([
+                'tramite_id' => $tramiteId,
+                'tipo_revision' => 'Domiciliaria',
+                'revisor_id' => $fechaHora['revisor_id'],
+                'estado' => 'Pendiente',
+                'observaciones' => 'Revisión domiciliaria programada',
+                'fecha_inicio' => $fechaHora['datetime'],
+                'intento' => 1
+            ]);
+
+            \Log::info('Revisión domiciliaria creada en tabla revisiones_tramite', [
+                'tramite_id' => $tramiteId,
+                'revision_id' => $revisionDomiciliaria->id,
+                'revisor_id' => $fechaHora['revisor_id'],
+                'fecha_inicio' => $fechaHora['datetime']
+            ]);
 
             if ($this->notificacionService) {
                 $this->notificacionService->notificarCitaAgendada($cita);

@@ -41,12 +41,59 @@ window.addEventListener('load', function() {
             $tipoTramitePendiente = null;
             $rfc = auth()->user()->rfc ?? null;
             
+            // Variables para validación de estado del proveedor
+            $proveedorActivo = null;
+            $proveedorProximoVencer = false;
+            $mostrarActualizacion = false;
+            $mostrarInscripcion = true;
+            $mensajeEstado = 'Seleccione el tipo de trámite que desea realizar';
+            
             if ($rfc) {
                 $rfcService = app(\App\Services\RfcProveedorService::class);
+                
+                // Verificar trámite pendiente
                 $tramitePendiente = $rfcService->obtenerTramitePendiente($rfc);
                 $tieneTramitePendiente = $tramitePendiente !== null;
                 if ($tramitePendiente) {
                     $tipoTramitePendiente = strtolower($tramitePendiente->tipo_tramite);
+                }
+                
+                // Buscar proveedor activo o todos los proveedores para validar estado
+                $proveedorActivo = $rfcService->buscarProveedorActivo($rfc);
+                $proveedores = $rfcService->buscarProveedoresPorRfc($rfc);
+                
+                // Si no hay trámite pendiente, evaluar estado del proveedor
+                if (!$tieneTramitePendiente) {
+                    if ($proveedorActivo) {
+                        // Proveedor activo y vigente
+                        $mostrarActualizacion = true;
+                        $mostrarInscripcion = false;
+                        $mensajeEstado = 'Proveedor activo - puede realizar actualización de datos';
+                        
+                        // Verificar si está próximo a vencer (7 días)
+                        if ($proveedorActivo->fecha_vencimiento_padron && 
+                            $proveedorActivo->fecha_vencimiento_padron->diffInDays(now()) <= 7 &&
+                            $proveedorActivo->fecha_vencimiento_padron > now()) {
+                            $proveedorProximoVencer = true;
+                            $mensajeEstado = 'Su registro vence pronto - se recomienda renovación';
+                        }
+                    } else {
+                        // Buscar si tiene proveedores inactivos, vencidos o cancelados
+                        $tieneProveedorVencido = $proveedores->where('estado_padron', 'Vencido')->isNotEmpty();
+                        $tieneProveedorCancelado = $proveedores->where('estado_padron', 'Cancelado')->isNotEmpty();
+                        $tieneProveedorInactivo = $proveedores->where('estado_padron', 'Inactivo')->isNotEmpty();
+                        
+                        if ($tieneProveedorVencido || $tieneProveedorCancelado || $tieneProveedorInactivo) {
+                            $mostrarInscripcion = true;
+                            $mostrarActualizacion = false;
+                            $mensajeEstado = 'Debe realizar inscripción - proveedor vencido o cancelado';
+                        } else {
+                            // No tiene proveedor registrado
+                            $mostrarInscripcion = true;
+                            $mostrarActualizacion = false;
+                            $mensajeEstado = 'No tiene proveedor registrado - debe realizar inscripción';
+                        }
+                    }
                 }
             }
         @endphp
@@ -94,7 +141,7 @@ window.addEventListener('load', function() {
                             @if($tieneTramitePendiente)
                                 Tiene un trámite de {{ ucfirst($tipoTramitePendiente) }} en proceso
                             @else
-                                Seleccione el tipo de trámite que desea realizar
+                                {{ $mensajeEstado }}
                             @endif
                         </p>
                     </div>
@@ -118,6 +165,8 @@ window.addEventListener('load', function() {
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     
+                    {{-- Tarjeta de Inscripción --}}
+                    @if($mostrarInscripcion || $tieneTramitePendiente)
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 tramite-card">
                         @if($tieneTramitePendiente)
                             <div class="h-2 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
@@ -176,7 +225,60 @@ window.addEventListener('load', function() {
                             </div>
                         </div>
                     </div>
+                    @endif
 
+                    {{-- Tarjeta de Actualización de Datos --}}
+                    @if($mostrarActualizacion && !$tieneTramitePendiente)
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 tramite-card">
+                        @if($proveedorProximoVencer)
+                            <div class="h-2 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+                        @else
+                            <div class="h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                        @endif
+                        
+                        <div class="p-6">
+                            @if($proveedorProximoVencer)
+                                <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 text-amber-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <span class="text-sm font-medium text-amber-800">
+                                            Su registro vence el {{ $proveedorActivo->fecha_vencimiento_padron->format('d/m/Y') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            <div class="flex items-start space-x-4">
+                                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 flex-shrink-0 shadow-lg">
+                                    <svg class="w-6 h-6" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </div>
+                                
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">Actualización de Datos</h3>
+                                    <p class="text-gray-600 text-sm leading-relaxed">
+                                        Modifique su información registrada. Mantenga sus datos siempre actualizados para un mejor servicio.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6">
+                                <a href="{{ route('tramites.cargar-constancia', 'actualizacion') }}" 
+                                   class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                    Actualizar Datos
+                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Tarjeta de Renovación (deshabilitada por ahora) --}}
                     <div class="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden opacity-75 tramite-card">
                         <div class="h-2 bg-gradient-to-r from-gray-300 to-gray-400"></div>
                         

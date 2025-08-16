@@ -20,6 +20,9 @@ class RevisionDomiciliariaService extends RevisionService
     {
         $datos = $this->obtenerDatosRevisionBase($tramiteId);
         
+        // Cargar direcciones y coordenadas para la vista domiciliaria
+        $datos['tramite']->load(['direcciones.estado', 'direcciones.coordenada']);
+        
         // Agregar datos específicos para revisión domiciliaria
         $datos['tipoRevision'] = 'Domiciliaria';
         $datos['vistaRevision'] = 'revisiones.revision-domiciliaria';

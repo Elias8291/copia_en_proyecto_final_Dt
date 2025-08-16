@@ -247,7 +247,13 @@
                                         <h4 class="text-xl font-bold text-green-700 mb-2">Visita Programada</h4>
                                         <p class="text-2xl font-bold text-green-800 mb-4">{{ $citaAsignada->fecha_cita->format('d/m/Y H:i') }}</p>
                                         
-                                        @if($citaAsignada->asignadoA)
+                                        @if($revisorDomiciliario)
+                                            <div class="bg-white rounded-lg p-4 mb-4 border border-green-200">
+                                                <p class="text-sm text-green-700 mb-1">Le visitará:</p>
+                                                <p class="text-lg font-semibold text-green-800">{{ $revisorDomiciliario->nombre }}</p>
+                                                <p class="text-xs text-green-600">Revisor Domiciliario</p>
+                                            </div>
+                                        @elseif($citaAsignada && $citaAsignada->asignadoA)
                                             <div class="bg-white rounded-lg p-4 mb-4 border border-green-200">
                                                 <p class="text-sm text-green-700 mb-1">Le visitará:</p>
                                                 <p class="text-lg font-semibold text-green-800">{{ $citaAsignada->asignadoA->nombre }}</p>
@@ -290,24 +296,241 @@
 
 
         @else
-            <div class="bg-white rounded-xl shadow-lg border border-gray-200">
-                <div class="p-8 text-center">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
+            {{-- No hay trámites pendientes - Mostrar estado del proveedor --}}
+            @if($proveedores && $proveedores->isNotEmpty())
+                @php
+                    $proveedor = $proveedores->first();
+                    $diasRestantes = null;
+                    $requiereRenovacion = false;
+                    $requiereActualizacion = false;
+                    $requiereInscripcion = false;
+                    
+                    // Verificar si hay trámites rechazados recientes
+                    $tramiteRechazado = \App\Models\Tramite::where('proveedor_id', $proveedor->id)
+                        ->where('status', 'Rechazado')
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+                    
+                    if ($proveedor->fecha_vencimiento_padron) {
+                        $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
+                        $diasRestantes = $fechaVencimiento->diffInDays(now(), false);
+                        
+                        // Lógica ajustada según los requerimientos
+                        if ($proveedor->estado_padron === 'Activo') {
+                            // Si está activo, solo mostrar renovación/actualización 7 días antes
+                            if ($diasRestantes <= 7 && $diasRestantes >= 0) {
+                                $requiereActualizacion = true;
+                                $requiereRenovacion = true;
+                            }
+                        } elseif ($proveedor->estado_padron === 'Vencido' || $tramiteRechazado) {
+                            // Si está vencido o tiene trámite rechazado, requiere inscripción
+                            $requiereInscripcion = true;
+                        }
+                    } else {
+                        // Si no tiene fecha de vencimiento, probablemente necesite inscripción
+                        $requiereInscripcion = true;
+                    }
+                @endphp
+                
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6">
+                    <div class="bg-gradient-to-r from-[#9D2449] to-[#B91C1C] p-6 text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl font-bold text-white mb-2">Estado del Proveedor</h1>
+                        <p class="text-white/90">{{ $proveedor->razon_social }}</p>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">No hay trámites pendientes</h2>
-                    <p class="text-gray-600 mb-6">Puede iniciar un nuevo trámite desde la página principal.</p>
-                    <a href="{{ route('tramites.index') }}" 
-                       class="inline-flex items-center px-6 py-3 bg-[#9D2449] hover:bg-[#B91C1C] text-white font-semibold rounded-lg transition-colors duration-200">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
-                        Ir a Trámites
-                    </a>
+                    
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="text-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">PV Número</p>
+                                <p class="text-sm font-bold text-gray-800">{{ $proveedor->pv_numero ?? 'No asignado' }}</p>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="w-10 h-10 {{ $proveedor->estado_padron === 'Activo' ? 'bg-green-100' : ($proveedor->estado_padron === 'Vencido' ? 'bg-red-100' : 'bg-yellow-100') }} rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-5 h-5 {{ $proveedor->estado_padron === 'Activo' ? 'text-green-600' : ($proveedor->estado_padron === 'Vencido' ? 'text-red-600' : 'text-yellow-600') }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Estado</p>
+                                <p class="text-sm font-bold {{ $proveedor->estado_padron === 'Activo' ? 'text-green-800' : ($proveedor->estado_padron === 'Vencido' ? 'text-red-800' : 'text-yellow-800') }}">
+                                    {{ $proveedor->estado_padron }}
+                                </p>
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="w-10 h-10 {{ $diasRestantes !== null && $diasRestantes <= 7 ? 'bg-red-100' : 'bg-blue-100' }} rounded-lg flex items-center justify-center mx-auto mb-2">
+                                    <svg class="w-5 h-5 {{ $diasRestantes !== null && $diasRestantes <= 7 ? 'text-red-600' : 'text-blue-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Vencimiento</p>
+                                @if($proveedor->fecha_vencimiento_padron)
+                                    <p class="text-sm font-bold {{ $diasRestantes !== null && $diasRestantes <= 7 ? 'text-red-800' : 'text-gray-800' }}">
+                                        {{ \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron)->format('d/m/Y') }}
+                                    </p>
+                                    @if($diasRestantes !== null)
+                                        <p class="text-xs {{ $diasRestantes <= 7 ? 'text-red-600' : 'text-gray-500' }}">
+                                            {{ $diasRestantes > 0 ? $diasRestantes . ' días restantes' : ($diasRestantes == 0 ? 'Vence hoy' : 'Vencido hace ' . abs($diasRestantes) . ' días') }}
+                                        </p>
+                                    @endif
+                                @else
+                                    <p class="text-sm font-bold text-gray-800">No definida</p>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        {{-- Alertas y acciones según el estado --}}
+                        @if($requiereActualizacion && $requiereRenovacion)
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                                    <p class="text-sm text-red-700 font-medium">
+                                        <strong>¡Acción requerida!</strong> Su registro vence en {{ $diasRestantes <= 0 ? 'menos de 24 horas' : $diasRestantes . ' días' }}
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <a href="{{ route('tramites.create', ['tipo' => 'actualizacion']) }}" 
+                                       class="inline-flex items-center justify-center px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                        </svg>
+                                        Actualización
+                                    </a>
+                                    <a href="{{ route('tramites.create', ['tipo' => 'renovacion']) }}" 
+                                       class="inline-flex items-center justify-center px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                        </svg>
+                                        Renovación
+                                    </a>
+                                </div>
+                            </div>
+                        @elseif($requiereInscripcion)
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                    <p class="text-sm text-yellow-700 font-medium">
+                                        @if($tramiteRechazado)
+                                            <strong>Trámite rechazado:</strong> Debe realizar una nueva inscripción
+                                        @elseif($proveedor->estado_padron === 'Vencido')
+                                            <strong>Registro vencido:</strong> Debe realizar una nueva inscripción
+                                        @else
+                                            <strong>Inscripción requerida:</strong> Complete su registro como proveedor
+                                        @endif
+                                    </p>
+                                </div>
+                                @if($tramiteRechazado)
+                                    <div class="bg-white border border-yellow-200 rounded-lg p-3 mt-3">
+                                        <p class="text-xs text-yellow-700 mb-2"><strong>Motivo del rechazo:</strong></p>
+                                        <p class="text-xs text-yellow-600">{{ $tramiteRechazado->observaciones ?? 'No se especificaron observaciones' }}</p>
+                                    </div>
+                                @endif
+                                <div class="mt-3 text-center">
+                                    <a href="{{ route('tramites.create', ['tipo' => 'inscripcion']) }}" 
+                                       class="inline-flex items-center px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                        </svg>
+                                        Nueva Inscripción
+                                    </a>
+                                </div>
+                            </div>
+                        @else
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <p class="text-sm text-green-700 font-medium">
+                                        <strong>Estado óptimo:</strong> Su registro está activo y en orden
+                                    </p>
+                                </div>
+                                @if($proveedor->estado_padron === 'Activo' && $diasRestantes > 7)
+                                    <div class="mt-2">
+                                        <p class="text-xs text-green-600">
+                                            Las opciones de renovación y actualización estarán disponibles 7 días antes del vencimiento
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
                 </div>
-            </div>
+            @else
+                {{-- Usuario sin proveedor asociado --}}
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+                    <div class="bg-gradient-to-r from-[#9D2449] to-[#B91C1C] p-6 text-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl font-bold text-white mb-2">Bienvenido al Sistema</h1>
+                        <p class="text-white/90">Complete su registro como proveedor</p>
+                    </div>
+                    
+                    <div class="p-8 text-center">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <p class="text-sm text-blue-700 font-medium">
+                                    <strong>Inscripción requerida:</strong> Debe registrarse como proveedor para acceder al sistema
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">¿Qué puede hacer?</h3>
+                            <ul class="text-sm text-gray-600 space-y-2 text-left max-w-md mx-auto">
+                                <li class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>Registrarse como proveedor del gobierno</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>Obtener su número PV (Proveedor Verificado)</span>
+                                </li>
+                                <li class="flex items-center space-x-2">
+                                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span>Participar en licitaciones gubernamentales</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <a href="{{ route('tramites.create', ['tipo' => 'inscripcion']) }}" 
+                           class="inline-flex items-center px-6 py-3 bg-[#9D2449] hover:bg-[#B91C1C] text-white font-semibold rounded-lg transition-colors duration-200 mb-4">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Iniciar Inscripción
+                        </a>
+                        
+                        <div class="text-center">
+                            <a href="{{ route('tramites.index') }}" 
+                               class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                </svg>
+                                Volver al Inicio
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
         @endif
 
         <div class="text-center mt-6">

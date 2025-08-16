@@ -132,6 +132,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/estado', [TramiteController::class, 'estado'])->name('estado');
         Route::get('/{tramite}/edit', [TramiteController::class, 'edit'])->name('edit');
         Route::put('/{tramite}', [TramiteController::class, 'update'])->name('update');
+        Route::get('/{tramite}/descargar-oficio', [TramiteController::class, 'descargarOficio'])->name('descargar-oficio');
         
 
     });
@@ -146,6 +147,7 @@ Route::middleware(['auth'])->group(function () {
         // Ruta para procesar revisión digital
         Route::post('/{tramite}/procesar-digital', [RevisionController::class, 'procesarRevisionDigital'])->name('procesar-digital');
         Route::post('/{tramite}/procesar-presencial', [RevisionController::class, 'procesarRevisionPresencial'])->name('procesar-presencial');
+        Route::post('/{tramite}/procesar-domiciliaria', [RevisionController::class, 'procesarRevisionDomiciliaria'])->name('procesar-domiciliaria');
         
         // Ruta para procesar asignación de PV y fechas de vigencia
         Route::post('/{tramite}/procesar-asignacion-pv', [RevisionController::class, 'procesarAsignacionPv'])->name('procesar-asignacion-pv');

@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Tramite;
 use App\Models\Archivo;
 use App\Models\SeccionRevision;
+use App\Models\RevisionTramite;
 use App\Services\RevisionService;
 use App\Services\Revisiones\RevisionDigitalService;
 use App\Services\Revisiones\RevisionPresencialService;
+use App\Services\Revisiones\RevisionDomiciliariaService;
 use App\Services\Revisiones\DecisionesFinalesService;
 use App\Services\NotificacionService;
 use Illuminate\Http\Request;
@@ -19,16 +21,19 @@ class RevisionController extends Controller
     private RevisionService $revisionService;
     private RevisionDigitalService $revisionDigitalService;
     private RevisionPresencialService $revisionPresencialService;
+    private RevisionDomiciliariaService $revisionDomiciliariaService;
 
     public function __construct(
         RevisionService $revisionService,
         RevisionDigitalService $revisionDigitalService,
         RevisionPresencialService $revisionPresencialService,
+        RevisionDomiciliariaService $revisionDomiciliariaService,
         DecisionesFinalesService $decisionesFinalesService
     ) {
         $this->revisionService = $revisionService;
         $this->revisionDigitalService = $revisionDigitalService;
         $this->revisionPresencialService = $revisionPresencialService;
+        $this->revisionDomiciliariaService = $revisionDomiciliariaService;
         $this->decisionesFinalesService = $decisionesFinalesService;
 
         // Sin middleware de permisos: acceso abierto (solo autenticación por rutas)
@@ -62,11 +67,28 @@ class RevisionController extends Controller
         $tipoRevision = $request->get('tipo_revision', 'Digital');
         $request->session()->forget(['success', 'success_title', 'success_message', 'success_accept_text', 'success_redirect']);
         
+        // Verificar si el trámite ya está en un estado final
+        $tramite = Tramite::findOrFail($tramiteId);
+        $estadosFinales = ['Aprobado', 'Rechazado', 'Cancelado'];
+        
+        if (in_array($tramite->status, $estadosFinales)) {
+            $mensaje = match($tramite->status) {
+                'Aprobado' => 'Este trámite ya ha sido aprobado.',
+                'Rechazado' => 'Este trámite ya ha sido rechazado.',
+                'Cancelado' => 'Este trámite ha sido cancelado.',
+                default => 'Este trámite ya ha sido procesado.'
+            };
+            
+            return redirect()->route('revisiones.index')->with('info', $mensaje);
+        }
+        
         if ($tipoRevision === 'Digital') {
             $ordenHistorial = $request->get('orden_historial', 'reciente');
             $datos = $this->revisionDigitalService->obtenerDatosRevisionDigital($tramiteId, $ordenHistorial);
         } elseif ($tipoRevision === 'Presencial') {
             $datos = $this->revisionPresencialService->obtenerDatosRevisionPresencial($tramiteId);
+        } elseif ($tipoRevision === 'Domiciliaria') {
+            $datos = $this->revisionDomiciliariaService->obtenerDatosRevisionDomiciliaria($tramiteId);
         } else {
             $datos = $this->revisionService->obtenerDatosRevision($tramiteId, $tipoRevision);
         }
@@ -640,6 +662,83 @@ class RevisionController extends Controller
                 'success' => false,
                 'message' => 'Error al obtener estados de revisión: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Procesar revisión domiciliaria
+     */
+    public function procesarRevisionDomiciliaria(Request $request, int $tramiteId)
+    {
+        try {
+            \Log::info('=== INICIO procesarRevisionDomiciliaria ===');
+            \Log::info('Trámite ID: ' . $tramiteId);
+            \Log::info('Request data: ' . json_encode($request->all()));
+            
+            $request->validate([
+                'decision' => 'required|in:aprobar,rechazar',
+                'observaciones' => 'required|string|max:1000',
+                'checkboxes' => 'nullable|string'
+            ]);
+
+            $tramite = Tramite::findOrFail($tramiteId);
+            \Log::info('Trámite encontrado - Status actual: ' . $tramite->status);
+            
+            // Verificar que el trámite esté en estado de revisión domiciliaria
+            if ($tramite->status !== 'Revision_Domiciliaria') {
+                \Log::warning('Trámite no está en estado Revision_Domiciliaria. Status actual: ' . $tramite->status);
+                return redirect()->back()->with('error', 'El trámite no está en estado de revisión domiciliaria. Status actual: ' . $tramite->status);
+            }
+
+            // Buscar la revisión domiciliaria pendiente o en proceso
+            $revisionDomiciliaria = RevisionTramite::where('tramite_id', $tramiteId)
+                ->where('tipo_revision', 'Domiciliaria')
+                ->whereIn('estado', ['Pendiente', 'En_Proceso'])
+                ->first();
+
+            \Log::info('Revisión domiciliaria encontrada: ' . ($revisionDomiciliaria ? 'Sí (ID: ' . $revisionDomiciliaria->id . ')' : 'No'));
+
+            if (!$revisionDomiciliaria) {
+                \Log::warning('No se encontró revisión domiciliaria pendiente o en proceso');
+                return redirect()->back()->with('error', 'No se encontró una revisión domiciliaria pendiente o en proceso para este trámite.');
+            }
+
+            // Actualizar la revisión domiciliaria
+            \Log::info('Actualizando revisión domiciliaria...');
+            $revisionDomiciliaria->update([
+                'estado' => 'Finalizada',
+                'observaciones' => $request->observaciones,
+                'fecha_fin' => now()
+            ]);
+            \Log::info('Revisión domiciliaria actualizada');
+
+            // Actualizar el status del trámite según la decisión
+            $nuevoStatus = $request->decision === 'aprobar' ? 'Aprobado' : 'Rechazado';
+            \Log::info('Actualizando status del trámite de "' . $tramite->status . '" a "' . $nuevoStatus . '"');
+            $tramite->update(['status' => $nuevoStatus]);
+            \Log::info('Status del trámite actualizado a: ' . $tramite->fresh()->status);
+
+            // Crear notificación para el solicitante
+            $notificacionService = app(NotificacionService::class);
+            if ($request->decision === 'aprobar') {
+                $notificacionService->notificarTramiteAprobado($tramite);
+            } else {
+                $notificacionService->notificarTramiteRechazado($tramite, $request->observaciones);
+            }
+
+            $mensajeExito = $request->decision === 'aprobar' 
+                ? 'Revisión domiciliaria aprobada exitosamente.'
+                : 'Revisión domiciliaria rechazada exitosamente.';
+
+            \Log::info('Proceso completado exitosamente. Redirigiendo al índice.');
+            \Log::info('=== FIN procesarRevisionDomiciliaria ===');
+            
+            return redirect()->route('revisiones.index')->with('success', $mensajeExito);
+
+        } catch (\Exception $e) {
+            \Log::error('Error al procesar revisión domiciliaria: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()->with('error', 'Error al procesar la revisión domiciliaria: ' . $e->getMessage());
         }
     }
 } 

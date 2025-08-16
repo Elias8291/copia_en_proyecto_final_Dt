@@ -440,7 +440,7 @@ class TramiteController extends Controller
         
         if ($tramitePendiente) {
             // Cargar relaciones necesarias
-            $tramitePendiente->load(['citas.asignadoA', 'revisorDigital']);
+            $tramitePendiente->load(['citas.asignadoA', 'revisorDigital', 'revisiones.revisor']);
             
             $citaAsignada = $tramitePendiente->citas()
                 ->where('estado', 'Asignada')
@@ -486,7 +486,21 @@ class TramiteController extends Controller
             }
         }
         
-        return view('tramites.estado', compact('proveedores', 'tramitePendiente', 'citaAsignada', 'rfc', 'personaResponsable', 'citaVencida', 'intentosRestantes'));
+        // Obtener revisor domiciliario si existe
+        $revisorDomiciliario = null;
+        if ($tramitePendiente && $tramitePendiente->status === 'Revision_Domiciliaria') {
+            $revisionDomiciliaria = $tramitePendiente->revisiones()
+                ->where('tipo_revision', 'Domiciliaria')
+                ->where('estado', 'Pendiente')
+                ->with('revisor')
+                ->first();
+            
+            if ($revisionDomiciliaria && $revisionDomiciliaria->revisor) {
+                $revisorDomiciliario = $revisionDomiciliaria->revisor;
+            }
+        }
+        
+        return view('tramites.estado', compact('proveedores', 'tramitePendiente', 'citaAsignada', 'rfc', 'personaResponsable', 'citaVencida', 'intentosRestantes', 'revisorDomiciliario'));
     }
 
     /**
@@ -587,6 +601,47 @@ class TramiteController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Error al corregir el trámite: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Descargar oficio de aprobación del trámite
+     */
+    public function descargarOficio($tramiteId)
+    {
+        try {
+            $tramite = \App\Models\Tramite::findOrFail($tramiteId);
+            
+            // Verificar que el trámite esté aprobado
+            if ($tramite->status !== 'Aprobado') {
+                return redirect()->back()->with('error', 'Solo se puede descargar el oficio de trámites aprobados.');
+            }
+            
+            // Verificar que el usuario tenga acceso al trámite
+            $usuario = auth()->user();
+            if ($usuario->id !== $tramite->proveedor->usuario_id && !$usuario->hasRole(['administrador', 'revisor'])) {
+                return redirect()->back()->with('error', 'No tienes permisos para descargar este oficio.');
+            }
+            
+            // Verificar que el archivo del oficio exista
+            $rutaOficio = storage_path("app/oficios/tramite_{$tramiteId}_oficio.pdf");
+            
+            if (!file_exists($rutaOficio)) {
+                return redirect()->back()->with('error', 'El oficio no se encuentra disponible. Contacte al administrador.');
+            }
+            
+            // Descargar el archivo
+            $nombreArchivo = "Oficio_Aprobacion_Tramite_{$tramiteId}.pdf";
+            
+            return response()->download($rutaOficio, $nombreArchivo, [
+                'Content-Type' => 'application/pdf',
+            ]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->back()->with('error', 'El trámite especificado no existe.');
+        } catch (\Exception $e) {
+            \Log::error('Error al descargar oficio: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al descargar el oficio: ' . $e->getMessage());
         }
     }
 } 

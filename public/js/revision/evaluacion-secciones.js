@@ -3,7 +3,6 @@ async function evaluarSeccion(seccion, estado) {
         const archivos = document.querySelectorAll('[id^="estado_archivo_"]');
         const estados = Array.from(archivos).map(el => el.textContent.trim());
         
-        // Contar archivos por estado
         const rechazados = estados.filter(estado => estado === 'Rechazado').length;
         const pendientes = estados.filter(estado => estado === 'Pendiente').length;
         
@@ -61,7 +60,6 @@ async function evaluarSeccion(seccion, estado) {
                 }`;
             }
             
-            // Mostrar mensaje sin redirigir (solo para evaluaciones de secciones)
             const mensaje = result.message || `Sección ${seccion} marcada como ${estado}`;
             if (typeof mostrarNotificacion === 'function') {
                 mostrarNotificacion(mensaje, 'success');
@@ -144,7 +142,6 @@ function mostrarError(mensaje) {
     }, 5000);
 }
 
-// Función global para mostrar notificación y redirigir
 function mostrarNotificacionYRedirigir(mensaje, tipo = 'success', delay = 1500) {
     if (typeof mostrarNotificacion === 'function') {
         mostrarNotificacion(mensaje, tipo);
@@ -154,8 +151,6 @@ function mostrarNotificacionYRedirigir(mensaje, tipo = 'success', delay = 1500) 
         window.location.href = '/revisiones';
     }, delay);
 }
-
-// Hacer la función disponible globalmente
 window.mostrarNotificacionYRedirigir = mostrarNotificacionYRedirigir;
 
 document.addEventListener('DOMContentLoaded', async function() {

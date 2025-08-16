@@ -3,15 +3,16 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\{Proveedor, Tramite, User, DatoGeneral, Direccion, Contacto};
+use App\Models\{Proveedor, Tramite, User, DatoGeneral, Direccion, Contacto, Coordenada};
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class ProveedoresPruebaSeeder extends Seeder
 {
     public function run(): void
     {
-        $rfc = 'EMP123456789';
+        $rfc = 'TRO240815001';
 
         if (Proveedor::where('rfc', $rfc)->exists()) {
             $this->command->warn("⚠️  Ya existen proveedores con RFC {$rfc}");
@@ -19,20 +20,27 @@ class ProveedoresPruebaSeeder extends Seeder
             return;
         }
 
+        // Crear usuario y asignar rol proveedor
         $usuario = User::create([
-            'correo' => 'proveedor.prueba.' . time() . '@example.com',
-            'nombre' => 'Proveedor de Prueba',
+            'correo' => 'travel.oaxaca@example.com',
+            'nombre' => 'Travel Oaxaca S.A. de C.V.',
             'password' => bcrypt('password123'),
             'rfc' => $rfc,
             'verification' => 1,
         ]);
+
+        // Asignar rol proveedor
+        $rolProveedor = Role::where('name', 'proveedor')->first();
+        if ($rolProveedor) {
+            $usuario->assignRole($rolProveedor);
+        }
 
         $provHistorico = Proveedor::create([
             'usuario_id' => $usuario->id,
             'pv_numero' => 'PV001-2021',
             'token_publico' => Str::random(32),
             'rfc' => $rfc,
-            'razon_social' => 'Empresa de Prueba S.A. de C.V. (Histórico)',
+            'razon_social' => 'Travel Oaxca S.A.C.V',
             'tipo_persona' => 'Moral',
             'estado_padron' => 'Vencido',
             'fecha_alta_padron' => Carbon::create(2021, 1, 15),
@@ -58,7 +66,7 @@ class ProveedoresPruebaSeeder extends Seeder
             'pv_numero' => 'PV001-2023',
             'token_publico' => Str::random(32),
             'rfc' => $rfc,
-            'razon_social' => 'Empresa de Prueba S.A. de C.V.',
+            'razon_social' => 'Travel Oxaca s.a.c.v',
             'tipo_persona' => 'Moral',
             'estado_padron' => 'Activo',
             'fecha_alta_padron' => Carbon::create(2023, 1, 15),
@@ -102,34 +110,41 @@ class ProveedoresPruebaSeeder extends Seeder
             'proveedor_id' => $proveedor->id,
             'curp' => $proveedor->tipo_persona === 'Moral' ? null : 'CURP123456HDFXXX09',
             'razon_social' => $proveedor->razon_social,
-            'pagina_web' => 'https://empresaprueba.com',
-            'telefono' => '555-0123-456',
+            'pagina_web' => 'https://traveloaxaca.com.mx',
+            'telefono' => '951-516-7890',
             'status' => $tramite->status === 'Aprobado' ? 'vigente' : 'pendiente',
         ]);
 
-        Direccion::create([
+        // Crear coordenada GPS para Oaxaca
+        $coordenada = Coordenada::create([
+            'latitud' => 17.0732,
+            'longitud' => -96.7266,
+        ]);
+
+        $direccion = Direccion::create([
             'proveedor_id' => $proveedor->id,
             'tramite_id' => $tramite->id,
-            'calle' => 'Av. Reforma',
-            'entre_calle' => 'Calle Norte',
-            'y_calle' => 'Calle Sur',
-            'numero_exterior' => '123',
-            'numero_interior' => 'A',
-            'colonia' => 'Centro',
-            'codigo_postal' => '06000',
-            'municipio' => 'Cuauhtémoc',
+            'calle' => 'Av. Independencia',
+            'entre_calle' => 'Calle García Vigil',
+            'y_calle' => 'Calle Macedonio Alcalá',
+            'numero_exterior' => '502',
+            'numero_interior' => 'Local 3',
+            'colonia' => 'Centro Histórico',
+            'codigo_postal' => '68000',
+            'municipio' => 'Oaxaca de Juárez',
             'asentamiento' => 'Centro Histórico',
-            'estado_id' => 1,
+            'coordenada_id' => $coordenada->id,
+            'estado_id' => 20, // Oaxaca
             'status' => $tramite->status === 'Aprobado' ? 'vigente' : 'pendiente',
         ]);
 
         Contacto::create([
             'proveedor_id' => $proveedor->id,
             'tramite_id' => $tramite->id,
-            'nombre_contacto' => 'Juan Carlos Pérez García',
-            'cargo' => 'Director General',
-            'telefono' => '555-0123-456',
-            'correo_electronico' => "contacto{$anio}@empresaprueba.com",
+            'nombre_contacto' => 'María Elena Ruiz Hernández',
+            'cargo' => 'Directora de Operaciones Turísticas',
+            'telefono' => '951-516-7890',
+            'correo_electronico' => "contacto{$anio}@traveloaxaca.com.mx",
             'status' => $tramite->status === 'Aprobado' ? 'vigente' : 'pendiente',
         ]);
     }
