@@ -23,7 +23,6 @@
 
 @section('content')
 <script>
-// Script inline para prevenir FOUC - se ejecuta inmediatamente
 document.documentElement.style.visibility = 'hidden';
 window.addEventListener('load', function() {
     document.documentElement.style.visibility = 'visible';
@@ -219,7 +218,6 @@ window.addEventListener('load', function() {
                                     </div>
                                 </div>
 
-                                <!-- 3. Sectores y Actividades -->
                                 <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
                                     <div class="flex items-center gap-3 mb-4">
                                         <div class="p-2 bg-gray-600 rounded-lg">
@@ -240,12 +238,9 @@ window.addEventListener('load', function() {
                                     </div>
                                 </div>
 
-                            </div>
-
-                            <!-- COLUMNA DERECHA -->
+                            </div>      
                             <div class="space-y-5">
 
-                                <!-- 1. Historial de Trámites -->
                                 <div class="bg-white rounded-lg p-5 border border-gray-200">
                                     <div class="flex items-center gap-3 mb-4">
                                         <div class="p-2 bg-[#9d2449] rounded-lg">
@@ -267,7 +262,6 @@ window.addEventListener('load', function() {
                                     </div>
                                     </div>
 
-                                <!-- 2. Filtros Específicos -->
                                 <div class="bg-gray-50 rounded-lg p-5 border border-gray-200">
                                     <div class="flex items-center gap-3 mb-4">
                                         <div class="p-2 bg-gray-600 rounded-lg">
@@ -302,9 +296,7 @@ window.addEventListener('load', function() {
                                             <p class="text-sm text-gray-600">Busca proveedores que realizaron un tipo específico de trámite en un año determinado</p>
                                     </div>
                                 </div>
-                            </div>
-
-                                <!-- 3. Filtros Trimestrales -->
+                            </div>  
                                 <div class="bg-white rounded-lg p-5 border border-gray-200">
                                     <div class="flex items-center gap-3 mb-4">
                                         <div class="p-2 bg-[#9d2449] rounded-lg">
@@ -345,7 +337,6 @@ window.addEventListener('load', function() {
                         </div>
                     </div>
                     
-                    <!-- Botones de Filtros - Fuera del contenedor pero dentro del formulario -->
                     <div class="pt-4 mt-4">
                         <div class="flex justify-center gap-2">
                             <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500/30 transition-all duration-200 shadow-sm">
@@ -366,7 +357,6 @@ window.addEventListener('load', function() {
             </form>
         </div>
 
-        <!-- Sección de Resultados -->
         <div class="p-3 sm:p-4 md:p-5">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div class="flex items-center gap-2 sm:gap-3">
@@ -384,7 +374,6 @@ window.addEventListener('load', function() {
                     </p>
                 </div>
                 <div class="flex items-center gap-1 sm:gap-2 md:gap-3">
-                    <!-- Botón Exportar Excel -->
                     <button type="button" onclick="openExportModal()" 
                             class="inline-flex items-center gap-1 sm:gap-2 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-2.5 bg-green-600 text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-green-700 transition-all duration-200 shadow-sm hover:shadow-md"
                             title="Configurar y Exportar a Excel">
@@ -417,7 +406,6 @@ window.addEventListener('load', function() {
             </div>
         </div>
 
-        <!-- Tabla de Proveedores -->
         <div class="border-t border-gray-100 overflow-hidden hidden xl:block">
             <div class="overflow-x-auto table-container">
                 <table class="w-full">
@@ -443,6 +431,21 @@ window.addEventListener('load', function() {
                                    class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
                                     <span>RFC</span>
                                     @if(request('orden_por') == 'rfc')
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                            @if(request('direccion') == 'asc')
+                                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                                            @else
+                                                <path d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z"/>
+                                            @endif
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-2 sm:px-3 md:px-4 py-2 sm:py-3 text-left">
+                                <a href="{{ request()->fullUrlWithQuery(['orden_por' => 'pv_numero', 'direccion' => request('orden_por') == 'pv_numero' && request('direccion') == 'asc' ? 'desc' : 'asc']) }}" 
+                                   class="flex items-center space-x-1 text-xs sm:text-sm font-semibold text-gray-700 uppercase tracking-wider hover:text-[#9d2449] transition-colors">
+                                    <span>PV</span>
+                                    @if(request('orden_por') == 'pv_numero')
                                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                             @if(request('direccion') == 'asc')
                                                 <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
@@ -572,7 +575,26 @@ window.addEventListener('load', function() {
                                 </div>
                             </td>
 
-                            <!-- Estado -->
+                            <!-- PV -->
+                            <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
+                                @if($proveedor->pv_numero)
+                                    <div class="flex items-center space-x-1.5">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <span class="text-gray-700 font-semibold text-xs sm:text-sm md:text-base">PV-{{ $proveedor->pv_numero }}</span>
+                                    </div>
+                                @else
+                                    <div class="flex items-center space-x-1.5">
+                                        <svg class="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                        <span class="text-gray-500 text-xs sm:text-sm md:text-base">Sin asignar</span>
+                                    </div>
+                                @endif
+                            </td>
+
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
                                 @switch($proveedor->estado_padron)
                                     @case('Activo')
@@ -609,7 +631,6 @@ window.addEventListener('load', function() {
                                 @endswitch
                             </td>
 
-                                                        <!-- Fecha Alta Padrón -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
                                 @if($proveedor->fecha_alta_padron)
                                     <div class="flex items-center space-x-1.5">
@@ -628,7 +649,6 @@ window.addEventListener('load', function() {
                                 @endif
                             </td>
                             
-                            <!-- Vencimiento -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
                                 @if($proveedor->fecha_vencimiento_padron)
                                     @php
@@ -657,7 +677,6 @@ window.addEventListener('load', function() {
                                 @endif
                             </td>
 
-                            <!-- Fecha Inicio (calculada) -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
                                 @if($proveedor->fecha_vencimiento_padron)
                                     @php
@@ -682,8 +701,6 @@ window.addEventListener('load', function() {
                                     </div>
                                 @endif
                             </td>
-
-                            <!-- Tipo de Persona -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
                                 @if($proveedor->tipo_persona)
                                     <div class="flex items-center space-x-2">
@@ -715,7 +732,6 @@ window.addEventListener('load', function() {
                                 @endif
                             </td>
 
-                            <!-- Acciones -->
                             <td class="px-2 sm:px-3 md:px-4 py-2 sm:py-3">
                                 <div class="flex items-center justify-center space-x-1 sm:space-x-2">
                                     <a href="{{ route('proveedores.show', $proveedor->id) }}" 
@@ -740,7 +756,7 @@ window.addEventListener('load', function() {
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-12 text-center">
+                            <td colspan="9" class="px-4 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center space-y-3">
                                     <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
@@ -775,7 +791,6 @@ window.addEventListener('load', function() {
 
 @include('components.ui.modals.delete-confirmation-modal')
 
-<!-- Modal para Sectores y Actividades -->
 <div id="sectorActividadModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="flex items-center justify-between mb-4">
@@ -788,7 +803,6 @@ window.addEventListener('load', function() {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Sectores -->
             <div>
                 <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
                     <svg class="w-5 h-5 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -802,7 +816,6 @@ window.addEventListener('load', function() {
                 </div>
             </div>
             
-            <!-- Actividades -->
             <div>
                 <h4 class="font-medium text-gray-900 mb-3 flex items-center gap-2">
                     <svg class="w-5 h-5 text-[#9d2449]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -816,7 +829,7 @@ window.addEventListener('load', function() {
                 </div>
             </div>
         </div>
-        
+
         <div class="flex justify-end space-x-3 mt-6">
             <button type="button" onclick="closeSectorActividadModal()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
                 Cancelar
@@ -828,7 +841,6 @@ window.addEventListener('load', function() {
     </div>
 </div>
 
-<!-- Modal para Configuración de Exportación Excel -->
 <div id="exportModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="flex items-center justify-between mb-4">
@@ -841,7 +853,6 @@ window.addEventListener('load', function() {
         </div>
 
         <form id="exportForm" method="GET" action="{{ route('proveedores.export') }}">
-            <!-- Incluir filtros actuales -->
             @foreach(request()->except(['page']) as $key => $value)
                 @if(is_array($value))
                     @foreach($value as $item)
@@ -852,7 +863,6 @@ window.addEventListener('load', function() {
                 @endif
             @endforeach
 
-            <!-- Selección de Columnas -->
             <div class="mb-4">
                 <div class="flex items-center justify-between mb-3">
                     <h4 class="font-medium text-gray-900 flex items-center gap-2">
@@ -882,6 +892,14 @@ window.addEventListener('load', function() {
                         <span class="flex-1 text-sm">
                             <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">RFC</span>
                             <span class="text-gray-700">Registro Federal de Contribuyentes</span>
+                        </span>
+                    </label>
+                    
+                    <label class="flex items-center gap-2 py-1 hover:bg-gray-50 px-2 rounded cursor-pointer">
+                        <input type="checkbox" name="columns[]" value="pv_numero" checked class="rounded border-gray-300 text-green-600 focus:ring-green-600 export-column">
+                        <span class="flex-1 text-sm">
+                            <span class="font-mono text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded mr-2">PV</span>
+                            <span class="text-gray-700">Punto de Verificación</span>
                         </span>
                     </label>
                     
@@ -1003,7 +1021,6 @@ window.addEventListener('load', function() {
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Remover el efecto de loading una vez que el DOM esté cargado
     const mainContainer = document.getElementById('mainContainer');
     if (mainContainer) {
         mainContainer.classList.remove('page-loading');
@@ -1125,7 +1142,6 @@ document.addEventListener('DOMContentLoaded', function() {
         searchForm.submit();
     }
 
-    // Manejar filtro de vencimiento personalizado
     const proximidadSelect = document.getElementById('proximidad_vencimiento');
     const customContainer = document.getElementById('custom-days-container');
 
@@ -1138,14 +1154,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Ejecutar al cargar la página
         toggleCustomDays();
 
-        // Ejecutar cuando cambie la selección
         proximidadSelect.addEventListener('change', toggleCustomDays);
     }
 
-    // Funciones para el modal de exportación
     window.openExportModal = function() {
         document.getElementById('exportModal')?.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -1156,7 +1169,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'auto';
     }
 
-    // Manejar selección de todas las columnas
     const selectAllColumns = document.getElementById('selectAllColumns');
     const exportColumns = document.querySelectorAll('.export-column');
 
@@ -1167,7 +1179,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Actualizar el estado del "Seleccionar todas" cuando se cambien las columnas individuales
         exportColumns.forEach(checkbox => {
             checkbox.addEventListener('change', function() {
                 const allChecked = Array.from(exportColumns).every(cb => cb.checked);
@@ -1178,8 +1189,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
-
 });
 </script>
 @endpush

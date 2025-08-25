@@ -3,7 +3,6 @@
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8 min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto">
-        <!-- Header -->
         <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4 sm:p-5 md:p-6 lg:p-8 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
             <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 lg:gap-6">
                 <div class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 bg-[#9d2449] rounded-lg flex items-center justify-center flex-shrink-0">
@@ -17,11 +16,8 @@
                 </div>
             </div>
         </div>
-
-        <!-- Búsqueda y Filtros -->
         <div class="bg-white shadow-sm rounded-lg border border-gray-200 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
             <form method="GET" action="{{ route('documentos.index') }}" class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
-                <!-- Barra de búsqueda principal -->
                 <div class="flex flex-col lg:flex-row gap-2 sm:gap-3 md:gap-4 lg:gap-6 mb-3 sm:mb-4 md:mb-5 lg:mb-6">
                     <div class="flex-1">
                         <div class="relative">
@@ -55,8 +51,6 @@
                         </a>
                     </div>
                 </div>
-
-                <!-- Filtros -->
                 <div class="border-t border-gray-100 pt-3 sm:pt-4 md:pt-5 lg:pt-6">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-5">
                         <div class="flex items-center gap-1.5 sm:gap-2 md:gap-3">
@@ -129,8 +123,6 @@
                                 </select>
                             </div>
                         </div>
-                        
-                        <!-- Botones de filtros -->
                         <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-3 sm:mt-4 md:mt-5 pt-3 sm:pt-4 border-t border-gray-100">
                             <button type="submit" 
                                     class="w-full sm:w-auto px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 bg-[#9d2449] text-white text-xs sm:text-sm md:text-base font-medium rounded-md hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9d2449]/50 transition-all duration-200">
@@ -145,8 +137,6 @@
                 </div>
             </form>
         </div>
-
-        <!-- Filtros Activos -->
         @if(request()->hasAny(['search', 'tipo_archivo', 'tipo_persona', 'es_visible', 'orden']))
         <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-2 sm:p-3 md:p-4 lg:p-5 mb-4 sm:mb-5 md:mb-6 lg:mb-8">
             <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
@@ -197,9 +187,7 @@
                 @endif
             </div>
         </div>
-        @endif
-
-        <!-- Tabla Desktop -->
+        @endif      
         <div class="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden hidden xl:block">
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -295,8 +283,6 @@
                 </table>
             </div>
         </div>
-
-        <!-- Cards Mobile y Tablet -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             @forelse($documentos as $documento)
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-2 sm:p-3 md:p-4 lg:p-5">
@@ -366,8 +352,7 @@
             </div>
             @endforelse
         </div>
-
-        <!-- Paginación -->
+                                
         @if($documentos->hasPages() || $documentos->total() > 0)
         <div class="mt-4 sm:mt-5 md:mt-6 lg:mt-8 xl:mt-10">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 md:gap-5 lg:gap-6">
@@ -398,6 +383,20 @@
 </div>
 @endsection
 
+@if(request()->hasAny(['tipo_archivo', 'tipo_persona', 'es_visible', 'orden']))
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('filtersContainer');
+    const text = document.getElementById('filterText');
+    const icon = document.getElementById('filterIcon');
+    
+    container?.classList.remove('hidden');
+    if (text) text.textContent = 'Ocultar filtros';
+    icon?.classList.add('rotate-180');
+});
+</script>
+@endif
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -405,12 +404,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('filtersContainer');
     const text = document.getElementById('filterText');
     const icon = document.getElementById('filterIcon');
-    
-    if ({{ request()->hasAny(['tipo_archivo', 'tipo_persona', 'es_visible', 'orden']) ? 'true' : 'false' }}) {
-        container?.classList.remove('hidden');
-        if (text) text.textContent = 'Ocultar filtros';
-        icon?.classList.add('rotate-180');
-    }
     
     toggle?.addEventListener('click', function() {
         const hidden = container?.classList.contains('hidden');

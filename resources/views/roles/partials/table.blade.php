@@ -39,7 +39,6 @@
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($roles as $role)
                 <tr class="hover:bg-gray-50/50 transition-colors duration-200">
-                    <!-- Información del Rol -->
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-start space-x-3">
                             <div class="flex-shrink-0">
@@ -64,7 +63,6 @@
                         </div>
                     </td>
 
-                    <!-- Estado -->
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 24 24">
@@ -74,7 +72,6 @@
                         </span>
                     </td>
 
-                    <!-- Fecha -->
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div class="flex flex-col">
                             <span class="font-medium">{{ $role->created_at->format('d/m/Y') }}</span>
@@ -82,10 +79,8 @@
                         </div>
                     </td>
 
-                    <!-- Acciones -->
                     <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
                         <div class="flex items-center justify-center space-x-2">
-                            <!-- Ver -->
                             <a href="{{ route('roles.edit', $role) }}"
                                 class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-green-600 hover:text-green-900 hover:bg-green-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                                 title="Ver permisos">
@@ -97,7 +92,6 @@
                                 </svg>
                             </a>
 
-                            <!-- Editar -->
                             <a href="{{ route('roles.edit', $role) }}"
                                 class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:text-blue-900 hover:bg-blue-100 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                 title="Editar rol">
@@ -106,8 +100,7 @@
                                         d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </a>
-
-                            <!-- Eliminar -->
+                
                             <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este rol?')">
                                 @csrf
                                 @method('DELETE')

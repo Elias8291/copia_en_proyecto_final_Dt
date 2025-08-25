@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
+/**
+ * Controlador para gestión de notificaciones del sistema
+ */
 class NotificacionController extends Controller
 {
     public function __construct()
@@ -17,33 +20,17 @@ class NotificacionController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        
-        // Consulta simple: obtener todas las notificaciones del usuario ordenadas por las más recientes
-        $notificaciones = Notificacion::delUsuario($user->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-
-        return view('notificaciones.index', compact('notificaciones'));
+        // Redirigir a la página de logs del sistema
+        return redirect()->route('logs.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        // Solo usuarios con permisos pueden crear notificaciones
         return view('notificaciones.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -67,17 +54,12 @@ class NotificacionController extends Controller
             ->with('success', 'Notificación creada exitosamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Notificacion $notificacion)
     {
-        // Verificar que el usuario puede ver esta notificación
         if ($notificacion->usuario_id !== Auth::id()) {
             abort(403, 'No tienes permiso para ver esta notificación.');
         }
 
-        // Marcar como leída si no lo está
         if (!$notificacion->esLeida()) {
             $notificacion->marcarComoLeida();
         }
@@ -85,17 +67,11 @@ class NotificacionController extends Controller
         return view('notificaciones.show', compact('notificacion'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Notificacion $notificacion)
     {
         return view('notificaciones.edit', compact('notificacion'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Notificacion $notificacion)
     {
         $request->validate([
@@ -113,12 +89,8 @@ class NotificacionController extends Controller
             ->with('success', 'Notificación actualizada exitosamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Notificacion $notificacion)
     {
-        // Verificar que el usuario puede eliminar esta notificación
         if ($notificacion->usuario_id !== Auth::id()) {
             abort(403, 'No tienes permiso para eliminar esta notificación.');
         }
@@ -129,12 +101,8 @@ class NotificacionController extends Controller
             ->with('success', 'Notificación eliminada exitosamente.');
     }
 
-    /**
-     * Marcar una notificación como leída
-     */
     public function marcarLeida(Notificacion $notificacion)
     {
-        // Verificar que el usuario puede marcar esta notificación
         if ($notificacion->usuario_id !== Auth::id()) {
             abort(403, 'No tienes permiso para modificar esta notificación.');
         }
@@ -152,9 +120,6 @@ class NotificacionController extends Controller
             ->with('success', 'Notificación marcada como leída.');
     }
 
-    /**
-     * Marcar todas las notificaciones como leídas
-     */
     public function marcarTodasLeidas()
     {
         $user = Auth::user();
@@ -170,9 +135,6 @@ class NotificacionController extends Controller
             ->with('success', 'Todas las notificaciones han sido marcadas como leídas.');
     }
 
-    /**
-     * Obtener el conteo de notificaciones no leídas (para AJAX)
-     */
     public function conteoNoLeidas()
     {
         $user = Auth::user();
@@ -181,15 +143,12 @@ class NotificacionController extends Controller
         return response()->json(['count' => $count]);
     }
 
-    /**
-     * Obtener las notificaciones recientes (para notificaciones en tiempo real)
-     */
     public function recientes()
     {
         $user = Auth::user();
         
         $notificaciones = Notificacion::delUsuario($user->id)
-            ->recientes(1) // Últimas 24 horas
+            ->recientes(1)
             ->limit(5)
             ->get()
             ->map(function ($notificacion) {
@@ -207,9 +166,6 @@ class NotificacionController extends Controller
         return response()->json($notificaciones);
     }
 
-    /**
-     * Obtener las notificaciones no leídas (para AJAX)
-     */
     public function noLeidas()
     {
         $user = Auth::user();
@@ -233,16 +189,12 @@ class NotificacionController extends Controller
         return response()->json($notificaciones);
     }
 
-    /**
-     * Obtener las notificaciones recientes para el dropdown
-     */
     public function recientesParaDropdown()
     {
         $user = Auth::user();
         
         $notificaciones = Notificacion::delUsuario($user->id)
-            ->recientes(7) // Últimos 7 días
-            ->limit(8)
+            ->orderBy('created_at', 'desc')
             ->get()
             ->map(function ($notificacion) {
                 return [
@@ -252,11 +204,11 @@ class NotificacionController extends Controller
                     'tipo' => $notificacion->tipo,
                     'fecha_formateada' => $this->formatearFechaNotificacion($notificacion),
                     'leida' => $notificacion->leida,
-                    'url' => $notificacion->accion_url
+                    'url' => $notificacion->accion_url,
+                    'created_at' => $notificacion->created_at
                 ];
             });
 
-        // Contar notificaciones no leídas
         $conteoNoLeidas = Notificacion::delUsuario($user->id)
             ->noLeidas()
             ->count();
@@ -267,9 +219,6 @@ class NotificacionController extends Controller
         ]);
     }
 
-    /**
-     * Formatear la fecha de la notificación para mostrar
-     */
     private function formatearFechaNotificacion($notificacion)
     {
         $fecha = $notificacion->created_at;
@@ -289,9 +238,6 @@ class NotificacionController extends Controller
         }
     }
 
-    /**
-     * Marcar como leídas las notificaciones que han sido vistas
-     */
     public function marcarVistasComoLeidas()
     {
         $user = Auth::user();
@@ -307,7 +253,6 @@ class NotificacionController extends Controller
                 ]);
         }
 
-        // Obtener el conteo actualizado de notificaciones no leídas
         $conteoRestante = Notificacion::delUsuario($user->id)
             ->noLeidas()
             ->count();
@@ -319,9 +264,6 @@ class NotificacionController extends Controller
         ]);
     }
 
-    /**
-     * Limpiar notificaciones antiguas (solo administradores)
-     */
     public function limpiarAntiguas()
     {
         $dias = request()->input('dias', 30);

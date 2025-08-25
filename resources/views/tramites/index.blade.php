@@ -25,23 +25,20 @@
 
 @section('content')
 <script>
-// Script inline para prevenir FOUC - se ejecuta inmediatamente
 document.documentElement.style.visibility = 'hidden';
 window.addEventListener('load', function() {
     document.documentElement.style.visibility = 'visible';
 });
 </script>
-<div class="p-2 sm:p-3 md:p-4 lg:p-5 page-loading" id="mainContainer">
-    <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">
+<div class="p-2 sm:p-3 md:p-4 page-loading" id="mainContainer">
+    <div class="max-w-6xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">
         
         @php
-            // Verificar si hay trámite pendiente
             $tieneTramitePendiente = false;
             $tramitePendiente = null;
             $tipoTramitePendiente = null;
             $rfc = auth()->user()->rfc ?? null;
             
-            // Variables para validación de estado del proveedor
             $proveedorActivo = null;
             $proveedorProximoVencer = false;
             $mostrarActualizacion = false;
@@ -51,26 +48,21 @@ window.addEventListener('load', function() {
             if ($rfc) {
                 $rfcService = app(\App\Services\RfcProveedorService::class);
                 
-                // Verificar trámite pendiente
                 $tramitePendiente = $rfcService->obtenerTramitePendiente($rfc);
                 $tieneTramitePendiente = $tramitePendiente !== null;
                 if ($tramitePendiente) {
                     $tipoTramitePendiente = strtolower($tramitePendiente->tipo_tramite);
                 }
                 
-                // Buscar proveedor activo o todos los proveedores para validar estado
                 $proveedorActivo = $rfcService->buscarProveedorActivo($rfc);
                 $proveedores = $rfcService->buscarProveedoresPorRfc($rfc);
                 
-                // Si no hay trámite pendiente, evaluar estado del proveedor
                 if (!$tieneTramitePendiente) {
                     if ($proveedorActivo) {
-                        // Proveedor activo y vigente
                         $mostrarActualizacion = true;
                         $mostrarInscripcion = false;
                         $mensajeEstado = 'Proveedor activo - puede realizar actualización de datos';
                         
-                        // Verificar si está próximo a vencer (7 días)
                         if ($proveedorActivo->fecha_vencimiento_padron && 
                             $proveedorActivo->fecha_vencimiento_padron->diffInDays(now()) <= 7 &&
                             $proveedorActivo->fecha_vencimiento_padron > now()) {
@@ -78,7 +70,6 @@ window.addEventListener('load', function() {
                             $mensajeEstado = 'Su registro vence pronto - se recomienda renovación';
                         }
                     } else {
-                        // Buscar si tiene proveedores inactivos, vencidos o cancelados
                         $tieneProveedorVencido = $proveedores->where('estado_padron', 'Vencido')->isNotEmpty();
                         $tieneProveedorCancelado = $proveedores->where('estado_padron', 'Cancelado')->isNotEmpty();
                         $tieneProveedorInactivo = $proveedores->where('estado_padron', 'Inactivo')->isNotEmpty();
@@ -87,8 +78,7 @@ window.addEventListener('load', function() {
                             $mostrarInscripcion = true;
                             $mostrarActualizacion = false;
                             $mensajeEstado = 'Debe realizar inscripción - proveedor vencido o cancelado';
-                        } else {
-                            // No tiene proveedor registrado
+                        } else {                
                             $mostrarInscripcion = true;
                             $mostrarActualizacion = false;
                             $mensajeEstado = 'No tiene proveedor registrado - debe realizar inscripción';
@@ -127,17 +117,17 @@ window.addEventListener('load', function() {
             </div>
         @endif
 
-        <div class="p-4 sm:p-5 border-b border-gray-200/70">
+        <div class="p-6 border-b border-gray-100">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
-                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-[#9d2449] rounded-lg p-2.5">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                         </svg>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Trámites Disponibles</h1>
-                        <p class="text-base text-gray-500 mt-1">
+                        <h1 class="text-xl font-semibold text-gray-900">Trámites Disponibles</h1>
+                        <p class="text-sm text-gray-600 mt-0.5">
                             @if($tieneTramitePendiente)
                                 Tiene un trámite de {{ ucfirst($tipoTramitePendiente) }} en proceso
                             @else
@@ -147,7 +137,7 @@ window.addEventListener('load', function() {
                     </div>
                 </div>
                 
-                <button onclick="openHistorialModal()" class="inline-flex items-center px-6 py-3 text-sm font-medium text-[#9d2449] bg-white border-2 border-[#9d2449] rounded-xl hover:bg-[#9d2449] hover:text-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105">
+                <button onclick="openHistorialModal()" class="inline-flex items-center px-4 py-2 text-sm font-medium text-[#9d2449] bg-white border border-[#9d2449] rounded-lg hover:bg-[#9d2449] hover:text-white transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -156,25 +146,24 @@ window.addEventListener('load', function() {
             </div>
         </div>
 
-        <div class="border-t border-gray-100 mb-3 sm:mb-4">
-            <div class="p-4 sm:p-6 content-container">
-                <div class="text-center mb-8">
-                    <h2 class="text-lg font-medium text-gray-700 mb-3">Seleccione un Tipo de Trámite</h2>
-                    <p class="text-gray-500 text-base max-w-3xl mx-auto">Elija una de las siguientes opciones para proceder con su solicitud.</p>
+        <div class="border-t border-gray-100">
+            <div class="p-6 content-container">
+                <div class="text-center mb-6">
+                    <h2 class="text-lg font-medium text-gray-800 mb-2">Seleccione un Tipo de Trámite</h2>
+                    <p class="text-gray-600 text-sm">Elija una de las siguientes opciones para proceder con su solicitud.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     
-                    {{-- Tarjeta de Inscripción --}}
                     @if($mostrarInscripcion || $tieneTramitePendiente)
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 tramite-card">
+                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-sm transition-shadow tramite-card">
                         @if($tieneTramitePendiente)
-                            <div class="h-2 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
+                            <div class="h-1 bg-orange-500"></div>
                         @else
-                            <div class="h-2 bg-gradient-to-r from-[#9d2449] to-[#8a1f40]"></div>
+                            <div class="h-1 bg-[#9d2449]"></div>
                         @endif
                         
-                        <div class="p-6">
+                        <div class="p-5">
                             @if($tieneTramitePendiente)
                                 <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                     <div class="flex items-center">
@@ -188,25 +177,25 @@ window.addEventListener('load', function() {
                                 </div>
                             @endif
                             
-                            <div class="flex items-start space-x-4">
-                                <div class="bg-gradient-to-br from-[#9d2449] to-[#8a1f40] rounded-xl p-3 flex-shrink-0 shadow-lg">
-                                    <svg class="w-6 h-6" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-[#9d2449] rounded-lg p-2.5 flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                     </svg>
                                 </div>
                                 
                                 <div class="flex-1">
-                                    <h3 class="text-lg font-bold text-gray-900 mb-2">Inscripción al Padrón</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Inscripción al Padrón</h3>
+                                    <p class="text-gray-600 text-sm">
                                         Registro inicial para nuevos proveedores. Complete todos los requisitos para formar parte del padrón oficial.
                                     </p>
                                 </div>
                             </div>
                             
-                            <div class="mt-6">
+                            <div class="mt-5">
                                 @if($tieneTramitePendiente)
                                     <a href="{{ route('tramites.estado') }}" 
-                                       class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white text-sm font-semibold rounded-xl hover:from-orange-700 hover:to-amber-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                       class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -215,7 +204,7 @@ window.addEventListener('load', function() {
                                     </a>
                                 @else
                                     <a href="{{ route('tramites.cargar-constancia', 'inscripcion') }}" 
-                                       class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-[#9d2449] to-[#8a1f40] text-white text-sm font-semibold rounded-xl hover:from-[#8a1f40] hover:to-[#7a1a37] transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                       class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-[#9d2449] text-white text-sm font-medium rounded-lg hover:bg-[#8a1f40] transition-colors">
                                         Iniciar Trámite
                                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -227,16 +216,15 @@ window.addEventListener('load', function() {
                     </div>
                     @endif
 
-                    {{-- Tarjeta de Actualización de Datos --}}
                     @if($mostrarActualizacion && !$tieneTramitePendiente)
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300 tramite-card">
+                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-sm transition-shadow tramite-card">
                         @if($proveedorProximoVencer)
-                            <div class="h-2 bg-gradient-to-r from-amber-500 to-orange-500"></div>
+                            <div class="h-1 bg-amber-500"></div>
                         @else
-                            <div class="h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+                            <div class="h-1 bg-blue-600"></div>
                         @endif
                         
-                        <div class="p-6">
+                        <div class="p-5">
                             @if($proveedorProximoVencer)
                                 <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                                     <div class="flex items-center">
@@ -250,24 +238,24 @@ window.addEventListener('load', function() {
                                 </div>
                             @endif
                             
-                            <div class="flex items-start space-x-4">
-                                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-3 flex-shrink-0 shadow-lg">
-                                    <svg class="w-6 h-6" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-blue-600 rounded-lg p-2.5 flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
                                 </div>
                                 
                                 <div class="flex-1">
-                                    <h3 class="text-lg font-bold text-gray-900 mb-2">Actualización de Datos</h3>
-                                    <p class="text-gray-600 text-sm leading-relaxed">
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Actualización de Datos</h3>
+                                    <p class="text-gray-600 text-sm">
                                         Modifique su información registrada. Mantenga sus datos siempre actualizados para un mejor servicio.
                                     </p>
                                 </div>
                             </div>
                             
-                            <div class="mt-6">
+                            <div class="mt-5">
                                 <a href="{{ route('tramites.cargar-constancia', 'actualizacion') }}" 
-                                   class="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                                   class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                                     Actualizar Datos
                                     <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -278,67 +266,66 @@ window.addEventListener('load', function() {
                     </div>
                     @endif
 
-                    {{-- Tarjeta de Renovación (deshabilitada por ahora) --}}
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden opacity-75 tramite-card">
-                        <div class="h-2 bg-gradient-to-r from-gray-300 to-gray-400"></div>
+                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden opacity-75 tramite-card">
+                        <div class="h-1 bg-gray-300"></div>
                         
-                        <div class="p-6">
+                        <div class="p-5">
                             <div class="flex justify-end mb-4">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600">
                                     No Disponible
                                 </span>
                             </div>
                             
-                            <div class="flex items-start space-x-4">
-                                <div class="bg-gray-200 rounded-xl p-3 flex-shrink-0">
-                                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-gray-200 rounded-lg p-2.5 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                     </svg>
                                 </div>
                                 
                                 <div class="flex-1">
-                                    <h3 class="text-lg font-bold text-gray-400 mb-2">Renovación de Registro</h3>
-                                    <p class="text-gray-400 text-sm leading-relaxed">
+                                    <h3 class="text-lg font-semibold text-gray-400 mb-2">Renovación de Registro</h3>
+                                    <p class="text-gray-400 text-sm">
                                         Renueve su registro anual para mantener activo su estado en el padrón de proveedores.
                                     </p>
                                 </div>
                             </div>
                             
-                            <div class="mt-6">
-                                <button disabled class="w-full inline-flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed border-2 border-gray-200">
+                            <div class="mt-5">
+                                <button disabled class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-400 text-sm font-medium rounded-lg cursor-not-allowed border border-gray-200">
                                     No Disponible
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-300 overflow-hidden opacity-75 tramite-card">
-                        <div class="h-2 bg-gradient-to-r from-gray-300 to-gray-400"></div>
+                    <div class="bg-white rounded-lg border border-gray-200 overflow-hidden opacity-75 tramite-card">
+                        <div class="h-1 bg-gray-300"></div>
                         
-                        <div class="p-6">
+                        <div class="p-5">
                             <div class="flex justify-end mb-4">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600">
                                     No Disponible
                                 </span>
                             </div>
                             
-                            <div class="flex items-start space-x-4">
-                                <div class="bg-gray-200 rounded-xl p-3 flex-shrink-0">
-                                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="flex items-start space-x-3">
+                                <div class="bg-gray-200 rounded-lg p-2.5 flex-shrink-0">
+                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
                                 </div>
                                 
                                 <div class="flex-1">
-                                    <h3 class="text-lg font-bold text-gray-400 mb-2">Actualización de Datos</h3>
-                                    <p class="text-gray-400 text-sm leading-relaxed">
+                                    <h3 class="text-lg font-semibold text-gray-400 mb-2">Actualización de Datos</h3>
+                                    <p class="text-gray-400 text-sm">
                                         Modifique su información registrada. Mantenga sus datos siempre actualizados.
                                     </p>
                                 </div>
                             </div>
                             
-                            <div class="mt-6">
-                                <button disabled class="w-full inline-flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-400 text-sm font-semibold rounded-xl cursor-not-allowed border-2 border-gray-200">
+                            <div class="mt-5">
+                                <button disabled class="w-full inline-flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-400 text-sm font-medium rounded-lg cursor-not-allowed border border-gray-200">
                                     No Disponible
                                 </button>
                             </div>
@@ -536,7 +523,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Script para manejar la carga de la página y animaciones
 document.addEventListener('DOMContentLoaded', function() {
     const mainContainer = document.getElementById('mainContainer');
     if (mainContainer) {

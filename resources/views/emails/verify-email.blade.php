@@ -20,14 +20,11 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-800 m-0 p-5">
     <div class="max-w-md mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
-        <!-- Header -->
         <div class="bg-primary text-white px-6 py-8 text-center">
             <h1 class="text-xl font-semibold mb-2">Padrón de Proveedores</h1>
             <p class="text-sm opacity-90">Secretaría de Administración</p>
             <p class="text-xs opacity-75 mt-1">Gobierno del Estado de Oaxaca</p>
         </div>
-        
-        <!-- Content -->
         <div class="px-6 py-8">
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-semibold text-primary mb-2">¡Bienvenido {{ $user->nombre }}!</h2>
@@ -35,16 +32,12 @@
                     Gracias por registrarte. Para activar tu cuenta, verifica tu correo electrónico.
                 </p>
             </div>
-
-            <!-- Verify Button -->
             <div class="text-center mb-8">
                 <a href="{{ $verificationUrl }}" 
                    class="inline-block bg-primary hover:bg-primary-dark text-white font-medium px-8 py-3 rounded-md transition-colors duration-200 shadow-sm">
                     Verificar cuenta
                 </a>
             </div>
-
-            <!-- Info Section -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
                 <h3 class="text-gray-800 font-medium text-center mb-4">Información</h3>
                 
@@ -71,8 +64,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Manual Link -->
             <div class="mb-6">
                 <p class="text-gray-700 text-sm mb-2">Si el botón no funciona, copia este enlace:</p>
                 <div class="bg-gray-50 border border-gray-200 rounded-md p-3">
@@ -83,9 +74,7 @@
             <p class="text-gray-500 text-xs italic text-center">
                 Si no solicitaste este registro, ignora este mensaje.
             </p>
-        </div>
-
-        <!-- Footer -->
+        </div>  
         <div class="bg-gray-50 border-t border-gray-200 px-6 py-6 text-center">
             <h3 class="text-gray-800 font-semibold text-sm mb-2">Padrón de Proveedores</h3>
             <p class="text-gray-600 text-xs mb-1">Secretaría de Administración</p>

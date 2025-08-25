@@ -3,7 +3,6 @@
 @section('content')
 <div class="p-6">
     <div class="max-w-full mx-auto bg-white shadow-sm rounded-lg border border-gray-200">        
-        <!-- Header -->
         <div class="p-6 border-b border-gray-200">
             <div class="flex items-center space-x-4">
                 <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
@@ -18,7 +17,6 @@
             </div>
         </div>
 
-        <!-- Mensajes de éxito/error -->
         @if(session('success'))
             <div class="mx-6 mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
                 <div class="flex items-center">
@@ -101,7 +99,6 @@
                         
                     <div id="filtersContainer" class="hidden max-h-0 overflow-hidden transition-all duration-300 ease-in-out">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-                            <!-- Filtro de Roles - NUEVO -->
                             <div>
                                 <label for="filtro_rol" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +122,6 @@
                                 </select>
                             </div>
 
-                            <!-- Filtro de Asignación -->
                             <div>
                                 <label for="filtro_revisor" class="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1 sm:mb-1.5 md:mb-2">
                                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -350,7 +346,6 @@
             </div>
         </div>
 
-        <!-- Tabla de trámites para desktop -->
         <div class="border-t border-gray-100 overflow-hidden hidden xl:block">
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -367,7 +362,6 @@
                 <tbody class="divide-y divide-gray-200">
                     @forelse($tramites as $tramite)
                     @php
-                        // Calcular prioridad basada en antigüedad
                         $diasTranscurridos = $tramite->created_at->diffInDays(now());
                         $prioridad = 'normal';
                         $prioridadColor = 'bg-gray-100 text-gray-600';
@@ -380,7 +374,6 @@
                             $prioridadColor = 'bg-orange-100 text-orange-800';
                         }
                         
-                        // Prioridad especial para renovaciones
                         if ($tramite->tipo_tramite === 'Renovacion') {
                             $prioridad = 'renovacion';
                             $prioridadColor = 'bg-purple-100 text-purple-800';
@@ -482,12 +475,10 @@
         </div>
     </div>
 
-    <!-- Vista móvil de trámites -->
     <div class="border-t border-gray-100 pt-4 sm:pt-5 md:pt-6 lg:pt-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-2 sm:gap-3 md:gap-4 lg:gap-6">
         @forelse($tramites as $tramite)
         @php
-            // Calcular prioridad basada en antigüedad
             $diasTranscurridos = $tramite->created_at->diffInDays(now());
             $prioridad = 'normal';
             $prioridadColor = 'bg-gray-100 text-gray-600';
@@ -499,8 +490,7 @@
                 $prioridad = 'urgente';
                 $prioridadColor = 'bg-orange-100 text-orange-800';
             }
-            
-            // Prioridad especial para renovaciones
+                            
             if ($tramite->tipo_tramite === 'Renovacion') {
                 $prioridad = 'renovacion';
                 $prioridadColor = 'bg-purple-100 text-purple-800';
@@ -597,7 +587,6 @@
         </div>
     </div>
 
-        <!-- Paginación -->
         @if($tramites->hasPages())
         <div class="mt-4 sm:mt-5 md:mt-6 lg:mt-8 xl:mt-10">
             <div class="flex justify-center">
@@ -622,8 +611,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const icon = document.getElementById('filterIcon');
         const perPageSelect = document.getElementById('per_page');
         const searchForm = document.getElementById('searchForm');
-        
-        // Los filtros siempre empiezan ocultos
         
         if (toggle && container) {
             toggle.addEventListener('click', function() {

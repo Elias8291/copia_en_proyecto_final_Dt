@@ -12,7 +12,6 @@
 ])
 
 <div class="w-full">
-    <!-- Header simplificado -->
     <div class="bg-white rounded-2xl shadow-xl border border-gray-200/70 mb-8">
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -43,13 +42,10 @@
     </div>
 
     @if($showSearch || $showFilters)
-    <!-- Filtros elegantes y compactos -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mb-6">
         <div class="p-4 bg-gradient-to-r from-gray-50/80 to-gray-100/60">
-            <!-- Filtros en línea compactos -->
             <div class="flex flex-wrap items-center gap-3">
                 @if($showSearch)
-                <!-- Búsqueda principal -->
                 <div class="relative flex-1 min-w-[200px]">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +61,6 @@
                 @if($showFilters)
                     @foreach($filters as $filter)
                         @if($filter['type'] === 'select')
-                        <!-- Filtro Select -->
                         <div class="relative">
                             <select id="{{ $filter['id'] }}-filter"
                                 class="appearance-none bg-white border border-gray-200 rounded-lg pl-9 pr-8 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all duration-200 hover:bg-white hover:shadow-sm min-w-[130px]">
@@ -86,7 +81,6 @@
                             </div>
                         </div>
                         @elseif($filter['type'] === 'input')
-                        <!-- Filtro Input -->
                         <div class="relative">
                             <input type="text" id="{{ $filter['id'] }}-filter"
                                 class="bg-white border border-gray-200 rounded-lg pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-all duration-200 hover:bg-white hover:shadow-sm min-w-[100px]"
@@ -99,8 +93,6 @@
                         </div>
                         @endif
                     @endforeach
-
-                    <!-- Botón limpiar -->
                     <button id="clear-filters"
                         class="inline-flex items-center px-3 py-2.5 border border-gray-200 rounded-lg text-sm font-medium text-gray-500 bg-white hover:bg-gray-50 hover:text-gray-700 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200 hover:shadow-sm">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,8 +101,6 @@
                         Limpiar
                     </button>
                 @endif
-
-                <!-- Contador de resultados -->
                 <div class="ml-auto">
                     <div id="results-count"
                         class="text-xs text-gray-500 font-medium bg-white/80 backdrop-blur-sm rounded-full px-3 py-1.5 border border-gray-200/60">
@@ -121,10 +111,7 @@
         </div>
     </div>
     @endif
-
-    <!-- Tabla simplificada -->
     <div class="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-        <!-- Header de tabla -->
         <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
             <div class="flex items-center">
                 <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center mr-3">
@@ -135,8 +122,6 @@
                 <h2 class="text-xl font-bold text-gray-800">{{ $title }}</h2>
             </div>
         </div>
-
-        <!-- Contenido de tabla -->
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="hidden lg:table-header-group bg-gray-50">
@@ -152,7 +137,6 @@
 
                 <tbody class="divide-y divide-gray-100">
                     @forelse($data as $item)
-                        <!-- Desktop -->
                         <tr class="hidden lg:table-row hover:bg-gray-50/50 transition-all duration-200">
                             @foreach($columns as $column)
                                 <td class="px-6 py-4">
@@ -203,7 +187,6 @@
                             @endif
                         </tr>
 
-                        <!-- Móvil -->
                         <div class="lg:hidden bg-white border border-gray-200 rounded-xl p-6 mb-4 shadow-sm hover:shadow-lg transition-all duration-300">
                             <div class="flex items-start justify-between mb-4">
                                 <div class="flex items-center">
@@ -292,8 +275,6 @@
                 </tbody>
             </table>
         </div>
-
-        <!-- Paginación simplificada -->
         @if(count($data) > 0)
             <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -328,8 +309,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function filterTable() {
         const searchTerm = document.getElementById('search-filter')?.value.toLowerCase() || '';
         const filterValues = {};
-        
-        // Obtener valores de filtros
         @if($showFilters)
             @foreach($filters as $filter)
                 const {{ $filter['id'] }}Filter = document.getElementById('{{ $filter['id'] }}-filter')?.value.toLowerCase() || '';
@@ -343,13 +322,9 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach(row => {
             const text = row.textContent.toLowerCase();
             let shouldShow = true;
-            
-            // Verificar búsqueda general
             if (searchTerm && !text.includes(searchTerm)) {
                 shouldShow = false;
             }
-            
-            // Verificar filtros específicos
             @if($showFilters)
                 @foreach($filters as $filter)
                     if (filterValues['{{ $filter['id'] }}'] && !text.includes(filterValues['{{ $filter['id'] }}'])) {
@@ -365,15 +340,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.style.display = 'none';
             }
         });
-        
-        // Actualizar contador
         const resultsCount = document.getElementById('results-count');
         if (resultsCount) {
             resultsCount.textContent = `${visibleCount} elementos`;
         }
     }
-    
-    // Event listeners para filtros
+
     @if($showSearch)
         document.getElementById('search-filter')?.addEventListener('input', filterTable);
     @endif
@@ -382,8 +354,6 @@ document.addEventListener('DOMContentLoaded', function() {
         @foreach($filters as $filter)
             document.getElementById('{{ $filter['id'] }}-filter')?.addEventListener('{{ $filter['type'] === 'select' ? 'change' : 'input' }}', filterTable);
         @endforeach
-        
-        // Botón limpiar filtros
         document.getElementById('clear-filters')?.addEventListener('click', function() {
             @if($showSearch)
                 document.getElementById('search-filter').value = '';

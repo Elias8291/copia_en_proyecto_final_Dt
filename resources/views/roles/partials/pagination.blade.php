@@ -1,7 +1,6 @@
 @if ($roles->hasPages())
     <div class="px-6 py-4 bg-gray-50/50 border-t border-gray-200/70">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <!-- Información de resultados -->
             <div class="text-sm text-gray-700">
                 <span class="font-medium">{{ $roles->firstItem() ?? 0 }}</span>
                 -
@@ -11,9 +10,7 @@
                 roles
             </div>
 
-            <!-- Enlaces de paginación -->
-            <div class="flex items-center space-x-2">
-                {{-- Botón Anterior --}}
+            <div class="flex items-center space-x-2">                       
                 @if ($roles->onFirstPage())
                     <span class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-400 bg-white border border-gray-300 rounded-lg cursor-not-allowed">
                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +28,6 @@
                     </a>
                 @endif
 
-                {{-- Números de página --}}
                 <div class="hidden sm:flex items-center space-x-1">
                     @foreach ($roles->getUrlRange(1, $roles->lastPage()) as $page => $url)
                         @if ($page == $roles->currentPage())
@@ -47,7 +43,6 @@
                     @endforeach
                 </div>
 
-                {{-- Botón Siguiente --}}
                 @if ($roles->hasMorePages())
                     <a href="{{ $roles->nextPageUrl() }}" 
                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#B4325E]/30 transition-all duration-200">

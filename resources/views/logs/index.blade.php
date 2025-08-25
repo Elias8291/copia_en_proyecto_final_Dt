@@ -17,7 +17,6 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <!-- Botones removidos según solicitud -->
                 </div>
             </div>
         </div>
@@ -257,8 +256,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Tabla para pantallas grandes -->
         <div class="border-t border-gray-100 overflow-hidden hidden xl:block">
             <div class="overflow-x-auto">
                 <table class="w-full">
@@ -349,8 +346,6 @@
                 </table>
             </div>
         </div>
-
-        <!-- Tarjetas para pantallas pequeñas -->
         <div class="border-t border-gray-100 pt-4 sm:pt-5 md:pt-6 lg:pt-8">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:hidden gap-2 sm:gap-3 md:gap-4 lg:gap-6">
             @forelse($logs as $log)
@@ -411,8 +406,6 @@
             @endforelse
             </div>
         </div>
-
-        <!-- Paginación -->
         @if($logs->hasPages())
         <div class="mt-4 sm:mt-5 md:mt-6 lg:mt-8 xl:mt-10">
             <div class="flex justify-center">
@@ -445,7 +438,7 @@
 @if(session('error'))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    showErrorModal('error-modal', 'Error', '{{ session('error') }}');
+    showErrorModal('error-modal', 'Error', '{{ session("error") }}');
 });
 </script>
 @endif
@@ -453,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function() {
 @if(session('success'))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    showSuccessModal('success-modal', '¡Éxito!', '{{ session('success') }}');
+    showSuccessModal('success-modal', '¡Éxito!', '{{ session("success") }}');
 });
 </script>
 @endif

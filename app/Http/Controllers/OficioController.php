@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Controlador para gestión de oficios del sistema
+ */
 class OficioController extends Controller
 {
     protected OficioService $oficioService;
@@ -19,9 +22,6 @@ class OficioController extends Controller
         $this->oficioService = $oficioService;
     }
 
-    /**
-     * Descargar oficio
-     */
     public function descargar(Request $request)
     {
         try {
@@ -35,7 +35,6 @@ class OficioController extends Controller
                 'archivo' => $archivo
             ]);
 
-            // Verificar que el oficio existe
             $oficio = Oficio::where('tramite_id', $tramiteId)
                 ->where('proveedor_id', $proveedorId)
                 ->first();
@@ -48,7 +47,6 @@ class OficioController extends Controller
                 abort(404, 'Oficio no encontrado');
             }
 
-            // Construir la ruta del archivo
             $rutaArchivo = storage_path('app/public/oficios/' . $archivo);
 
             if (!file_exists($rutaArchivo)) {
@@ -65,7 +63,6 @@ class OficioController extends Controller
                 'ruta_archivo' => $rutaArchivo
             ]);
 
-            // Retornar el archivo para descarga
             return response()->download($rutaArchivo, $archivo, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'attachment; filename="' . $archivo . '"'
@@ -83,9 +80,6 @@ class OficioController extends Controller
         }
     }
 
-    /**
-     * Validar oficio mediante QR
-     */
     public function validar(int $tramiteId)
     {
         try {
@@ -141,84 +135,5 @@ class OficioController extends Controller
         }
     }
 
-    /**
-     * Mostrar oficios por proveedor
-     */
-    public function porProveedor(int $proveedorId)
-    {
-        try {
-            $oficios = $this->oficioService->obtenerOficiosPorProveedor($proveedorId);
-            $proveedor = Proveedor::findOrFail($proveedorId);
 
-            return view('oficios.por-proveedor', compact('oficios', 'proveedor'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener oficios por proveedor', [
-                'proveedor_id' => $proveedorId,
-                'error' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'Error al obtener los oficios');
-        }
-    }
-
-    /**
-     * Mostrar oficios por trámite
-     */
-    public function porTramite(int $tramiteId)
-    {
-        try {
-            $oficios = $this->oficioService->obtenerOficiosPorTramite($tramiteId);
-            $tramite = Tramite::with('proveedor')->findOrFail($tramiteId);
-
-            return view('oficios.por-tramite', compact('oficios', 'tramite'));
-
-        } catch (\Exception $e) {
-            Log::error('Error al obtener oficios por trámite', [
-                'tramite_id' => $tramiteId,
-                'error' => $e->getMessage()
-            ]);
-
-            return back()->with('error', 'Error al obtener los oficios');
-        }
-    }
-
-    /**
-     * Actualizar estado del oficio
-     */
-    public function actualizarEstado(Request $request, int $oficioId)
-    {
-        try {
-            $request->validate([
-                'estado' => 'required|in:Generado,Enviado,Entregado,Cancelado'
-            ]);
-
-            $estado = $request->get('estado');
-            $exito = $this->oficioService->actualizarEstadoOficio($oficioId, $estado);
-
-            if ($exito) {
-                return response()->json([
-                    'success' => true,
-                    'mensaje' => 'Estado del oficio actualizado correctamente'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'mensaje' => 'Error al actualizar el estado del oficio'
-                ], 500);
-            }
-
-        } catch (\Exception $e) {
-            Log::error('Error al actualizar estado del oficio', [
-                'oficio_id' => $oficioId,
-                'estado' => $request->get('estado'),
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'mensaje' => 'Error al actualizar el estado del oficio'
-            ], 500);
-        }
-    }
 } 

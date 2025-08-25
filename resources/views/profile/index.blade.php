@@ -3,11 +3,7 @@
 @section('content')
 <div class="min-h-screen font-sans py-6">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        <!-- Main Profile Card -->
         <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            
-            <!-- Profile Header -->
             <div class="px-6 py-8">
                 <div class="flex flex-col sm:flex-row items-center sm:justify-between gap-6">
                     <div class="flex flex-col sm:flex-row items-center gap-4">
@@ -38,14 +34,11 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Account Details Section -->
             <div class="px-6 pb-6">
                 <div class="border-t border-gray-200 pt-6">
                     <h2 class="text-lg font-semibold text-gray-900 mb-4">Información de la Cuenta</h2>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Información del usuario -->
                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
                             <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre Completo</label>
                             <p class="text-sm font-semibold text-gray-900 mt-1">{{ $user->nombre }}</p>
@@ -104,8 +97,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Modals -->
         <x-ui.modals.error-modal
             id="error-modal"
             title="Error"
@@ -127,7 +118,7 @@
 @if(session('error'))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    showErrorModal('error-modal', 'Error', '{{ session('error') }}');
+    showErrorModal('error-modal', 'Error', '{{ session("error") }}');
 });
 </script>
 @endif

@@ -52,11 +52,7 @@
                     </div>
                 </div>
             </div>
-
-
-
-        
-            <div class="mb-8" data-section="domicilio">
+      <div class="mb-8" data-section="domicilio">
                 <div class="mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Domicilio Fiscal</h2>
                 </div>
@@ -219,9 +215,7 @@ function procesarDecision(decision) {
     const checkboxes = Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.nextElementSibling.textContent.trim());
     
     console.log('Observaciones:', observaciones);
-    console.log('Checkboxes seleccionados:', checkboxes);
-    
-    // Validaciones
+    console.log('Checkboxes seleccionados:', checkboxes);   
     if (decision === 'aprobar' && checkboxes.length === 0) {
         showConfirmModal(
             'Validación Requerida',
@@ -242,14 +236,12 @@ function procesarDecision(decision) {
         return;
     }
     
-    // Llenar campos ocultos
     document.getElementById('observaciones-hidden').value = observaciones;
     document.getElementById('decision-hidden').value = decision;
     document.getElementById('checkboxes-hidden').value = JSON.stringify(checkboxes);
     
     console.log('Campos ocultos llenados');
     
-    // Confirmación con modal
     const titulo = decision === 'aprobar' ? 'Confirmar Aprobación' : 'Confirmar Rechazo';
     const mensaje = decision === 'aprobar' 
         ? '¿Está seguro de aprobar la revisión domiciliaria? El trámite será marcado como Aprobado.'
@@ -257,8 +249,6 @@ function procesarDecision(decision) {
     
     showConfirmModal(titulo, mensaje, 'form-revision-domiciliaria');
 }
-
-
 
 window.scrollToTop = scrollToTop;
 window.toggleSection = toggleSection;

@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
-
+@if(session('error'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        showErrorModal('error-modal', 'Error', '{!! session("error") !!}');
+    });
+</script>
+@endif  
 
 @section('content')
 <style>
@@ -10,9 +16,7 @@
     
     .step-content.active {
         display: block;
-    }
-    
-    /* Animaciones personalizadas para el indicador de progreso */
+    } 
     @keyframes progressPulse {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.7; }
@@ -33,7 +37,6 @@
         animation: successBounce 1s ease-out;
     }
     
-    /* Efecto de brillo para el botón de envío */
     .btn-enviar-loading {
         position: relative;
         overflow: hidden;
@@ -54,7 +57,6 @@
         left: 100%;
     }
     
-    /* Efecto de confeti para el éxito */
     .confetti {
         position: fixed;
         width: 10px;
@@ -122,7 +124,6 @@
                 </div>
             @endif
 
-            <!-- Información específica para modo corrección -->
             @if(isset($modoCorreccion) && $modoCorreccion && isset($seccionesParaCorregir))
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                     <div class="flex items-start">
@@ -155,7 +156,6 @@
                 </div>
             @endif
 
-            <!-- Información del proveedor según tipo de trámite -->
             @if(isset($infoProveedor))
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                     <div class="flex items-start">
@@ -222,11 +222,9 @@
                     @csrf
             @endif
                 
-                <!-- Campo oculto para tipo de trámite -->
                 <input type="hidden" name="tipo_tramite" value="{{ session('tipo_tramite_seleccionado') }}">
                 
                 @php
-                    // En modo corrección, usar solo las secciones que necesitan corrección
                     if (isset($modoCorreccion) && $modoCorreccion && isset($seccionesParaCorregir)) {
                         $steps = [];
                         $stepIndex = 0;
@@ -298,7 +296,6 @@
                             }
                         }
                         
-                        // Siempre agregar confirmación al final
                         $steps[] = [
                             'title' => 'Confirmar Correcciones',
                             'description' => 'Confirmación final',
@@ -308,7 +305,6 @@
                         
                         $totalSteps = count($steps);
                     } else {
-                        // Modo normal - todos los pasos
                         $totalSteps = $tipoPersona === 'Moral' ? 8 : 5;
                         $steps = [
                             [
@@ -344,10 +340,8 @@
                     }
                 @endphp
 
-                <!-- Componente de Steps -->
                 <x-navigation.steps :steps="$steps" :current-step="0" :total-steps="$totalSteps" />
 
-                <!-- Contenido de los pasos -->
                 @foreach($steps as $index => $step)
                     <div class="step-content {{ $index === 0 ? 'active' : '' }}" data-step="{{ $index }}">
                         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -358,7 +352,6 @@
                                         'datosConstancia' => $viewModel
                                     ])
                                     
-                                    <!-- Comentario de la sección -->
                                     @if(isset($modoCorreccion) && $modoCorreccion)
                                         @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
                                     @endif
@@ -370,7 +363,6 @@
                                         'actividadesSeleccionadas' => $viewModel
                                     ])
                                     
-                                    <!-- Comentario de la sección -->
                                     @if(isset($modoCorreccion) && $modoCorreccion)
                                         @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
                                     @endif
@@ -382,7 +374,6 @@
                                         'datosConstancia' => $viewModel
                                     ])
                                     
-                                    <!-- Comentario de la sección -->
                                     @if(isset($modoCorreccion) && $modoCorreccion)
                                         @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
                                     @endif
@@ -394,7 +385,6 @@
                                         'datosConstitucion' => $viewModel ?? null
                                     ])
                                     
-                                    <!-- Comentario de la sección -->
                                     @if(isset($modoCorreccion) && $modoCorreccion)
                                         @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
                                     @endif
@@ -406,7 +396,6 @@
                                         'accionistas' => $viewModel ?? null
                                     ])
                                     
-                                    <!-- Comentario de la sección -->
                                     @if(isset($modoCorreccion) && $modoCorreccion)
                                         @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
                                     @endif
@@ -418,7 +407,6 @@
                                         'datosApoderado' => $viewModel ?? null
                                     ])
                                     
-                                    <!-- Comentario de la sección -->
                                     @if(isset($modoCorreccion) && $modoCorreccion)
                                         @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
                                     @endif
@@ -433,7 +421,6 @@
                                         'tramite' => isset($tramite) ? $tramite : null
                                     ])
                                     
-                                    <!-- Comentario de la sección -->
                                     @if(isset($modoCorreccion) && $modoCorreccion)
                                         @include('components.revision.comentario-revisor', ['comentario' => $step['comentario'] ?? ''])
                                     @endif
@@ -441,13 +428,11 @@
                                 
                                 @case('terminos')
                                 @case('confirmacion')
-                                    <!-- Sección de Términos y Condiciones / Confirmación -->
                                     <div class="mb-6">
                                         @if($step['seccion'] === 'confirmacion')
                                             <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirmar Correcciones</h3>
                                             <p class="text-gray-600 mb-4">Revise las correcciones realizadas antes de enviar:</p>
                                             
-                                            <!-- Resumen de correcciones -->
                                             @if(isset($resumenCorrecciones) && isset($seccionesParaCorregir))
                                                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
                                                     <h4 class="font-medium text-gray-800 mb-2">Secciones que se están corrigiendo:</h4>
@@ -507,7 +492,6 @@
                     </div>
                 @endforeach
 
-                <!-- Navegación entre pasos -->
                 <div data-step-navigation></div>
             </form>
         </div>
@@ -521,63 +505,59 @@
     cancelText="Cancelar"
 />
 
-<!-- Modal de Términos de Servicio eliminado por no ser necesario -->
-
-<!-- Scripts de validación y funcionalidad -->
 <script type="module" src="{{ asset('js/validations/index.js') }}"></script>
 <script src="{{ asset('js/tramites/data-loader.js') }}"></script>
 <script src="{{ asset('js/tramites/create-form.js') }}"></script>
 <script src="{{ asset('js/tramites/correction-validator.js') }}"></script>
 <script src="{{ asset('js/revision/archivos-tiempo-real.js') }}"></script>
 
-<!-- Configuración de datos del formulario -->
+@if(isset($viewModel))
+@php
+    $datosDomicilio = $viewModel->getDatosDomicilioForm();
+    $validationErrors = $errors->any() ? $errors->keys()->toArray() : [];
+    
+    $viewModelData = [
+        'datosGenerales' => [
+            'razon_social' => $viewModel->getDatosGenerales()['razon_social'] ?? '',
+            'rfc' => $viewModel->getDatosGenerales()['rfc'] ?? '',
+            'curp' => $viewModel->getDatosGenerales()['curp'] ?? ''
+        ],
+        'datosDomicilio' => [
+            'calle' => $datosDomicilio['calle'] ?? '',
+            'numero_exterior' => $datosDomicilio['numero_exterior'] ?? '',
+            'numero_interior' => $datosDomicilio['numero_interior'] ?? '',
+            'asentamiento' => $datosDomicilio['asentamiento'] ?? '',
+            'codigo_postal' => $datosDomicilio['codigo_postal'] ?? '',
+            'municipio' => $datosDomicilio['municipio'] ?? '',
+            'estado' => $datosDomicilio['estado'] ?? ''
+        ]
+    ];
+@endphp
 <script>
+window.viewModelData = JSON.parse('{{ json_encode($viewModelData) }}');
+window.validationErrors = JSON.parse('{{ json_encode($validationErrors) }}');
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Configurar datos del ViewModel
-    @if(isset($viewModel))
-        const viewModelData = {
-            datosGenerales: {
-                razon_social: '{{ $viewModel->getDatosGenerales()["razon_social"] ?? "" }}',
-                rfc: '{{ $viewModel->getDatosGenerales()["rfc"] ?? "" }}',
-                curp: '{{ $viewModel->getDatosGenerales()["curp"] ?? "" }}'
-            },
-            datosDomicilio: {
-                @php
-                    $datosDomicilio = $viewModel->getDatosDomicilioForm();
-                @endphp
-                calle: '{{ $datosDomicilio["calle"] ?? "" }}',
-                numero_exterior: '{{ $datosDomicilio["numero_exterior"] ?? "" }}',
-                numero_interior: '{{ $datosDomicilio["numero_interior"] ?? "" }}',
-                asentamiento: '{{ $datosDomicilio["asentamiento"] ?? "" }}',
-                codigo_postal: '{{ $datosDomicilio["codigo_postal"] ?? "" }}',
-                municipio: '{{ $datosDomicilio["municipio"] ?? "" }}',
-                estado: '{{ $datosDomicilio["estado"] ?? "" }}'
-            }
-        };
-        
-        // Configurar errores de validación
-        const validationErrors = [
-            @if($errors->any())
-                @foreach($errors->keys() as $field)
-                    '{{ $field }}',
-                @endforeach
-            @endif
-        ];
-        
-        // Inicializar cargador de datos
-        TramiteDataLoader.fromBladeData(viewModelData, validationErrors);
-    @endif
-    
-    // Configurar éxito del trámite
-    @if(session('success') && session('tramite_creado') === true)
-        window.tramiteCreado = true;
-    @endif
-    
-    // Configurar modo corrección
-    @if(isset($modoCorreccion) && $modoCorreccion)
-        window.modoCorreccion = true;
-        console.log('Modo corrección activado');
-    @endif
+    TramiteDataLoader.fromBladeData(window.viewModelData, window.validationErrors);
 });
 </script>
+@endif
+
+@if(session('success') && session('tramite_creado') === true)
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    window.tramiteCreado = true;
+});
+</script>
+@endif
+
+@if(isset($modoCorreccion) && $modoCorreccion)
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    window.modoCorreccion = true;
+    console.log('Modo corrección activado');
+});
+</script>
+@endif
+
 @endsection 

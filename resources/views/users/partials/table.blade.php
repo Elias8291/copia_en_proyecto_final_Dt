@@ -64,8 +64,6 @@
                     @endif
                 </div>
             </div>
-            
-            <!-- Roles y estado -->
             <div class="flex flex-wrap items-center gap-3 mt-4">
                 @foreach($user->roles as $role)
                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
@@ -104,8 +102,6 @@
         @endforelse
     </div>
 </div>
-
-<!-- Vista desktop -->
 <div class="hidden md:block">
     <div class="overflow-x-auto">
         <table class="w-full divide-y divide-gray-200">

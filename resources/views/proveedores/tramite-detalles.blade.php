@@ -6,7 +6,6 @@
 <div class="min-h-screen">
     <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
         
-        <!-- Header del Trámite -->
         <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-6">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -66,7 +65,6 @@
         </div>
 
         <div class="space-y-6">
-            <!-- Datos Generales -->
             @if(!empty($datosCompletos['datos_generales']))
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <button type="button" onclick="toggleSection('datos-generales')" 
@@ -89,7 +87,6 @@
             </div>
             @endif
 
-            <!-- Domicilio -->
                             @if(!empty($datosCompletos['domicilio']))
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <button type="button" onclick="toggleSection('domicilio')" 
@@ -112,7 +109,6 @@
             </div>
             @endif
 
-            <!-- Actividades Económicas -->
                             @if(!empty($datosCompletos['actividades']))
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <button type="button" onclick="toggleSection('actividades')" 
@@ -135,7 +131,6 @@
             </div>
             @endif
 
-            <!-- Constitución (solo para personas morales) -->
             @if($tramite->proveedor->tipo_persona === 'Moral' && !empty($datosCompletos['constitucion']))
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <button type="button" onclick="toggleSection('constitucion')" 
@@ -158,7 +153,6 @@
             </div>
             @endif
 
-            <!-- Apoderado Legal (solo para personas morales) -->
                             @if($tramite->proveedor->tipo_persona === 'Moral' && !empty($datosCompletos['apoderado']))
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <button type="button" onclick="toggleSection('apoderado')" 
@@ -181,7 +175,6 @@
             </div>
             @endif
 
-            <!-- Accionistas (solo para personas morales) -->
             @if($tramite->proveedor->tipo_persona === 'Moral' && !empty($datosCompletos['accionistas']))
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <button type="button" onclick="toggleSection('accionistas')" 
@@ -204,7 +197,6 @@
             </div>
             @endif
 
-            <!-- Documentos -->
                             @if(!empty($datosCompletos['archivos']))
             <div class="bg-white rounded-lg shadow-md border border-gray-200">
                 <button type="button" onclick="toggleSection('archivos')" 
@@ -226,7 +218,6 @@
                                                     @foreach($datosCompletos['archivos'] as $archivo)
                             <div class="bg-white border border-gray-300 rounded-lg p-4 flex flex-col h-full">
                                 <div class="text-center flex-grow">
-                                    <!-- Icono según tipo de archivo -->
                                     <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                                         @php
                                             $extension = $archivo['extension'] ?? pathinfo($archivo['ruta'] ?? '', PATHINFO_EXTENSION);
@@ -256,24 +247,18 @@
                                         @endswitch
                                     </div>
                                     
-                                    <!-- Nombre del archivo -->
                                     <h5 class="font-medium text-gray-900 mb-2 text-sm">
                                                                                     {{ $archivo['nombre_original'] ?? $archivo['nombre_catalogo'] ?? 'Archivo' }}
                                     </h5>
                                     
-                                    <!-- Nombre original -->
                                     @if(!empty($archivo['nombre_original']))
                                     <p class="text-xs text-gray-500 mb-3">{{ $archivo['nombre_original'] }}</p>
                                     @endif
-                                    
-                                    <!-- Tipo de archivo -->
                                     <div class="mb-3">
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
                                             {{ strtoupper($extension) }}
                                         </span>
                                     </div>
-                                    
-                                    <!-- Estado del archivo -->
                                     @if(isset($archivo['status']))
                                     <div class="mb-3">
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
@@ -286,7 +271,6 @@
                                     </div>
                                     @endif
                                     
-                                    <!-- Botón para ver/descargar -->
                                     <a href="{{ route('revisiones.mostrar-archivo', $archivo['id']) }}" 
                                        target="_blank"
                                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#9d2449] to-[#7a1a37] rounded-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5">
@@ -320,8 +304,6 @@ function toggleSection(sectionName) {
         icon.style.transform = 'rotate(0deg)';
     }
 }
-
-// Auto-expandir la primera sección
 document.addEventListener('DOMContentLoaded', function() {
     const firstSection = document.getElementById('datos-generales-content');
     if (firstSection) {

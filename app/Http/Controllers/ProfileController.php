@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\ProfileUpdateRequest;
 
 class ProfileController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $user->load('roles');
         
         return view('profile.index', compact('user'));
@@ -19,7 +21,8 @@ class ProfileController extends Controller
 
     public function edit()
     {
-        $user = auth()->user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $user->load('roles');
         
         return view('profile.edit', compact('user'));
@@ -30,11 +33,12 @@ class ProfileController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = auth()->user();
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
             
             $user->update([
                 'nombre' => $request->nombre,
-                'email' => $request->email,
+                'correo' => $request->correo,
             ]);
 
             if ($request->filled('password')) {

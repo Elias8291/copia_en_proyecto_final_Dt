@@ -17,7 +17,6 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Obtener estadísticas reales de todas las entidades
         $estadisticas = [
             'totalUsuarios' => User::count(),
             'totalTramites' => Tramite::count(),

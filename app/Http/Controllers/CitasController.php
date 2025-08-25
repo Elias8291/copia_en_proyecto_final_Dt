@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Http\Requests\CitaRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 
@@ -15,7 +16,6 @@ class CitasController extends Controller
 {
     public function __construct()
     {
-        // Middleware de permisos para citas
         $this->middleware(PermissionMiddleware::class . ':citas.ver')->only(['index', 'show']);
         $this->middleware(PermissionMiddleware::class . ':citas.crear')->only(['create', 'store']);
         $this->middleware(PermissionMiddleware::class . ':citas.editar')->only(['edit', 'update', 'marcarAsistida', 'marcarNoAsistio', 'cancelar']);
@@ -81,7 +81,6 @@ class CitasController extends Controller
         $validated = $request->validated();
 
         DB::transaction(function() use ($validated) {
-            // Asignar revisor automáticamente si no se especifica
             if (!isset($validated['asignado_a']) || empty($validated['asignado_a'])) {
                 $validated['asignado_a'] = $this->asignarRevisorAutomatico($validated['tipo_cita']);
             }
@@ -108,8 +107,7 @@ class CitasController extends Controller
     }
 
     /**
-     * Asigna automáticamente un revisor según el tipo de cita
-     * Prioriza a los revisores con menos citas asignadas
+     * Asigna automáticamente un revisor según el tipo de cita      
      */
     private function asignarRevisorAutomatico(string $tipoCita): ?int
     {
@@ -121,7 +119,6 @@ class CitasController extends Controller
         };
 
         try {
-            // Buscar revisor con menos citas activas asignadas
             $revisor = User::role($rolRequerido)
                 ->withCount(['citasAsignadas' => function($query) {
                     $query->whereIn('estado', ['Asignada']);
@@ -129,7 +126,7 @@ class CitasController extends Controller
                 ->orderBy('citas_asignadas_count', 'asc')
                 ->first();
             
-            \Log::info('CitasController: Revisor asignado automáticamente', [
+            Log::info('CitasController: Revisor asignado automáticamente', [
                 'tipo_cita' => $tipoCita,
                 'rol_requerido' => $rolRequerido,
                 'revisor_id' => $revisor ? $revisor->id : null,
@@ -140,7 +137,7 @@ class CitasController extends Controller
             return $revisor ? $revisor->id : null;
             
         } catch (\Exception $e) {
-            \Log::error('CitasController: Error al asignar revisor automático', [
+            Log::error('CitasController: Error al asignar revisor automático', [
                 'tipo_cita' => $tipoCita,
                 'error' => $e->getMessage()
             ]);

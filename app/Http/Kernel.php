@@ -26,7 +26,6 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\CheckSessionExpiry::class,
             \App\Http\Middleware\NoCacheHeaders::class,
-            \App\Http\Middleware\HandleLargeUploads::class,
             \App\Http\Middleware\SetTimezone::class,
             \App\Http\Middleware\AutoLoggingMiddleware::class,
             \App\Http\Middleware\OptimizeResponse::class,
@@ -53,7 +52,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'session.expiry' => \App\Http\Middleware\CheckSessionExpiry::class,
         'no.cache' => \App\Http\Middleware\NoCacheHeaders::class,
-        'handle.large.uploads' => \App\Http\Middleware\HandleLargeUploads::class,
 
         'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

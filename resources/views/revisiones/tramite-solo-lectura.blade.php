@@ -55,8 +55,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Datos Generales -->
             <div class="mb-6" data-section="datos_generales">
                 <div class="mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Datos Generales</h2>
@@ -68,8 +66,6 @@
                     ])
                 </div>
             </div>
-
-            <!-- Actividades Económicas -->
             <div class="mb-6" data-section="actividades">
                 <div class="mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Actividades Económicas</h2>
@@ -81,8 +77,6 @@
                     ])
                 </div>
             </div>
-
-            <!-- Domicilio -->
             <div class="mb-6" data-section="domicilio">
                 <div class="mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Domicilio</h2>
@@ -94,9 +88,7 @@
                     ])
                 </div>
             </div>
-
             @if($viewModel->isPersonaMoral())
-                <!-- Constitución -->
                 <div class="mb-6" data-section="constitucion">
                     <div class="mb-4">
                         <h2 class="text-xl font-bold text-gray-800">Constitución</h2>
@@ -108,8 +100,6 @@
                         ])
                     </div>
                 </div>
-
-                <!-- Accionistas -->
                 <div class="mb-6" data-section="accionistas">
                     <div class="mb-4">
                         <h2 class="text-xl font-bold text-gray-800">Accionistas</h2>
@@ -121,8 +111,6 @@
                         ])
                     </div>
                 </div>
-
-                <!-- Apoderado Legal -->
                 <div class="mb-6" data-section="apoderado">
                     <div class="mb-4">
                         <h2 class="text-xl font-bold text-gray-800">Apoderado Legal</h2>
@@ -135,8 +123,6 @@
                     </div>
                 </div>
             @endif
-
-            <!-- Archivos -->
             <div class="mb-6" data-section="archivos">
                 <div class="mb-4">
                     <h2 class="text-xl font-bold text-gray-800">Archivos</h2>
@@ -154,8 +140,7 @@
         </div>
     </div>
 </div>
-
-<!-- Navegación flotante -->
+                                
 <div class="fixed bottom-6 right-6 space-y-2 z-40">
     <button type="button" id="btn-prev" onclick="navigateSection('prev')" 
             class="w-12 h-12 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-lg flex items-center justify-center transition-colors">

@@ -46,7 +46,7 @@
 
         <div class="space-y-6">
             @if($datosCompletos)
-                <!-- Datos Generales -->
+                
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                    
                     @if($datosCompletos && isset($datosCompletos['datos_generales']) && !empty($datosCompletos['datos_generales']))
@@ -55,14 +55,9 @@
                         <x-forms.datos-generales :datos="['rfc' => $proveedor->rfc]" :editable="false" />
                     @endif
                 </div>
-
-                <!-- Domicilio -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                  
                     <x-forms.domicilio :datos="($datosCompletos && isset($datosCompletos['direccion'])) ? $datosCompletos['direccion'] : []" :editable="false" />
                 </div>
-
-                <!-- Actividades Económicas -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="flex items-center space-x-3 mb-6">
                         <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
@@ -77,33 +72,23 @@
                     </div>
                     
                     <x-forms.actividades-economicas :datos="($datosCompletos && isset($datosCompletos['actividades_economicas'])) ? $datosCompletos['actividades_economicas'] : []" :editable="false" />
-                </div>
-
-                <!-- Constitución -->
+                </div> 
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">                       
                     <x-forms.constitucion :datos="($datosCompletos && isset($datosCompletos['constitucion'])) ? $datosCompletos['constitucion'] : []" :editable="false" />
                 </div>
 
-                <!-- Apoderado Legal -->
+                
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     
                     <x-forms.apoderado :datos="($datosCompletos && isset($datosCompletos['apoderado_legal'])) ? $datosCompletos['apoderado_legal'] : []" :editable="false" />
-                </div>
-
-                <!-- Accionistas -->
+                </div>                
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     
                     <x-forms.accionistas :datos="($datosCompletos && isset($datosCompletos['accionistas'])) ? $datosCompletos['accionistas'] : []" :editable="false" />
                 </div>
-
-                <!-- Documentos -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-                   
-                    
                     <x-forms.documentos :datos="($datosCompletos && isset($datosCompletos['documentos'])) ? $datosCompletos['documentos'] : []" :editable="false" />
                 </div>
-
-                <!-- Estado de Secciones -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="flex items-center space-x-3 mb-6">
                         <div class="w-8 h-8 bg-white border border-gray-300 rounded-lg flex items-center justify-center">
@@ -116,12 +101,9 @@
                             <p class="text-sm text-gray-500">Estado de cada sección del trámite</p>
                         </div>
                     </div>
-                    
                     <x-forms.estado-seccion :datos="($datosCompletos && isset($datosCompletos['estado_seccion'])) ? $datosCompletos['estado_seccion'] : []" :editable="false" />
                 </div>
-
             @else
-                <!-- No hay datos -->
                 <div class="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                     <div class="p-8 text-center">
                         <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>

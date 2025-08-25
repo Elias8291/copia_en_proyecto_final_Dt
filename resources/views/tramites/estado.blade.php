@@ -5,14 +5,11 @@
 @section('content')
 <div class="min-h-screen">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-
         @if($tramitePendiente)
             @php
                 $statusEnum = \App\Enums\TramiteStatus::tryFrom($tramitePendiente->status);
                 $statusLabel = $statusEnum ? $statusEnum->label() : $tramitePendiente->status;
             @endphp
-
-
             <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6">
 
                 <div class="bg-gradient-to-r from-[#9D2449] to-[#B91C1C] p-6 text-center">
@@ -165,7 +162,6 @@
                                         </div>
                                     </div>
                                 @else
-                                    <!-- Información de la cita -->
                                     <div class="bg-white/80 rounded-lg p-3 mb-3">
                                         <div class="text-center">
                                             <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
@@ -178,7 +174,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Ubicación simple -->
                                     <div class="bg-white/80 rounded-lg p-3 mb-3">
                                         <div class="flex items-center space-x-2 mb-2">
                                             <span class="text-sm">📍</span>
@@ -191,7 +186,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Quién debe asistir -->
                                     <div class="bg-white/80 rounded-lg p-3">
                                         <div class="flex items-center space-x-2 mb-2">
                                             <span class="text-sm">👤</span>
@@ -291,12 +285,7 @@
                     @endif
                 </div>
             </div>
-
-
-
-
         @else
-            {{-- No hay trámites pendientes - Mostrar estado del proveedor --}}
             @if($proveedores && $proveedores->isNotEmpty())
                 @php
                     $proveedor = $proveedores->first();
@@ -305,7 +294,6 @@
                     $requiereActualizacion = false;
                     $requiereInscripcion = false;
                     
-                    // Verificar si hay trámites rechazados recientes
                     $tramiteRechazado = \App\Models\Tramite::where('proveedor_id', $proveedor->id)
                         ->where('status', 'Rechazado')
                         ->orderBy('created_at', 'desc')
@@ -315,19 +303,15 @@
                         $fechaVencimiento = \Carbon\Carbon::parse($proveedor->fecha_vencimiento_padron);
                         $diasRestantes = $fechaVencimiento->diffInDays(now(), false);
                         
-                        // Lógica ajustada según los requerimientos
                         if ($proveedor->estado_padron === 'Activo') {
-                            // Si está activo, solo mostrar renovación/actualización 7 días antes
                             if ($diasRestantes <= 7 && $diasRestantes >= 0) {
                                 $requiereActualizacion = true;
                                 $requiereRenovacion = true;
                             }
                         } elseif ($proveedor->estado_padron === 'Vencido' || $tramiteRechazado) {
-                            // Si está vencido o tiene trámite rechazado, requiere inscripción
                             $requiereInscripcion = true;
                         }
                     } else {
-                        // Si no tiene fecha de vencimiento, probablemente necesite inscripción
                         $requiereInscripcion = true;
                     }
                 @endphp
@@ -389,7 +373,6 @@
                             </div>
                         </div>
                         
-                        {{-- Alertas y acciones según el estado --}}
                         @if($requiereActualizacion && $requiereRenovacion)
                             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                                 <div class="flex items-center space-x-2 mb-3">
@@ -465,7 +448,6 @@
                     </div>
                 </div>
             @else
-                {{-- Usuario sin proveedor asociado --}}
                 <div class="bg-white rounded-xl shadow-lg border border-gray-200">
                     <div class="bg-gradient-to-r from-[#9D2449] to-[#B91C1C] p-6 text-center">
                         <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-3">
@@ -531,8 +513,7 @@
                     </div>
                 </div>
             @endif
-        @endif
-
+        @endif      
         <div class="text-center mt-6">
             <a href="{{ route('tramites.index') }}" 
                class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors duration-200">

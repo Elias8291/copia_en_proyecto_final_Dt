@@ -16,7 +16,7 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
      */
     protected function getPayload($email, $token)
     {
-        return ['email' => $email, 'token' => $this->hasher->make($token), 'created_at' => new \DateTime];
+        return ['correo' => $email, 'token' => $this->hasher->make($token), 'created_at' => new \DateTime];
     }
 
     /**
@@ -28,7 +28,7 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     public function exists(CanResetPasswordContract $user, $token)
     {
         $record = (array) $this->getTable()->where(
-            'email', $user->getEmailForPasswordReset()
+            'correo', $user->getEmailForPasswordReset()
         )->first();
 
         return $record &&
@@ -74,7 +74,7 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
      */
     protected function deleteExisting(CanResetPasswordContract $user)
     {
-        return $this->getTable()->where('email', $user->getEmailForPasswordReset())->delete();
+        return $this->getTable()->where('correo', $user->getEmailForPasswordReset())->delete();
     }
 
     /**
@@ -85,9 +85,45 @@ class CustomDatabaseTokenRepository extends DatabaseTokenRepository
     public function recentlyCreatedToken(CanResetPasswordContract $user)
     {
         $record = (array) $this->getTable()->where(
-            'email', $user->getEmailForPasswordReset()
+            'correo', $user->getEmailForPasswordReset()
         )->first();
 
         return $record && $this->tokenRecentlyCreated($record['created_at']);
+    }
+
+    /**
+     * Find a user by email and validate the token.
+     *
+     * @param  string  $email
+     * @param  string  $token
+     * @return \Illuminate\Contracts\Auth\CanResetPassword|null
+     */
+    public function findUserByToken($email, $token)
+    {
+        // Find the user by email (correo field)
+        $user = \App\Models\User::where('correo', $email)->first();
+
+        if (!$user) {
+            return null;
+        }
+
+        // Check if token exists and is valid
+        $record = (array) $this->getTable()->where('correo', $email)->first();
+
+        if (!$record) {
+            return null;
+        }
+
+        // Check if token is expired
+        if ($this->tokenExpired($record['created_at'])) {
+            return null;
+        }
+
+        // Verify the token
+        if (!$this->hasher->check($token, $record['token'])) {
+            return null;
+        }
+
+        return $user;
     }
 }

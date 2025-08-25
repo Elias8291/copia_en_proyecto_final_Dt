@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Actividad;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CatalogoActividadController extends Controller
 {
@@ -14,13 +15,9 @@ class CatalogoActividadController extends Controller
     {
         try {
             $query = trim($request->input('q'));
-
-            // Validar longitud mínima
             if (!$query || strlen($query) < 2) {
                 return response()->json([]);
-            }
-
-            // Buscar actividades
+            }   
             $actividades = Actividad::where('nombre', 'like', "%{$query}%")
                 ->orWhere('descripcion', 'like', "%{$query}%")
                 ->orderBy('nombre')
@@ -30,7 +27,7 @@ class CatalogoActividadController extends Controller
             return response()->json($actividades);
 
         } catch (\Exception $e) {
-            \Log::error('Error en búsqueda de actividades: ' . $e->getMessage());
+            Log::error('Error en búsqueda de actividades: ' . $e->getMessage());
             return response()->json(['error' => 'Error interno del servidor'], 500);
         }
     }

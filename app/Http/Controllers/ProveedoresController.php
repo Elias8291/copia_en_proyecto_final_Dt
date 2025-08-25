@@ -9,11 +9,15 @@ use App\Models\Tramite;
 use App\Services\Tramites\DataRetrievalService;
 use App\ViewModels\FormDataViewModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ProveedoresExcelCompleto;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Carbon\Carbon;
 
+/**
+ * Controlador para gestión de proveedores del sistema
+ */
 class ProveedoresController extends Controller
 {
     private DataRetrievalService $dataRetrievalService;
@@ -111,36 +115,30 @@ class ProveedoresController extends Controller
             });
         }
 
-        // Filtro para proveedores con historial (múltiples trámites)
         if ($request->filled('con_historial')) {
             switch ($request->con_historial) {
                 case 'si':
-                    // Proveedores con 2 o más trámites
                     $query->has('tramites', '>=', 2);
                     break;
                 case 'no':
-                    // Proveedores con solo 1 trámite o ninguno
                     $query->has('tramites', '<=', 1);
                     break;
                 case 'sin_tramites':
-                    // Proveedores sin trámites
                     $query->doesntHave('tramites');
                     break;
                 case 'renovadores':
-                    // Proveedores que renuevan constantemente (patrón de renovación)
                     $query->whereHas('tramites', function($q) {
                         $q->where('tipo_tramite', 'Renovacion');
-                    }, '>=', 2) // Al menos 2 renovaciones
+                    }, '>=', 2)
                     ->whereHas('tramites', function($q) {
                         $q->where('tipo_tramite', 'Inscripcion');
-                    }); // Y al menos 1 inscripción inicial
+                    });
                     break;
             }
         }
 
 
 
-        // Filtro por trámites específicos (tipo y/o año)
         if ($request->filled('tipo_tramite_año') || $request->filled('año_especifico')) {
             $query->whereHas('tramites', function($q) use ($request) {
                 if ($request->filled('tipo_tramite_año')) {
@@ -152,29 +150,24 @@ class ProveedoresController extends Controller
             });
         }
 
-        // Filtro trimestral - Proveedores activos en el período seleccionado
         if ($request->filled('año_trimestre') && $request->filled('trimestre')) {
             $año = (int) $request->año_trimestre;
             $trimestre = (int) $request->trimestre;
             
-            // Definir rangos de meses por trimestre
             $rangosTrimestrales = [
-                1 => ['inicio' => 1, 'fin' => 3],   // Q1: Enero-Marzo
-                2 => ['inicio' => 4, 'fin' => 6],   // Q2: Abril-Junio  
-                3 => ['inicio' => 7, 'fin' => 9],   // Q3: Julio-Septiembre
-                4 => ['inicio' => 10, 'fin' => 12]  // Q4: Octubre-Diciembre
+                1 => ['inicio' => 1, 'fin' => 3],
+                2 => ['inicio' => 4, 'fin' => 6],
+                3 => ['inicio' => 7, 'fin' => 9],
+                4 => ['inicio' => 10, 'fin' => 12]
             ];
             
             if (isset($rangosTrimestrales[$trimestre])) {
                 $mesInicio = $rangosTrimestrales[$trimestre]['inicio'];
                 $mesFin = $rangosTrimestrales[$trimestre]['fin'];
                 
-                // Fechas del trimestre
                 $inicioTrimestre = Carbon::create($año, $mesInicio, 1)->startOfMonth();
                 $finTrimestre = Carbon::create($año, $mesFin, 1)->endOfMonth();
                 
-                // Filtrar proveedores que estuvieron activos durante este período
-                // Un proveedor está activo si su fecha de vencimiento es posterior al inicio del trimestre
                 $query->where(function($q) use ($inicioTrimestre, $finTrimestre) {
                     $q->where('fecha_vencimiento_padron', '>=', $inicioTrimestre)
                       ->where('fecha_alta_padron', '<=', $finTrimestre);
@@ -182,7 +175,6 @@ class ProveedoresController extends Controller
             }
         }
 
-        // Ordenamiento
         $ordenPor = $request->get('orden_por', 'id');
         $direccion = $request->get('direccion', 'desc');
         
@@ -226,12 +218,11 @@ class ProveedoresController extends Controller
             return Excel::download(new ProveedoresExcelCompleto($filtros), $nombreArchivo);
         }
 
-        // Obtener años disponibles de fechas de alta de padrón
         $añosDisponibles = \App\Models\Proveedor::whereNotNull('fecha_alta_padron')
             ->selectRaw('DISTINCT YEAR(fecha_alta_padron) as año')
             ->orderBy('año', 'desc')
             ->pluck('año')
-            ->filter(); // Eliminar valores nulos
+            ->filter();
 
         return view('proveedores.index', compact('todosProveedores', 'sectores', 'estados', 'añosDisponibles'));
     }
@@ -252,40 +243,33 @@ class ProveedoresController extends Controller
             'fecha_vencimiento_padron' => 'nullable|date|after:fecha_alta_padron',
             'pv_numero' => 'nullable|string|max:20'
         ]);
-        $validated['usuario_id'] = auth()->id();
+        $validated['usuario_id'] = Auth::id();
         Proveedor::create($validated);
         return redirect()->route('proveedores.index')->with('success', 'Proveedor creado exitosamente.');
     }
 
     public function show(Request $request, Proveedor $proveedor)
     {
-        // Determinar el orden del historial
-        $ordenHistorial = $request->get('orden_historial', 'reciente'); // 'reciente' o 'pasados'
+        $ordenHistorial = $request->get('orden_historial', 'reciente');
         
-        // Obtener el RFC del proveedor
         $rfc = $proveedor->rfc;
         
-        // Obtener TODOS los trámites con este RFC (no solo del proveedor específico)
         $historialTramitesQuery = Tramite::whereHas('proveedor', function($query) use ($rfc) {
             $query->where('rfc', $rfc);
         })->with(['proveedor', 'datosGenerales', 'oficios']);
         
         if ($ordenHistorial === 'pasados') {
-            // Ordenar por fecha más antigua primero
             $historialTramites = $historialTramitesQuery
                 ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) ASC')
                 ->get();
         } else {
-            // Ordenar por fecha más reciente primero (default)
             $historialTramites = $historialTramitesQuery
                 ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
                 ->get();
         }
         
-        // Cargar las relaciones del proveedor actual
         $proveedor->load(['usuario']);
         
-        // Obtener el último trámite para mostrar datos completos
         $ultimoTramite = $historialTramites->first();
         $datosCompletos = null;
 
@@ -340,7 +324,6 @@ class ProveedoresController extends Controller
 
     public function export(Request $request)
     {
-        // Obtener todos los filtros de la request, incluyendo los nuevos parámetros
         $filtros = array_filter($request->only([
             'search', 
             'estado', 
@@ -360,15 +343,12 @@ class ProveedoresController extends Controller
             'trimestre'
         ]), fn($v) => is_array($v) ? !empty($v) : $v !== null && $v !== '');
 
-        // Obtener columnas seleccionadas, por defecto todas las básicas
         $columnasSeleccionadas = $request->get('columns', [
             'id', 'rfc', 'razon_social', 'tipo_persona', 'estado_padron', 'telefono', 'domicilio', 'dias_restantes'
         ]);
 
-        // Agregar configuración de exportación a los filtros
         $filtros['columns'] = $columnasSeleccionadas;
         
-        // Generar nombre de archivo más descriptivo
         $sufijo = '';
         if ($request->get('solo_activos')) {
             $sufijo .= '_activos';
@@ -382,21 +362,15 @@ class ProveedoresController extends Controller
         return Excel::download(new ProveedoresExcelCompleto($filtros), $nombreArchivo);
     }
 
-    /**
-     * Vista pública de proveedor (sin autenticación)
-     */
     public function publico(Proveedor $proveedor)
     {
-        // Cargar relaciones necesarias
         $proveedor->load(['usuario']);
         
-        // Obtener el último trámite del proveedor
         $ultimoTramite = $proveedor->tramites()
             ->with(['actividades.actividad', 'direcciones.estado'])
             ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
             ->first();
         
-        // Obtener direcciones del último trámite si existe
         $direcciones = collect();
         if ($ultimoTramite && $ultimoTramite->direcciones->count() > 0) {
             $direcciones = $ultimoTramite->direcciones;
@@ -405,28 +379,21 @@ class ProveedoresController extends Controller
         return view('proveedores.publico', compact('proveedor', 'ultimoTramite', 'direcciones'));
     }
 
-    /**
-     * Vista pública de proveedor por token (sin autenticación)
-     */
     public function publicoPorToken(string $token)
     {
-        // Buscar proveedor por token
         $proveedor = Proveedor::buscarPorToken($token);
         
         if (!$proveedor) {
             abort(404, 'Token no válido o proveedor no encontrado');
         }
 
-        // Cargar relaciones necesarias
         $proveedor->load(['usuario']);
         
-        // Obtener el último trámite del proveedor
         $ultimoTramite = $proveedor->tramites()
             ->with(['actividades.actividad', 'direcciones.estado'])
             ->orderByRaw('COALESCE(fecha_finalizacion, fecha_inicio, created_at) DESC')
             ->first();
         
-        // Obtener direcciones del último trámite si existe
         $direcciones = collect();
         if ($ultimoTramite && $ultimoTramite->direcciones->count() > 0) {
             $direcciones = $ultimoTramite->direcciones;

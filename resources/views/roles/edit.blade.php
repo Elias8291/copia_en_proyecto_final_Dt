@@ -209,8 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
             selectAllCheckbox.indeterminate = anyChecked && !allChecked;
         });
     });
-    
-    // Inicializar estado del checkbox "seleccionar todos"
     const allChecked = Array.from(permissionCheckboxes).every(cb => cb.checked);
     const anyChecked = Array.from(permissionCheckboxes).some(cb => cb.checked);
     

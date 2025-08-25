@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Log;
 
 class VerificationController extends Controller
 {
-    /** Verificar email con token */
     public function verify(Request $request, $id, $token)
     {
         $user = User::find($id);
@@ -28,18 +27,14 @@ class VerificationController extends Controller
                 'El enlace de verificación no es válido o ha expirado.');
         }
 
-        // Verificar si han pasado más de 72 horas
         if ($user->created_at->diffInHours(now()) > 72) {
             Log::info('Token de verificación expirado', ['user_id' => $user->id]);
-
-            // Eliminar usuario y datos relacionados
             $this->deleteUserData($user);
 
             return redirect()->route('register')->with('error',
                 'El enlace de verificación ha expirado. Tu cuenta ha sido eliminada. Por favor, regístrate nuevamente.');
         }
 
-        // Activar usuario
         $user->update([
             'estado' => 'activo',
             'email_verified_at' => now(),
@@ -52,7 +47,6 @@ class VerificationController extends Controller
             '¡Cuenta verificada exitosamente! Ya puedes iniciar sesión.');
     }
 
-    /** Reenviar correo de verificación */
     public function resend(Request $request)
     {
         $request->validate([
@@ -68,7 +62,6 @@ class VerificationController extends Controller
                 'No se encontró una cuenta pendiente de verificación con este correo.');
         }
 
-        // Verificar si han pasado más de 72 horas
         if ($user->created_at->diffInHours(now()) > 72) {
             $this->deleteUserData($user);
 
@@ -76,7 +69,6 @@ class VerificationController extends Controller
                 'Tu cuenta ha expirado y ha sido eliminada. Por favor, regístrate nuevamente.');
         }
 
-        // Generar nuevo token y enviar correo
         $user->update(['verification_token' => \Illuminate\Support\Str::random(64)]);
         \Illuminate\Support\Facades\Mail::to($user->correo)->send(new \App\Mail\VerifyEmail($user));
 
@@ -86,10 +78,8 @@ class VerificationController extends Controller
             'Correo de verificación reenviado exitosamente.');
     }
 
-    /** Eliminar datos del usuario en cascada */
     private function deleteUserData($user)
     {
-        // Eliminar proveedor asociado si existe
         if ($user->proveedor) {
             $user->proveedor->delete();
         }

@@ -7,10 +7,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 
             @if($tramitePendiente)
-            <!-- Tarjeta Principal del Trámite -->
             <div class="max-w-6xl mx-auto">
                 <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-                    <!-- Header Elegante -->
                     <div class="bg-gradient-to-br from-red-600 to-red-800 p-6 relative overflow-hidden border-b border-gray-200">
                         <div class="absolute inset-0 bg-gradient-to-r from-red-500/20 to-red-600/30"></div>
                         <div class="relative z-10">
@@ -40,12 +38,9 @@
                         </div>
                     </div>
 
-                    <!-- Contenido Principal -->
                     <div class="p-6">
 
-                        <!-- Información del Trámite -->
                         <div class="space-y-6 mb-6">
-                            <!-- Datos del Trámite -->
                             <div class="bg-gray-50 rounded-xl p-6 border border-gray-200 shadow-sm">
                                 <div class="text-center mb-6">
                                     <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center shadow-md mx-auto mb-3">
@@ -99,7 +94,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Estado Actual Detallado -->
                                 <div class="mt-6 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg p-4 border border-red-200">
                                     <div class="flex items-center justify-center space-x-2">
                                         <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
@@ -110,7 +104,6 @@
                                 </div>
                             </div>
 
-                            <!-- Sección de Correcciones -->
                             <div class="bg-red-50 rounded-xl p-6 border border-red-200 shadow-sm">
                                 <div class="text-center mb-6">
                                     <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center shadow-md mx-auto mb-3">
@@ -168,7 +161,6 @@
 
                     </div>
 
-                    <!-- Botones de Acción -->
                     <div class="flex justify-center space-x-4 pt-6 pb-6">
                         <a href="{{ route('tramites.edit', $tramitePendiente->id) }}" 
                            class="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
@@ -188,8 +180,7 @@
                     </div>
                 </div>
             </div>
-        @else
-            <!-- No hay trámite pendiente -->
+        @else           
             <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl overflow-hidden border border-gray-200/70">
                 <div class="p-8 text-center">
                     <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -209,7 +200,6 @@
                 </div>
             </div>
         @endif
-
         </div>
     </div>
 @endsection 

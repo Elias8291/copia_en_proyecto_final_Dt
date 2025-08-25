@@ -12,13 +12,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    {{-- Vite Assets --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <link rel="stylesheet" href="/css/global-input-styles.css">
 
     <style>
-        /* Solo estilos esenciales que no se pueden hacer con Tailwind */
         .bg-elegant-pattern::before { 
             content: '';
             position: absolute;
@@ -67,9 +65,7 @@
         <div class="w-full max-w-6xl mx-auto">
             <div class="grid lg:grid-cols-2 min-h-[500px]">    
                 <div class="hidden lg:block relative overflow-hidden rounded-l-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-                     <!-- Carousel Container -->         
                     <div id="carousel" class="relative w-full h-full group">
-                        <!-- Slide 1 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-100" data-slide="0">
                             <div class="relative w-full h-full">
                                 <img src="/images/carrousel_1.webp" 
@@ -79,17 +75,14 @@
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
                             </div>
                             
-                            <!-- Contenido Principal -->
                             <div class="absolute inset-0 flex items-center justify-center p-12">
                                 <div class="text-center max-w-md mx-auto space-y-8">
-                                    <!-- Icono Principal -->
                                     <div class="mx-auto w-20 h-20 bg-gradient-to-br from-white/15 to-white/5 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 shadow-2xl">
                                         <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                         </svg>
                                     </div>
                                     
-                                    <!-- Título Principal -->
                                     <div class="space-y-3">
                                         <h2 class="text-3xl font-light text-white tracking-wider">
                                             Registro de Proveedores
@@ -113,7 +106,6 @@
                             </div>
                         </div>
 
-                        <!-- Slide 2 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-0" data-slide="1">
                             <div class="relative w-full h-full">
                                 <img src="/images/carrousel2.webp" 
@@ -154,7 +146,6 @@
                             </div>
                         </div>
 
-                        <!-- Slide 3 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-0" data-slide="2">
                             <div class="relative w-full h-full">
                                 <img src="/images/carrousel3.webp" 
@@ -195,7 +186,6 @@
                             </div>
                         </div>
 
-                        <!-- Slide 4 -->
                         <div class="carousel-slide absolute inset-0 transition-all duration-1000 ease-out opacity-0" data-slide="3">
                             <div class="relative w-full h-full">
                                 <img src="/images/carrousel4.webp" 
@@ -236,7 +226,6 @@
                             </div>
                         </div>
 
-                        <!-- Controles de navegación -->
                         <div class="absolute top-1/2 left-6 transform -translate-y-1/2 z-10">
                             <button onclick="window.previousSlide()" class="group w-10 h-10 bg-gradient-to-br from-white/15 to-white/5 hover:from-white/25 hover:to-white/10 backdrop-blur-sm rounded-full border border-white/20 hover:border-white/40 flex items-center justify-center transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl">
                                 <svg class="w-4 h-4 text-white group-hover:text-white transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -253,7 +242,6 @@
                             </button>
                         </div>
 
-                        <!-- Indicadores -->
                         <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-4">
                             <button class="carousel-dot w-12 h-1 bg-white/40 rounded-full transition-all duration-300" data-slide="0"></button>
                             <button class="carousel-dot w-12 h-1 bg-white/40 rounded-full transition-all duration-300" data-slide="1"></button>
@@ -261,14 +249,12 @@
                             <button class="carousel-dot w-12 h-1 bg-white/40 rounded-full transition-all duration-300" data-slide="3"></button>
                         </div>
 
-                        <!-- Barra de progreso -->
                         <div class="absolute top-0 left-0 right-0 h-0.5 bg-white/10">
                             <div id="progressBar" class="h-full bg-gradient-to-r from-white to-white/80 transition-all duration-100 ease-linear" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sección del Contenido -->
                 <div class="bg-white p-8 rounded-2xl lg:rounded-l-none shadow-2xl relative overflow-hidden">
                     <div class="relative z-10">
                         @yield('content')
@@ -278,7 +264,6 @@
         </div>
     </div>
 
-    <!-- Modal de Error -->
     <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg max-w-sm mx-auto overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
             <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
@@ -328,8 +313,6 @@
             dots.forEach((dot, i) => {
                 dot.style.backgroundColor = i === index ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.4)';
             });
-            
-            // Actualizar barra de progreso
             const progressBar = document.getElementById('progressBar');
             if (progressBar) {
                 progressBar.style.width = '0%';

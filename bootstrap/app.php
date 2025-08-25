@@ -23,36 +23,23 @@ return Application::configure(basePath: dirname(__DIR__))
         
         $exceptions->reportable(function (\Throwable $e) {
             try {
-                if (app()->bound('log')) {
-                    app('log')->error('Excepción capturada automáticamente', [
-                        'message' => $e->getMessage(),
-                        'file' => $e->getFile(),
-                        'line' => $e->getLine(),
-                        'trace' => $e->getTraceAsString(),
-                        'class' => get_class($e),
-                    ]);
-                }    
+                // Usar el ErrorLogService para registrar todos los errores
                 if (app()->isBooted() && app()->bound('db')) {
-                    try {
-                        \App\Http\Controllers\LogController::error('Excepción capturada automáticamente', 'exceptions', [
+                    \App\Services\ErrorLogService::logError($e, request());
+                } else {
+                    // Fallback al log de Laravel si la BD no está disponible
+                    if (app()->bound('log')) {
+                        app('log')->error('Excepción capturada automáticamente', [
                             'message' => $e->getMessage(),
                             'file' => $e->getFile(),
                             'line' => $e->getLine(),
                             'trace' => $e->getTraceAsString(),
                             'class' => get_class($e),
                         ]);
-                    } catch (\Exception $dbException) {
-                        
-                        if (app()->bound('log')) {
-                            app('log')->error('Error al registrar excepción en BD', [
-                                'original_error' => $e->getMessage(),
-                                'db_error' => $dbException->getMessage(),
-                            ]);
-                        }
                     }
                 }
             } catch (\Exception $logException) {
-                
+                // Si falla el logging, no hacer nada para evitar loops infinitos
             }
         });
     })->create();

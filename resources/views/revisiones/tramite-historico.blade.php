@@ -33,7 +33,6 @@
         </div>
 
         <div class="p-6">
-            <!-- Información del trámite -->
             <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
@@ -54,8 +53,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Datos Generales -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Datos Generales</h2>
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -65,8 +62,6 @@
                     ])
                 </div>
             </div>
-
-            <!-- Actividades Económicas -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Actividades Económicas</h2>
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -76,8 +71,6 @@
                     ])
                 </div>
             </div>
-
-            <!-- Domicilio -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Domicilio</h2>
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -87,9 +80,7 @@
                     ])
                 </div>
             </div>
-
             @if($viewModel->isPersonaMoral())
-                <!-- Constitución -->
                 <div class="mb-6">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Constitución</h2>
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -99,8 +90,6 @@
                         ])
                     </div>
                 </div>
-
-                <!-- Accionistas -->
                 <div class="mb-6">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Accionistas</h2>
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -110,8 +99,6 @@
                         ])
                     </div>
                 </div>
-
-                <!-- Apoderado Legal -->
                 <div class="mb-6">
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Apoderado Legal</h2>
                     <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -122,8 +109,6 @@
                     </div>
                 </div>
             @endif
-
-            <!-- Archivos -->
             <div class="mb-6">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">Archivos</h2>
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
@@ -138,4 +123,4 @@
         </div>
     </div>
 </div>
-@endsection 
+        @endsection 

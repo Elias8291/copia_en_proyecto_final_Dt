@@ -62,10 +62,6 @@
                 </div>
             </div>
         </div>
-
-
-
-
         <input type="hidden" name="secciones[datos_generales][decision]" id="decision_datos_generales" value="Pendiente">
         <input type="hidden" name="secciones[datos_generales][comentario]" id="comentario_datos_generales_hidden" value="">
         
@@ -877,23 +873,24 @@
 
 <style>
 .seccion-aprobada {
-    border-left: 4px solid #10b981;
-    background-color: #f0fdf4;
+    border-left: 4px solid rgb(16, 185, 129);
+    background-color: rgb(240, 253, 244);
 }
 
 .seccion-rechazada {
-    border-left: 4px solid #ef4444;
-    background-color: #fef2f2;
+    border-left: 4px solid rgb(239, 68, 68);
+    background-color: rgb(254, 242, 242);
 }
 
 .seccion-pendiente {
-    border-left: 4px solid #eab308;
-    background-color: #fefce8;
+    border-left: 4px solid rgb(234, 179, 8);
+    background-color: rgb(254, 252, 232);
 }
+
 </style>
 
 <script>
-window.esPersonaMoral = @json($viewModel->isPersonaMoral());
+window.esPersonaMoral = JSON.parse('{{ json_encode($viewModel->isPersonaMoral()) }}');
 </script>
 
 

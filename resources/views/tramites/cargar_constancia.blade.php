@@ -14,19 +14,19 @@
     <div class="min-h-screen">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
 
-            <div class="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl overflow-hidden border border-gray-200/70">
-                <div class="p-6 border-b border-gray-200/70">
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+                <div class="p-6 border-b border-gray-100">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="bg-gradient-to-br from-[#9d2449] via-[#8a1f40] to-[#7a1a37] rounded-xl p-3 shadow-lg">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="flex items-center space-x-3">
+                            <div class="bg-[#9d2449] rounded-lg p-2.5">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                           d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="text-2xl font-bold text-gray-800">Cargar Constancia</h1>
-                                <p class="text-base text-gray-500 mt-1">
+                                <h1 class="text-xl font-semibold text-gray-900">Cargar Constancia</h1>
+                                <p class="text-sm text-gray-600 mt-0.5">
                                     Sube tu constancia de situación fiscal para continuar con el trámite de 
                                     <strong>{{ ucfirst($tipo) }}</strong>
                                 </p>
@@ -35,8 +35,7 @@
                     </div>
                 </div>
 
-                <div class="p-4 sm:p-6 lg:p-8">
-                    <!-- Información importante -->
+                <div class="p-6">
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                         <div class="flex items-start space-x-3">
                             <div class="flex-shrink-0">
@@ -51,7 +50,7 @@
                                     Para continuar con el trámite de <strong>{{ ucfirst($tipo) }}</strong>, necesitamos que subas tu constancia de situación fiscal vigente. 
                                     Este documento es obligatorio y debe estar en formato PDF. Los datos se extraerán automáticamente.
                                 </p>
-                                <div class="bg-white border border-blue-200 rounded-md p-2">
+                                <div class="bg-white border border-blue-200 rounded p-2">
                                     <p class="text-xs text-blue-600 font-medium">
                                         <strong>Tipo de trámite:</strong> {{ ucfirst($tipo) }}
                                     </p>
@@ -62,7 +61,7 @@
 
                     @if (session('error') || $errors->any())
                         <div class="flex justify-center mb-6">
-                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-100 border border-red-200 shadow-sm animate-fadeInUp">
+                            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-100 border border-red-200">
                                 <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
@@ -87,10 +86,10 @@
 
                     @if ($errors->has('sat_rfc'))
                         <div class="mb-6">
-                            <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg shadow-sm">
+                            <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">
                                 <div class="flex items-start space-x-3">
                                     <div class="flex-shrink-0">
-                                        <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                                         </svg>
                                     </div>
@@ -101,7 +100,7 @@
                                         <p class="text-sm text-red-700 mb-2">
                                             La constancia que intentó cargar no le pertenece. Solo puede cargar constancias de su propia persona o empresa.
                                         </p>
-                                        <div class="bg-white border border-red-200 rounded-md p-3">
+                                        <div class="bg-white border border-red-200 rounded p-3">
                                             <p class="text-xs text-red-600 font-medium">
                                                 <strong>Motivo:</strong> El RFC de la constancia no coincide con su RFC registrado en el sistema.
                                             </p>
@@ -112,11 +111,9 @@
                         </div>
                     @endif
 
-                    <!-- Formulario de carga -->
                     <form action="{{ route('tramites.procesar-constancia') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
                         
-                        <!-- Área de carga de archivo -->
                         <div id="uploadArea" class="transition-all duration-300 ease-in-out min-h-[80px] {{ $mostrarFormulario ? 'hidden' : '' }}">
                             <div class="mt-1">
                                 <label for="document" class="block text-xs font-medium text-gray-700 mb-0.5">
@@ -176,7 +173,6 @@
                             </div>
                         </div>
 
-                        <!-- Datos extraídos -->
                         <div id="extractedData" class="hidden space-y-4">
                             <input type="hidden" id="qr_url" name="qr_url" value="{{ old('qr_url') }}">
                             <input type="hidden" id="sat_rfc" name="sat_rfc" value="{{ old('sat_rfc') }}">
@@ -184,7 +180,6 @@
                             <input type="hidden" id="sat_tipo_persona" name="sat_tipo_persona" value="{{ old('sat_tipo_persona') }}">
                             <input type="hidden" id="sat_email" name="sat_email" value="{{ old('sat_email') }}">
                             <input type="hidden" id="sat_curp" name="sat_curp" value="{{ old('sat_curp') }}">
-                            <!-- Datos del domicilio -->
                             <input type="hidden" id="sat_calle" name="sat_calle" value="{{ old('sat_calle') }}">
                             <input type="hidden" id="sat_numero_exterior" name="sat_numero_exterior" value="{{ old('sat_numero_exterior') }}">
                             <input type="hidden" id="sat_numero_interior" name="sat_numero_interior" value="{{ old('sat_numero_interior') }}">
@@ -196,7 +191,7 @@
 
 
                             <div class="flex justify-end mb-3">
-                                <button type="button" onclick="showSatDataFromForm()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-[#9D2449] bg-white border border-[#9D2449] rounded-md hover:bg-[#9D2449]/5 hover:border-[#9D2449]/80 transition-all duration-200 shadow-sm hover:shadow-md">
+                                <button type="button" onclick="showSatDataFromForm()" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-[#9D2449] bg-white border border-[#9D2449] rounded-lg hover:bg-[#9D2449]/5 transition-colors">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -206,7 +201,6 @@
                             </div>
                         </div>
 
-                        <!-- Requisitos del documento -->
                         <div class="bg-gray-50 rounded-lg p-4">
                             <h3 class="text-sm font-semibold text-gray-800 mb-3">Requisitos del documento:</h3>
                             <ul class="space-y-2 text-sm text-gray-600">
@@ -243,14 +237,13 @@
                             </ul>
                         </div>
 
-                        <!-- Botones de acción -->
                         <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
                             <a href="{{ route('tramites.index') }}" 
-                               class="flex-1 sm:flex-none px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200 text-center">
+                               class="flex-1 sm:flex-none px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors text-center">
                                 Cancelar
                             </a>
                             <button type="submit" 
-                                    class="flex-1 sm:flex-none px-6 py-3 bg-gradient-to-r from-[#9D2449] to-[#B91C1C] text-white font-medium rounded-lg hover:from-[#8a1f40] hover:to-[#a51d1d] focus:outline-none focus:ring-2 focus:ring-[#9D2449] focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl">
+                                    class="flex-1 sm:flex-none px-6 py-2.5 bg-[#9D2449] text-white font-medium rounded-lg hover:bg-[#8a1f40] focus:outline-none focus:ring-2 focus:ring-[#9D2449] focus:ring-offset-2 transition-colors">
                                 <span class="flex items-center justify-center space-x-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -372,7 +365,6 @@
             if (uploadArea) uploadArea.classList.add("hidden");
         }
 
-        // Función que necesita el modal
         window.showRegistrationForm = function() {
             showExtractedData();
         };
@@ -384,8 +376,6 @@
                 }
             }
         };
-
-        // Asegurar que las funciones estén disponibles globalmente
         if (typeof window !== 'undefined') {
             window.showSatDataFromForm = window.showSatDataFromForm || function () {
                 if (satDataGlobal) {

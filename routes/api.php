@@ -1,39 +1,31 @@
 <?php
 
-use App\Http\Controllers\ActividadesController;
 use App\Http\Controllers\Api\QRExtractorController;
-// use App\Http\Controllers\CatalogoArchivoController;
+use App\Http\Controllers\Api\ProveedorController;
 use App\Http\Controllers\CatalogoActividadController;
-use App\Http\Controllers\RevisionController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\UbicacionController;
 use Illuminate\Support\Facades\Route;
 
+Route::prefix('v1')->group(function () {
+    Route::controller(UserController::class)->group(function () {
+        Route::get('/validate/email', 'validateEmail');
+        Route::get('/validate/rfc', 'validateRfc');
+    });
 
-Route::controller(\App\Http\Controllers\UserController::class)->group(function () {
-    Route::get('/validate/email', 'validateEmail');
-    Route::get('/validate/rfc', 'validateRfc');
+    Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
+
+    Route::get('/catalogo/actividades', [CatalogoActividadController::class, 'buscar']);
+
+    Route::controller(ProveedorController::class)->group(function () {
+        Route::get('/sectores', 'getSectores');
+        Route::get('/actividades', 'getActividades');
+    });
+
+    Route::prefix('ubicacion')->controller(UbicacionController::class)->group(function () {
+        Route::post('/buscar-codigo-postal', 'buscarPorCodigoPostal');
+        Route::get('/estados', 'getEstados');
+        Route::post('/municipios-por-estado', 'getMunicipiosPorEstado');
+        Route::post('/localidades-por-municipio', 'getLocalidadesPorMunicipio');
+    });
 });
-
-// Documentos por tipo de persona (sin autenticación para el modal)
-// Route::get('/documentos/{tipoPersona}', [CatalogoArchivoController::class, 'porTipoPersona']);
-
-// QR Extraction Route (sin middleware de autenticación)
-Route::post('/extract-qr-url', [QRExtractorController::class, 'extractQrFromPdf']);
-
-// Catálogo de actividades
-Route::get('/catalogo/actividades', [CatalogoActividadController::class, 'buscar']);
-
-// API para filtros de proveedores
-Route::get('/sectores', [\App\Http\Controllers\Api\ProveedorController::class, 'getSectores']);
-Route::get('/actividades', [\App\Http\Controllers\Api\ProveedorController::class, 'getActividades']);
-
-// Ubicación API routes
-Route::prefix('ubicacion')->group(function () {
-    Route::post('/buscar-codigo-postal', [UbicacionController::class, 'buscarPorCodigoPostal']);
-    Route::get('/estados', [UbicacionController::class, 'getEstados']);
-    Route::post('/municipios-por-estado', [UbicacionController::class, 'getMunicipiosPorEstado']);
-    Route::post('/localidades-por-municipio', [UbicacionController::class, 'getLocalidadesPorMunicipio']);
-});
-
-
-

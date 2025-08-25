@@ -4,12 +4,8 @@
 <div class="min-h-screen "
      style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23f3f4f6&quot; fill-opacity=&quot;0.3&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
   <div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
-
-    <!-- Columna principal -->
     <div class="flex-1">
       <div class="bg-white rounded-3xl shadow-xl border border-gray-200/60 overflow-hidden">
-
-        <!-- Header -->
         <div class="px-8 py-6 border-b border-gray-200/70">
           <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-3">
@@ -28,14 +24,8 @@
           </h1>
           <p class="text-gray-600">Bienvenido al Padrón de Proveedores del Estado De Oaxaca.</p>
         </div>
-
-        <!-- Contenido -->
         <div class="p-8">
-
-          <!-- Acciones Rápidas + Ilustración -->
           <div class="flex flex-col lg:flex-row gap-8 w-full">
-
-            <!-- Acciones -->
             <div class="lg:w-1/4">
               <div class="bg-white rounded-2xl border border-gray-200/70 p-4" style="height: 400px;">
                 <div class="flex items-center gap-2 mb-4">
@@ -46,7 +36,6 @@
                   </div>
                   <h2 class="text-xl font-bold text-[#9d2449]">Acciones Rápidas</h2>
                 </div>
-
                 <div class="space-y-3">
                   <div class="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group border border-gray-200/50">
                     <div class="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
@@ -98,8 +87,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Ilustración -->
             <div class="lg:w-3/4 bg-amber-50 rounded-2xl border border-gray-200/70 p-4 flex items-center justify-center overflow-hidden" style="height: 400px;">
               <img src="{{ asset('images/mujer_bienvenida.png') }}"
                    alt="Asistente virtual saludando"

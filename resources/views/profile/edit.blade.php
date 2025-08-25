@@ -35,8 +35,6 @@
         <form action="{{ route('profile.update') }}" method="POST" class="space-y-6 p-6">
             @csrf
             @method('PUT')
-            
-            <!-- Información Personal -->
             <div class="border-b border-gray-100 pb-6">
                 <div class="flex items-center mb-4">
                     <div class="w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-3">
@@ -64,23 +62,22 @@
                     </div>
                     
                     <div class="space-y-2">
-                        <label for="email" class="block text-sm font-medium text-gray-700">
+                        <label for="correo" class="block text-sm font-medium text-gray-700">
                             Correo Electrónico <span class="text-red-500">*</span>
                         </label>
                         <input type="email" 
-                               name="email" 
-                               id="email" 
-                               value="{{ old('email', $user->email) }}"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200 @error('email') border-red-300 ring-red-100 @enderror"
+                               name="correo" 
+                               id="correo" 
+                               value="{{ old('correo', $user->correo) }}"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-200 @error('correo') border-red-300 ring-red-100 @enderror"
                                placeholder="Ingresa tu correo electrónico">
-                        @error('email')
+                        @error('correo')
                             <p class="text-sm text-red-500">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
             </div>
 
-            <!-- Cambio de Contraseña -->
             <div class="border-b border-gray-100 pb-6">
                 <div class="flex items-center mb-4">
                     <div class="w-8 h-8 bg-gradient-to-br from-primary to-primary-dark rounded-lg flex items-center justify-center mr-3">
@@ -134,7 +131,6 @@
                 </div>
             </div>
 
-            <!-- Botones de Acción -->
             <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4 pt-6 border-t border-gray-100">
                 <a href="{{ route('profile.index') }}" 
                    class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200">
@@ -155,7 +151,6 @@
     </div>
 </div>
 
-<!-- Modal de error -->
 <x-ui.modals.error-modal 
     id="error-modal"
     title="Error"
@@ -163,7 +158,6 @@
     buttonText="OK"
 />
 
-<!-- Modal de éxito -->
 <x-ui.modals.modal-exito 
     id="success-modal"
     title="¡Éxito!"
@@ -172,11 +166,10 @@
     :redirectUrl="route('profile.index')"
 />
 
-<!-- Mostrar modal de error si hay error de sesión -->
 @if(session('error'))
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    showErrorModal('error-modal', 'Error', '{{ session('error') }}');
+    showErrorModal('error-modal', 'Error', '{{ session("error") }}');
 });
 </script>
 @endif

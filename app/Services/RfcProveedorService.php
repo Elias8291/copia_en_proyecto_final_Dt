@@ -215,13 +215,15 @@ class RfcProveedorService
                 return 'PV901323';
             }
             
-            $ultimoComponenteNumerico = substr($ultimoPV->pv_numero, 2);
-            $siguienteNumero = $this->obtenerSiguienteNumeroProveedor();
-            $nuevoPV = 'PV' . $ultimoComponenteNumerico . $siguienteNumero;
+            // Extraer el componente numérico completo y sumarle 1
+            $ultimoComponenteNumerico = (int)substr($ultimoPV->pv_numero, 2);
+            $siguienteNumero = $ultimoComponenteNumerico + 1;
+            $nuevoPV = 'PV' . $siguienteNumero;
             
+            // Verificar que el PV no exista (aunque debería ser único por la lógica)
             while (Proveedor::where('pv_numero', $nuevoPV)->exists()) {
-                $siguienteNumero = str_pad((int)$siguienteNumero + 1, 3, '0', STR_PAD_LEFT);
-                $nuevoPV = 'PV' . $ultimoComponenteNumerico . $siguienteNumero;
+                $siguienteNumero++;
+                $nuevoPV = 'PV' . $siguienteNumero;
             }
             
             if (!preg_match('/^PV\d+$/', $nuevoPV)) {

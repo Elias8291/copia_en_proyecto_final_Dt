@@ -3,7 +3,6 @@
 @section('content')
 <div class="p-3 sm:p-4 md:p-5 lg:p-6 xl:p-8">
     <div class="max-w-4xl mx-auto bg-white shadow-sm rounded-lg border border-gray-200">
-        <!-- Header -->
         <div class="p-6 border-b border-gray-200/70">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-4">
@@ -28,11 +27,8 @@
                 </div>
             </div>
         </div>
-
-        <!-- Contenido -->
         <div class="p-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Información principal -->
                 <div class="space-y-6">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Información General</h3>
@@ -106,7 +102,6 @@
                     </div>
                 </div>
 
-                <!-- Mensaje y contexto -->
                 <div class="space-y-6">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Mensaje</h3>
@@ -124,7 +119,6 @@
                     </div>
                     @endif
 
-                    <!-- Información adicional -->
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Información Adicional</h3>
                         <div class="bg-gray-50 rounded-lg p-4 space-y-4">
@@ -148,8 +142,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Acciones -->
             <div class="mt-8 pt-6 border-t border-gray-200">
                 <div class="flex flex-col sm:flex-row gap-3">
                     <a href="{{ route('logs.index') }}" 

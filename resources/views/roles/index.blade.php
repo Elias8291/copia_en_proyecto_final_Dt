@@ -133,9 +133,7 @@
                     </p>
                 </div>
 
-                <!-- Controles de visualización -->
                 <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 md:gap-4">
-                    <!-- Selector de elementos por página -->
                     <div class="flex items-center gap-2">
                         <label for="per_page" class="text-xs sm:text-sm md:text-base font-medium text-gray-700 whitespace-nowrap">
                             Mostrar:
@@ -152,7 +150,6 @@
                         <span class="text-xs sm:text-sm md:text-base text-gray-600 whitespace-nowrap">por página</span>
                     </div>
 
-                    <!-- Filtros activos -->
                     @if(request()->hasAny(['search', 'guard_name']))
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3">
                         <span class="text-xs sm:text-sm md:text-base font-medium text-gray-700">Filtros activos:</span>
@@ -389,7 +386,6 @@
         @endif
                         </div>
 
-<!-- Modal de error -->
 <x-ui.modals.error-modal 
     id="error-modal"
     title="Error"
@@ -397,7 +393,6 @@
     buttonText="OK"
 />
 
-<!-- Modal de éxito -->
 <x-ui.modals.modal-exito 
     id="success-modal"
     title="¡Éxito!"
@@ -406,7 +401,6 @@
     :redirectUrl="route('roles.index')"
 />
 
-<!-- Modal de confirmación para eliminar -->
 <x-ui.modals.modal-eliminar 
     id="modal-eliminar-rol"
     title="Eliminar rol"
@@ -414,19 +408,16 @@
     confirmText="Eliminar"
     cancelText="Cancelar"
 />
-
-<!-- Mostrar modal de error si hay error de sesión -->
 @if(session('error'))
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    showErrorModal('error-modal', 'Error', '{{ session('error') }}');
+    showErrorModal('error-modal', 'Error', '{{ session("error") }}');
     });
 </script>
 @endif
 
 @push('scripts')
 <script>
-// Función para confirmar eliminación de rol
 function confirmarEliminacionRol(rolId, nombreRol) {
     const mensaje = `¿Estás seguro de que deseas eliminar el rol "${nombreRol}"? Esta acción no se puede deshacer.`;
     
@@ -444,8 +435,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const icon = document.getElementById('filterIcon');
     const perPageSelect = document.getElementById('per_page');
     const searchForm = document.getElementById('searchForm');
-    
-    // Los filtros siempre empiezan ocultos, sin importar si hay búsqueda
     
     toggle?.addEventListener('click', function() {
         const hidden = container?.classList.contains('hidden');

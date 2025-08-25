@@ -20,14 +20,11 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-800 m-0 p-5">
     <div class="max-w-md mx-auto bg-white rounded-lg shadow-sm overflow-hidden">
-        <!-- Header -->
         <div class="bg-primary text-white px-6 py-8 text-center">
             <h1 class="text-xl font-semibold mb-2">Padrón de Proveedores</h1>
             <p class="text-sm opacity-90">Secretaría de Administración</p>
             <p class="text-xs opacity-75 mt-1">Gobierno del Estado de Oaxaca</p>
         </div>
-        
-        <!-- Content -->
         <div class="px-6 py-8">
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-semibold text-primary mb-2">Trámite Rechazado</h2>
@@ -35,8 +32,6 @@
                     Estimado/a {{ $usuario->nombre }}, su trámite ha sido rechazado.
                 </p>
             </div>
-
-            <!-- Alert Section -->
             <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-md mb-6">
                 <div class="text-center">
                     <p class="text-red-800 font-medium text-sm mb-1">Estado del Trámite</p>
@@ -45,8 +40,6 @@
                     </p>
                 </div>
             </div>
-
-            <!-- Info Section -->
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
                 <h3 class="text-gray-800 font-medium text-center mb-4">Detalles del Trámite</h3>
                 
@@ -69,16 +62,12 @@
                     @endif
                 </div>
             </div>
-
-            <!-- Reason Section -->
             <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                 <h3 class="text-yellow-800 font-medium text-sm mb-2">Motivo del Rechazo</h3>
                 <p class="text-yellow-700 text-xs leading-relaxed">
                     {{ $tramite->observaciones ?: 'No asistió a las citas programadas' }}
                 </p>
             </div>
-
-            <!-- Action Section -->
             <div class="text-center mb-6">
                 <p class="text-gray-700 text-sm mb-3">¿Qué puede hacer ahora?</p>
                 <div class="space-y-2">
@@ -96,9 +85,7 @@
             <p class="text-gray-500 text-xs italic text-center">
                 Si tiene dudas, contacte al administrador del sistema.
             </p>
-        </div>
-
-        <!-- Footer -->
+        </div>      
         <div class="bg-gray-50 border-t border-gray-200 px-6 py-6 text-center">
             <h3 class="text-gray-800 font-semibold text-sm mb-2">Padrón de Proveedores</h3>
             <p class="text-gray-600 text-xs mb-1">Secretaría de Administración</p>

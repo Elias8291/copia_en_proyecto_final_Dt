@@ -13,6 +13,7 @@ use App\Services\Tramites\TramiteViewDataService;
 use App\ViewModels\TramiteViewModel;
 use App\ViewModels\FormDataViewModel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class TramiteController extends Controller
@@ -49,16 +50,12 @@ class TramiteController extends Controller
                 'actualizacion' => ['activo' => false, 'pendiente' => false, 'motivo' => 'Usuario sin RFC']
             ];
         } else {
-            // Obtener historial de trámites del usuario
             $historialTramites = $this->obtenerHistorialTramitesUsuario($rfc);
-            // Verificar si tiene trámite pendiente
             $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
             
             if ($tramitePendiente) {
-                // Si tiene trámite pendiente, identificar el tipo específico
                 $tipoTramitePendiente = strtolower($tramitePendiente->tipo_tramite);
                 
-                // Configurar solo la tarjeta del tipo de trámite pendiente
                 $tramites = [
                     'inscripcion' => [
                         'activo' => false,
@@ -83,7 +80,6 @@ class TramiteController extends Controller
                     ]
                 ];
             } else {
-                // Usar la nueva lógica para cada tipo de trámite
                 $accionInscripcion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'inscripcion');
                 $accionRenovacion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'renovacion');
                 $accionActualizacion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, 'actualizacion');
@@ -111,21 +107,13 @@ class TramiteController extends Controller
             }
         }
         
-        \Log::info("Pasando datos a la vista index", [
-            'rfc' => $rfc,
-            'historial_tramites_count' => $historialTramites->count(),
-            'tramites_config' => $tramites
-        ]);
+
         
         return view('tramites.index', compact('tramites', 'historialTramites'));
     }
 
-    /**
-     * Obtener historial de trámites del usuario
-     */
     private function obtenerHistorialTramitesUsuario(string $rfc)
     {
-        // Buscar todos los trámites que tengan proveedores con el RFC del usuario
         $tramites = \App\Models\Tramite::whereHas('proveedor', function($query) use ($rfc) {
             $query->where('rfc', $rfc);
         })
@@ -135,22 +123,11 @@ class TramiteController extends Controller
         ->orderBy('created_at', 'desc')
         ->get();
         
-        \Log::info("Obteniendo historial de trámites para RFC: {$rfc}", [
-            'total_tramites_encontrados' => $tramites->count(),
-            'tramites' => $tramites->map(function($t) {
-                return [
-                    'id' => $t->id,
-                    'tipo_tramite' => $t->tipo_tramite,
-                    'status' => $t->status,
-                    'proveedor_id' => $t->proveedor_id,
-                    'proveedor_rfc' => $t->proveedor ? $t->proveedor->rfc : null
-                ];
-            })->toArray()
-        ]);
+
         
         return $tramites->map(function($tramite) {
             $datosGenerales = $tramite->datosGenerales->first();
-            $oficio = $tramite->oficios->first(); // Obtener el primer oficio asociado
+            $oficio = $tramite->oficios->first();
             
             return [
                 'id' => $tramite->id,
@@ -175,24 +152,20 @@ class TramiteController extends Controller
 
     public function cargarConstancia($tipo = null)
     {
-        // Si no se proporciona tipo, redirigir al índice
         if (!$tipo) {
             return redirect()->route('tramites.index')
                 ->with('error', 'Debe seleccionar un tipo de trámite');
         }
         
-        // Validar que el tipo sea válido
         $tiposValidos = ['inscripcion', 'renovacion', 'actualizacion'];
         if (!in_array($tipo, $tiposValidos)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'Tipo de trámite no válido');
         }
         
-        // Obtener RFC del usuario
         $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
         
         if ($rfc) {
-            // Verificar si tiene trámite pendiente
             $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
             
             if ($tramitePendiente) {
@@ -201,13 +174,7 @@ class TramiteController extends Controller
             }
         }
         
-        // Guardar el tipo de trámite en la sesión
         session(['tipo_tramite_seleccionado' => $tipo]);
-        
-        Log::info('TramiteController: Cargando constancia', [
-            'tipo' => $tipo,
-            'user_id' => auth()->id()
-        ]);
         
         return view('tramites.cargar_constancia', compact('tipo'));
     }
@@ -223,23 +190,12 @@ class TramiteController extends Controller
                 ]);
             }
             
-            // Guardar los datos de la constancia en la sesión correctamente
             session(['datos_constancia' => $datosConstancia]);
-            
-            Log::info('TramiteController: Constancia procesada exitosamente', [
-                'rfc' => $request->sat_rfc,
-                'tipo_tramite' => session('tipo_tramite_seleccionado')
-            ]);
 
             return redirect()->route('tramites.create')
                 ->with('success', 'Constancia cargada y datos extraídos exitosamente. Puede continuar con el trámite.');
 
         } catch (\Exception $e) {
-            Log::error('TramiteController: Error al procesar constancia', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            
             return back()->withErrors(['error' => 'Error al procesar el archivo. Por favor, inténtelo de nuevo.']);
         }
     }
@@ -248,11 +204,6 @@ class TramiteController extends Controller
 
     public function create()
     {
-        Log::info('TramiteController: Creando trámite', [
-            'user_id' => auth()->id()
-        ]);
-        
-        // Obtener el tipo de trámite de la sesión
         $tipo = session('tipo_tramite_seleccionado');
         
         if (!$tipo) {
@@ -260,14 +211,12 @@ class TramiteController extends Controller
                 ->with('error', 'Debe seleccionar un tipo de trámite');
         }
         
-        // Validar que el tipo sea válido
         $tiposValidos = ['inscripcion', 'renovacion', 'actualizacion'];
         if (!in_array($tipo, $tiposValidos)) {
             return redirect()->route('tramites.index')
                 ->with('error', 'Tipo de trámite no válido');
         }
         
-        // Obtener RFC del usuario
         $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
         
         if (!$rfc) {
@@ -275,7 +224,6 @@ class TramiteController extends Controller
                 ->with('error', 'Usuario sin RFC configurado');
         }
         
-        // Verificar si tiene trámite pendiente
         $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
         
         if ($tramitePendiente) {
@@ -283,10 +231,8 @@ class TramiteController extends Controller
                 ->with('warning', 'Tiene un trámite en proceso. Consulte el estado de su trámite actual antes de iniciar uno nuevo.');
         }
         
-        // Verificar si puede realizar este tipo de trámite
         $accion = $this->rfcProveedorService->determinarAccionPorTipoTramite($rfc, $tipo);
         
-        // Verificar si el trámite está disponible
         $tramites = [
             'inscripcion' => ['activo' => in_array($accion['accion'], ['crear_nuevo'])],
             'renovacion' => ['activo' => in_array($accion['accion'], ['renovar_vencido'])],
@@ -298,37 +244,15 @@ class TramiteController extends Controller
                 ->with('error', 'No puede realizar este tipo de trámite: ' . $accion['motivo']);
         }
         
-        // Obtener datos de la constancia si existen
         $viewModel = null;
         if (session()->has('datos_constancia')) {
             $datosConstancia = session('datos_constancia');
             $viewModel = new TramiteViewModel($datosConstancia);
-            
-            Log::info('TramiteController: Datos de constancia cargados', [
-                'rfc' => $datosConstancia['rfc'] ?? 'N/A',
-                'nombre' => $datosConstancia['nombre'] ?? 'N/A'
-            ]);
-        } else {
-            Log::info('TramiteController: No hay datos de constancia en sesión');
         }
         
-        // Determinar tipo de persona basado en RFC
         $tipoPersona = $this->rfcProveedorService->determinarTipoPersona($rfc);
-        
-        // Obtener archivos requeridos según el tipo de persona
         $archivosRequeridos = $this->rfcProveedorService->obtenerArchivosPorTipoPersona($rfc);
-        
-        Log::info('TramiteController: Datos para crear trámite', [
-            'tipo' => $tipo,
-            'tipo_persona' => $tipoPersona,
-            'rfc' => $rfc,
-            'accion' => $accion['accion']
-        ]);
-        
-        // Obtener información de gestión del proveedor para mostrar al usuario
         $infoProveedor = $this->rfcProveedorService->obtenerInfoGestionProveedor($rfc, $tipo);
-        
-        // Guardar el tipo de trámite en la sesión para el store
         session(['tipo_tramite' => ucfirst($tipo)]);
         
         return view('tramites.create', compact('tipo', 'tipoPersona', 'viewModel', 'archivosRequeridos', 'infoProveedor'));
@@ -338,14 +262,7 @@ class TramiteController extends Controller
     {
         $startTime = microtime(true);
         
-        Log::info('TramiteController: Iniciando creación de trámite ultra optimizada', [
-            'user_id' => auth()->id(),
-            'tipo_tramite' => $request->tipo_tramite,
-            'files_count' => $request->hasFile('documentos') ? count($request->file('documentos')) : 0
-        ]);
-        
         try {
-            // Verificar si tiene trámite pendiente (operación rápida)
             $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
             if ($rfc) {
                 $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
@@ -356,13 +273,9 @@ class TramiteController extends Controller
                 }
             }
             
-            // Obtener el tipo de trámite de la sesión o del request
             $tipoTramite = session('tipo_tramite') ?? $request->tipo_tramite ?? 'Inscripcion';
-            
-            // Agregar el tipo de trámite al request
             $request->merge(['tipo_tramite' => $tipoTramite]);
             
-            // Validación ultra rápida de datos requeridos
             $datosRequeridos = ['rfc', 'tipo_persona', 'razon_social', 'telefono'];
             $datosFaltantes = [];
             
@@ -374,28 +287,12 @@ class TramiteController extends Controller
             }
             
             if (!empty($datosFaltantes)) {
-                Log::error('TramiteController: Datos requeridos faltantes', [
-                    'datos_faltantes' => $datosFaltantes
-                ]);
-                
                 return back()
                     ->withInput()
                     ->withErrors(['error' => 'Faltan datos requeridos: ' . implode(', ', $datosFaltantes)]);
             }
             
-            // Crear trámite (operación principal ultra optimizada)
             $tramite = $this->tramiteService->crearTramiteCompleto($request);
-            
-            $endTime = microtime(true);
-            $executionTime = round($endTime - $startTime, 3);
-            
-            Log::info('TramiteController: Trámite creado exitosamente ultra optimizado', [
-                'tramite_id' => $tramite->id,
-                'proveedor_id' => $tramite->proveedor_id,
-                'execution_time_seconds' => $executionTime
-            ]);
-            
-            // Limpiar datos de sesión después de crear el trámite
             session()->forget(['datos_constancia', 'tipo_tramite', 'tipo_tramite_seleccionado']);
             
             return redirect()->route('tramites.index')
@@ -403,15 +300,6 @@ class TramiteController extends Controller
                 ->with('tramite_creado', true);
                 
         } catch (\Exception $e) {
-            $endTime = microtime(true);
-            $executionTime = round($endTime - $startTime, 3);
-            
-            Log::error('TramiteController: Error al crear trámite', [
-                'user_id' => auth()->id(),
-                'error' => $e->getMessage(),
-                'execution_time_seconds' => $executionTime
-            ]);
-            
             return back()
                 ->withInput()
                 ->withErrors(['error' => 'Error al crear el trámite: ' . $e->getMessage()]);
@@ -432,14 +320,12 @@ class TramiteController extends Controller
         $proveedores = $this->rfcProveedorService->buscarProveedoresPorRfc($rfc);
         $tramitePendiente = $this->rfcProveedorService->obtenerTramitePendiente($rfc);
         
-        // Obtener cita asignada si existe
         $citaAsignada = null;
         $personaResponsable = null;
         $citaVencida = false;
         $intentosRestantes = 2;
         
         if ($tramitePendiente) {
-            // Cargar relaciones necesarias
             $tramitePendiente->load(['citas.asignadoA', 'revisorDigital', 'revisiones.revisor']);
             
             $citaAsignada = $tramitePendiente->citas()
@@ -447,11 +333,9 @@ class TramiteController extends Controller
                 ->orderBy('fecha_cita', 'desc')
                 ->first();
             
-            // Verificar si la cita ha vencido
             if ($citaAsignada && $citaAsignada->fecha_cita < now()) {
                 $citaVencida = true;
                 
-                // Contar intentos previos
                 $intentosPrevios = $tramitePendiente->citas()
                     ->where('estado', 'No Asistió')
                     ->count();
@@ -459,10 +343,8 @@ class TramiteController extends Controller
                 $intentosRestantes = max(0, 2 - $intentosPrevios);
             }
             
-            // Obtener información de la persona responsable
             if ($tramitePendiente->proveedor) {
                 if ($tramitePendiente->proveedor->tipo_persona === 'Moral') {
-                    // Para persona moral, obtener el apoderado legal
                     $apoderadoService = app(\App\Services\Tramites\ApoderadoService::class);
                     $datosApoderado = $apoderadoService->obtener($tramitePendiente);
                     
@@ -474,7 +356,6 @@ class TramiteController extends Controller
                         ];
                     }
                 } else {
-                    // Para persona física, obtener el usuario
                     if ($tramitePendiente->proveedor->usuario) {
                         $personaResponsable = [
                             'nombre' => $tramitePendiente->proveedor->usuario->nombre ?? 'No especificado',
@@ -486,7 +367,6 @@ class TramiteController extends Controller
             }
         }
         
-        // Obtener revisor domiciliario si existe
         $revisorDomiciliario = null;
         if ($tramitePendiente && $tramitePendiente->status === 'Revision_Domiciliaria') {
             $revisionDomiciliaria = $tramitePendiente->revisiones()
@@ -512,7 +392,6 @@ class TramiteController extends Controller
             $tramite = \App\Models\Tramite::findOrFail($tramiteId);
             $data = $this->tramiteViewDataService->prepareEditData($tramite);
 
-            // Reutilizar la vista de creación en modo corrección
             return view('tramites.create', $data);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->route('tramites.index')
@@ -526,10 +405,6 @@ class TramiteController extends Controller
         }
     }
 
-    /**
-     * Prepara los datos de archivos para el cotejo, incluyendo el nombre del catálogo
-     * Método reutilizable para preparar archivos
-     */
     protected function prepararArchivosParaCotejo($archivos): array
     {
         return $archivos->map(function($archivo) {
@@ -548,29 +423,23 @@ class TramiteController extends Controller
         })->toArray();
     }
 
-    /**
-     * Update the specified trámite in storage.
-     */
     public function update(TramiteCorreccionRequest $request, $tramiteId)
     {
         try {
             $tramite = \App\Models\Tramite::findOrFail($tramiteId);
             
-            // Verificar que el usuario tenga permisos para editar este trámite
             $rfc = $this->rfcProveedorService->obtenerRfcUsuario();
             if (!$rfc || $tramite->proveedor->rfc !== $rfc) {
                 return redirect()->route('tramites.index')
                     ->with('error', 'No tiene permisos para editar este trámite');
             }
             
-            // Verificar que el trámite esté en estado de corrección
             if (!in_array($tramite->status, ['Para_Correccion', 'Rechazado'])) {
                 return redirect()->route('tramites.estado')
                     ->with('error', 'Este trámite no requiere correcciones');
             }
             
-            // Debug del request
-            \Log::info('TramiteController: Request de corrección recibido', [
+            Log::info('TramiteController: Request de corrección recibido', [
                 'tramite_id' => $tramite->id,
                 'has_files' => $request->hasFile('archivos'),
                 'has_documentos' => $request->hasFile('documentos'),
@@ -579,12 +448,11 @@ class TramiteController extends Controller
                 'all_files' => array_keys($request->allFiles())
             ]);
 
-            // Actualizar el trámite usando el CorreccionService
             $tramiteActualizado = $this->correccionService->procesarCorreccion($tramite, $request);
             
             Log::info('TramiteController: Trámite actualizado exitosamente', [
                 'tramite_id' => $tramite->id,
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
             
             return redirect()->route('tramites.estado')
@@ -593,7 +461,7 @@ class TramiteController extends Controller
         } catch (\Exception $e) {
             Log::error('TramiteController: Error al actualizar trámite', [
                 'tramite_id' => $tramiteId,
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -604,33 +472,27 @@ class TramiteController extends Controller
         }
     }
 
-    /**
-     * Descargar oficio de aprobación del trámite
-     */
     public function descargarOficio($tramiteId)
     {
         try {
             $tramite = \App\Models\Tramite::findOrFail($tramiteId);
             
-            // Verificar que el trámite esté aprobado
             if ($tramite->status !== 'Aprobado') {
                 return redirect()->back()->with('error', 'Solo se puede descargar el oficio de trámites aprobados.');
             }
             
-            // Verificar que el usuario tenga acceso al trámite
-            $usuario = auth()->user();
+            /** @var \App\Models\User $usuario */
+            $usuario = Auth::user();
             if ($usuario->id !== $tramite->proveedor->usuario_id && !$usuario->hasRole(['administrador', 'revisor'])) {
                 return redirect()->back()->with('error', 'No tienes permisos para descargar este oficio.');
             }
             
-            // Verificar que el archivo del oficio exista
             $rutaOficio = storage_path("app/oficios/tramite_{$tramiteId}_oficio.pdf");
             
             if (!file_exists($rutaOficio)) {
                 return redirect()->back()->with('error', 'El oficio no se encuentra disponible. Contacte al administrador.');
             }
             
-            // Descargar el archivo
             $nombreArchivo = "Oficio_Aprobacion_Tramite_{$tramiteId}.pdf";
             
             return response()->download($rutaOficio, $nombreArchivo, [
@@ -640,7 +502,7 @@ class TramiteController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return redirect()->back()->with('error', 'El trámite especificado no existe.');
         } catch (\Exception $e) {
-            \Log::error('Error al descargar oficio: ' . $e->getMessage());
+            Log::error('Error al descargar oficio: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error al descargar el oficio: ' . $e->getMessage());
         }
     }

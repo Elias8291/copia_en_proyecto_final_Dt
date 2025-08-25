@@ -10,22 +10,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckSessionExpiry
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next): Response
     {
-        // Solo verificar si el usuario está autenticado y la sesión ya está iniciada
         if (Auth::check() && $request->session()->isStarted()) {
-            $sessionLifetime = config('session.lifetime', 30); // minutos
+            $sessionLifetime = config('session.lifetime', 30);
             $lastActivity = Session::get('last_activity');
 
             if ($lastActivity) {
                 $timeSinceLastActivity = now()->diffInMinutes($lastActivity);
 
-                // Si han pasado más minutos que el límite de sesión
                 if ($timeSinceLastActivity > $sessionLifetime) {
                     Auth::logout();
                     Session::invalidate();
@@ -36,7 +29,6 @@ class CheckSessionExpiry
                 }
             }
 
-            // Actualizar la hora de última actividad solo para usuarios autenticados
             Session::put('last_activity', now());
         }
 

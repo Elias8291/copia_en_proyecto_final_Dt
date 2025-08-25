@@ -120,15 +120,15 @@
                         </div>
                         
                         <div class="flex items-center gap-3">
-                            <button onclick="window.evaluarArchivo?.({{ $archivo['id'] ?? 0 }}, 'Aprobado')" 
-                                    class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200">
+                            <button data-archivo-id="{{ $archivo['id'] ?? 0 }}" data-decision="Aprobado" 
+                                    class="evaluar-archivo-btn inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                 </svg>
                                 Aprobar
                             </button>
-                            <button onclick="window.evaluarArchivo?.({{ $archivo['id'] ?? 0 }}, 'Rechazado')" 
-                                    class="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200">
+                            <button data-archivo-id="{{ $archivo['id'] ?? 0 }}" data-decision="Rechazado" 
+                                    class="evaluar-archivo-btn inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200">
                                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                                 </svg>
@@ -154,7 +154,7 @@
                 <x-revision.botones-evaluacion 
                     seccion="archivos"
                     titulo="Archivos"
-                    style="compact"
+                    :style="'compact'"
                     textoAprobar="Aprobar Sección"
                     textoRechazar="Rechazar Sección"
                 />

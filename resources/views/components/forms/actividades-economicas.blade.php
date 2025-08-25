@@ -40,7 +40,6 @@
 @endphp
 
 <div class="space-y-6" {{ $attributes }}>
-    <!-- Título de la sección -->
     <div class="flex items-center space-x-3 mb-6">
         <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

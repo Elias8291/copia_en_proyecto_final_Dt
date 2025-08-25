@@ -11,13 +11,20 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $superAdminRole = Role::firstOrCreate(['name' => 'Super Administrador', 'guard_name' => 'web']);
-        $adminRole = Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
-        $revisorDigitalRole = Role::firstOrCreate(['name' => 'Revisor Digital', 'guard_name' => 'web']);
-        $revisorPresencialRole = Role::firstOrCreate(['name' => 'Revisor Presencial', 'guard_name' => 'web']);
-        $revisorDomiciliarioRole = Role::firstOrCreate(['name' => 'Revisor Domiciliario', 'guard_name' => 'web']);
-        $proveedorRole = Role::firstOrCreate(['name' => 'Proveedor', 'guard_name' => 'web']);
-        $solicitanteRole = Role::firstOrCreate(['name' => 'Solicitante', 'guard_name' => 'web']);
+        // Get existing roles created by RoleSeeder
+        $superAdminRole = Role::where('name', 'Super Administrador')->first();
+        $adminRole = Role::where('name', 'Administrador')->first();
+        $revisorDigitalRole = Role::where('name', 'Revisor Digital')->first();
+        $revisorPresencialRole = Role::where('name', 'Revisor Presencial')->first();
+        $revisorDomiciliarioRole = Role::where('name', 'Revisor Domiciliario')->first();
+        $proveedorRole = Role::where('name', 'Proveedor')->first();
+        $solicitanteRole = Role::where('name', 'Solicitante')->first();
+
+        // Check if all roles exist
+        if (!$superAdminRole || !$adminRole || !$revisorDigitalRole || !$revisorPresencialRole || !$revisorDomiciliarioRole || !$proveedorRole || !$solicitanteRole) {
+            $this->command->error('❌ Algunos roles no existen. Asegúrese de que RoleSeeder se ejecute primero.');
+            return;
+        }
 
         $superAdmin = User::firstOrCreate(['correo' => 'elias.ramos@oaxaca.gob.mx'], [
             'nombre' => 'Elias Abisai Ramos Jacinto',

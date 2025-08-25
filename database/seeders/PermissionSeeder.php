@@ -95,6 +95,13 @@ class PermissionSeeder extends Seeder
             'logs.eliminar' => 'Eliminar/limpiar logs del sistema',
         ];
 
+        $archivosPermissions = [
+            'archivos.ver' => 'Ver archivos',
+            'archivos.editar' => 'Editar archivos',
+            'archivos.subir' => 'Subir archivos',
+            'archivos.eliminar' => 'Eliminar archivos',
+        ];
+
         $systemPermissions = [
             'sistema.administrar' => 'Administrar sistema completo',
             'reportes.ver' => 'Ver reportes',
@@ -112,6 +119,7 @@ class PermissionSeeder extends Seeder
             $notificacionPermissions,
             $oficioPermissions,
             $logsPermissions,
+            $archivosPermissions,
             $systemPermissions
         );
 

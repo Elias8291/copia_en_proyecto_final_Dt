@@ -71,10 +71,12 @@ class ResetPasswordController extends Controller
         // Delete the token
         $tokenRepository->delete($user);
 
-        // Log the user in
-        \Illuminate\Support\Facades\Auth::login($user);
-
-        return redirect($this->redirectPath())
-            ->with('status', 'Tu contraseña ha sido restablecida exitosamente.');
+        // Don't log the user in automatically, redirect to welcome with success modal
+        return redirect()->route('welcome')
+            ->with([
+                'showPasswordResetSuccessModal' => true,
+                'userEmail' => $user->correo,
+                'status' => 'Tu contraseña ha sido restablecida exitosamente.'
+            ]);
     }
 }

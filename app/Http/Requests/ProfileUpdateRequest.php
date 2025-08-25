@@ -18,10 +18,10 @@ class ProfileUpdateRequest extends FormRequest
         
         return [
             'nombre' => 'required|string|max:255',
-            'email' => [
+            'correo' => [
                 'required',
                 'email',
-                Rule::unique('users', 'email')->ignore($userId)
+                Rule::unique('users', 'correo')->ignore($userId)
             ],
             'password' => 'nullable|string|min:8|confirmed',
             'password_confirmation' => 'nullable|string|min:8'
@@ -35,9 +35,9 @@ class ProfileUpdateRequest extends FormRequest
             'nombre.string' => 'El nombre debe ser una cadena de texto.',
             'nombre.max' => 'El nombre no puede tener más de 255 caracteres.',
             
-            'email.required' => 'El email es obligatorio.',
-            'email.email' => 'El email debe tener un formato válido.',
-            'email.unique' => 'Ya existe un usuario con este email.',
+            'correo.required' => 'El correo es obligatorio.',
+            'correo.email' => 'El correo debe tener un formato válido.',
+            'correo.unique' => 'Ya existe un usuario con este correo.',
             
             'password.string' => 'La contraseña debe ser una cadena de texto.',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
@@ -52,7 +52,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'nombre' => 'nombre',
-            'email' => 'email',
+            'correo' => 'correo',
             'password' => 'contraseña',
             'password_confirmation' => 'confirmación de contraseña'
         ];

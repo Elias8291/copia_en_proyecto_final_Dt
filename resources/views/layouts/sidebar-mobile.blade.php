@@ -13,7 +13,6 @@
 
         <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
             <nav class="px-3 space-y-2">
-                <!-- Dashboard -->
                 <a href="{{ route('dashboard') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('dashboard') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                     <svg class="{{ request()->routeIs('dashboard') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }} flex-shrink-0 w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -23,7 +22,6 @@
                     <span class="font-semibold tracking-wide">Dashboard</span>
                 </a>
 
-                <!-- Usuarios -->
                 @can('usuarios.ver')
                 <a href="{{ route('users.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('users.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -34,7 +32,6 @@
                 </a>
                 @endcan
 
-                <!-- Roles -->
                 @can('roles.ver')
                 <a href="{{ route('roles.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('roles.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -46,7 +43,6 @@
                 </a>
                 @endcan
 
-                <!-- Trámites -->
                 <a href="{{ route('tramites.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('tramites.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                     <svg class="{{ request()->routeIs('tramites.*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }} flex-shrink-0 w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,7 +51,6 @@
                     <span class="font-medium tracking-wide">Trámites</span>
                 </a>
 
-                <!-- Revisiones -->
                 @can('revisiones.ver')
                 <a href="{{ route('revisiones.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('revisiones.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -66,7 +61,6 @@
                 </a>
                 @endcan
 
-                <!-- Citas -->
                 @can('citas.ver')
                 <a href="{{ route('citas.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('citas.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -77,7 +71,6 @@
                 </a>
                 @endcan
 
-                <!-- Archivos -->
                 @can('archivos.ver')
                 <a href="{{ route('archivos.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('archivos.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -92,7 +85,6 @@
                 </a>
                 @endcan
 
-                <!-- Proveedores -->
                 @can('proveedores.ver')
                 <a href="{{ route('proveedores.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('proveedores.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -104,7 +96,6 @@
                 @endcan
 
 
-                <!-- Logs -->
                 @can('logs.ver')
                 <a href="{{ route('logs.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('logs.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -117,7 +108,6 @@
 
 
 
-                <!-- Notificaciones -->
                 <div class="relative" x-data="{ 
                     open: false, 
                     notificaciones: [], 
@@ -164,7 +154,6 @@
                         this.open = !this.open;
                     }
                 }">
-                    <!-- Botón principal de notificaciones (va a la página) -->
                     <a href="{{ route('notificaciones.index') }}" @click="sidebarOpen = false"
                        class="group flex items-center w-full px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                        {{ request()->routeIs('notificaciones.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
@@ -174,7 +163,6 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1h6z" />
                             </svg>
-                            <!-- Badge de notificaciones no leídas -->
                             <span x-show="count > 0" x-text="count > 99 ? '99+' : count" 
                                   class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
                             </span>
@@ -182,7 +170,6 @@
                         <span class="font-medium tracking-wide">Notificaciones</span>
                     </a>
 
-                    <!-- Botón para abrir dropdown (pequeño, solo visible al hacer hover) -->
                     <button @click="markAsReadAndOpen()" 
                             class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-primary opacity-0 group-hover:opacity-100 transition-all duration-200"
                             title="Ver notificaciones recientes">
@@ -191,7 +178,6 @@
                         </svg>
                     </button>
 
-                    <!-- Dropdown de notificaciones -->
                     <div x-show="open" 
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 transform scale-95"
@@ -202,7 +188,6 @@
                          @click.away="open = false"
                          class="absolute left-full top-0 ml-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden">
                         
-                        <!-- Header del dropdown -->
                         <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
                             <div class="flex items-center justify-between">
                                 <h3 class="text-sm font-semibold text-gray-900">Notificaciones Recientes</h3>
@@ -211,22 +196,16 @@
                                 </a>
                             </div>
                         </div>
-
-                        <!-- Contenido del dropdown -->
                         <div class="max-h-80 overflow-y-auto">
-                            <!-- Loading state -->
                             <div x-show="loading" class="p-4 text-center">
                                 <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
                                 <p class="text-sm text-gray-500 mt-2">Cargando notificaciones...</p>
                             </div>
-
-                            <!-- Lista de notificaciones -->
                             <template x-if="!loading && notificaciones && notificaciones.length > 0">
                                 <div>
                                     <template x-for="notificacion in notificaciones" :key="notificacion.id">
                                         <div class="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors duration-150">
                                             <div class="flex items-start space-x-3">
-                                                <!-- Icono según tipo -->
                                                 <div class="flex-shrink-0 mt-1">
                                                     <template x-if="notificacion.tipo === 'Tramite'">
                                                         <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -260,14 +239,11 @@
                                                     </template>
                                                 </div>
 
-                                                <!-- Contenido de la notificación -->
                                                 <div class="flex-1 min-w-0">
                                                     <div class="flex items-center justify-between">
                                                         <p class="text-sm font-medium text-gray-900" x-text="notificacion.titulo || 'Sin título'"></p>
                                                         <div class="flex items-center space-x-2">
-                                                            <!-- Indicador de no leída -->
                                                             <div x-show="!notificacion.leida" class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                                            <!-- Fecha -->
                                                             <span class="text-xs text-gray-500" x-text="notificacion.fecha_formateada || 'Reciente'"></span>
                                                         </div>
                                                     </div>
@@ -279,7 +255,6 @@
                                 </div>
                             </template>
 
-                            <!-- Estado vacío -->
                             <template x-if="!loading && (!notificaciones || notificaciones.length === 0)">
                                 <div class="p-4 text-center">
                                     <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -292,7 +267,6 @@
                     </div>
                 </div>
 
-                <!-- Mi Perfil -->
                 <a href="{{ route('profile.index') }}" @click="sidebarOpen = false" class="group flex items-center px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 
                     {{ request()->routeIs('profile.*') ? 'bg-primary-50 text-primary border-l-4 border-primary shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-md hover:text-primary' }}">
                     <svg class="{{ request()->routeIs('profile.*') ? 'text-primary' : 'text-gray-400 group-hover:text-primary' }} flex-shrink-0 w-6 h-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -301,12 +275,10 @@
                     <span class="font-medium tracking-wide">Mi Perfil</span>
                 </a>
 
-                <!-- Separador -->
                 <div class="px-3 py-2">
                     <div class="h-px bg-gray-200"></div>
                 </div>
 
-                <!-- Cerrar Sesión -->
                 <form method="POST" action="/cerrar-sesion" class="inline">
                     @csrf
                     <button type="submit" class="group flex items-center w-full px-3 py-3 text-base font-medium rounded-xl transition-all duration-200 text-red-700 hover:bg-red-50 hover:shadow-md hover:text-red-800">
